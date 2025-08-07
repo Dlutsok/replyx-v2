@@ -1,0 +1,637 @@
+/* Login Page - Premium SaaS Style */
+.loginBg {
+  min-height: 100vh;
+  width: 100vw;
+  background: linear-gradient(to bottom, #F9FAFB 0%, #F3F4F6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI', system-ui, sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+.loginBg::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background-image: 
+    radial-gradient(circle at 20% 20%, rgba(124, 77, 255, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(124, 77, 255, 0.02) 0%, transparent 50%);
+  animation: subtle-float 20s ease-in-out infinite;
+}
+
+@keyframes subtle-float {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(-20px, -10px) rotate(0.5deg); }
+}
+
+.loginCard {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  border-radius: 0.75rem;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.02),
+    0 2px 4px -1px rgba(0, 0, 0, 0.01),
+    0 0 0 1px rgba(255, 255, 255, 0.2);
+  padding: 48px 36px;
+  width: 100%;
+  max-width: 350px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+/* Register Card - Wider for additional fields */
+.registerCard {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  border-radius: 0.75rem;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.02),
+    0 2px 4px -1px rgba(0, 0, 0, 0.01),
+    0 0 0 1px rgba(255, 255, 255, 0.2);
+  padding: 48px 36px;
+  width: 100%;
+  max-width: 370px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+/* Verify Email Card */
+.verifyCard {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  border-radius: 0.75rem;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.02),
+    0 2px 4px -1px rgba(0, 0, 0, 0.01),
+    0 0 0 1px rgba(255, 255, 255, 0.2);
+  padding: 48px 36px;
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+/* Verify Email Specific Styles */
+.verifyTitle {
+  font-size: 24px;
+  font-weight: 500;
+  color: #1F2937;
+  margin-bottom: 16px;
+  text-align: center;
+  letter-spacing: -0.01em;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+}
+
+.verifySubtitle {
+  font-size: 14px;
+  font-weight: 400;
+  color: #6B7280;
+  margin-bottom: 32px;
+  text-align: center;
+  line-height: 1.5;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  max-width: 300px;
+}
+
+.codeContainer {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  justify-content: center;
+}
+
+.codeInput {
+  width: 48px;
+  height: 48px;
+  border-radius: 0.75rem;
+  border: 1px solid #E5E7EB;
+  background: #FFFFFF;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 18px;
+  text-align: center;
+  color: #1F2937;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+}
+
+.codeInput:focus {
+  border-color: #7C4DFF;
+  box-shadow: 
+    0 0 0 3px rgba(124, 77, 255, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+.codeInput:hover:not(:focus) {
+  border-color: rgba(124, 77, 255, 0.3);
+}
+
+.codeInput:disabled {
+  background: #F9FAFB;
+  color: #9CA3AF;
+  cursor: not-allowed;
+  border-color: #E5E7EB;
+}
+
+.resendButton {
+  width: 100%;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #4B5563;
+  font-weight: 500;
+  font-size: 15px;
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  backdrop-filter: blur(10px);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.resendButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 1);
+  border-color: rgba(124, 77, 255, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  color: #374151;
+}
+
+.resendButton:disabled {
+  background: #F9FAFB;
+  color: #9CA3AF;
+  cursor: not-allowed;
+  border-color: #E5E7EB;
+  opacity: 0.6;
+}
+
+.resendButton:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.expiryText {
+  font-size: 12px;
+  color: #9CA3AF;
+  text-align: center;
+  margin-bottom: 24px;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* Logo Container Styles */
+.logoContainer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 40px;
+}
+
+.logoText {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1F2937;
+  letter-spacing: -0.02em;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+}
+
+/* Title Styles */
+.title {
+  font-size: 24px;
+  font-weight: 500;
+  color: #1F2937;
+  margin-bottom: 36px;
+  text-align: center;
+  letter-spacing: -0.01em;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+}
+
+/* Title with subtitle - for forgot password page */
+.title:has(+ .subtitle) {
+  margin-bottom: 16px;
+}
+
+/* Subtitle Styles */
+.subtitle {
+  font-size: 14px;
+  font-weight: 400;
+  color: #6B7280;
+  margin-bottom: 32px;
+  text-align: center;
+  line-height: 1.5;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  max-width: 280px;
+}
+
+
+/* Form Styles */
+.form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Input Group Styles */
+
+.inputGroup {
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+/* Input Field Styles */
+.input {
+  width: 100%;
+  font-size: 15px;
+  padding: 16px 20px;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  background: rgba(255, 255, 255, 0.9);
+  color: #1F2937;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 400;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  backdrop-filter: blur(10px);
+}
+
+.input:focus {
+  outline: none;
+  border-color: #7C4DFF;
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 
+    0 0 0 3px rgba(124, 77, 255, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+.input:hover:not(:focus) {
+  border-color: rgba(124, 77, 255, 0.3);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.input::placeholder {
+  color: #9CA3AF;
+  font-weight: 400;
+}
+
+/* Password Input Styles */
+.passwordWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.passwordWrapper .input {
+  padding-right: 56px;
+}
+
+.eyeButton {
+  position: absolute;
+  right: 18px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9CA3AF;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 0.75rem;
+}
+
+.eyeButton:hover {
+  color: #6B7280;
+  background: rgba(124, 77, 255, 0.05);
+}
+
+/* Forgot Password Link */
+.forgotPassword {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 28px;
+}
+
+.forgotLink {
+  color: #9CA3AF;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 400;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.forgotLink:hover {
+  color: #7C4DFF;
+  text-decoration: none;
+}
+
+/* Submit Button Styles */
+.submitButton {
+  width: 100%;
+  height: 48px;
+  background: linear-gradient(135deg, #7C4DFF 0%, #6D44EA 100%);
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 15px;
+  border: none;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  box-shadow: 0 2px 4px rgba(124, 77, 255, 0.15);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.submitButton:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(124, 77, 255, 0.25);
+  background: linear-gradient(135deg, #8B5FFF 0%, #7C4DFF 100%);
+}
+
+.submitButton:active {
+  transform: translateY(0) scale(1);
+  transition: all 0.1s ease;
+}
+
+
+/* Yandex Button Styles */
+.yandexButton {
+  width: 100%;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #4B5563;
+  font-weight: 500;
+  font-size: 15px;
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  backdrop-filter: blur(10px);
+}
+
+.yandexButton:hover {
+  background: rgba(255, 255, 255, 1);
+  border-color: rgba(124, 77, 255, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  color: #374151;
+}
+
+/* Message Styles */
+.message {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-radius: 0.75rem;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.message.error {
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+}
+
+.message.success {
+  background: #F0FDF4;
+  color: #16A34A;
+  border: 1px solid #BBF7D0;
+}
+
+/* Disabled States */
+.submitButton:disabled {
+  background: #D1D5DB;
+  cursor: not-allowed;
+  opacity: 0.6;
+  color: #9CA3AF;
+}
+
+.submitButton:disabled:hover {
+  background: #D1D5DB;
+}
+
+.input:disabled {
+  background: #F9FAFB;
+  color: #9CA3AF;
+  cursor: not-allowed;
+  border-color: #E5E7EB;
+}
+
+.eyeButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Register Text Styles */
+.registerText {
+  margin-top: 32px;
+  font-size: 13px;
+  color: #9CA3AF;
+  text-align: center;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  font-weight: 400;
+}
+
+.registerLink {
+  color: #7C4DFF;
+  text-decoration: none;
+  font-weight: 500;
+  margin-left: 4px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.registerLink:hover {
+  color: #6D44EA;
+  text-decoration: none;
+}
+
+/* Terms Text Styles */
+.termsText {
+  margin-top: 24px;
+  font-size: 11px;
+  color: #9CA3AF;
+  text-align: center;
+  line-height: 1.6;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.termsLink {
+  color: #7C4DFF;
+  text-decoration: none;
+  font-weight: 500;
+  margin: 0 2px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-bottom: 1px solid rgba(124, 77, 255, 0.3);
+}
+
+.termsLink:hover {
+  color: #6D44EA;
+  border-bottom-color: #6D44EA;
+  text-decoration: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .loginBg {
+    padding: 20px;
+  }
+  
+  .loginCard {
+    padding: 40px 28px;
+    max-width: 340px;
+  }
+  
+  .registerCard {
+    padding: 40px 28px;
+    max-width: 360px;
+  }
+  
+  .verifyCard {
+    padding: 40px 28px;
+    max-width: 370px;
+  }
+  
+  .title {
+    font-size: 22px;
+    margin-bottom: 32px;
+  }
+  
+  .logoText {
+    font-size: 17px;
+  }
+}
+
+@media (max-width: 480px) {
+  .loginBg {
+    padding: 16px;
+  }
+  
+  .loginCard {
+    padding: 36px 24px;
+    max-width: 320px;
+  }
+  
+  .registerCard {
+    padding: 36px 24px;
+    max-width: 340px;
+  }
+  
+  .verifyCard {
+    padding: 36px 24px;
+    max-width: 360px;
+  }
+  
+  .title {
+    font-size: 20px;
+    margin-bottom: 28px;
+  }
+  
+  .logoContainer {
+    margin-bottom: 32px;
+  }
+  
+  .logoText {
+    font-size: 16px;
+  }
+  
+  .input {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 14px 18px;
+  }
+  
+  .passwordWrapper .input {
+    padding-right: 52px;
+  }
+  
+  .eyeButton {
+    right: 16px;
+  }
+  
+  .submitButton {
+    height: 44px;
+    font-size: 14px;
+  }
+  
+  .yandexButton {
+    height: 44px;
+    font-size: 14px;
+  }
+  
+  .registerText {
+    font-size: 12px;
+    margin-top: 28px;
+  }
+  
+  .termsText {
+    font-size: 10px;
+    margin-top: 20px;
+  }
+  
+  .codeContainer {
+    gap: 8px;
+  }
+  
+  .codeInput {
+    width: 42px;
+    height: 42px;
+    font-size: 16px;
+  }
+  
+  .verifyTitle {
+    font-size: 20px;
+    margin-bottom: 14px;
+  }
+  
+  .verifySubtitle {
+    font-size: 13px;
+    margin-bottom: 28px;
+  }
+  
+  .expiryText {
+    font-size: 11px;
+    margin-bottom: 20px;
+  }
+}

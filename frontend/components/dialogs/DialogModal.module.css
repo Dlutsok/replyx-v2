@@ -1,0 +1,228 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 10001;
+}
+
+.dialogModal {
+  width: 100%;
+  max-width: 900px;
+  height: 80vh;
+  max-height: 700px;
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.loadingContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: #6b7280;
+  padding: 40px;
+}
+
+.spinner {
+  font-size: 32px;
+  color: #3b82f6;
+}
+
+.errorModal {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 32px;
+  text-align: center;
+  max-width: 400px;
+  box-shadow: 0 20px 25px rgba(0, 0, 0, 0.1);
+}
+
+.errorModal h3 {
+  color: #dc2626;
+  margin: 0 0 16px 0;
+  font-size: 20px;
+}
+
+.errorModal p {
+  color: #6b7280;
+  margin: 0 0 24px 0;
+  line-height: 1.6;
+}
+
+.errorButton {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.errorButton:hover {
+  background: #2563eb;
+}
+
+.errorNotification {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  background: #dc2626;
+  color: white;
+  padding: 12px 16px;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  z-index: 10;
+}
+
+.errorNotification button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s ease;
+}
+
+.errorNotification button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .modalOverlay {
+    padding: 8px;
+    align-items: flex-start;
+    padding-top: 20px;
+  }
+  
+  .dialogModal {
+    height: calc(100vh - 40px);
+    max-height: none;
+    border-radius: 0.75rem;
+    margin: 0;
+  }
+  
+  .dialogHeader {
+    padding: 16px;
+    flex-shrink: 0;
+  }
+  
+  .dialogTitle {
+    font-size: 18px;
+  }
+  
+  .closeButton {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  
+  .messagesContainer {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 12px;
+  }
+  
+  .messageInput {
+    padding: 16px;
+    border-top: 1px solid #e5e7eb;
+  }
+  
+  .inputField {
+    font-size: 16px; /* Предотвращает зум на iOS */
+    padding: 12px 16px;
+  }
+  
+  .sendButton {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .modalOverlay {
+    padding: 0;
+  }
+  
+  .dialogModal {
+    height: 100vh;
+    border-radius: 0;
+    max-width: 100vw;
+    width: 100vw;
+  }
+  
+  .dialogHeader {
+    padding: 12px;
+  }
+  
+  .dialogTitle {
+    font-size: 16px;
+  }
+  
+  .messagesContainer {
+    padding: 0 8px;
+  }
+  
+  .messageInput {
+    padding: 12px;
+  }
+  
+  .errorModal {
+    padding: 24px;
+  }
+  
+  .errorNotification {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+  }
+}
+
+/* Анимация появления */
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

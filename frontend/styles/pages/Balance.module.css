@@ -1,0 +1,858 @@
+/* Основной контейнер */
+.balancePage {
+  padding: 32px;
+  background: #fafbfc;
+  min-height: 100%;
+}
+
+/* Управление страницей */
+.pageControls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.pageTitle {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.04em;
+}
+
+.refreshButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid #f1f5f9;
+  background: #ffffff;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #64748b;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.refreshButton:hover {
+  border-color: #e2e8f0;
+  color: #334155;
+  background: #f8fafc;
+  transform: scale(1.05);
+}
+
+/* Главная карточка баланса */
+.balanceCard {
+  background: #0f172a;
+  border-radius: 0.75rem;
+  padding: 32px;
+  margin-bottom: 32px;
+  color: white;
+  box-shadow: 0 8px 25px rgba(15, 23, 42, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.balanceCard:hover {
+  transform: translateY(-0.5px);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+.balanceCard.low {
+  background: #dc2626;
+  box-shadow: 0 8px 25px rgba(220, 38, 38, 0.15);
+}
+
+.balanceCard.medium {
+  background: #f59e0b;
+  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.15);
+}
+
+.balanceCard.good {
+  background: #10b981;
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.15);
+}
+
+.balanceCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.balanceInfo {
+  flex: 1;
+}
+
+.balanceLabel {
+  font-size: 14px;
+  opacity: 0.9;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.balanceAmount {
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+
+.balanceIcon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.balanceIcon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.balanceFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.balanceDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.balanceDetails span {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.balanceStatus {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  font-weight: 500;
+}
+
+/* Статистические карточки */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.statCard {
+  background: #ffffff;
+  border-radius: 0.75rem;
+  padding: 28px 24px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f3f4f6;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.statCard:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transform: translateY(-0.5px);
+  border-color: #e5e7eb;
+}
+
+.statCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.statCardIcon {
+  width: 48px;
+  height: 48px;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  transition: all 0.2s ease;
+}
+
+.statCard:hover .statCardIcon {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+  color: #475569;
+}
+
+.statCardTitle {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.075em;
+}
+
+.statCardValue {
+  font-size: 32px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+  line-height: 1;
+  letter-spacing: -0.025em;
+}
+
+.statCardChange {
+  font-size: 13px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* Вкладки */
+.tabsContainer {
+  margin-bottom: 32px;
+}
+
+.tabs {
+  display: flex;
+  background: #ffffff;
+  border-radius: 0.75rem;
+  padding: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f3f4f6;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  padding: 16px 20px;
+  border: none;
+  background: transparent;
+  border-radius: 0.75rem;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  justify-content: center;
+}
+
+.tab:hover {
+  color: #334155;
+  background: #f8fafc;
+}
+
+.tab.active {
+  background: #0f172a;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+}
+
+.tab svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Контент вкладок */
+.tabContent {
+  background: #ffffff;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f3f4f6;
+}
+
+/* Секция пополнения */
+.rechargeSection {
+  padding: 32px;
+}
+
+.quickAmountsSection {
+  margin-bottom: 32px;
+}
+
+.quickAmountsSection h3 {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.quickAmounts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.quickAmount {
+  position: relative;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.quickAmount:hover {
+  border-color: #0066cc;
+  background: #f0f8ff;
+  transform: translateY(-2px);
+}
+
+.quickAmount.selected {
+  border-color: #0066cc;
+  background: #f0f8ff;
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.15);
+}
+
+.quickAmount.popular {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+.quickAmount.popular.selected {
+  border-color: #10b981;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+.popularBadge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #10b981;
+  color: white;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 0.75rem;
+  font-weight: 600;
+}
+
+.quickAmountIcon {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0066cc;
+  color: white;
+  border-radius: 0.75rem;
+}
+
+.quickAmount.popular .quickAmountIcon {
+  background: #10b981;
+}
+
+.quickAmountIcon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.quickAmountLabel {
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.quickAmountSub {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.quickAmountCalc {
+  font-size: 12px;
+  color: #999;
+}
+
+/* Форма пополнения */
+.rechargeForm {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 32px;
+}
+
+.formSection h3 {
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.inputGroup {
+  margin-bottom: 20px;
+}
+
+.inputGroup label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.amountInput {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.amountInput input {
+  width: 100%;
+  padding: 12px 40px 12px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 0.75rem;
+  font-size: 16px;
+  font-weight: 600;
+  transition: border-color 0.2s ease;
+}
+
+.amountInput input:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+.currency {
+  position: absolute;
+  right: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #666;
+}
+
+.amountInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.amountInfo span {
+  font-size: 13px;
+  color: #666;
+}
+
+.promoInput {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 0.75rem;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.promoInput:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+.rechargeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 20px;
+  background: #0f172a;
+  color: #ffffff;
+  border: none;
+  border-radius: 0.75rem;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 24px;
+  letter-spacing: -0.025em;
+}
+
+.rechargeButton:hover:not(:disabled) {
+  background: #1e293b;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(15, 23, 42, 0.15);
+}
+
+.rechargeButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 0.75rem;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.message.success {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #d1fae5;
+}
+
+.message.error {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.message.info {
+  background: #eff6ff;
+  color: #7C4DFF;
+  border: 1px solid #bfdbfe;
+}
+
+/* Информационные блоки */
+.infoBlocks {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.infoBlock {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+}
+
+.infoIcon {
+  width: 20px;
+  height: 20px;
+  color: #0066cc;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.infoBlock h4 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.infoBlock p {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.4;
+}
+
+/* Секция использования */
+.usageSection {
+  padding: 24px;
+}
+
+.usageSection h3 {
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.loadingWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #666;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.emptyTransactions {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.emptyIcon {
+  width: 48px;
+  height: 48px;
+  color: #ccc;
+  margin-bottom: 16px;
+}
+
+.emptyTransactions h4 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.emptyTransactions p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Список транзакций */
+.transactionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: #f1f5f9;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.transactionItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  background: white;
+  transition: background-color 0.2s ease;
+}
+
+.transactionItem:hover {
+  background: #f8fafc;
+}
+
+.transactionIcon {
+  flex-shrink: 0;
+}
+
+.iconWrapper {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+}
+
+.iconWrapper svg {
+  width: 18px;
+  height: 18px;
+}
+
+.topupIcon {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.messageIcon {
+  background: #eff6ff;
+  color: #7C4DFF;
+}
+
+.documentIcon {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.serviceIcon {
+  background: #f3e8ff;
+  color: #7c3aed;
+}
+
+.transactionDetails {
+  flex: 1;
+  min-width: 0;
+}
+
+.transactionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.transactionTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.3;
+}
+
+.transactionAmount {
+  font-size: 15px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-left: 16px;
+}
+
+.transactionAmount.positive {
+  color: #059669;
+}
+
+.transactionAmount.negative {
+  color: #dc2626;
+}
+
+.transactionMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.transactionDate {
+  font-size: 13px;
+  color: #666;
+}
+
+.transactionBalance {
+  font-size: 13px;
+  color: #666;
+  font-weight: 500;
+}
+
+/* Связанная информация */
+.relatedInfo {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.messageInfo {
+  background: #f8fafc;
+  border-radius: 0.75rem;
+  padding: 12px;
+  border-left: 3px solid #7C4DFF;
+}
+
+.messageText {
+  font-size: 13px;
+  color: #374151;
+  font-style: italic;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.dialogInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dialogMeta {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.documentInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fef3c7;
+  border-radius: 0.75rem;
+  padding: 8px 12px;
+  border-left: 3px solid #d97706;
+}
+
+.documentInfo svg {
+  width: 14px;
+  height: 14px;
+  color: #d97706;
+}
+
+.documentName {
+  font-size: 13px;
+  color: #92400e;
+  font-weight: 500;
+}
+
+/* Responsive дизайн */
+@media (max-width: 1200px) {
+  .rechargeForm {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .balancePage {
+    padding: 16px;
+  }
+  
+  .pageControls {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  
+  .balanceCard {
+    padding: 20px;
+  }
+  
+  .balanceAmount {
+    font-size: 28px;
+  }
+  
+  .balanceFooter {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .quickAmounts {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .tabs {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .tab {
+    justify-content: flex-start;
+  }
+  
+  .transactionItem {
+    padding: 16px;
+  }
+  
+  .transactionHeader {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  
+  .transactionAmount {
+    margin-left: 0;
+  }
+  
+  .transactionMeta {
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
+  }
+}

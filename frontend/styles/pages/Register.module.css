@@ -1,0 +1,284 @@
+/* Register Page - Minimalist Style */
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  padding: 40px 20px;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.formWrapper {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 40px 32px;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.inputGroup {
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.input {
+  width: 100%;
+  font-size: 16px;
+  padding: 12px 16px;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #1a1a1a;
+  transition: all 0.2s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #1a1a1a;
+  box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
+}
+
+.input::placeholder {
+  color: #9ca3af;
+}
+
+.passwordWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.passwordWrapper .input {
+  padding-right: 48px;
+}
+
+.eyeButton {
+  position: absolute;
+  right: 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  transition: color 0.2s ease;
+}
+
+.eyeButton:hover {
+  color: #374151;
+}
+
+.submitButton {
+  width: 100%;
+  background: #7C4DFF;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 16px;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(124, 77, 255, 0.1);
+}
+
+.submitButton:hover {
+  background: #5a2fc2;
+  box-shadow: 0 4px 12px rgba(124, 77, 255, 0.15);
+}
+
+.submitButton:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+  opacity: 0.7;
+  color: #6b7280;
+}
+
+.submitButton:disabled:hover {
+  background: #d1d5db;
+  box-shadow: none;
+}
+
+.signInText {
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.signInLink {
+  color: #1a1a1a;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.signInLink:hover {
+  color: #7C4DFF;
+  text-decoration: underline;
+}
+
+.forgotPasswordLink {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.forgotPasswordLink:hover {
+  color: #1a1a1a;
+  text-decoration: underline;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.divider span {
+  padding: 0 16px;
+}
+
+.googleButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #ffffff;
+  color: #374151;
+  font-weight: 500;
+  font-size: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 24px;
+  text-decoration: none;
+}
+
+.googleButton:hover {
+  background: #f9fafb;
+  border-color: #374151;
+}
+
+.termsText {
+  color: #6b7280;
+  font-size: 12px;
+  text-align: center;
+  max-width: 320px;
+  line-height: 1.5;
+  margin-top: 16px;
+}
+
+.termsLink {
+  color: #1a1a1a;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.termsLink:hover {
+  color: #7C4DFF;
+  text-decoration: underline;
+}
+
+.message {
+  margin-top: 16px;
+  margin-bottom: 0;
+  padding: 12px 16px;
+  border-radius: 0.75rem;
+  font-weight: 500;
+  text-align: center;
+  width: 100%;
+  font-size: 14px;
+}
+
+.message.error {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.message.success {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    padding: 20px 16px;
+  }
+  
+  .formWrapper {
+    padding: 32px 24px;
+    max-width: 100%;
+  }
+  
+  .title {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .formWrapper {
+    padding: 24px 20px;
+  }
+  
+  .title {
+    font-size: 24px;
+  }
+  
+  .input {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}

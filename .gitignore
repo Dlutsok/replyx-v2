@@ -1,0 +1,66 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+
+# Build outputs
+.next/
+dist/
+build/
+*.egg-info/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.venv/
+venv/
+
+# Logs
+*.log
+logs/
+!data/logs/.gitkeep
+
+# Database
+*.db
+*.sqlite
+database.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.cursor/
+
+# OS
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Temporary files
+tmp/
+temp/
+pids/
+*.pid
+
+# Backups
+*.bak
+backup_*
+*_backup.sql
+
+# Test coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Development
+.env.development
+test_*.txt
+debug_*.log
+
+# Production secrets
+*.key
+*.pem
+secrets/

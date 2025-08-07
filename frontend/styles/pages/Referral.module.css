@@ -1,0 +1,375 @@
+/* Основной контейнер */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  background: #f8f9fb;
+  min-height: 100vh;
+}
+
+/* Заголовок */
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.title {
+  font-size: 36px;
+  font-weight: 700;
+  color: #7C4DFF;
+  margin: 0 0 12px 0;
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: #6b7280;
+  margin: 0;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.loading {
+  text-align: center;
+  padding: 60px 20px;
+  font-size: 18px;
+  color: #6b7280;
+}
+
+/* Статистика */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.statCard {
+  background: white;
+  padding: 32px;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  transition: all 0.2s;
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.statIcon {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #7C4DFF 0%, #8b5cf6 100%);
+  border-radius: 0.75rem;
+  flex-shrink: 0;
+}
+
+.statIcon svg {
+  width: 28px;
+  height: 28px;
+  color: white;
+}
+
+.statContent h3 {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.statValue {
+  font-size: 32px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 4px 0;
+}
+
+.statDescription {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* Секция ссылки */
+.linkSection {
+  margin-bottom: 40px;
+}
+
+.sectionTitle {
+  font-size: 24px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 24px 0;
+}
+
+.linkCard {
+  background: white;
+  padding: 32px;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.linkDisplay {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.linkInput {
+  flex: 1;
+  padding: 16px 20px;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.75rem;
+  font-size: 16px;
+  color: #374151;
+  background: #f9fafb;
+  font-family: monospace;
+}
+
+.linkInput:focus {
+  outline: none;
+  border-color: #7C4DFF;
+}
+
+.copyButton,
+.shareButton {
+  padding: 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.75rem;
+  background: white;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.copyButton:hover,
+.shareButton:hover {
+  border-color: #7C4DFF;
+  color: #7C4DFF;
+  background: #f9fafb;
+}
+
+.copyButton svg,
+.shareButton svg {
+  width: 20px;
+  height: 20px;
+}
+
+.linkActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.referralCode {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.referralCode strong {
+  color: #7C4DFF;
+  font-weight: 600;
+}
+
+/* Условия программы */
+.conditionsSection {
+  margin-bottom: 40px;
+}
+
+.conditionsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.conditionCard {
+  background: white;
+  padding: 32px;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  gap: 20px;
+  transition: all 0.2s;
+}
+
+.conditionCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.conditionIcon {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-radius: 0.75rem;
+  flex-shrink: 0;
+}
+
+.conditionIcon svg {
+  width: 28px;
+  height: 28px;
+  color: white;
+}
+
+.conditionContent h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 12px 0;
+}
+
+.conditionContent p {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.conditionContent strong {
+  color: #10b981;
+  font-weight: 600;
+}
+
+/* Список рефералов */
+.referralsSection {
+  margin-bottom: 40px;
+}
+
+.referralsList {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.referralItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 32px;
+  border-bottom: 1px solid #e5e7eb;
+  transition: all 0.2s;
+}
+
+.referralItem:last-child {
+  border-bottom: none;
+}
+
+.referralItem:hover {
+  background: #f9fafb;
+}
+
+.referralInfo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.referralNumber {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #7C4DFF;
+  color: white;
+  border-radius: 50%;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.referralDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.referralDate {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.referralDate svg {
+  width: 16px;
+  height: 16px;
+}
+
+.referralStatus .statusBadge {
+  padding: 4px 12px;
+  border-radius: 0.75rem;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.statusBadge.confirmed {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.statusBadge.pending {
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.referralBonus {
+  font-size: 16px;
+  font-weight: 600;
+  color: #10b981;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+  
+  .title {
+    font-size: 28px;
+  }
+  
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .conditionsGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .linkDisplay {
+    flex-direction: column;
+  }
+  
+  .linkCard,
+  .statCard,
+  .conditionCard {
+    padding: 24px;
+  }
+  
+  .referralItem {
+    padding: 16px 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .referralInfo {
+    width: 100%;
+  }
+}

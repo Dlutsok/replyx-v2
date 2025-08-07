@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Debug Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+        
+        .log-container {
+            background: #000;
+            color: #00ff00;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            padding: 15px;
+            border-radius: 8px;
+            height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+        
+        .button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        
+        .button:hover {
+            background: #0056b3;
+        }
+        
+        .button.success {
+            background: #28a745;
+        }
+        
+        .button.danger {
+            background: #dc3545;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .input-group {
+            margin: 15px 0;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 WebSocket Debug Test</h1>
+        <p>Эта страница поможет диагностировать проблемы с WebSocket соединением для ChatAI виджета.</p>
+        
+        <div class="test-section">
+            <h2>📡 WebSocket соединение</h2>
+            <p>Статус: <span id="ws-status" class="status disconnected">Отключен</span></p>
+            
+            <div class="input-group">
+                <label>Dialog ID:</label>
+                <input type="number" id="dialog-id" value="1" placeholder="Введите ID диалога">
+            </div>
+            
+            <div class="input-group">
+                <label>Site Token:</label>
+                <input type="text" id="site-token" placeholder="Введите site token (если есть)">
+            </div>
+            
+            <div class="input-group">
+                <label>Assistant ID:</label>
+                <input type="number" id="assistant-id" placeholder="Введите assistant ID (если есть)">
+            </div>
+            
+            <button class="button" onclick="connectWebSocket()">🔌 Подключиться</button>
+            <button class="button danger" onclick="disconnectWebSocket()">❌ Отключиться</button>
+            <button class="button" onclick="sendTestMessage()">📤 Тест сообщение</button>
+            <button class="button" onclick="clearLogs()">🗑️ Очистить логи</button>
+        </div>
+        
+        <div class="test-section">
+            <h2>📋 Логи</h2>
+            <div class="log-container" id="log-container"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🧪 Автотесты</h2>
+            <button class="button" onclick="runAutoTests()">🚀 Запустить автотесты</button>
+            <p>Автотесты проверят:</p>
+            <ul>
+                <li>Подключение к WebSocket</li>
+                <li>Отправку сообщения через API</li>
+                <li>Получение ответа через WebSocket</li>
+                <li>Таймауты и ошибки</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        let ws = null;
+        let testDialogId = null;
+        
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('log-container');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            
+            let color = '#00ff00';
+            if (type === 'error') color = '#ff6b6b';
+            if (type === 'warning') color = '#ffd93d';
+            if (type === 'success') color = '#51cf66';
+            
+            logEntry.style.color = color;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        function updateStatus(connected) {
+            const statusEl = document.getElementById('ws-status');
+            if (connected) {
+                statusEl.textContent = 'Подключен';
+                statusEl.className = 'status connected';
+            } else {
+                statusEl.textContent = 'Отключен';
+                statusEl.className = 'status disconnected';
+            }
+        }
+        
+        function connectWebSocket() {
+            const dialogId = document.getElementById('dialog-id').value;
+            const siteToken = document.getElementById('site-token').value;
+            const assistantId = document.getElementById('assistant-id').value;
+            
+            if (!dialogId) {
+                log('Введите Dialog ID', 'error');
+                return;
+            }
+            
+            let wsUrl;
+            if (assistantId) {
+                wsUrl = `ws://localhost:8000/ws/widget/dialogs/${dialogId}?assistant_id=${assistantId}`;
+                log(`Подключаюсь к widget endpoint: ${wsUrl}`);
+            } else if (siteToken) {
+                wsUrl = `ws://localhost:8000/ws/site/dialogs/${dialogId}?site_token=${siteToken}`;
+                log(`Подключаюсь к site endpoint: ${wsUrl}`);
+            } else {
+                log('Введите либо Site Token, либо Assistant ID', 'error');
+                return;
+            }
+            
+            testDialogId = parseInt(dialogId);
+            
+            try {
+                ws = new WebSocket(wsUrl);
+                
+                ws.onopen = () => {
+                    log('✅ WebSocket подключен!', 'success');
+                    updateStatus(true);
+                };
+                
+                ws.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        log(`📨 Получено сообщение: ${JSON.stringify(data)}`, 'success');
+                    } catch (e) {
+                        log(`📨 Получено сообщение (raw): ${event.data}`, 'success');
+                    }
+                };
+                
+                ws.onerror = (error) => {
+                    log(`❌ Ошибка WebSocket: ${error}`, 'error');
+                    updateStatus(false);
+                };
+                
+                ws.onclose = (event) => {
+                    log(`🔌 WebSocket закрыт: код ${event.code}, причина: ${event.reason}`, 'warning');
+                    updateStatus(false);
+                };
+                
+            } catch (error) {
+                log(`❌ Ошибка создания WebSocket: ${error}`, 'error');
+            }
+        }
+        
+        function disconnectWebSocket() {
+            if (ws) {
+                ws.close();
+                ws = null;
+                log('🔌 WebSocket отключен вручную', 'warning');
+                updateStatus(false);
+            }
+        }
+        
+        async function sendTestMessage() {
+            if (!testDialogId) {
+                log('Сначала подключитесь к WebSocket', 'error');
+                return;
+            }
+            
+            const siteToken = document.getElementById('site-token').value;
+            const assistantId = document.getElementById('assistant-id').value;
+            
+            const testText = `Тест сообщение ${new Date().toLocaleTimeString()}`;
+            log(`📤 Отправляю тестовое сообщение: "${testText}"`);
+            
+            try {
+                let url, body;
+                
+                if (assistantId) {
+                    url = `http://localhost:8000/api/widget/dialogs/${testDialogId}/messages?assistant_id=${assistantId}&guest_id=test-guest-123`;
+                    body = JSON.stringify({ sender: 'user', text: testText });
+                } else if (siteToken) {
+                    url = `http://localhost:8000/api/site/dialogs/${testDialogId}/messages?site_token=${siteToken}&guest_id=test-guest-123`;
+                    body = JSON.stringify({ sender: 'user', text: testText });
+                } else {
+                    log('Нет токена для отправки сообщения', 'error');
+                    return;
+                }
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: body
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    log(`✅ Сообщение отправлено: ${JSON.stringify(result)}`, 'success');
+                } else {
+                    const error = await response.text();
+                    log(`❌ Ошибка отправки: ${response.status} - ${error}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Ошибка API запроса: ${error}`, 'error');
+            }
+        }
+        
+        function clearLogs() {
+            document.getElementById('log-container').innerHTML = '';
+            log('Логи очищены');
+        }
+        
+        async function runAutoTests() {
+            log('🚀 Запуск автотестов...', 'success');
+            
+            // Тест 1: Подключение WebSocket
+            log('Тест 1: Подключение WebSocket');
+            document.getElementById('dialog-id').value = '999';
+            document.getElementById('assistant-id').value = '1';
+            connectWebSocket();
+            
+            // Ждем подключения
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                log('✅ Тест 1 пройден: WebSocket подключен', 'success');
+                
+                // Тест 2: Отправка сообщения
+                log('Тест 2: Отправка сообщения через API');
+                await sendTestMessage();
+                
+                // Ждем ответа
+                log('Ожидаю ответ бота через WebSocket (10 секунд)...');
+                await new Promise(resolve => setTimeout(resolve, 10000));
+                
+            } else {
+                log('❌ Тест 1 провален: WebSocket не подключен', 'error');
+            }
+            
+            log('🏁 Автотесты завершены', 'success');
+        }
+        
+        // Инициализация
+        log('🔍 WebSocket Debug Tool готов');
+        log('Введите данные и нажмите "Подключиться"');
+    </script>
+</body>
+</html>

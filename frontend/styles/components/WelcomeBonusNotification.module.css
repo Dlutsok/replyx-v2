@@ -1,0 +1,384 @@
+/* Премиальный SaaS стиль для модального окна приветственного бонуса */
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal {
+  background: #FFFFFF;
+  border-radius: 0.75rem;
+  box-shadow: 0px 8px 40px rgba(0, 0, 0, 0.08);
+  max-width: 420px;
+  width: 90%;
+  max-height: 500px;
+  padding: 32px 28px;
+  position: relative;
+  animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Верхняя часть */
+.header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.iconContainer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #7C4DFF 0%, #6A3AE3 100%);
+  border-radius: 0.75rem;
+  margin-bottom: 16px;
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+  color: white;
+  stroke-width: 2;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 4px 0;
+  line-height: 1.3;
+}
+
+.subtitle {
+  font-size: 15px;
+  color: #6B7280;
+  margin: 0;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+/* Блок с бонусом */
+.bonusCard {
+  background: linear-gradient(135deg, #FAFBFF 0%, #F5F3FF 100%);
+  border: 1px solid rgba(124, 77, 255, 0.1);
+  border-radius: 0.75rem;
+  padding: 20px;
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.bonusCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(124, 77, 255, 0.03) 0%, rgba(106, 58, 227, 0.01) 100%);
+  pointer-events: none;
+}
+
+.bonusMain {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.bonusIconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #7C4DFF 0%, #6A3AE3 100%);
+  border-radius: 0.75rem;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(124, 77, 255, 0.2);
+}
+
+.bonusIcon {
+  width: 22px;
+  height: 22px;
+  color: white;
+  stroke-width: 2;
+}
+
+.bonusContent {
+  flex: 1;
+}
+
+.bonusTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 2px 0;
+  line-height: 1.3;
+}
+
+.bonusAmount {
+  font-size: 20px;
+  font-weight: 700;
+  color: #7C4DFF;
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+.bonusSubtext {
+  font-size: 13px;
+  color: #6B7280;
+  margin: 0;
+  line-height: 1.3;
+}
+
+
+/* Информационная строка */
+.infoText {
+  font-size: 13px;
+  color: #6B7280;
+  text-align: center;
+  margin: 16px 0 24px 0;
+  line-height: 1.4;
+}
+
+/* Кнопки */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.claimButton {
+  width: 100%;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #7C4DFF 0%, #6A3AE3 100%);
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 16px rgba(124, 77, 255, 0.4), 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.01em;
+  transform: translateY(0px);
+}
+
+.claimButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, #6A3AE3 0%, #5B2BC7 100%);
+  box-shadow: 0 6px 20px rgba(124, 77, 255, 0.5), 0 3px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.claimButton:active:not(:disabled) {
+  transform: translateY(0px);
+  box-shadow: 0 3px 12px rgba(124, 77, 255, 0.4), 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.claimButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.skipButton {
+  background: none;
+  border: none;
+  color: #6B7280;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 12px;
+  transition: all 0.15s ease;
+  text-align: center;
+  border-radius: 0.75rem;
+  margin-top: 4px;
+}
+
+.skipButton:hover:not(:disabled) {
+  color: #374151;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.skipButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Спиннер */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Дополнительные улучшения */
+.claimButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, transparent 100%);
+  border-radius: inherit;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  opacity: 1;
+}
+
+.claimButton:hover::before {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.05) 100%);
+}
+
+/* Адаптивность */
+@media (max-width: 640px) {
+  .modal {
+    margin: 20px;
+    padding: 28px 24px;
+    max-width: none;
+    width: auto;
+  }
+  
+  .title {
+    font-size: 19px;
+  }
+  
+  .subtitle {
+    font-size: 14px;
+  }
+  
+  .bonusAmount {
+    font-size: 18px;
+  }
+  
+  
+  .claimButton {
+    height: 44px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal {
+    margin: 16px;
+    padding: 24px 20px;
+  }
+  
+  .header {
+    margin-bottom: 20px;
+  }
+  
+  .iconContainer {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 14px;
+  }
+  
+  .icon {
+    width: 22px;
+    height: 22px;
+  }
+  
+  .title {
+    font-size: 18px;
+  }
+  
+  .subtitle {
+    font-size: 13px;
+  }
+  
+  .bonusCard {
+    padding: 18px;
+    margin-bottom: 14px;
+  }
+  
+  
+  .bonusMain {
+    gap: 14px;
+    margin-bottom: 10px;
+  }
+  
+  .bonusIconWrapper {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .bonusIcon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .bonusAmount {
+    font-size: 17px;
+  }
+  
+  .infoText {
+    margin: 14px 0 20px 0;
+    font-size: 12px;
+  }
+  
+  .claimButton {
+    height: 44px;
+    font-size: 15px;
+  }
+  
+  .skipButton {
+    font-size: 13px;
+  }
+}

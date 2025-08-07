@@ -1,0 +1,7 @@
+{
+  "user_id": 1,
+  "email": "admin@example.com",
+  "telegram_token": "1",
+  "openai_token": "REMOVED_FOR_SECURITY_REPLACE_WITH_NEW_TOKEN",
+  "timestamp": "2025-06-22T14:15:32.508Z"
+}

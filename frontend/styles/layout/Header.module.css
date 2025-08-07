@@ -1,0 +1,429 @@
+/* Header - Unified Landing Style */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.95);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  backdrop-filter: blur(12px);
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.header:hover {
+  background: rgba(255, 255, 255, 0.98);
+  border-bottom-color: rgba(226, 232, 240, 1);
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 64px;
+  max-width: 1400px;
+  margin: 0 auto;
+  gap: 24px;
+}
+
+/* Левая секция - меню и заголовок */
+.leftSection {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Гамбургер-меню для мобильных */
+.hamburgerButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  border-radius: 0.75rem;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.hamburgerButton:hover {
+  background: rgba(124, 77, 255, 0.05);
+  border-color: rgba(124, 77, 255, 0.2);
+  color: #7C4DFF;
+  transform: translateY(-1px);
+}
+
+.hamburgerButton:active {
+  transform: scale(0.98);
+}
+
+.hamburgerIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.pageInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pageTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.breadcrumbItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.breadcrumbLink {
+  font-size: 12px;
+  color: #64748b;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.breadcrumbLink:hover {
+  color: #7C4DFF;
+}
+
+.breadcrumbCurrent {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.breadcrumbSeparator {
+  font-size: 12px;
+  color: #cbd5e1;
+  margin: 0 2px;
+}
+
+
+/* Правая секция */
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+}
+
+/* Уведомления */
+.notificationsContainer {
+  position: relative;
+}
+
+.notificationButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #6b7280;
+  position: relative;
+}
+
+.notificationButton:hover {
+  background: rgba(124, 77, 255, 0.05);
+  border-color: rgba(124, 77, 255, 0.2);
+  color: #7C4DFF;
+  transform: translateY(-1px);
+}
+
+.notificationIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.notificationBadge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #ef4444;
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 0.75rem;
+  min-width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notificationsDropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 320px;
+  background: white;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  margin-top: 8px;
+  z-index: 1000;
+}
+
+.notificationsHeader {
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.notificationsHeader h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.notificationsList {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.noNotifications {
+  padding: 40px 20px;
+  text-align: center;
+  color: #64748b;
+  font-size: 14px;
+  margin: 0;
+}
+
+.notificationItem {
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.4);
+  font-size: 14px;
+  color: #475569;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.notificationItem:hover {
+  background: rgba(248, 250, 252, 0.6);
+}
+
+.notificationItem:last-child {
+  border-bottom: none;
+}
+
+/* Баланс */
+.balanceContainer {
+  position: relative;
+}
+
+.balanceButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 85px;
+  height: 40px;
+  position: relative;
+  background: rgba(124, 77, 255, 0.08);
+  color: #7C4DFF;
+}
+
+.balanceButton:hover {
+  transform: translateY(-1px);
+  background: rgba(124, 77, 255, 0.12);
+  border-color: rgba(124, 77, 255, 0.2);
+}
+
+/* Цветовые состояния кнопки - минималистичные */
+.balanceButton.good {
+  background: rgba(124, 77, 255, 0.08);
+  color: #7C4DFF;
+  border-color: rgba(124, 77, 255, 0.2);
+}
+
+.balanceButton.good:hover {
+  background: rgba(124, 77, 255, 0.12);
+  border-color: rgba(124, 77, 255, 0.3);
+}
+
+.balanceButton.medium {
+  background: rgba(251, 191, 36, 0.08);
+  color: #f59e0b;
+  border-color: rgba(251, 191, 36, 0.2);
+}
+
+.balanceButton.medium:hover {
+  background: rgba(251, 191, 36, 0.12);
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.balanceButton.low {
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.2);
+  animation: pulseRed 2s ease-in-out infinite;
+}
+
+.balanceButton.low:hover {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+@keyframes pulseRed {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.balanceAmount {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Профиль */
+.profileContainer {
+  position: relative;
+}
+
+.profileButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #7c4dff 0%, #6366f1 100%);
+  border: 1px solid rgba(124, 77, 255, 0.2);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: white;
+  box-shadow: 0 2px 8px rgba(124, 77, 255, 0.15);
+}
+
+.profileButton:hover {
+  background: linear-gradient(135deg, #7c4dff 0%, #5b47c2 100%);
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 4px 12px rgba(124, 77, 255, 0.25);
+}
+
+.profileIcon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+  .leftSection {
+    min-width: 180px;
+  }
+  
+  .pageTitle {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 768px) {
+  .headerContent {
+    padding: 12px 16px;
+    height: 64px;
+    gap: 16px;
+  }
+  
+  .leftSection {
+    min-width: 140px;
+  }
+  
+  .pageTitle {
+    font-size: 16px;
+  }
+  
+  .breadcrumbs {
+    display: none;
+  }
+  
+  
+  .balanceButton {
+    padding: 6px 12px;
+    min-width: 75px;
+    height: 36px;
+    font-size: 13px;
+  }
+
+  .profileButton,
+  .notificationButton {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .profileIcon,
+  .notificationIcon {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .notificationsDropdown {
+    width: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  .headerContent {
+    gap: 12px;
+    padding: 16px;
+  }
+  
+  .pageTitle {
+    font-size: 18px;
+  }
+  
+  .breadcrumbs {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .headerContent {
+    gap: 12px;
+  }
+  
+  .rightSection {
+    gap: 8px;
+  }
+  
+  .balanceAmount {
+    font-size: 13px;
+  }
+  
+  .pageTitle {
+    font-size: 16px;
+  }
+}

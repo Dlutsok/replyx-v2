@@ -1,0 +1,349 @@
+/* Chat Widget Card Styles */
+.chatWidget {
+  position: relative;
+  width: 320px;
+  max-width: 100%;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid #f3f4f6;
+}
+
+.chatWidget:hover {
+  box-shadow: 
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-color: #e5e7eb;
+}
+
+/* Статус индикатор */
+.statusIndicator {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  z-index: 10;
+  border: 2px solid #ffffff;
+}
+
+.statusIndicator.active {
+  background: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.statusIndicator.takenOver {
+  background: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+}
+
+.statusIndicator.inactive {
+  background: #9ca3af;
+}
+
+/* Хэдер виджета */
+.widgetHeader {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brandInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brandIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.brandText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.assistantName {
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.channelType {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.headerTime {
+  font-size: 12px;
+  opacity: 0.8;
+  font-weight: 500;
+}
+
+/* Область чата */
+.chatArea {
+  background: #f8fafc;
+  padding: 16px;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.messagesContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.messageGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.userMessage,
+.assistantMessage {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.userMessage {
+  justify-content: flex-end;
+}
+
+.assistantMessage {
+  justify-content: flex-start;
+}
+
+.messageAvatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.assistantAvatar {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-size: 12px;
+}
+
+.messageBubble {
+  max-width: 180px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.userBubble {
+  background: #667eea;
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.assistantBubble {
+  background: #ffffff;
+  color: #1f2937;
+  border: 1px solid #e5e7eb;
+  border-bottom-left-radius: 4px;
+}
+
+/* Поле ввода */
+.inputArea {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.inputField {
+  flex: 1;
+}
+
+.inputPlaceholder {
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.sendButton {
+  width: 32px;
+  height: 32px;
+  background: #667eea;
+  color: white;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+/* Информация о пользователе */
+.userInfo {
+  padding: 16px;
+  border-top: 1px solid #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+}
+
+.userDetails {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.userIcon {
+  width: 16px;
+  height: 16px;
+  color: #6b7280;
+}
+
+.userText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.userName {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2937;
+  line-height: 1.2;
+}
+
+.userSubtitle {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.cardActions {
+  display: flex;
+  gap: 8px;
+}
+
+.viewButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.viewButton:hover {
+  background: #5a67d8;
+}
+
+/* Статусная строка */
+.statusBar {
+  padding: 12px 16px;
+  background: #f9fafb;
+  border-top: 1px solid #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.statusText {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.statusActive {
+  color: #059669;
+  font-weight: 500;
+}
+
+.statusTaken {
+  color: #d97706;
+  font-weight: 500;
+}
+
+.statusInactive {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.lastActivity {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #6b7280;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .chatWidget {
+    width: 100%;
+    max-width: 340px;
+  }
+  
+  .messageBubble {
+    max-width: 140px;
+  }
+}
+
+@media (max-width: 480px) {
+  .chatWidget {
+    border-radius: 12px;
+  }
+  
+  .widgetHeader {
+    padding: 12px;
+  }
+  
+  .chatArea {
+    padding: 12px;
+    min-height: 120px;
+  }
+  
+  .userInfo {
+    padding: 12px;
+  }
+  
+  .statusBar {
+    padding: 8px 12px;
+  }
+}

@@ -1,0 +1,216 @@
+/* Контейнер */
+.tooltipContainer {
+  position: relative;
+  display: inline-block;
+}
+
+/* Основной tooltip */
+.tooltip {
+  position: absolute;
+  z-index: 1000;
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e2e8f0;
+  max-width: 300px;
+  animation: tooltipFadeIn 0.2s ease-out;
+  pointer-events: auto;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Позиционирование */
+.tooltip.top {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 10px;
+}
+
+.tooltip.bottom {
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 10px;
+}
+
+.tooltip.left {
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-right: 10px;
+}
+
+.tooltip.right {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 10px;
+}
+
+/* Контент */
+.tooltipContent {
+  padding: 0;
+  overflow: hidden;
+}
+
+.tooltipHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #7C4DFF, #8b5cf6);
+  color: white;
+  border-radius: 0.75rem 12px 0 0;
+}
+
+.tooltipHeader h4 {
+  margin: 0;
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.closeButton:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.tooltipBody {
+  padding: 16px;
+}
+
+.tooltipBody p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #374151;
+}
+
+/* Стрелки */
+.tooltipArrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.tooltip.top .tooltipArrow {
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #e2e8f0;
+}
+
+.tooltip.top .tooltipArrow::before {
+  content: '';
+  position: absolute;
+  top: -9px;
+  left: -8px;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid white;
+}
+
+.tooltip.bottom .tooltipArrow {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid #e2e8f0;
+}
+
+.tooltip.bottom .tooltipArrow::before {
+  content: '';
+  position: absolute;
+  bottom: -9px;
+  left: -8px;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid white;
+}
+
+.tooltip.left .tooltipArrow {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-left: 8px solid #e2e8f0;
+}
+
+.tooltip.left .tooltipArrow::before {
+  content: '';
+  position: absolute;
+  left: -9px;
+  top: -8px;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-left: 8px solid white;
+}
+
+.tooltip.right .tooltipArrow {
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-right: 8px solid #e2e8f0;
+}
+
+.tooltip.right .tooltipArrow::before {
+  content: '';
+  position: absolute;
+  right: -9px;
+  top: -8px;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-right: 8px solid white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .tooltip {
+    max-width: 250px;
+    font-size: 12px;
+  }
+  
+  .tooltipHeader {
+    padding: 10px 12px;
+  }
+  
+  .tooltipHeader h4 {
+    font-size: 12px;
+  }
+  
+  .tooltipBody {
+    padding: 12px;
+  }
+  
+  .tooltipBody p {
+    font-size: 12px;
+  }
+} 

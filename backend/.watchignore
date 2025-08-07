@@ -1,0 +1,11 @@
+
+# Создаем .gitignore для uvicorn
+logs/*.log
+pids/*.pid
+uploads/*
+*.pyc
+__pycache__/
+.pytest_cache/
+.coverage
+*.log
+

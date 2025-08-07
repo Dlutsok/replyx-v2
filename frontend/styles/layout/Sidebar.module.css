@@ -1,0 +1,451 @@
+/* Sidebar - Unified Landing Style */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 260px;
+  background: #ffffff;
+  border-right: 1px solid rgba(226, 232, 240, 0.8);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.02);
+  z-index: 99;
+}
+
+.sidebar.collapsed {
+  width: 80px;
+}
+
+/* Заголовок в стиле лендинга */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+  min-height: 72px;
+  background: #ffffff;
+  position: relative;
+}
+
+/* В свернутом состоянии центрируем заголовок */
+.sidebar.collapsed .header {
+  justify-content: center;
+  padding: 28px 16px;
+}
+
+
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+/* В свернутом состоянии логотип не растягивается */
+.sidebar.collapsed .logo {
+  flex: none;
+}
+
+.logoIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  background: linear-gradient(135deg, rgba(124, 77, 255, 0.9) 0%, rgba(91, 47, 194, 0.9) 100%);
+  border: 1px solid rgba(124, 77, 255, 0.2);
+  border-radius: 0.75rem;
+  color: #ffffff;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(124, 77, 255, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+
+
+.logoIcon:hover {
+  background: linear-gradient(135deg, rgba(124, 77, 255, 1) 0%, rgba(91, 47, 194, 1) 100%);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(124, 77, 255, 0.25);
+}
+
+.logoText {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a1a;
+  white-space: nowrap;
+  letter-spacing: -0.02em;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar.collapsed .logoText {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.toggleButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
+  border: none;
+  border-radius: 0.75rem;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    0 1px 4px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  position: relative;
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Анимация скрытия кнопки в развернутом состоянии */
+.sidebar.collapsed .toggleButton {
+  opacity: 0;
+  transform: scale(0.8);
+  pointer-events: none;
+}
+
+.toggleButton:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(240, 245, 251, 1) 100%);
+  color: #7c4dff;
+  transform: scale(1.05);
+  box-shadow: 
+    0 4px 15px rgba(124, 77, 255, 0.15),
+    0 2px 8px rgba(124, 77, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.toggleButton:active {
+  transform: scale(0.98);
+}
+
+/* Кнопка переключения в свернутом состоянии */
+.toggleButtonCollapsed {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #7c4dff 0%, #6366f1 100%);
+  border: none;
+  border-radius: 0.75rem;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  box-shadow: 
+    0 4px 15px rgba(124, 77, 255, 0.25),
+    0 2px 8px rgba(124, 77, 255, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.toggleButtonCollapsed::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+  transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  transition: transform 0.6s ease;
+}
+
+.toggleButtonCollapsed:hover {
+  background: linear-gradient(135deg, #7c4dff 0%, #5b47c2 100%);
+  transform: scale(1.05);
+  box-shadow: 
+    0 6px 20px rgba(124, 77, 255, 0.35),
+    0 3px 12px rgba(124, 77, 255, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.toggleButtonCollapsed:hover::before {
+  transform: translateX(100%) translateY(100%) rotate(45deg);
+}
+
+.toggleButtonCollapsed:active {
+  transform: scale(0.98);
+}
+
+/* Навигация - минималистичный стиль */
+.navigation {
+  flex: 1;
+  padding: 16px 12px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Группы меню */
+.menuGroup {
+  margin-bottom: 32px;
+}
+
+.menuGroup:last-child {
+  margin-bottom: 0;
+}
+
+.groupTitle {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #9ca3af;
+  margin: 0 12px 8px;
+  padding: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* В свернутом состоянии скрыть заголовки групп */
+.sidebar.collapsed .groupTitle {
+  display: none;
+}
+
+/* В свернутом состоянии уменьшить отступы между группами */
+.sidebar.collapsed .menuGroup {
+  margin-bottom: 20px;
+}
+
+.sidebar.collapsed .menuGroup:last-child {
+  margin-bottom: 0;
+}
+
+.menuList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.menuItem {
+  margin: 0 16px 6px;
+  position: relative;
+}
+
+/* В свернутом состоянии центрируем элементы меню */
+.sidebar.collapsed .menuItem {
+  margin: 0 12px 6px;
+}
+
+.menuLink {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 0.75rem;
+  color: #6b7280;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  gap: 12px;
+  text-align: left;
+  position: relative;
+  font-weight: 500;
+  font-size: 14px;
+  min-height: 40px;
+}
+
+/* В свернутом состоянии выровнять иконку по центру */
+.sidebar.collapsed .menuLink {
+  justify-content: center;
+  padding: 12px 8px;
+}
+
+.menuLink:hover {
+  background: rgba(124, 77, 255, 0.05);
+  color: #1a1a1a;
+}
+
+.menuLink.active {
+  background: rgba(124, 77, 255, 0.08);
+  color: #7C4DFF;
+  font-weight: 600;
+}
+
+.menuLink.active:hover {
+  background: rgba(124, 77, 255, 0.12);
+}
+
+.menuText {
+  flex: 1;
+  font-size: 14px;
+  font-weight: inherit;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+  transition: opacity 0.2s ease;
+}
+
+.sidebar.collapsed .menuText {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+/* Badge для уведомлений */
+.badge {
+  background: #ef4444;
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 0.75rem;
+  min-width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Активный индикатор */
+.menuItem::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 0;
+  background: linear-gradient(135deg, #7c4dff 0%, #6200ea 100%);
+  border-radius: 0.75rem;
+  transition: height 0.2s ease;
+  box-shadow: 0 0 10px rgba(124, 77, 255, 0.3);
+}
+
+.menuItem:has(.menuLink.active)::before {
+  height: 28px;
+}
+
+/* В свернутом состоянии делаем индикатор шире */
+.sidebar.collapsed .menuItem::before {
+  width: 3px;
+  left: 2px;
+}
+
+/* Hover эффекты для иконок */
+.menuLink svg,
+.toggleButton svg {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menuLink:hover svg {
+  transform: scale(1.1) rotate(2deg);
+}
+
+.menuLink.active svg {
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4));
+  transform: scale(1.05);
+}
+
+.toggleButton:hover svg {
+  transform: scale(1.1) rotate(5deg);
+}
+
+/* Анимация появления */
+.menuItem {
+  animation: slideInLeft 0.3s ease-out forwards;
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+.menuItem:nth-child(1) { animation-delay: 0.1s; }
+.menuItem:nth-child(2) { animation-delay: 0.15s; }
+.menuItem:nth-child(3) { animation-delay: 0.2s; }
+.menuItem:nth-child(4) { animation-delay: 0.25s; }
+.menuItem:nth-child(5) { animation-delay: 0.3s; }
+.menuItem:nth-child(6) { animation-delay: 0.35s; }
+.menuItem:nth-child(7) { animation-delay: 0.4s; }
+
+@keyframes slideInLeft {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.1);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar.collapsed {
+    width: 280px;
+    transform: translateX(-100%);
+  }
+}
+
+/* Темная тема (если нужна) */
+@media (prefers-color-scheme: dark) {
+  .sidebar {
+    background: rgba(15, 23, 42, 0.95);
+    border-right-color: rgba(51, 65, 85, 0.8);
+  }
+  
+  .header {
+    background: rgba(15, 23, 42, 0.98);
+    border-bottom-color: rgba(51, 65, 85, 0.6);
+  }
+  
+  .logoText,
+  .userName {
+    color: #ffffff;
+  }
+  
+  .menuLink {
+    color: #cbd5e1;
+  }
+  
+  .menuLink:hover {
+    background: rgba(124, 77, 255, 0.15);
+  }
+}
+
+/* Accessibility улучшения */
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .menuLink,
+  .toggleButton,
+  .logoIcon {
+    transition: none;
+  }
+  
+  .menuItem {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  
+  .menuLink:hover,
+  .menuLink.active {
+    transform: none;
+  }
+}

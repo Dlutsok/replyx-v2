@@ -1,0 +1,726 @@
+from fastapi import APIRouter, HTTPException, Depends, Query, WebSocket, WebSocketDisconnect
+from fastapi.responses import HTMLResponse
+from sqlalchemy.orm import Session, joinedload
+from typing import Dict, List
+import asyncio
+import json
+import jwt
+import os
+import logging
+from datetime import datetime, timedelta
+
+from database import models, schemas, auth, get_db
+from ai import prompt_variations
+from ai.ai_token_manager import ai_token_manager
+from services.websocket_manager import push_site_dialog_message as ws_push_site_dialog_message
+
+# Настройка логгера
+logger = logging.getLogger(__name__)
+
+router = APIRouter()
+
+# WebSocket connections импортируем из websocket_manager
+from services.websocket_manager import ws_site_connections
+
+# JWT settings for site tokens
+from core.app_config import SITE_SECRET
+# Токены теперь бессрочные - проверяем только существование ассистента
+
+# Импортируем функцию авторизации из отдельного модуля
+from core.site_auth import get_current_site_user, get_current_site_user_simple
+
+# Helper functions
+def is_user_blocked(user: models.User) -> bool:
+    """Проверка блокировки пользователя"""
+    # Логика проверки пробного периода и блокировки
+    # TODO: Реализовать проверку статуса пользователя
+    return False
+
+def get_user_message_limit(user: models.User) -> int:
+    """Получает лимит сообщений для пользователя"""
+    # TODO: Реализовать логику лимитов по тарифу
+    return 1000
+
+@router.get('/site-token')
+def get_site_token(current_user: models.User = Depends(auth.get_current_user)):
+    """Получает site token для пользователя"""
+    payload = {
+        'user_id': current_user.id,
+        'type': 'site'
+        # Убираем exp - токен бессрочный
+    }
+    token = jwt.encode(payload, SITE_SECRET, algorithm='HS256')
+    return {'site_token': token}
+
+@router.post('/embed-code')
+def generate_site_token(data: dict, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(get_db)):
+    """Генерирует embed код для ассистента"""
+    assistant_id = data.get('assistant_id')
+    if not assistant_id:
+        raise HTTPException(status_code=400, detail="assistant_id required")
+    
+    # Проверяем, что ассистент принадлежит пользователю
+    assistant = db.query(models.Assistant).filter(
+        models.Assistant.id == assistant_id,
+        models.Assistant.user_id == current_user.id
+    ).first()
+    
+    if not assistant:
+        raise HTTPException(status_code=404, detail="Assistant not found")
+    
+    # Создаем embed код с assistant_id (бессрочный токен)
+    payload = {
+        'user_id': current_user.id,
+        'assistant_id': assistant_id,
+        'type': 'site'
+        # Убираем exp - токен бессрочный пока существует ассистент
+    }
+    site_token = jwt.encode(payload, SITE_SECRET, algorithm='HS256')
+    
+    # Генерируем embed код
+    theme = data.get('theme', 'blue')
+    from core.app_config import FRONTEND_URL
+    embed_code = f'''<div id="chatai-widget" data-assistant="{assistant_id}" data-token="{site_token}" data-theme="{theme}"></div>
+<script src="{FRONTEND_URL}/widget.js?token={site_token}&assistant_id={assistant_id}&theme={theme}&host={FRONTEND_URL}"></script>'''
+    
+    return {'embed_code': embed_code}
+
+@router.get('/site/dialogs')
+def site_get_dialogs(
+    guest_id: str = Query(...), 
+    db: Session = Depends(get_db), 
+    current_user: models.User = Depends(get_current_site_user)
+):
+    """Получает диалоги site пользователя"""
+    q = db.query(models.Dialog).filter(
+        models.Dialog.user_id == current_user.id, 
+        models.Dialog.guest_id == guest_id
+    )
+    dialogs = q.order_by(models.Dialog.started_at.desc()).all()
+    
+    result = []
+    for d in dialogs:
+        result.append({
+            "id": d.id,
+            "user_id": d.user_id,
+            "guest_id": d.guest_id,
+            "started_at": d.started_at.strftime('%Y-%m-%d %H:%M:%S') if d.started_at else None,
+            "ended_at": d.ended_at.strftime('%Y-%m-%d %H:%M:%S') if d.ended_at else None,
+            "auto_response": d.auto_response,
+
+            "first_response_time": d.first_response_time,
+            "fallback": d.fallback,
+            "is_taken_over": d.is_taken_over or 0,
+            "telegram_chat_id": d.telegram_chat_id,
+            "telegram_username": d.telegram_username
+        })
+    return result
+
+@router.get('/site/dialogs/{dialog_id}/messages')
+def site_get_dialog_messages(
+    dialog_id: int, 
+    guest_id: str = Query(...), 
+    db: Session = Depends(get_db), 
+    current_user: models.User = Depends(get_current_site_user)
+):
+    """Получает сообщения site диалога"""
+    # Используем eager loading для загрузки сообщений вместе с диалогом
+    dialog = db.query(models.Dialog).options(
+        joinedload(models.Dialog.messages)
+    ).filter(
+        models.Dialog.id == dialog_id, 
+        models.Dialog.user_id == current_user.id, 
+        models.Dialog.guest_id == guest_id
+    ).first()
+    
+    if not dialog:
+        raise HTTPException(status_code=404, detail="Dialog not found")
+    
+    messages = [
+        {
+            "id": m.id,
+            "sender": m.sender,
+            "text": m.text,
+            "timestamp": m.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        } for m in sorted(dialog.messages, key=lambda x: x.timestamp)
+    ]
+    return messages
+
+@router.post('/site/dialogs/{dialog_id}/messages')
+async def site_add_dialog_message(
+    dialog_id: int, 
+    data: dict, 
+    guest_id: str = Query(...), 
+    db: Session = Depends(get_db), 
+    current_user: models.User = Depends(get_current_site_user)
+):
+    """Добавляет сообщение в site диалог"""
+    dialog = db.query(models.Dialog).filter(
+        models.Dialog.id == dialog_id, 
+        models.Dialog.user_id == current_user.id, 
+        models.Dialog.guest_id == guest_id
+    ).first()
+    
+    if not dialog:
+        raise HTTPException(status_code=404, detail="Dialog not found")
+    
+    sender = data.get('sender')
+    text = data.get('text')
+    if not text:
+        raise HTTPException(status_code=400, detail="Text required")
+    
+    # Проверка блокировки пользователя
+    if is_user_blocked(current_user):
+        raise HTTPException(
+            status_code=403, 
+            detail={
+                "error": "trial_expired",
+                "message": "Ваш пробный период завершился. Обновите план для продолжения использования.",
+                "needsUpgrade": True
+            }
+        )
+
+    # Лимит по тарифу
+    limit = get_user_message_limit(current_user)
+    month_ago = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    msg_count = db.query(models.DialogMessage).join(models.Dialog).filter(
+        models.Dialog.user_id == current_user.id,
+        models.Dialog.guest_id == guest_id,
+        models.DialogMessage.timestamp >= month_ago,
+        models.DialogMessage.sender == 'assistant'
+    ).count()
+    
+    if msg_count > limit:
+        raise HTTPException(
+            status_code=403, 
+            detail="Лимит сообщений по вашему тарифу исчерпан. Для продолжения выберите другой тариф."
+        )
+    
+    # Создаем сообщение
+    msg = models.DialogMessage(dialog_id=dialog_id, sender=sender, text=text)
+    db.add(msg)
+    db.commit()
+    db.refresh(msg)
+    
+    # НЕ отправляем сообщения пользователя через WebSocket - они уже есть в frontend
+    # Отправляем только сообщения ассистента через WebSocket
+    
+    response_msg = None
+    if sender == 'user':
+        # Отправляем typing_start перед генерацией ответа
+        await ws_push_site_dialog_message(dialog_id, {"type": "typing_start"})
+        
+        # Генерируем AI ответ
+        response_msg = await generate_ai_response(dialog_id, current_user, db)
+        
+        # Отправляем typing_stop и ответ
+        await ws_push_site_dialog_message(dialog_id, {"type": "typing_stop"})
+        
+        if response_msg:
+            await ws_push_site_dialog_message(dialog_id, {
+                "message": {
+                    "id": response_msg.id,
+                    "sender": response_msg.sender,
+                    "text": response_msg.text,
+                    "timestamp": response_msg.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+                }
+            })
+    
+    return {
+        "user_message": {
+            "id": msg.id,
+            "sender": msg.sender,
+            "text": msg.text,
+            "timestamp": msg.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        },
+        "assistant_message": response_msg and {
+            "id": response_msg.id,
+            "sender": response_msg.sender,
+            "text": response_msg.text,
+            "timestamp": response_msg.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        }
+    }
+
+@router.post('/site/dialogs')
+def site_create_dialog(
+    guest_id: str = Query(...), 
+    db: Session = Depends(get_db), 
+    current_user: models.User = Depends(get_current_site_user)
+):
+    """Создает новый site диалог"""
+    dialog = models.Dialog(
+        user_id=current_user.id, 
+        guest_id=guest_id, 
+        started_at=datetime.utcnow(), 
+        auto_response=0, 
+        fallback=0, 
+        is_taken_over=0
+    )
+    db.add(dialog)
+    db.commit()
+    db.refresh(dialog)
+    return {"id": dialog.id}
+
+# Widget endpoints (без авторизации)
+@router.get('/widget/dialogs')
+def widget_get_dialogs(
+    assistant_id: int, 
+    guest_id: str = Query(...), 
+    db: Session = Depends(get_db)
+):
+    """Получает диалоги widget пользователя"""
+    # Получаем ассистента и его пользователя
+    assistant = db.query(models.Assistant).filter(models.Assistant.id == assistant_id).first()
+    if not assistant:
+        raise HTTPException(status_code=404, detail="Assistant not found")
+    
+    dialogs = db.query(models.Dialog).filter(
+        models.Dialog.guest_id == guest_id, 
+        models.Dialog.user_id == assistant.user_id
+    ).order_by(models.Dialog.started_at.desc()).all()
+    
+    result = []
+    for d in dialogs:
+        result.append({
+            "id": d.id,
+            "user_id": d.user_id,
+            "guest_id": d.guest_id,
+            "started_at": d.started_at.strftime('%Y-%m-%d %H:%M:%S') if d.started_at else None,
+            "ended_at": d.ended_at.strftime('%Y-%m-%d %H:%M:%S') if d.ended_at else None,
+            "auto_response": d.auto_response,
+
+            "first_response_time": d.first_response_time,
+            "fallback": d.fallback,
+            "is_taken_over": d.is_taken_over or 0,
+            "telegram_chat_id": d.telegram_chat_id,
+            "telegram_username": d.telegram_username
+        })
+    return result
+
+@router.post('/widget/dialogs')
+def widget_create_dialog(
+    assistant_id: int, 
+    guest_id: str = Query(...), 
+    db: Session = Depends(get_db)
+):
+    """Создает новый widget диалог"""
+    # Получаем ассистента и его пользователя
+    assistant = db.query(models.Assistant).filter(models.Assistant.id == assistant_id).first()
+    if not assistant:
+        raise HTTPException(status_code=404, detail="Assistant not found")
+    
+    dialog = models.Dialog(
+        user_id=assistant.user_id, 
+        guest_id=guest_id, 
+        started_at=datetime.utcnow(), 
+        auto_response=0, 
+        fallback=0, 
+        is_taken_over=0
+    )
+    db.add(dialog)
+    db.commit()
+    db.refresh(dialog)
+    return {"id": dialog.id}
+
+@router.get('/widget/dialogs/{dialog_id}/messages')
+def widget_get_dialog_messages(
+    dialog_id: int, 
+    assistant_id: int, 
+    guest_id: str = Query(...), 
+    db: Session = Depends(get_db)
+):
+    """Получает сообщения widget диалога"""
+    # Получаем ассистента и его пользователя
+    assistant = db.query(models.Assistant).filter(models.Assistant.id == assistant_id).first()
+    if not assistant:
+        raise HTTPException(status_code=404, detail="Assistant not found")
+    
+    dialog = db.query(models.Dialog).options(
+        joinedload(models.Dialog.messages)
+    ).filter(
+        models.Dialog.id == dialog_id, 
+        models.Dialog.user_id == assistant.user_id, 
+        models.Dialog.guest_id == guest_id
+    ).first()
+    
+    if not dialog:
+        raise HTTPException(status_code=404, detail="Dialog not found")
+    
+    messages = [
+        {
+            "id": m.id,
+            "sender": m.sender,
+            "text": m.text,
+            "timestamp": m.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        } for m in sorted(dialog.messages, key=lambda x: x.timestamp)
+    ]
+    return messages
+
+@router.post('/widget/dialogs/{dialog_id}/messages')
+async def widget_add_dialog_message(
+    dialog_id: int, 
+    data: dict, 
+    assistant_id: int, 
+    guest_id: str = Query(...), 
+    db: Session = Depends(get_db)
+):
+    """Добавляет сообщение в widget диалог"""
+    # Получаем ассистента и его пользователя
+    assistant = db.query(models.Assistant).filter(models.Assistant.id == assistant_id).first()
+    if not assistant:
+        raise HTTPException(status_code=404, detail="Assistant not found")
+    
+    dialog = db.query(models.Dialog).filter(
+        models.Dialog.id == dialog_id, 
+        models.Dialog.user_id == assistant.user_id, 
+        models.Dialog.guest_id == guest_id
+    ).first()
+    
+    if not dialog:
+        raise HTTPException(status_code=404, detail="Dialog not found")
+    
+    sender = data.get('sender')
+    text = data.get('text')
+    if not text:
+        raise HTTPException(status_code=400, detail="Text required")
+    
+    # Создаем сообщение
+    msg = models.DialogMessage(dialog_id=dialog_id, sender=sender, text=text)
+    db.add(msg)
+    db.commit()
+    db.refresh(msg)
+    
+    # НЕ отправляем сообщения пользователя через WebSocket - они уже есть в frontend
+    
+    response_msg = None
+    if sender == 'user':
+        # Отправляем typing_start перед генерацией ответа
+        await ws_push_site_dialog_message(dialog_id, {"type": "typing_start"})
+        
+        # Генерируем AI ответ для widget
+        user = db.query(models.User).filter(models.User.id == assistant.user_id).first()
+        user.widget_assistant_id = assistant_id
+        response_msg = await generate_ai_response(dialog_id, user, db)
+        
+        # Отправляем typing_stop и ответ
+        await ws_push_site_dialog_message(dialog_id, {"type": "typing_stop"})
+        
+        # Отправляем ответ бота через WebSocket
+        if response_msg:
+            await ws_push_site_dialog_message(dialog_id, {
+                "message": {
+                    "id": response_msg.id,
+                    "sender": response_msg.sender,
+                    "text": response_msg.text,
+                    "timestamp": response_msg.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+                }
+            })
+    
+    return {
+        "user_message": {
+            "id": msg.id,
+            "sender": msg.sender,
+            "text": msg.text,
+            "timestamp": msg.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        },
+        "assistant_message": response_msg and {
+            "id": response_msg.id,
+            "sender": response_msg.sender,
+            "text": response_msg.text,
+            "timestamp": response_msg.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        }
+    }
+
+# WebSocket endpoints
+@router.websocket("/ws/site/dialogs/{dialog_id}")
+async def site_dialog_ws(
+    websocket: WebSocket, 
+    dialog_id: int, 
+    site_token: str = Query(None), 
+    db: Session = Depends(get_db)
+):
+    """WebSocket для site диалогов"""
+    print(f"🔌 WebSocket connection attempt for dialog {dialog_id}")
+    user = None
+    try:
+        user = get_current_site_user_simple(site_token, db)
+        print(f"✅ User authenticated: {user.id if user else 'None'}")
+    except Exception as e:
+        print(f"❌ WebSocket auth failed: {e}")
+        await websocket.close(code=4001)
+        return
+    
+    await websocket.accept()
+    print(f"✅ WebSocket accepted for dialog {dialog_id}")
+    
+    if dialog_id not in ws_site_connections:
+        ws_site_connections[dialog_id] = []
+    ws_site_connections[dialog_id].append(websocket)
+    print(f"📊 Total connections for dialog {dialog_id}: {len(ws_site_connections[dialog_id])}")
+    
+    try:
+        while True:
+            await websocket.receive_text()  # ping-pong, не используем входящие
+            await asyncio.sleep(0.1)
+    except WebSocketDisconnect:
+        print(f"🔌 WebSocket disconnected for dialog {dialog_id}")
+        if dialog_id in ws_site_connections:
+            ws_site_connections[dialog_id].remove(websocket)
+            print(f"📊 Remaining connections for dialog {dialog_id}: {len(ws_site_connections[dialog_id])}")
+
+# Helper functions - используем функцию из websocket_manager
+async def push_site_dialog_message(dialog_id: int, message: dict):
+    """Отправляет сообщение всем подключенным WebSocket клиентам"""
+    print(f"🔄 Delegating to websocket_manager.push_site_dialog_message")
+    await ws_push_site_dialog_message(dialog_id, message)
+
+async def generate_ai_response(dialog_id: int, current_user: models.User, db: Session) -> models.DialogMessage:
+    """Генерирует AI ответ для диалога"""
+    try:
+        messages = db.query(models.DialogMessage).filter(
+            models.DialogMessage.dialog_id == dialog_id
+        ).order_by(models.DialogMessage.timestamp).all()
+        
+        prompt_messages = []
+        for m in messages:
+            role = 'assistant' if m.sender == 'assistant' else 'user'
+            prompt_messages.append({"role": role, "content": m.text})
+        
+        # Получаем ассистента из токена виджета или активного ассистента пользователя
+        target_assistant = None
+        if hasattr(current_user, 'widget_assistant_id') and current_user.widget_assistant_id:
+            target_assistant = db.query(models.Assistant).filter(
+                models.Assistant.id == current_user.widget_assistant_id,
+                models.Assistant.user_id == current_user.id
+            ).first()
+        
+        if not target_assistant:
+            target_assistant = db.query(models.Assistant).filter(
+                models.Assistant.user_id == current_user.id,
+                models.Assistant.is_active == True
+            ).first()
+        
+        # Используем настройки целевого ассистента или дефолтные
+        ai_model = 'gpt-4o-mini'
+        base_system_prompt = 'Вы — корпоративный AI-ассистент. Предоставляю точную информацию по вопросам компании в деловом стиле. Отвечаю кратко, информативно, без использования смайликов и чрезмерной эмоциональности. ВАЖНО: Опираюсь ТОЛЬКО на данные из базы знаний компании. Если информации нет в предоставленных документах — сообщаю об этом прямо, не выдумываю и не использую общие знания.'
+        
+        if target_assistant:
+            ai_model = target_assistant.ai_model or ai_model
+            base_system_prompt = target_assistant.system_prompt or base_system_prompt
+        
+        # Добавляем вариативность и контекстные инструкции
+        system_prompt = prompt_variations.add_response_variety_instructions(base_system_prompt)
+        
+        # 🚀 RETRIEVAL-BASED ПОИСК ДЛЯ ВЕБ-ВИДЖЕТА
+        # Получаем последнее сообщение пользователя для поиска релевантного контекста
+        user_message = ""
+        if prompt_messages:
+            for msg in reversed(prompt_messages):
+                if msg["role"] == "user":
+                    user_message = msg["content"]
+                    break
+        
+        relevant_chunks = []
+        if user_message:
+            # Сначала пробуем embeddings
+            try:
+                from services.embeddings_service import embeddings_service
+                
+                # Ищем релевантные чанки для запроса
+                relevant_chunks = embeddings_service.search_relevant_chunks(
+                    query=user_message,
+                    user_id=current_user.id,
+                    assistant_id=target_assistant.id if target_assistant else None,
+                    top_k=4,  # Меньше чанков для веб-виджета
+                    min_similarity=0.75,  # Более строгий порог
+                    db=db
+                )
+                
+                logger.info(f"Web widget embeddings: found {len(relevant_chunks)} chunks")
+                
+            except Exception as e:
+                logger.warning(f"Embeddings search failed: {e}")
+                relevant_chunks = []
+            
+            # Если embeddings не дали результатов, используем fallback
+            if not relevant_chunks:
+                logger.info("Web widget using fallback knowledge system...")
+                
+                # Fallback к старой системе
+                if target_assistant:
+                    knowledge_entries = db.query(models.UserKnowledge).filter(
+                        models.UserKnowledge.user_id == current_user.id,
+                        models.UserKnowledge.assistant_id == target_assistant.id
+                    ).all()
+                else:
+                    knowledge_entries = db.query(models.UserKnowledge).filter(
+                        models.UserKnowledge.user_id == current_user.id
+                    ).all()
+                
+                logger.info(f"Web widget fallback: found {len(knowledge_entries)} knowledge entries")
+                
+                for entry in knowledge_entries[:3]:  # Ограничиваем количество
+                    relevant_chunks.append({
+                        'text': entry.content,
+                        'doc_type': entry.doc_type or 'document',
+                        'importance': entry.importance or 10,
+                        'similarity': 0.8,
+                        'token_count': len(entry.content) // 4
+                    })
+        
+        # Добавляем релевантный контекст в промпт
+        if relevant_chunks:
+            context_parts = []
+            total_tokens = 0
+            max_context_tokens = 1200  # Меньше для веб-виджета
+            
+            for chunk in relevant_chunks:
+                chunk_tokens = chunk.get('token_count', len(chunk['text']) // 4)
+                if total_tokens + chunk_tokens > max_context_tokens:
+                    break
+                
+                context_parts.append(chunk['text'])
+                total_tokens += chunk_tokens
+            
+            if context_parts:
+                docs_text = '\n---\n'.join(context_parts)
+                prompt_messages.insert(1, {
+                    "role": "system", 
+                    "content": f"Используй следующую релевантную информацию из базы знаний для ответа. Отвечай естественно, основываясь на этих данных, но не ссылайся на источники или файлы:\n\n{docs_text}"
+                })
+                
+                logger.info(f"Added {len(context_parts)} chunks to web widget context ({total_tokens} tokens)")
+        
+        completion = ai_token_manager.make_openai_request(
+            messages=prompt_messages,
+            model=ai_model,
+            user_id=current_user.id,
+            assistant_id=target_assistant.id if target_assistant else None,
+            temperature=0.9,
+            max_tokens=1000,
+            presence_penalty=0.3,
+            frequency_penalty=0.3
+        )
+        
+        response = completion.choices[0].message.content.strip()
+        
+        response_msg = models.DialogMessage(
+            dialog_id=dialog_id, 
+            sender='assistant', 
+            text=response
+        )
+        db.add(response_msg)
+        db.commit()
+        db.refresh(response_msg)
+        
+        return response_msg
+    
+    except Exception as e:
+        logger.error(f"Error generating AI response: {e}")
+        # Возвращаем стандартный ответ в случае ошибки
+        error_msg = models.DialogMessage(
+            dialog_id=dialog_id, 
+            sender='assistant', 
+            text="Извините, произошла ошибка при генерации ответа. Попробуйте еще раз."
+        )
+        db.add(error_msg)
+        db.commit()
+        db.refresh(error_msg)
+        return error_msg
+
+# === EMBED CODE ENDPOINTS ===
+
+@router.get("/embed-code")
+def get_embed_code(
+    theme: str = Query('blue', enum=['blue', 'green', 'purple', 'orange']),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    """Генерирует embed код для сайта с разными вариантами интеграции"""
+    
+    # Используем переменные окружения для URL
+    from core.app_config import FRONTEND_URL
+    
+    payload = {
+        'user_id': current_user.id,
+        'type': 'site'
+        # Убираем exp - токен бессрочный
+    }
+    site_token = jwt.encode(payload, SITE_SECRET, algorithm='HS256')
+    
+    # Разные варианты embed кода
+    codes = {
+        "floating": f'<iframe src="{FRONTEND_URL}/chat-iframe?site_token={site_token}&theme={theme}" width="350" height="500" frameborder="0" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15);"></iframe>',
+        "inline": f'<iframe src="{FRONTEND_URL}/chat-iframe?site_token={site_token}&theme={theme}" width="100%" height="600" frameborder="0" style="border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15);"></iframe>',
+        "mobile": f'<iframe src="{FRONTEND_URL}/chat-iframe?site_token={site_token}&theme={theme}" width="100%" height="100%" frameborder="0" style="position: fixed; top: 0; left: 0; z-index: 10000; display: none;" id="mobile-chat"></iframe>'
+    }
+    
+    return {
+        "embed_code": codes["floating"],
+        "codes": codes,
+        "theme": theme,
+        "instructions": {
+            "floating": "🚀 Плавающий чат в правом нижнем углу (рекомендуется)",
+            "inline": "📄 Встроенный чат для страницы",
+            "mobile": "📱 Полноэкранный чат для мобильных устройств"
+        },
+        "themes": {
+            "blue": "💙 Синяя тема (деловая)",
+            "green": "💚 Зеленая тема (экологичная)", 
+            "purple": "💜 Фиолетовая тема (креативная)",
+            "orange": "🧡 Оранжевая тема (энергичная)"
+        }
+    }
+
+@router.get("/chat-iframe", response_class=HTMLResponse)
+def chat_iframe(user_id: int = Query(...)):
+    """Возвращает HTML iframe для встраивания чата на сайт"""
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Чат поддержки</title>
+      <style>
+        body {{ margin:0; font-family:sans-serif; }}
+        #chat {{ width:100%; height:100vh; border:none; }}
+      </style>
+    </head>
+    <body>
+      <div id="chat"></div>
+      <script>
+        // Здесь будет логика чата (WebSocket или REST)
+        // user_id: {user_id}
+        // Можно использовать fetch или WebSocket для общения с backend
+        // Пример: просто выводим user_id
+        document.getElementById('chat').innerText = 'Ваш user_id: {user_id}';
+      </script>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html)
+
+@router.post("/embed-code")
+def generate_site_token(data: dict, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(get_db)):
+    """Генерирует site token для конкретного ассистента"""
+    
+    assistant_id = data.get('assistant_id')
+    if not assistant_id:
+        raise HTTPException(status_code=400, detail="assistant_id required")
+    
+    # Проверяем, что ассистент принадлежит пользователю
+    assistant = db.query(models.Assistant).filter(
+        models.Assistant.id == assistant_id,
+        models.Assistant.user_id == current_user.id
+    ).first()
+    
+    if not assistant:
+        raise HTTPException(status_code=404, detail="Assistant not found")
+    
+    payload = {
+        'user_id': current_user.id,
+        'assistant_id': assistant_id,
+        'type': 'site'
+        # Убираем exp - токен бессрочный пока существует ассистент
+    }
+    token = jwt.encode(payload, SITE_SECRET, algorithm='HS256')
+    return {'site_token': token}

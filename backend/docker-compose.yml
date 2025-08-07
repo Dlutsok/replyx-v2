@@ -1,0 +1,31 @@
+# ⚠️ DEVELOPMENT DOCKER COMPOSE - НЕ ДЛЯ ПРОДАКШЕНА!
+# Для production используйте docker-compose.production.yml
+
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+    depends_on:
+      - db
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: chatai_dev
+      POSTGRES_PASSWORD: dev_password_change_me
+      POSTGRES_DB: chatai_development
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  pgdata: 
