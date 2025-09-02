@@ -6,9 +6,38 @@ from contextlib import contextmanager
 from typing import Generator, Optional, Any, Callable
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import text
 import functools
+import re
 
 logger = logging.getLogger(__name__)
+
+
+def _validate_savepoint_name(name: str) -> str:
+    """
+    Валидирует имя savepoint для защиты от SQL injection
+    
+    Args:
+        name: Имя savepoint для валидации
+        
+    Returns:
+        str: Валидированное имя
+        
+    Raises:
+        ValueError: Если имя содержит недопустимые символы
+    """
+    if not name:
+        raise ValueError("Имя savepoint не может быть пустым")
+    
+    # Разрешаем только буквы, цифры и underscore
+    if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', name):
+        raise ValueError(f"Недопустимое имя savepoint: {name}. Разрешены только буквы, цифры и underscore")
+    
+    # Ограничиваем длину
+    if len(name) > 63:  # PostgreSQL limit for identifiers
+        raise ValueError(f"Имя savepoint слишком длинное: {len(name)} символов (максимум 63)")
+    
+    return name
 
 
 @contextmanager
@@ -135,8 +164,11 @@ class TransactionManager:
         if name is None:
             self.savepoint_counter += 1
             name = f"sp_{self.savepoint_counter}"
+        else:
+            name = _validate_savepoint_name(name)
             
-        self.db.execute(f"SAVEPOINT {name}")
+        # Используем text() для безопасного выполнения с валидированным именем
+        self.db.execute(text(f"SAVEPOINT {name}"))
         logger.debug(f"Создана точка сохранения: {name}")
         return name
         
@@ -147,8 +179,9 @@ class TransactionManager:
         Args:
             name: Имя точки сохранения
         """
-        self.db.execute(f"ROLLBACK TO SAVEPOINT {name}")
-        logger.debug(f"Откат к точке сохранения: {name}")
+        validated_name = _validate_savepoint_name(name)
+        self.db.execute(text(f"ROLLBACK TO SAVEPOINT {validated_name}"))
+        logger.debug(f"Откат к точке сохранения: {validated_name}")
         
     def release_savepoint(self, name: str):
         """
@@ -157,8 +190,9 @@ class TransactionManager:
         Args:
             name: Имя точки сохранения
         """
-        self.db.execute(f"RELEASE SAVEPOINT {name}")
-        logger.debug(f"Освобождена точка сохранения: {name}")
+        validated_name = _validate_savepoint_name(name)
+        self.db.execute(text(f"RELEASE SAVEPOINT {validated_name}"))
+        logger.debug(f"Освобождена точка сохранения: {validated_name}")
 
 
 @contextmanager

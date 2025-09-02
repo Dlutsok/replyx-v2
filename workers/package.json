@@ -1,0 +1,25 @@
+{
+  "name": "chatai-workers",
+  "version": "1.0.0",
+  "description": "ChatAI Telegram Bot Workers",
+  "main": "master/scalable_bot_manager.js",
+  "scripts": {
+    "start": "node master/scalable_bot_manager.js start",
+    "stop": "node master/scalable_bot_manager.js stop",
+    "restart": "node master/scalable_bot_manager.js restart",
+    "status": "node master/scalable_bot_manager.js status",
+    "logs": "node master/scalable_bot_manager.js logs"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "axios": "^1.7.2",
+    "node-telegram-bot-api": "^0.66.0",
+    "dotenv": "^16.4.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "ChatAI Team",
+  "license": "MIT"
+}

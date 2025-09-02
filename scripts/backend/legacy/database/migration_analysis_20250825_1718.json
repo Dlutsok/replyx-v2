@@ -1,0 +1,2355 @@
+{
+  "analysis_date": "2025-08-25T17:18:18.285671",
+  "migrations_total": 45,
+  "migrations_directory": "/Users/dan/Documents/chatAI/MVP 9/backend/alembic/versions",
+  "summary": {
+    "total_files": 45,
+    "merge_migrations": 11,
+    "total_complexity": 465,
+    "average_complexity": 10.33,
+    "total_size_kb": 79.84
+  },
+  "issues": [
+    {
+      "type": "merge_conflicts",
+      "severity": "high",
+      "count": 11,
+      "description": "Найдено 11 merge миграций",
+      "files": [
+        "merge_heads.py",
+        "merge_heads_3.py",
+        "ca8d5ee056f4_merge_heads_2.py",
+        "2b7ea03ef3d4_merge_multiple_heads.py",
+        "53e3dfa017e4_merge_embeddings.py",
+        "2108160f4127_merge_heads_before_pgvector.py",
+        "e99e3544326e_merge_heads_after_chunk_hash.py",
+        "96f01c0bee5b_merge_heads_after_doc_hash.py",
+        "5c00ac73f79e_merge_password_reset_fields.py",
+        "66a2e88a4eb9_merge_heads_before_handoff.py",
+        "bf58b52d1dbf_merge_heads_after_handoff_implementation.py"
+      ]
+    },
+    {
+      "type": "excessive_table_operations",
+      "severity": "medium",
+      "table": "broadcast_reads",
+      "operations_count": 6,
+      "description": "Таблица broadcast_reads модифицировалась 6 раз",
+      "operations": [
+        {
+          "migration": "3d08709f8f54_add_broadcast_reads_table.py",
+          "operation": "create_table"
+        },
+        {
+          "migration": "3d08709f8f54_add_broadcast_reads_table.py",
+          "operation": "drop_table"
+        },
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "create_table"
+        },
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "drop_table"
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "create_table"
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "drop_table"
+        }
+      ]
+    },
+    {
+      "type": "excessive_table_operations",
+      "severity": "medium",
+      "table": "users",
+      "operations_count": 40,
+      "description": "Таблица users модифицировалась 40 раз",
+      "operations": [
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "create_table"
+        },
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "drop_table"
+        },
+        {
+          "migration": "f8195d7eed75_add_google_id_to_user.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "f8195d7eed75_add_google_id_to_user.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "create_table"
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "drop_table"
+        },
+        {
+          "migration": "3cc45be8d398_add_yandex_id_to_user.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "3cc45be8d398_add_yandex_id_to_user.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "3cc45be8d398_add_yandex_id_to_user.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "3cc45be8d398_add_yandex_id_to_user.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "24c3adfca86c_add_email_confirmation_fields_to_user.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "24c3adfca86c_add_email_confirmation_fields_to_user.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "24c3adfca86c_add_email_confirmation_fields_to_user.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "24c3adfca86c_add_email_confirmation_fields_to_user.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "4ad3ce709da3_add_first_name_to_user.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "4ad3ce709da3_add_first_name_to_user.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "59763189383d_add_onboarding_fields_to_users.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "59763189383d_add_onboarding_fields_to_users.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "59763189383d_add_onboarding_fields_to_users.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "59763189383d_add_onboarding_fields_to_users.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "59763189383d_add_onboarding_fields_to_users.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "59763189383d_add_onboarding_fields_to_users.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "59763189383d_add_onboarding_fields_to_users.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "59763189383d_add_onboarding_fields_to_users.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "59763189383d_add_onboarding_fields_to_users.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "59763189383d_add_onboarding_fields_to_users.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "59763189383d_add_onboarding_fields_to_users.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "59763189383d_add_onboarding_fields_to_users.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "59763189383d_add_onboarding_fields_to_users.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "59763189383d_add_onboarding_fields_to_users.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "59763189383d_add_onboarding_fields_to_users.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "59763189383d_add_onboarding_fields_to_users.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "remove_plan_column.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "remove_plan_column.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "add_welcome_bonus_field.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "add_welcome_bonus_field.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "add_password_reset_fields.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "add_password_reset_fields.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "add_password_reset_fields.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "add_password_reset_fields.py",
+          "operation": "drop_column"
+        }
+      ]
+    },
+    {
+      "type": "excessive_table_operations",
+      "severity": "medium",
+      "table": "dialogs",
+      "operations_count": 28,
+      "description": "Таблица dialogs модифицировалась 28 раз",
+      "operations": [
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "create_table"
+        },
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "drop_table"
+        },
+        {
+          "migration": "2006abdd7c66_add_first_name_and_last_name_to_dialog.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "2006abdd7c66_add_first_name_and_last_name_to_dialog.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "2006abdd7c66_add_first_name_and_last_name_to_dialog.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "2006abdd7c66_add_first_name_and_last_name_to_dialog.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "f8195d7eed75_add_google_id_to_user.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "f8195d7eed75_add_google_id_to_user.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "f8195d7eed75_add_google_id_to_user.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "f8195d7eed75_add_google_id_to_user.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "create_table"
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "drop_table"
+        },
+        {
+          "migration": "2954bb358e92_add_vk_integration.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "2954bb358e92_add_vk_integration.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "5b8a7b99c4a5_add_handoff_fields_to_dialogs.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "5b8a7b99c4a5_add_handoff_fields_to_dialogs.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "5b8a7b99c4a5_add_handoff_fields_to_dialogs.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "5b8a7b99c4a5_add_handoff_fields_to_dialogs.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "5b8a7b99c4a5_add_handoff_fields_to_dialogs.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "5b8a7b99c4a5_add_handoff_fields_to_dialogs.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "5b8a7b99c4a5_add_handoff_fields_to_dialogs.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "5b8a7b99c4a5_add_handoff_fields_to_dialogs.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "5b8a7b99c4a5_add_handoff_fields_to_dialogs.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "5b8a7b99c4a5_add_handoff_fields_to_dialogs.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "5b8a7b99c4a5_add_handoff_fields_to_dialogs.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "5b8a7b99c4a5_add_handoff_fields_to_dialogs.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "5b8a7b99c4a5_add_handoff_fields_to_dialogs.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "5b8a7b99c4a5_add_handoff_fields_to_dialogs.py",
+          "operation": "drop_column"
+        }
+      ]
+    },
+    {
+      "type": "excessive_table_operations",
+      "severity": "medium",
+      "table": "documents",
+      "operations_count": 6,
+      "description": "Таблица documents модифицировалась 6 раз",
+      "operations": [
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "create_table"
+        },
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "drop_table"
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "create_table"
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "drop_table"
+        },
+        {
+          "migration": "b7c8d9e0f1a2_add_doc_hash_to_documents.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "b7c8d9e0f1a2_add_doc_hash_to_documents.py",
+          "operation": "drop_column"
+        }
+      ]
+    },
+    {
+      "type": "excessive_table_operations",
+      "severity": "medium",
+      "table": "dialog_messages",
+      "operations_count": 8,
+      "description": "Таблица dialog_messages модифицировалась 8 раз",
+      "operations": [
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "create_table"
+        },
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "drop_table"
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "create_table"
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "drop_table"
+        },
+        {
+          "migration": "31a264ff1811_add_handoff_message_fields.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "31a264ff1811_add_handoff_message_fields.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "31a264ff1811_add_handoff_message_fields.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "31a264ff1811_add_handoff_message_fields.py",
+          "operation": "drop_column"
+        }
+      ]
+    },
+    {
+      "type": "excessive_table_operations",
+      "severity": "medium",
+      "table": "knowledge_embeddings",
+      "operations_count": 6,
+      "description": "Таблица knowledge_embeddings модифицировалась 6 раз",
+      "operations": [
+        {
+          "migration": "a1b2c3d4e5f6_add_chunk_hash_source.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "a1b2c3d4e5f6_add_chunk_hash_source.py",
+          "operation": "add_column"
+        },
+        {
+          "migration": "a1b2c3d4e5f6_add_chunk_hash_source.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "a1b2c3d4e5f6_add_chunk_hash_source.py",
+          "operation": "drop_column"
+        },
+        {
+          "migration": "add_embeddings_system.py",
+          "operation": "create_table"
+        },
+        {
+          "migration": "add_embeddings_system.py",
+          "operation": "drop_table"
+        }
+      ]
+    },
+    {
+      "type": "table_recreation",
+      "severity": "high",
+      "table": "broadcast_reads",
+      "description": "Таблица broadcast_reads создавалась/удалялась несколько раз",
+      "lifecycle": [
+        {
+          "migration": "3d08709f8f54_add_broadcast_reads_table.py",
+          "operation": "create_table",
+          "date": 1750241140.0
+        },
+        {
+          "migration": "3d08709f8f54_add_broadcast_reads_table.py",
+          "operation": "drop_table",
+          "date": 1750241140.0
+        },
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "create_table",
+          "date": 1750241166.0
+        },
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "drop_table",
+          "date": 1750241166.0
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "create_table",
+          "date": 1750250902.0
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "drop_table",
+          "date": 1750250902.0
+        }
+      ]
+    },
+    {
+      "type": "table_recreation",
+      "severity": "high",
+      "table": "users",
+      "description": "Таблица users создавалась/удалялась несколько раз",
+      "lifecycle": [
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "create_table",
+          "date": 1750241166.0
+        },
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "drop_table",
+          "date": 1750241166.0
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "create_table",
+          "date": 1750250902.0
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "drop_table",
+          "date": 1750250902.0
+        }
+      ]
+    },
+    {
+      "type": "table_recreation",
+      "severity": "high",
+      "table": "broadcasts",
+      "description": "Таблица broadcasts создавалась/удалялась несколько раз",
+      "lifecycle": [
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "create_table",
+          "date": 1750241166.0
+        },
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "drop_table",
+          "date": 1750241166.0
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "create_table",
+          "date": 1750250902.0
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "drop_table",
+          "date": 1750250902.0
+        }
+      ]
+    },
+    {
+      "type": "table_recreation",
+      "severity": "high",
+      "table": "dialogs",
+      "description": "Таблица dialogs создавалась/удалялась несколько раз",
+      "lifecycle": [
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "create_table",
+          "date": 1750241166.0
+        },
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "drop_table",
+          "date": 1750241166.0
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "create_table",
+          "date": 1750250902.0
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "drop_table",
+          "date": 1750250902.0
+        }
+      ]
+    },
+    {
+      "type": "table_recreation",
+      "severity": "high",
+      "table": "documents",
+      "description": "Таблица documents создавалась/удалялась несколько раз",
+      "lifecycle": [
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "create_table",
+          "date": 1750241166.0
+        },
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "drop_table",
+          "date": 1750241166.0
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "create_table",
+          "date": 1750250902.0
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "drop_table",
+          "date": 1750250902.0
+        }
+      ]
+    },
+    {
+      "type": "table_recreation",
+      "severity": "high",
+      "table": "integration_tokens",
+      "description": "Таблица integration_tokens создавалась/удалялась несколько раз",
+      "lifecycle": [
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "create_table",
+          "date": 1750241166.0
+        },
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "drop_table",
+          "date": 1750241166.0
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "create_table",
+          "date": 1750250902.0
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "drop_table",
+          "date": 1750250902.0
+        }
+      ]
+    },
+    {
+      "type": "table_recreation",
+      "severity": "high",
+      "table": "openai_tokens",
+      "description": "Таблица openai_tokens создавалась/удалялась несколько раз",
+      "lifecycle": [
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "create_table",
+          "date": 1750241166.0
+        },
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "drop_table",
+          "date": 1750241166.0
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "create_table",
+          "date": 1750250902.0
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "drop_table",
+          "date": 1750250902.0
+        }
+      ]
+    },
+    {
+      "type": "table_recreation",
+      "severity": "high",
+      "table": "telegram_tokens",
+      "description": "Таблица telegram_tokens создавалась/удалялась несколько раз",
+      "lifecycle": [
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "create_table",
+          "date": 1750241166.0
+        },
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "drop_table",
+          "date": 1750241166.0
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "create_table",
+          "date": 1750250902.0
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "drop_table",
+          "date": 1750250902.0
+        }
+      ]
+    },
+    {
+      "type": "table_recreation",
+      "severity": "high",
+      "table": "dialog_messages",
+      "description": "Таблица dialog_messages создавалась/удалялась несколько раз",
+      "lifecycle": [
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "create_table",
+          "date": 1750241166.0
+        },
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "drop_table",
+          "date": 1750241166.0
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "create_table",
+          "date": 1750250902.0
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "drop_table",
+          "date": 1750250902.0
+        }
+      ]
+    },
+    {
+      "type": "table_recreation",
+      "severity": "high",
+      "table": "user_knowledge",
+      "description": "Таблица user_knowledge создавалась/удалялась несколько раз",
+      "lifecycle": [
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "create_table",
+          "date": 1750241166.0
+        },
+        {
+          "migration": "a058cf120cfb_init.py",
+          "operation": "drop_table",
+          "date": 1750241166.0
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "create_table",
+          "date": 1750250902.0
+        },
+        {
+          "migration": "217ce33d5f67_add_google_id_to_user_model.py",
+          "operation": "drop_table",
+          "date": 1750250902.0
+        }
+      ]
+    },
+    {
+      "type": "complex_migrations",
+      "severity": "medium",
+      "count": 8,
+      "description": "Найдено 8 сложных миграций",
+      "migrations": [
+        [
+          "a058cf120cfb_init.py",
+          50
+        ],
+        [
+          "217ce33d5f67_add_google_id_to_user_model.py",
+          50
+        ],
+        [
+          "59763189383d_add_onboarding_fields_to_users.py",
+          24
+        ],
+        [
+          "d1b43e7773dc_remove_contacts_table.py",
+          23
+        ],
+        [
+          "add_balance_system_tables.py",
+          44
+        ],
+        [
+          "add_embeddings_system.py",
+          34
+        ],
+        [
+          "9a99b429544e_create_operator_presence_table.py",
+          26
+        ],
+        [
+          "5b8a7b99c4a5_add_handoff_fields_to_dialogs.py",
+          43
+        ]
+      ]
+    },
+    {
+      "type": "orphaned_migrations",
+      "severity": "medium",
+      "count": 23,
+      "description": "Миграции без down_revision связи",
+      "files": [
+        "3d08709f8f54_add_broadcast_reads_table.py",
+        "a058cf120cfb_init.py",
+        "2006abdd7c66_add_first_name_and_last_name_to_dialog.py",
+        "f8195d7eed75_add_google_id_to_user.py",
+        "217ce33d5f67_add_google_id_to_user_model.py",
+        "3cc45be8d398_add_yandex_id_to_user.py",
+        "24c3adfca86c_add_email_confirmation_fields_to_user.py",
+        "2667861b6093_add_plan_to_user_model.py",
+        "2954bb358e91_add_assistants_table.py",
+        "4ad3ce709da3_add_first_name_to_user.py",
+        "59763189383d_add_onboarding_fields_to_users.py",
+        "d1b43e7773dc_remove_contacts_table.py",
+        "106c75cbc7d5_remove_generated_articles_table.py",
+        "0e441ecfd407_add_guest_contacts_table.py",
+        "remove_plan_column.py",
+        "add_website_integration_to_assistants.py",
+        "add_welcome_bonus_field.py",
+        "add_employee_system_tables.py",
+        "add_password_reset_fields.py",
+        "31a264ff1811_add_handoff_message_fields.py",
+        "9a99b429544e_create_operator_presence_table.py",
+        "5b8a7b99c4a5_add_handoff_fields_to_dialogs.py",
+        "e50d0ec42a06_create_handoff_audit_table.py"
+      ]
+    }
+  ],
+  "consolidation_plan": {
+    "total_migrations": 45,
+    "consolidation_candidates": [
+      {
+        "period": "2025-06",
+        "migrations_count": 15,
+        "migrations": [
+          "5b2babd8ae17_add_broadcast_id_to_dialog_messages.py",
+          "3d08709f8f54_add_broadcast_reads_table.py",
+          "a058cf120cfb_init.py",
+          "2006abdd7c66_add_first_name_and_last_name_to_dialog.py",
+          "f8195d7eed75_add_google_id_to_user.py",
+          "217ce33d5f67_add_google_id_to_user_model.py",
+          "3cc45be8d398_add_yandex_id_to_user.py",
+          "24c3adfca86c_add_email_confirmation_fields_to_user.py",
+          "2667861b6093_add_plan_to_user_model.py",
+          "2954bb358e91_add_assistants_table.py",
+          "4ad3ce709da3_add_first_name_to_user.py",
+          "2954bb358e92_add_vk_integration.py",
+          "merge_heads.py",
+          "merge_heads_3.py",
+          "update_user_knowledge.py"
+        ],
+        "table_changes": {
+          "broadcast_reads": [
+            {
+              "type": "create_table",
+              "table": "broadcast_reads",
+              "line": 24
+            },
+            {
+              "type": "drop_table",
+              "table": "broadcast_reads",
+              "line": 43
+            },
+            {
+              "type": "create_table",
+              "table": "broadcast_reads",
+              "line": 129
+            },
+            {
+              "type": "drop_table",
+              "table": "broadcast_reads",
+              "line": 148
+            },
+            {
+              "type": "create_table",
+              "table": "broadcast_reads",
+              "line": 131
+            },
+            {
+              "type": "drop_table",
+              "table": "broadcast_reads",
+              "line": 150
+            }
+          ],
+          "users": [
+            {
+              "type": "create_table",
+              "table": "users",
+              "line": 24
+            },
+            {
+              "type": "drop_table",
+              "table": "users",
+              "line": 164
+            },
+            {
+              "type": "add_column",
+              "table": "users",
+              "line": 26
+            },
+            {
+              "type": "drop_column",
+              "table": "users",
+              "line": 35
+            },
+            {
+              "type": "create_table",
+              "table": "users",
+              "line": 24
+            },
+            {
+              "type": "drop_table",
+              "table": "users",
+              "line": 167
+            },
+            {
+              "type": "add_column",
+              "table": "users",
+              "line": 24
+            },
+            {
+              "type": "add_column",
+              "table": "users",
+              "line": 34
+            },
+            {
+              "type": "drop_column",
+              "table": "users",
+              "line": 27
+            },
+            {
+              "type": "drop_column",
+              "table": "users",
+              "line": 37
+            },
+            {
+              "type": "add_column",
+              "table": "users",
+              "line": 24
+            },
+            {
+              "type": "add_column",
+              "table": "users",
+              "line": 25
+            },
+            {
+              "type": "drop_column",
+              "table": "users",
+              "line": 32
+            },
+            {
+              "type": "drop_column",
+              "table": "users",
+              "line": 33
+            },
+            {
+              "type": "add_column",
+              "table": "users",
+              "line": 24
+            },
+            {
+              "type": "drop_column",
+              "table": "users",
+              "line": 31
+            }
+          ],
+          "broadcasts": [
+            {
+              "type": "create_table",
+              "table": "broadcasts",
+              "line": 38
+            },
+            {
+              "type": "drop_table",
+              "table": "broadcasts",
+              "line": 161
+            },
+            {
+              "type": "create_table",
+              "table": "broadcasts",
+              "line": 40
+            },
+            {
+              "type": "drop_table",
+              "table": "broadcasts",
+              "line": 163
+            }
+          ],
+          "dialogs": [
+            {
+              "type": "create_table",
+              "table": "dialogs",
+              "line": 48
+            },
+            {
+              "type": "drop_table",
+              "table": "dialogs",
+              "line": 160
+            },
+            {
+              "type": "add_column",
+              "table": "dialogs",
+              "line": 24
+            },
+            {
+              "type": "add_column",
+              "table": "dialogs",
+              "line": 25
+            },
+            {
+              "type": "drop_column",
+              "table": "dialogs",
+              "line": 32
+            },
+            {
+              "type": "drop_column",
+              "table": "dialogs",
+              "line": 33
+            },
+            {
+              "type": "add_column",
+              "table": "dialogs",
+              "line": 36
+            },
+            {
+              "type": "add_column",
+              "table": "dialogs",
+              "line": 37
+            },
+            {
+              "type": "drop_column",
+              "table": "dialogs",
+              "line": 24
+            },
+            {
+              "type": "drop_column",
+              "table": "dialogs",
+              "line": 25
+            },
+            {
+              "type": "create_table",
+              "table": "dialogs",
+              "line": 50
+            },
+            {
+              "type": "drop_table",
+              "table": "dialogs",
+              "line": 162
+            },
+            {
+              "type": "add_column",
+              "table": "dialogs",
+              "line": 30
+            },
+            {
+              "type": "drop_column",
+              "table": "dialogs",
+              "line": 33
+            }
+          ],
+          "documents": [
+            {
+              "type": "create_table",
+              "table": "documents",
+              "line": 65
+            },
+            {
+              "type": "drop_table",
+              "table": "documents",
+              "line": 158
+            },
+            {
+              "type": "create_table",
+              "table": "documents",
+              "line": 67
+            },
+            {
+              "type": "drop_table",
+              "table": "documents",
+              "line": 160
+            }
+          ],
+          "integration_tokens": [
+            {
+              "type": "create_table",
+              "table": "integration_tokens",
+              "line": 75
+            },
+            {
+              "type": "drop_table",
+              "table": "integration_tokens",
+              "line": 156
+            },
+            {
+              "type": "create_table",
+              "table": "integration_tokens",
+              "line": 77
+            },
+            {
+              "type": "drop_table",
+              "table": "integration_tokens",
+              "line": 158
+            }
+          ],
+          "openai_tokens": [
+            {
+              "type": "create_table",
+              "table": "openai_tokens",
+              "line": 86
+            },
+            {
+              "type": "drop_table",
+              "table": "openai_tokens",
+              "line": 154
+            },
+            {
+              "type": "create_table",
+              "table": "openai_tokens",
+              "line": 88
+            },
+            {
+              "type": "drop_table",
+              "table": "openai_tokens",
+              "line": 156
+            }
+          ],
+          "telegram_tokens": [
+            {
+              "type": "create_table",
+              "table": "telegram_tokens",
+              "line": 96
+            },
+            {
+              "type": "drop_table",
+              "table": "telegram_tokens",
+              "line": 152
+            },
+            {
+              "type": "create_table",
+              "table": "telegram_tokens",
+              "line": 98
+            },
+            {
+              "type": "drop_table",
+              "table": "telegram_tokens",
+              "line": 154
+            }
+          ],
+          "dialog_messages": [
+            {
+              "type": "create_table",
+              "table": "dialog_messages",
+              "line": 106
+            },
+            {
+              "type": "drop_table",
+              "table": "dialog_messages",
+              "line": 150
+            },
+            {
+              "type": "create_table",
+              "table": "dialog_messages",
+              "line": 108
+            },
+            {
+              "type": "drop_table",
+              "table": "dialog_messages",
+              "line": 152
+            }
+          ],
+          "user_knowledge": [
+            {
+              "type": "create_table",
+              "table": "user_knowledge",
+              "line": 118
+            },
+            {
+              "type": "drop_table",
+              "table": "user_knowledge",
+              "line": 149
+            },
+            {
+              "type": "create_table",
+              "table": "user_knowledge",
+              "line": 120
+            },
+            {
+              "type": "drop_table",
+              "table": "user_knowledge",
+              "line": 151
+            }
+          ],
+          "vk_tokens": [
+            {
+              "type": "create_table",
+              "table": "vk_tokens",
+              "line": 19
+            },
+            {
+              "type": "drop_table",
+              "table": "vk_tokens",
+              "line": 34
+            }
+          ]
+        },
+        "complexity_total": 159,
+        "can_consolidate": false
+      },
+      {
+        "period": "2025-07",
+        "migrations_count": 8,
+        "migrations": [
+          "ca8d5ee056f4_merge_heads_2.py",
+          "59763189383d_add_onboarding_fields_to_users.py",
+          "d1b43e7773dc_remove_contacts_table.py",
+          "106c75cbc7d5_remove_generated_articles_table.py",
+          "0e441ecfd407_add_guest_contacts_table.py",
+          "remove_plan_column.py",
+          "cleanup_unused_tables.py",
+          "add_website_integration_to_assistants.py"
+        ],
+        "table_changes": {
+          "users": [
+            {
+              "type": "add_column",
+              "table": "users",
+              "line": 24
+            },
+            {
+              "type": "add_column",
+              "table": "users",
+              "line": 25
+            },
+            {
+              "type": "add_column",
+              "table": "users",
+              "line": 26
+            },
+            {
+              "type": "add_column",
+              "table": "users",
+              "line": 27
+            },
+            {
+              "type": "add_column",
+              "table": "users",
+              "line": 28
+            },
+            {
+              "type": "add_column",
+              "table": "users",
+              "line": 29
+            },
+            {
+              "type": "add_column",
+              "table": "users",
+              "line": 30
+            },
+            {
+              "type": "add_column",
+              "table": "users",
+              "line": 31
+            },
+            {
+              "type": "drop_column",
+              "table": "users",
+              "line": 37
+            },
+            {
+              "type": "drop_column",
+              "table": "users",
+              "line": 38
+            },
+            {
+              "type": "drop_column",
+              "table": "users",
+              "line": 39
+            },
+            {
+              "type": "drop_column",
+              "table": "users",
+              "line": 40
+            },
+            {
+              "type": "drop_column",
+              "table": "users",
+              "line": 41
+            },
+            {
+              "type": "drop_column",
+              "table": "users",
+              "line": 42
+            },
+            {
+              "type": "drop_column",
+              "table": "users",
+              "line": 43
+            },
+            {
+              "type": "drop_column",
+              "table": "users",
+              "line": 44
+            },
+            {
+              "type": "add_column",
+              "table": "users",
+              "line": 56
+            },
+            {
+              "type": "drop_column",
+              "table": "users",
+              "line": 50
+            }
+          ],
+          "contacts": [
+            {
+              "type": "create_table",
+              "table": "contacts",
+              "line": 36
+            },
+            {
+              "type": "drop_table",
+              "table": "contacts",
+              "line": 30
+            }
+          ],
+          "idx_contacts_user_collected": [
+            {
+              "type": "create_index",
+              "table": "idx_contacts_user_collected",
+              "line": 56
+            }
+          ],
+          "idx_contacts_status_platform": [
+            {
+              "type": "create_index",
+              "table": "idx_contacts_status_platform",
+              "line": 57
+            }
+          ],
+          "idx_contacts_dialog_id": [
+            {
+              "type": "create_index",
+              "table": "idx_contacts_dialog_id",
+              "line": 58
+            }
+          ],
+          "generated_articles": [
+            {
+              "type": "create_table",
+              "table": "generated_articles",
+              "line": 31
+            },
+            {
+              "type": "drop_table",
+              "table": "generated_articles",
+              "line": 25
+            }
+          ],
+          "idx_users_activity_monitoring": [
+            {
+              "type": "create_index",
+              "table": "idx_users_activity_monitoring",
+              "line": 59
+            },
+            {
+              "type": "drop_index",
+              "table": "idx_users_activity_monitoring",
+              "line": 30
+            }
+          ],
+          "idx_users_admin_panel_filter": [
+            {
+              "type": "create_index",
+              "table": "idx_users_admin_panel_filter",
+              "line": 60
+            },
+            {
+              "type": "drop_index",
+              "table": "idx_users_admin_panel_filter",
+              "line": 35
+            }
+          ],
+          "idx_users_stats_aggregation": [
+            {
+              "type": "create_index",
+              "table": "idx_users_stats_aggregation",
+              "line": 61
+            },
+            {
+              "type": "drop_index",
+              "table": "idx_users_stats_aggregation",
+              "line": 40
+            }
+          ],
+          "idx_users_search_admin": [
+            {
+              "type": "create_index",
+              "table": "idx_users_search_admin",
+              "line": 62
+            },
+            {
+              "type": "drop_index",
+              "table": "idx_users_search_admin",
+              "line": 45
+            }
+          ],
+          "idx_users_paid_plans": [
+            {
+              "type": "drop_index",
+              "table": "idx_users_paid_plans",
+              "line": 25
+            }
+          ],
+          "assistants": [
+            {
+              "type": "add_column",
+              "table": "assistants",
+              "line": 21
+            },
+            {
+              "type": "drop_column",
+              "table": "assistants",
+              "line": 32
+            }
+          ]
+        },
+        "complexity_total": 75,
+        "can_consolidate": false
+      },
+      {
+        "period": "2025-08",
+        "migrations_count": 22,
+        "migrations": [
+          "2b7ea03ef3d4_merge_multiple_heads.py",
+          "53e3dfa017e4_merge_embeddings.py",
+          "2108160f4127_merge_heads_before_pgvector.py",
+          "add_welcome_bonus_field.py",
+          "add_balance_system_tables.py",
+          "add_employee_system_tables.py",
+          "update_system_prompt.py",
+          "e99e3544326e_merge_heads_after_chunk_hash.py",
+          "a1b2c3d4e5f6_add_chunk_hash_source.py",
+          "96f01c0bee5b_merge_heads_after_doc_hash.py",
+          "b7c8d9e0f1a2_add_doc_hash_to_documents.py",
+          "add_embeddings_system.py",
+          "add_password_reset_fields.py",
+          "5c00ac73f79e_merge_password_reset_fields.py",
+          "66a2e88a4eb9_merge_heads_before_handoff.py",
+          "31a264ff1811_add_handoff_message_fields.py",
+          "9a99b429544e_create_operator_presence_table.py",
+          "bf58b52d1dbf_merge_heads_after_handoff_implementation.py",
+          "5b8a7b99c4a5_add_handoff_fields_to_dialogs.py",
+          "e50d0ec42a06_create_handoff_audit_table.py",
+          "add_critical_indexes_for_operator_messages.py",
+          "202508230001_add_admin_analytics_indexes.py"
+        ],
+        "table_changes": {
+          "users": [
+            {
+              "type": "add_column",
+              "table": "users",
+              "line": 25
+            },
+            {
+              "type": "drop_column",
+              "table": "users",
+              "line": 30
+            },
+            {
+              "type": "add_column",
+              "table": "users",
+              "line": 23
+            },
+            {
+              "type": "add_column",
+              "table": "users",
+              "line": 24
+            },
+            {
+              "type": "drop_column",
+              "table": "users",
+              "line": 29
+            },
+            {
+              "type": "drop_column",
+              "table": "users",
+              "line": 30
+            }
+          ],
+          "promo_codes": [
+            {
+              "type": "create_table",
+              "table": "promo_codes",
+              "line": 24
+            },
+            {
+              "type": "drop_table",
+              "table": "promo_codes",
+              "line": 123
+            }
+          ],
+          "promo_code_usage": [
+            {
+              "type": "create_table",
+              "table": "promo_code_usage",
+              "line": 45
+            },
+            {
+              "type": "drop_table",
+              "table": "promo_code_usage",
+              "line": 119
+            }
+          ],
+          "referral_codes": [
+            {
+              "type": "create_table",
+              "table": "referral_codes",
+              "line": 61
+            },
+            {
+              "type": "drop_table",
+              "table": "referral_codes",
+              "line": 116
+            }
+          ],
+          "referrals": [
+            {
+              "type": "create_table",
+              "table": "referrals",
+              "line": 78
+            },
+            {
+              "type": "drop_table",
+              "table": "referrals",
+              "line": 112
+            }
+          ],
+          "employee_invitations": [
+            {
+              "type": "create_table",
+              "table": "employee_invitations",
+              "line": 24
+            },
+            {
+              "type": "drop_table",
+              "table": "employee_invitations",
+              "line": 70
+            }
+          ],
+          "employees": [
+            {
+              "type": "create_table",
+              "table": "employees",
+              "line": 45
+            },
+            {
+              "type": "drop_table",
+              "table": "employees",
+              "line": 66
+            }
+          ],
+          "knowledge_embeddings": [
+            {
+              "type": "add_column",
+              "table": "knowledge_embeddings",
+              "line": 24
+            },
+            {
+              "type": "add_column",
+              "table": "knowledge_embeddings",
+              "line": 26
+            },
+            {
+              "type": "drop_column",
+              "table": "knowledge_embeddings",
+              "line": 46
+            },
+            {
+              "type": "drop_column",
+              "table": "knowledge_embeddings",
+              "line": 48
+            },
+            {
+              "type": "create_table",
+              "table": "knowledge_embeddings",
+              "line": 50
+            },
+            {
+              "type": "drop_table",
+              "table": "knowledge_embeddings",
+              "line": 117
+            }
+          ],
+          "ux_knowledge_embeddings_doc_chunkhash": [
+            {
+              "type": "create_index",
+              "table": "ux_knowledge_embeddings_doc_chunkhash",
+              "line": 31
+            },
+            {
+              "type": "drop_index",
+              "table": "ux_knowledge_embeddings_doc_chunkhash",
+              "line": 43
+            }
+          ],
+          "documents": [
+            {
+              "type": "add_column",
+              "table": "documents",
+              "line": 24
+            },
+            {
+              "type": "drop_column",
+              "table": "documents",
+              "line": 42
+            }
+          ],
+          "ix_documents_doc_hash": [
+            {
+              "type": "create_index",
+              "table": "ix_documents_doc_hash",
+              "line": 28
+            },
+            {
+              "type": "drop_index",
+              "table": "ix_documents_doc_hash",
+              "line": 39
+            }
+          ],
+          "query_embeddings_cache": [
+            {
+              "type": "create_table",
+              "table": "query_embeddings_cache",
+              "line": 95
+            },
+            {
+              "type": "drop_table",
+              "table": "query_embeddings_cache",
+              "line": 116
+            }
+          ],
+          "assistants": [
+            {
+              "type": "add_column",
+              "table": "assistants",
+              "line": 90
+            },
+            {
+              "type": "drop_column",
+              "table": "assistants",
+              "line": 118
+            }
+          ],
+          "ix_knowledge_embeddings_user_id": [
+            {
+              "type": "create_index",
+              "table": "ix_knowledge_embeddings_user_id",
+              "line": 72
+            }
+          ],
+          "ix_knowledge_embeddings_assistant_id": [
+            {
+              "type": "create_index",
+              "table": "ix_knowledge_embeddings_assistant_id",
+              "line": 74
+            }
+          ],
+          "ix_knowledge_embeddings_doc_id": [
+            {
+              "type": "create_index",
+              "table": "ix_knowledge_embeddings_doc_id",
+              "line": 76
+            }
+          ],
+          "ix_assistants_knowledge_version": [
+            {
+              "type": "create_index",
+              "table": "ix_assistants_knowledge_version",
+              "line": 91
+            }
+          ],
+          "ix_query_embeddings_cache_hash": [
+            {
+              "type": "create_index",
+              "table": "ix_query_embeddings_cache_hash",
+              "line": 109
+            }
+          ],
+          "ix_query_embeddings_cache_last_used": [
+            {
+              "type": "create_index",
+              "table": "ix_query_embeddings_cache_last_used",
+              "line": 111
+            }
+          ],
+          "dialog_messages": [
+            {
+              "type": "add_column",
+              "table": "dialog_messages",
+              "line": 24
+            },
+            {
+              "type": "add_column",
+              "table": "dialog_messages",
+              "line": 27
+            },
+            {
+              "type": "drop_column",
+              "table": "dialog_messages",
+              "line": 43
+            },
+            {
+              "type": "drop_column",
+              "table": "dialog_messages",
+              "line": 44
+            }
+          ],
+          "ix_dialog_messages_system_type": [
+            {
+              "type": "create_index",
+              "table": "ix_dialog_messages_system_type",
+              "line": 30
+            },
+            {
+              "type": "drop_index",
+              "table": "ix_dialog_messages_system_type",
+              "line": 40
+            }
+          ],
+          "ix_dialog_messages_kind": [
+            {
+              "type": "create_index",
+              "table": "ix_dialog_messages_kind",
+              "line": 33
+            },
+            {
+              "type": "drop_index",
+              "table": "ix_dialog_messages_kind",
+              "line": 39
+            }
+          ],
+          "operator_presence": [
+            {
+              "type": "create_table",
+              "table": "operator_presence",
+              "line": 24
+            },
+            {
+              "type": "drop_table",
+              "table": "operator_presence",
+              "line": 61
+            }
+          ],
+          "ix_operator_presence_status": [
+            {
+              "type": "create_index",
+              "table": "ix_operator_presence_status",
+              "line": 37
+            }
+          ],
+          "dialogs": [
+            {
+              "type": "add_column",
+              "table": "dialogs",
+              "line": 24
+            },
+            {
+              "type": "add_column",
+              "table": "dialogs",
+              "line": 25
+            },
+            {
+              "type": "add_column",
+              "table": "dialogs",
+              "line": 26
+            },
+            {
+              "type": "add_column",
+              "table": "dialogs",
+              "line": 27
+            },
+            {
+              "type": "add_column",
+              "table": "dialogs",
+              "line": 28
+            },
+            {
+              "type": "add_column",
+              "table": "dialogs",
+              "line": 29
+            },
+            {
+              "type": "add_column",
+              "table": "dialogs",
+              "line": 30
+            },
+            {
+              "type": "drop_column",
+              "table": "dialogs",
+              "line": 61
+            },
+            {
+              "type": "drop_column",
+              "table": "dialogs",
+              "line": 62
+            },
+            {
+              "type": "drop_column",
+              "table": "dialogs",
+              "line": 63
+            },
+            {
+              "type": "drop_column",
+              "table": "dialogs",
+              "line": 64
+            },
+            {
+              "type": "drop_column",
+              "table": "dialogs",
+              "line": 65
+            },
+            {
+              "type": "drop_column",
+              "table": "dialogs",
+              "line": 66
+            },
+            {
+              "type": "drop_column",
+              "table": "dialogs",
+              "line": 67
+            }
+          ],
+          "ix_dialogs_assigned_manager_id": [
+            {
+              "type": "create_index",
+              "table": "ix_dialogs_assigned_manager_id",
+              "line": 36
+            },
+            {
+              "type": "drop_index",
+              "table": "ix_dialogs_assigned_manager_id",
+              "line": 55
+            }
+          ],
+          "ix_handoff_queue": [
+            {
+              "type": "create_index",
+              "table": "ix_handoff_queue",
+              "line": 37
+            },
+            {
+              "type": "drop_index",
+              "table": "ix_handoff_queue",
+              "line": 54
+            }
+          ],
+          "ux_handoff_request_id": [
+            {
+              "type": "create_index",
+              "table": "ux_handoff_request_id",
+              "line": 38
+            },
+            {
+              "type": "drop_index",
+              "table": "ux_handoff_request_id",
+              "line": 53
+            }
+          ],
+          "ix_dialogs_handoff_active": [
+            {
+              "type": "drop_index",
+              "table": "ix_dialogs_handoff_active",
+              "line": 51
+            }
+          ],
+          "handoff_audit": [
+            {
+              "type": "create_table",
+              "table": "handoff_audit",
+              "line": 24
+            },
+            {
+              "type": "drop_table",
+              "table": "handoff_audit",
+              "line": 46
+            }
+          ],
+          "ix_handoff_audit_dialog": [
+            {
+              "type": "create_index",
+              "table": "ix_handoff_audit_dialog",
+              "line": 38
+            }
+          ],
+          "ix_handoff_audit_seq": [
+            {
+              "type": "create_index",
+              "table": "ix_handoff_audit_seq",
+              "line": 39
+            }
+          ],
+          "ix_handoff_audit_user": [
+            {
+              "type": "create_index",
+              "table": "ix_handoff_audit_user",
+              "line": 40
+            }
+          ],
+          "ix_dialogs_telegram_chat_id": [
+            {
+              "type": "create_index",
+              "table": "ix_dialogs_telegram_chat_id",
+              "line": 22
+            },
+            {
+              "type": "drop_index",
+              "table": "ix_dialogs_telegram_chat_id",
+              "line": 36
+            }
+          ],
+          "ix_bot_instances_assistant_id": [
+            {
+              "type": "create_index",
+              "table": "ix_bot_instances_assistant_id",
+              "line": 26
+            },
+            {
+              "type": "drop_index",
+              "table": "ix_bot_instances_assistant_id",
+              "line": 35
+            }
+          ],
+          "ix_bot_instances_assistant_active": [
+            {
+              "type": "create_index",
+              "table": "ix_bot_instances_assistant_active",
+              "line": 30
+            },
+            {
+              "type": "drop_index",
+              "table": "ix_bot_instances_assistant_active",
+              "line": 34
+            }
+          ],
+          "idx_dialog_messages_created_analytics": [
+            {
+              "type": "drop_index",
+              "table": "idx_dialog_messages_created_analytics",
+              "line": 124
+            }
+          ],
+          "idx_dialogs_ended_handoff_status": [
+            {
+              "type": "drop_index",
+              "table": "idx_dialogs_ended_handoff_status",
+              "line": 125
+            }
+          ],
+          "idx_dialogs_created_handoff_status": [
+            {
+              "type": "drop_index",
+              "table": "idx_dialogs_created_handoff_status",
+              "line": 126
+            }
+          ],
+          "idx_ai_token_usage_user_created": [
+            {
+              "type": "drop_index",
+              "table": "idx_ai_token_usage_user_created",
+              "line": 127
+            }
+          ],
+          "idx_ai_token_usage_created_model": [
+            {
+              "type": "drop_index",
+              "table": "idx_ai_token_usage_created_model",
+              "line": 128
+            }
+          ],
+          "idx_ai_token_usage_created_tokens": [
+            {
+              "type": "drop_index",
+              "table": "idx_ai_token_usage_created_tokens",
+              "line": 129
+            }
+          ],
+          "idx_balance_transactions_user_created": [
+            {
+              "type": "drop_index",
+              "table": "idx_balance_transactions_user_created",
+              "line": 130
+            }
+          ],
+          "idx_balance_transactions_created_user_amount": [
+            {
+              "type": "drop_index",
+              "table": "idx_balance_transactions_created_user_amount",
+              "line": 131
+            }
+          ],
+          "idx_balance_transactions_created_type": [
+            {
+              "type": "drop_index",
+              "table": "idx_balance_transactions_created_type",
+              "line": 132
+            }
+          ],
+          "idx_users_last_activity": [
+            {
+              "type": "drop_index",
+              "table": "idx_users_last_activity",
+              "line": 133
+            }
+          ],
+          "idx_users_created_status": [
+            {
+              "type": "drop_index",
+              "table": "idx_users_created_status",
+              "line": 134
+            }
+          ],
+          "idx_users_created_at_analytics": [
+            {
+              "type": "drop_index",
+              "table": "idx_users_created_at_analytics",
+              "line": 135
+            }
+          ]
+        },
+        "complexity_total": 231,
+        "can_consolidate": false
+      }
+    ],
+    "estimated_reduction": {
+      "current_count": 45,
+      "can_consolidate": 0,
+      "estimated_result": 46,
+      "reduction_percent": -2.2
+    },
+    "recommended_approach": "schema_snapshot"
+  },
+  "migrations_list": [
+    {
+      "filename": "5b2babd8ae17_add_broadcast_id_to_dialog_messages.py",
+      "complexity": 0,
+      "operations_count": 0,
+      "is_merge": false,
+      "size_bytes": 785
+    },
+    {
+      "filename": "3d08709f8f54_add_broadcast_reads_table.py",
+      "complexity": 5,
+      "operations_count": 2,
+      "is_merge": false,
+      "size_bytes": 1471
+    },
+    {
+      "filename": "a058cf120cfb_init.py",
+      "complexity": 50,
+      "operations_count": 20,
+      "is_merge": false,
+      "size_bytes": 7474
+    },
+    {
+      "filename": "2006abdd7c66_add_first_name_and_last_name_to_dialog.py",
+      "complexity": 6,
+      "operations_count": 4,
+      "is_merge": false,
+      "size_bytes": 1020
+    },
+    {
+      "filename": "f8195d7eed75_add_google_id_to_user.py",
+      "complexity": 9,
+      "operations_count": 6,
+      "is_merge": false,
+      "size_bytes": 1276
+    },
+    {
+      "filename": "217ce33d5f67_add_google_id_to_user_model.py",
+      "complexity": 50,
+      "operations_count": 20,
+      "is_merge": false,
+      "size_bytes": 7682
+    },
+    {
+      "filename": "3cc45be8d398_add_yandex_id_to_user.py",
+      "complexity": 6,
+      "operations_count": 4,
+      "is_merge": false,
+      "size_bytes": 1282
+    },
+    {
+      "filename": "24c3adfca86c_add_email_confirmation_fields_to_user.py",
+      "complexity": 6,
+      "operations_count": 4,
+      "is_merge": false,
+      "size_bytes": 1056
+    },
+    {
+      "filename": "2667861b6093_add_plan_to_user_model.py",
+      "complexity": 0,
+      "operations_count": 0,
+      "is_merge": false,
+      "size_bytes": 772
+    },
+    {
+      "filename": "2954bb358e91_add_assistants_table.py",
+      "complexity": 0,
+      "operations_count": 0,
+      "is_merge": false,
+      "size_bytes": 770
+    },
+    {
+      "filename": "4ad3ce709da3_add_first_name_to_user.py",
+      "complexity": 3,
+      "operations_count": 2,
+      "is_merge": false,
+      "size_bytes": 876
+    },
+    {
+      "filename": "2954bb358e92_add_vk_integration.py",
+      "complexity": 8,
+      "operations_count": 4,
+      "is_merge": false,
+      "size_bytes": 1066
+    },
+    {
+      "filename": "merge_heads.py",
+      "complexity": 0,
+      "operations_count": 0,
+      "is_merge": true,
+      "size_bytes": 360
+    },
+    {
+      "filename": "merge_heads_3.py",
+      "complexity": 0,
+      "operations_count": 0,
+      "is_merge": true,
+      "size_bytes": 384
+    },
+    {
+      "filename": "update_user_knowledge.py",
+      "complexity": 16,
+      "operations_count": 4,
+      "is_merge": false,
+      "size_bytes": 1164
+    },
+    {
+      "filename": "ca8d5ee056f4_merge_heads_2.py",
+      "complexity": 0,
+      "operations_count": 0,
+      "is_merge": true,
+      "size_bytes": 559
+    },
+    {
+      "filename": "59763189383d_add_onboarding_fields_to_users.py",
+      "complexity": 24,
+      "operations_count": 16,
+      "is_merge": false,
+      "size_bytes": 1982
+    },
+    {
+      "filename": "d1b43e7773dc_remove_contacts_table.py",
+      "complexity": 23,
+      "operations_count": 8,
+      "is_merge": false,
+      "size_bytes": 2249
+    },
+    {
+      "filename": "106c75cbc7d5_remove_generated_articles_table.py",
+      "complexity": 5,
+      "operations_count": 2,
+      "is_merge": false,
+      "size_bytes": 1786
+    },
+    {
+      "filename": "0e441ecfd407_add_guest_contacts_table.py",
+      "complexity": 0,
+      "operations_count": 0,
+      "is_merge": false,
+      "size_bytes": 572
+    },
+    {
+      "filename": "remove_plan_column.py",
+      "complexity": 12,
+      "operations_count": 11,
+      "is_merge": false,
+      "size_bytes": 1951
+    },
+    {
+      "filename": "cleanup_unused_tables.py",
+      "complexity": 0,
+      "operations_count": 0,
+      "is_merge": false,
+      "size_bytes": 721
+    },
+    {
+      "filename": "add_website_integration_to_assistants.py",
+      "complexity": 11,
+      "operations_count": 4,
+      "is_merge": false,
+      "size_bytes": 1020
+    },
+    {
+      "filename": "2b7ea03ef3d4_merge_multiple_heads.py",
+      "complexity": 0,
+      "operations_count": 0,
+      "is_merge": true,
+      "size_bytes": 840
+    },
+    {
+      "filename": "53e3dfa017e4_merge_embeddings.py",
+      "complexity": 0,
+      "operations_count": 0,
+      "is_merge": true,
+      "size_bytes": 582
+    },
+    {
+      "filename": "2108160f4127_merge_heads_before_pgvector.py",
+      "complexity": 0,
+      "operations_count": 0,
+      "is_merge": true,
+      "size_bytes": 629
+    },
+    {
+      "filename": "add_welcome_bonus_field.py",
+      "complexity": 3,
+      "operations_count": 2,
+      "is_merge": false,
+      "size_bytes": 958
+    },
+    {
+      "filename": "add_balance_system_tables.py",
+      "complexity": 44,
+      "operations_count": 16,
+      "is_merge": false,
+      "size_bytes": 6122
+    },
+    {
+      "filename": "add_employee_system_tables.py",
+      "complexity": 10,
+      "operations_count": 4,
+      "is_merge": false,
+      "size_bytes": 3235
+    },
+    {
+      "filename": "update_system_prompt.py",
+      "complexity": 16,
+      "operations_count": 4,
+      "is_merge": false,
+      "size_bytes": 2735
+    },
+    {
+      "filename": "e99e3544326e_merge_heads_after_chunk_hash.py",
+      "complexity": 0,
+      "operations_count": 0,
+      "is_merge": true,
+      "size_bytes": 576
+    },
+    {
+      "filename": "a1b2c3d4e5f6_add_chunk_hash_source.py",
+      "complexity": 8,
+      "operations_count": 6,
+      "is_merge": false,
+      "size_bytes": 2015
+    },
+    {
+      "filename": "96f01c0bee5b_merge_heads_after_doc_hash.py",
+      "complexity": 0,
+      "operations_count": 0,
+      "is_merge": true,
+      "size_bytes": 574
+    },
+    {
+      "filename": "b7c8d9e0f1a2_add_doc_hash_to_documents.py",
+      "complexity": 5,
+      "operations_count": 4,
+      "is_merge": false,
+      "size_bytes": 1355
+    },
+    {
+      "filename": "add_embeddings_system.py",
+      "complexity": 34,
+      "operations_count": 15,
+      "is_merge": false,
+      "size_bytes": 5948
+    },
+    {
+      "filename": "add_password_reset_fields.py",
+      "complexity": 6,
+      "operations_count": 4,
+      "is_merge": false,
+      "size_bytes": 954
+    },
+    {
+      "filename": "5c00ac73f79e_merge_password_reset_fields.py",
+      "complexity": 0,
+      "operations_count": 0,
+      "is_merge": true,
+      "size_bytes": 633
+    },
+    {
+      "filename": "66a2e88a4eb9_merge_heads_before_handoff.py",
+      "complexity": 0,
+      "operations_count": 0,
+      "is_merge": true,
+      "size_bytes": 574
+    },
+    {
+      "filename": "31a264ff1811_add_handoff_message_fields.py",
+      "complexity": 10,
+      "operations_count": 8,
+      "is_merge": false,
+      "size_bytes": 1515
+    },
+    {
+      "filename": "9a99b429544e_create_operator_presence_table.py",
+      "complexity": 26,
+      "operations_count": 7,
+      "is_merge": false,
+      "size_bytes": 2495
+    },
+    {
+      "filename": "bf58b52d1dbf_merge_heads_after_handoff_implementation.py",
+      "complexity": 0,
+      "operations_count": 0,
+      "is_merge": true,
+      "size_bytes": 606
+    },
+    {
+      "filename": "5b8a7b99c4a5_add_handoff_fields_to_dialogs.py",
+      "complexity": 43,
+      "operations_count": 24,
+      "is_merge": false,
+      "size_bytes": 3092
+    },
+    {
+      "filename": "e50d0ec42a06_create_handoff_audit_table.py",
+      "complexity": 8,
+      "operations_count": 5,
+      "is_merge": false,
+      "size_bytes": 1767
+    },
+    {
+      "filename": "add_critical_indexes_for_operator_messages.py",
+      "complexity": 6,
+      "operations_count": 6,
+      "is_merge": false,
+      "size_bytes": 1681
+    },
+    {
+      "filename": "202508230001_add_admin_analytics_indexes.py",
+      "complexity": 12,
+      "operations_count": 12,
+      "is_merge": false,
+      "size_bytes": 4597
+    }
+  ]
+}

@@ -13,7 +13,7 @@ class ScalableSystemLauncher {
     constructor() {
         this.processes = new Map();
         this.config = {
-            masterScript: path.join(__dirname, '../master/scalable_bot_manager.js'),
+            masterScript: path.join(__dirname, '../workers/master/scalable_bot_manager.js'),
             logDir: path.join(__dirname, 'logs'),
             pidDir: path.join(__dirname, 'pids')
         };
