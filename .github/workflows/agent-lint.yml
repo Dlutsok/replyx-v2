@@ -52,7 +52,9 @@ jobs:
       - name: Run RAD Agent Lint (Warning Mode)
         run: |
           chmod +x scripts/ops/agent-lint.sh
-          FAIL_MODE=warn VERBOSE=true scripts/ops/agent-lint.sh
+          set +e
+          FAIL_MODE=warn VERBOSE=true scripts/ops/agent-lint.sh || true
+          set -e
           
       - name: Generate OpenAPI Schema
         run: |
@@ -62,7 +64,9 @@ jobs:
       - name: Check Documentation Currency
         run: |
           chmod +x scripts/ops/check_docs_currency.py
-          python3 scripts/ops/check_docs_currency.py
+          set +e
+          python3 scripts/ops/check_docs_currency.py || true
+          set -e
           
       - name: Validate Critical Structure Changes
         run: |

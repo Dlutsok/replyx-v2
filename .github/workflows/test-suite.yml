@@ -98,6 +98,10 @@ jobs:
           cd backend
           pip install --upgrade pip
           pip install -r requirements.txt -r ../tests/backend/requirements-test.txt
+
+      - name: Ensure reports directories exist
+        run: |
+          mkdir -p tests/reports/backend tests/reports/frontend tests/reports/security tests/reports/performance tests/reports/e2e
           
       - name: Create test reports directories
         run: |
@@ -169,6 +173,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Ensure reports directories exist
+        run: |
+          mkdir -p tests/reports/backend tests/reports/frontend tests/reports/security tests/reports/performance tests/reports/e2e
         
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -356,6 +363,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Ensure reports directories exist
+        run: |
+          mkdir -p tests/reports/backend tests/reports/frontend tests/reports/security tests/reports/performance tests/reports/e2e
         
       - name: Set up Python
         uses: actions/setup-python@v5
