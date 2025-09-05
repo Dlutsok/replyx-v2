@@ -17,7 +17,7 @@ export default function WelcomeBonusNotification() {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const base = typeof window !== 'undefined' ? `${window.location.origin}` : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000');
+      const base = typeof window !== 'undefined' ? `${window.location.origin}` : (process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru');
       const response = await fetch(`${base}/api/balance/welcome-bonus-status`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -42,7 +42,7 @@ export default function WelcomeBonusNotification() {
 
     try {
       const token = localStorage.getItem('token');
-      const base = typeof window !== 'undefined' ? `${window.location.origin}` : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000');
+      const base = typeof window !== 'undefined' ? `${window.location.origin}` : (process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru');
       const response = await fetch(`${base}/api/balance/claim-welcome-bonus`, {
         method: 'POST',
         headers: {

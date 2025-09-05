@@ -32,7 +32,7 @@ export const createApiUrl = (endpoint) => {
 };
 
 // Backend URL для API endpoints
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru';
 
 // Экспорт конфигурации
 export default API_CONFIG;

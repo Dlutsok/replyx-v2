@@ -286,11 +286,17 @@ class OpenAIProvider(BaseAIProvider):
         except httpx.HTTPStatusError as e:
             status = e.response.status_code if e.response else 'N/A'
             body = e.response.text[:500] if e.response else ''
-            logger.warning(f"⚠️ OpenAI HTTP {status}: {body}")
-            raise
+            error_msg = f"HTTP {status}: {body}"
+            logger.warning(f"⚠️ OpenAI {error_msg}")
+            raise Exception(error_msg) from e
         except (httpx.ProxyError, httpx.ConnectError, httpx.ReadTimeout, httpx.RemoteProtocolError) as e:
-            logger.warning(f"⚠️ OpenAI сеть/прокси ошибка: {repr(e)} via {self.proxy_url}")
-            raise
+            error_msg = f"Сеть/прокси ошибка: {repr(e)} via {self.proxy_url}"
+            logger.warning(f"⚠️ OpenAI {error_msg}")
+            raise Exception(error_msg) from e
+        except Exception as e:
+            error_msg = f"Неожиданная ошибка: {repr(e)}"
+            logger.warning(f"⚠️ OpenAI {error_msg}")
+            raise Exception(error_msg) from e
 
 
 class YandexProvider(BaseAIProvider):

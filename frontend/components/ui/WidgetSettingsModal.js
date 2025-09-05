@@ -15,7 +15,7 @@ const WidgetSettingsModal = ({ isOpen, onClose, onSave, selectedAssistant, isNew
     operatorName: selectedAssistant?.operator_name || 'Dan',
     businessName: selectedAssistant?.business_name || 'Поддержка',
     avatarUrl: selectedAssistant?.avatar_url && !selectedAssistant.avatar_url.startsWith('http') ? 
-               `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${selectedAssistant.avatar_url}` : 
+               `${process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru'}${selectedAssistant.avatar_url}` : 
                selectedAssistant?.avatar_url || '',
     theme: selectedAssistant?.widget_theme || 'blue',
     allowedDomains: selectedAssistant?.allowed_domains || '',
@@ -117,7 +117,7 @@ const WidgetSettingsModal = ({ isOpen, onClose, onSave, selectedAssistant, isNew
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/upload/avatar`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru'}/api/upload/avatar`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -129,7 +129,7 @@ const WidgetSettingsModal = ({ isOpen, onClose, onSave, selectedAssistant, isNew
         const data = await response.json();
         // Убедимся, что URL абсолютный
         const avatarUrl = data.url.startsWith('http') ? data.url : 
-                         `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${data.url}`;
+                         `${process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru'}${data.url}`;
         setSettings(prev => ({ ...prev, avatarUrl }));
         showNotification('Аватар успешно загружен!', 'success');
       } else {
@@ -144,7 +144,7 @@ const WidgetSettingsModal = ({ isOpen, onClose, onSave, selectedAssistant, isNew
   const handleSave = async () => {
     try {
       // Сохраняем настройки виджета и ассистента
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/assistants/${selectedAssistant?.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru'}/api/assistants/${selectedAssistant?.id}`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

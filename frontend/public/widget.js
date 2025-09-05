@@ -74,13 +74,13 @@
         const u = new URL(scriptSrc);
         const host = u.hostname;
         if (host === 'localhost' || host === '127.0.0.1') {
-          return 'http://localhost:8000';
+          return 'https://replyx.ru';
         }
         // прод: используем протокол + hostname без смены порта
         return `${u.protocol}//${u.hostname}`;
       } catch (e) {}
     }
-    return 'http://localhost:8000';
+    return 'https://replyx.ru';
   })();
 
   const config = {

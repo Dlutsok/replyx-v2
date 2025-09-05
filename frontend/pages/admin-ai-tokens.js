@@ -59,7 +59,7 @@ const AdminAITokensPage = () => {
       console.log('🔑 ensureAuthToken returned:', !!token);
       if (!token) return; // Если токен отсутствует, пользователь будет перенаправлен
       
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru';
       console.log('🌐 Making request to:', `${apiUrl}/api/admin/ai-tokens`);
       const response = await fetch(`${apiUrl}/api/admin/ai-tokens`, {
         headers: {
@@ -96,7 +96,7 @@ const AdminAITokensPage = () => {
       const token = await ensureAuthToken();
       if (!token) return; // Если токен отсутствует, пользователь будет перенаправлен
       
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru';
       const response = await fetch(`${apiUrl}/api/admin/ai-tokens`, {
         method: 'POST',
         headers: {
@@ -124,7 +124,7 @@ const AdminAITokensPage = () => {
       const token = await ensureAuthToken();
       if (!token) return; // Если токен отсутствует, пользователь будет перенаправлен
       
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru';
       const response = await fetch(`${apiUrl}/api/admin/ai-tokens/${tokenId}`, {
         method: 'PUT',
         headers: {
@@ -153,7 +153,7 @@ const AdminAITokensPage = () => {
       const token = await ensureAuthToken();
       if (!token) return; // Если токен отсутствует, пользователь будет перенаправлен
       
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru';
       const response = await fetch(`${apiUrl}/api/admin/ai-tokens/${tokenId}`, {
         method: 'DELETE',
         headers: {

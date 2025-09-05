@@ -54,7 +54,7 @@ async function validateWidgetToken(token, request) {
     }
 
     // Определяем backend URL
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru'
     
     console.log(`CSP Middleware: Валидация токена через ${backendUrl}/api/validate-widget-token`)
     
@@ -116,12 +116,12 @@ function generateCSPHeader(allowedDomains) {
   }
   
   // Разрешаем backend origin для API запросов (dev/prod)
-  let backendOrigin = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+  let backendOrigin = process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru'
   try {
     const u = new URL(backendOrigin)
     backendOrigin = `${u.protocol}//${u.host}`
   } catch (e) {
-    backendOrigin = 'http://localhost:8000'
+    backendOrigin = 'https://replyx.ru'
   }
 
   // Удаляем дубликаты

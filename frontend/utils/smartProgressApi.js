@@ -3,7 +3,7 @@
  * Не влияет на основную систему авторизации
  */
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru';
 
 // API клиент с авторизацией для smart progress
 const smartProgressApi = {

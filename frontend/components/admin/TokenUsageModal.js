@@ -18,7 +18,7 @@ const TokenUsageModal = ({ token, onClose }) => {
       setError(null);
       
       const authToken = localStorage.getItem('token');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru';
       const response = await fetch(`${apiUrl}/api/admin/ai-tokens/${token.id}/usage`, {
         headers: {
           'Authorization': `Bearer ${authToken}`,

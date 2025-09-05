@@ -31,7 +31,7 @@ const ActiveDialogs = React.memo(({ dialogs: initialDialogs, loading, onRefresh 
     ? (() => {
         if (typeof window === 'undefined') return null;
         // Используем переменную окружения для определения backend URL
-        const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru';
         const url = new URL(backendUrl);
         const wsProtocol = url.protocol === 'https:' ? 'wss' : 'ws';
         return `${wsProtocol}://${url.host}/ws/dialogs?token=${token}`;
