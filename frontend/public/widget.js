@@ -777,6 +777,7 @@
         // Safari-совместимая загрузка iframe
         iframe.addEventListener('load', () => {
           console.log('[ReplyX Widget] iframe loaded successfully');
+          iframe.setAttribute('data-loaded', 'true'); // Флаг успешной загрузки
           setTimeout(() => {
             try {
               iframe.focus();
@@ -792,13 +793,14 @@
         
         // Safari fallback: Force iframe to reload if not loaded after timeout
         setTimeout(() => {
-          if (!iframe.contentWindow || !iframe.contentWindow.document) {
-            console.log('[ReplyX Widget] iframe not loaded, attempting reload...');
-            const currentSrc = iframe.src;
-            iframe.src = 'about:blank';
-            setTimeout(() => {
-              iframe.src = currentSrc;
-            }, 100);
+          try {
+            // Безопасная проверка загрузки iframe без доступа к contentWindow.document
+            if (iframe.src && !iframe.getAttribute('data-loaded')) {
+              console.log('[ReplyX Widget] iframe reload check skipped to avoid CORS errors');
+            }
+          } catch (e) {
+            // Игнорируем CORS ошибки
+            console.log('[ReplyX Widget] iframe check skipped due to CORS');
           }
         }, 3000);
         
