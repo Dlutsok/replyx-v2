@@ -116,8 +116,8 @@ jobs:
       - name: Run unit tests
         run: |
           cd backend
-          pytest tests/backend/unit/ -v --tb=short \
-            --cov=backend --cov-report=xml --cov-report=term-missing \
+          pytest ../tests/backend/unit/ -v --tb=short \
+            --cov=. --cov-report=xml --cov-report=term-missing \
             --junit-xml=../tests/reports/backend/junit-unit.xml
         env:
           DATABASE_URL: postgresql://replyx_test:test_password@localhost:5432/replyx_test
@@ -126,7 +126,7 @@ jobs:
       - name: Run integration tests
         run: |
           cd backend
-          pytest tests/backend/integration/ -v --tb=short \
+          pytest ../tests/backend/integration/ -v --tb=short \
             --junit-xml=../tests/reports/backend/junit-integration.xml
         env:
           DATABASE_URL: postgresql://replyx_test:test_password@localhost:5432/replyx_test
@@ -135,7 +135,7 @@ jobs:
       - name: Run AI/ML tests
         run: |
           cd backend
-          pytest tests/backend/ai/ -v --tb=short \
+          pytest ../tests/backend/ai/ -v --tb=short \
             --junit-xml=../tests/reports/backend/junit-ai.xml
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_TEST }}
@@ -378,7 +378,7 @@ jobs:
       - name: Run security tests
         run: |
           cd backend
-          pytest tests/backend/security/ -v --tb=short \
+          pytest ../tests/backend/security/ -v --tb=short \
             --junit-xml=../tests/reports/security/junit-security.xml
         env:
           DATABASE_URL: postgresql://replyx_security:security_password@localhost:5432/replyx_security
@@ -453,7 +453,7 @@ jobs:
           cd tests/backend/performance
           locust -f load_tests.py --host=http://localhost:8000 \
             -u 50 -r 5 -t 120s --only-summary \
-            --html ../../../tests/reports/performance/locust-report.html
+            --html ../../reports/performance/locust-report.html
             
       - name: Upload performance test results
         uses: actions/upload-artifact@v3

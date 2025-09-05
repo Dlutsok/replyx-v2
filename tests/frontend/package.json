@@ -1,0 +1,27 @@
+{
+  "name": "replyx-frontend-tests",
+  "version": "1.0.0",
+  "description": "Frontend tests for ReplyX",
+  "scripts": {
+    "test": "jest",
+    "test:components": "jest --testPathPattern=components",
+    "test:coverage": "jest --coverage"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/user-event": "^14.4.3",
+    "jest": "^29.6.2",
+    "jest-environment-jsdom": "^29.6.2"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": ["<rootDir>/jest.setup.js"],
+    "collectCoverageFrom": [
+      "../../frontend/**/*.{js,jsx,ts,tsx}",
+      "!**/*.d.ts",
+      "!**/node_modules/**"
+    ],
+    "coverageDirectory": "../reports/frontend/coverage"
+  }
+}
