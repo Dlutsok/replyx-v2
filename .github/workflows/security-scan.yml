@@ -12,6 +12,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_PREFIX: ghcr.io/dlutsok/replyx
+  ENABLE_CODE_SCANNING_UPLOAD: 'false'
 
 jobs:
   # =============================================================================
@@ -41,7 +42,7 @@ jobs:
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
-        if: always() && hashFiles('trivy-results.sarif') != ''
+        if: always() && env.ENABLE_CODE_SCANNING_UPLOAD == 'true' && hashFiles('trivy-results.sarif') != ''
         continue-on-error: true
         with:
           sarif_file: 'trivy-results.sarif'
@@ -140,7 +141,7 @@ jobs:
 
       - name: Upload image scan results
         uses: github/codeql-action/upload-sarif@v3
-        if: always() && hashFiles(format('trivy-{0}-results.sarif', matrix.image)) != ''
+        if: always() && env.ENABLE_CODE_SCANNING_UPLOAD == 'true' && hashFiles(format('trivy-{0}-results.sarif', matrix.image)) != ''
         continue-on-error: true
         with:
           sarif_file: 'trivy-${{ matrix.image }}-results.sarif'
@@ -189,7 +190,7 @@ jobs:
 
       - name: Upload config scan results
         uses: github/codeql-action/upload-sarif@v3
-        if: always() && hashFiles('trivy-config-results.sarif') != ''
+        if: always() && env.ENABLE_CODE_SCANNING_UPLOAD == 'true' && hashFiles('trivy-config-results.sarif') != ''
         continue-on-error: true
         with:
           sarif_file: 'trivy-config-results.sarif'
@@ -203,7 +204,7 @@ jobs:
       
       - name: Upload deployed config scan results
         uses: github/codeql-action/upload-sarif@v3
-        if: always() && hashFiles('trivy-deployed-config-results.sarif') != ''
+        if: always() && env.ENABLE_CODE_SCANNING_UPLOAD == 'true' && hashFiles('trivy-deployed-config-results.sarif') != ''
         continue-on-error: true
         with:
           sarif_file: 'trivy-deployed-config-results.sarif'
