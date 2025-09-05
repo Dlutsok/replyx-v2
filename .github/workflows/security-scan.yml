@@ -11,7 +11,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/replyx
+  IMAGE_PREFIX: ghcr.io/dlutsok/replyx
 
 jobs:
   # =============================================================================
@@ -39,7 +39,7 @@ jobs:
           exit-code: '0'  # Не валить билд, только отчет
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: 'trivy-results.sarif'
@@ -65,7 +65,7 @@ jobs:
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-          base: main
+          base: ${{ github.event.before || 'HEAD~1' }}
           head: HEAD
           extra_args: --debug --only-verified
 
@@ -129,7 +129,7 @@ jobs:
           exit-code: '0'  # Не валить билд
 
       - name: Upload image scan results
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: 'trivy-${{ matrix.image }}-results.sarif'
@@ -169,13 +169,13 @@ jobs:
           severity: 'CRITICAL,HIGH,MEDIUM'
 
       - name: Upload config scan results
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: 'trivy-config-results.sarif'
       
       - name: Upload deployed config scan results
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: 'trivy-deployed-config-results.sarif'
