@@ -149,7 +149,7 @@ jobs:
           name: backend-coverage
           
       - name: Upload test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: backend-test-results
@@ -211,7 +211,7 @@ jobs:
           name: frontend-coverage
           
       - name: Upload test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: frontend-test-results
@@ -319,7 +319,7 @@ jobs:
           E2E_API_URL: http://localhost:8000
           
       - name: Upload E2E test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: e2e-test-results
@@ -384,7 +384,7 @@ jobs:
           DATABASE_URL: postgresql://replyx_security:security_password@localhost:5432/replyx_security
           
       - name: Upload security test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: security-test-results
@@ -456,7 +456,7 @@ jobs:
             --html ../../reports/performance/locust-report.html
             
       - name: Upload performance test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: performance-test-results
@@ -471,7 +471,7 @@ jobs:
     
     steps:
       - name: Download all test results
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         
       - name: Create test summary
         run: |
