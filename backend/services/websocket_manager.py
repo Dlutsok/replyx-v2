@@ -167,20 +167,20 @@ async def widget_dialog_websocket_endpoint(websocket: WebSocket, dialog_id: int,
     await websocket.accept()
     print(f"✅ [Widget] WebSocket accepted for dialog {dialog_id}")
     
-    ok = await _register_connection(ws_site_connections, ws_site_meta, dialog_id, websocket)
+    ok = await _register_connection(ws_connections, ws_meta, dialog_id, websocket)
     if not ok:
         return
-    print(f"📊 [Widget] Total connections for dialog {dialog_id}: {len(ws_site_connections[dialog_id])}")
-    receive_task = asyncio.create_task(_receive_loop(dialog_id, websocket, ws_site_meta))
-    heartbeat_task = asyncio.create_task(_heartbeat_loop(dialog_id, websocket, ws_site_meta))
+    print(f"📊 [Widget] Total connections for dialog {dialog_id}: {len(ws_connections[dialog_id])}")
+    receive_task = asyncio.create_task(_receive_loop(dialog_id, websocket, ws_meta))
+    heartbeat_task = asyncio.create_task(_heartbeat_loop(dialog_id, websocket, ws_meta))
     try:
         await asyncio.wait([receive_task, heartbeat_task], return_when=asyncio.FIRST_COMPLETED)
     finally:
         receive_task.cancel()
         heartbeat_task.cancel()
         print(f"🔌 [Widget] WebSocket disconnected for dialog {dialog_id}")
-        await _unregister_connection(ws_site_connections, ws_site_meta, dialog_id, websocket)
-        print(f"📊 [Widget] Remaining connections for dialog {dialog_id}: {len(ws_site_connections.get(dialog_id, []))}")
+        await _unregister_connection(ws_connections, ws_meta, dialog_id, websocket)
+        print(f"📊 [Widget] Remaining connections for dialog {dialog_id}: {len(ws_connections.get(dialog_id, []))}")
 
 # Функция для пуша нового сообщения всем клиентам диалога
 async def push_dialog_message(dialog_id: int, message: dict):
