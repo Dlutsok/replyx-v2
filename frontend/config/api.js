@@ -1,10 +1,15 @@
 // Конфигурация API
 const resolveBaseUrl = () => {
   if (typeof window !== 'undefined') {
-    const protocol = window.location.protocol;
     const host = window.location.host;
     
-    // Для продакшена используем тот же домен для API
+    // Всегда используем HTTPS для API в продакшене
+    if (host === 'replyx.ru' || host === 'www.replyx.ru') {
+      return `https://${host}`;
+    }
+    
+    // Для localhost используем текущий протокол
+    const protocol = window.location.protocol;
     return `${protocol}//${host}`;
   }
   return process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru';
