@@ -17,9 +17,15 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Build-time arguments for Next.js environment variables
+ARG NEXT_PUBLIC_API_URL=https://replyx.ru
+ARG NEXT_PUBLIC_FRONTEND_URL=https://replyx.ru
+
 # Environment for build
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXT_PUBLIC_FRONTEND_URL=${NEXT_PUBLIC_FRONTEND_URL}
 
 # Build the application
 RUN npm run build
