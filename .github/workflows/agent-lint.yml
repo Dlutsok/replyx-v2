@@ -46,33 +46,32 @@ jobs:
           
       - name: Install Node.js dependencies
         run: |
-          cd backend/workers
+          cd workers
           npm install
           
       - name: Run RAD Agent Lint (Warning Mode)
         run: |
-          chmod +x scripts/agent-lint.sh
-          FAIL_MODE=warn VERBOSE=true scripts/agent-lint.sh
+          chmod +x scripts/ops/agent-lint.sh
+          FAIL_MODE=warn VERBOSE=true scripts/ops/agent-lint.sh
           
       - name: Generate OpenAPI Schema
         run: |
-          cd backend
-          chmod +x scripts/gen_openapi.sh
-          scripts/gen_openapi.sh
+          chmod +x scripts/ops/gen_openapi.sh
+          scripts/ops/gen_openapi.sh
           
       - name: Check Documentation Currency
         run: |
-          chmod +x scripts/check_docs_currency.py
-          python3 scripts/check_docs_currency.py
+          chmod +x scripts/ops/check_docs_currency.py
+          python3 scripts/ops/check_docs_currency.py
           
       - name: Validate Critical Structure Changes
         run: |
           # Проверяем, были ли изменения в критических файлах структуры
-          if git diff --name-only HEAD~1 | grep -E "(backend/workers|backend/api|backend/services)" > /dev/null; then
+          if git diff --name-only HEAD~1 | grep -E "(workers|backend/api|backend/services)" > /dev/null; then
             echo "🔄 Обнаружены изменения в структуре - требуется проверка документации"
             
             # Жесткая проверка при структурных изменениях  
-            FAIL_MODE=fail VERBOSE=true scripts/agent-lint.sh
+            FAIL_MODE=fail VERBOSE=true scripts/ops/agent-lint.sh
           else
             echo "✅ Структурные изменения не обнаружены"
           fi
