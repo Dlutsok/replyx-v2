@@ -36,8 +36,8 @@ export const createApiUrl = (endpoint) => {
   return `${API_CONFIG.BASE_URL}${endpoint}`;
 };
 
-// Backend URL для API endpoints
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru';
+// Backend URL для API endpoints (используем ту же логику что и BASE_URL)
+export const API_URL = resolveBaseUrl();
 
 // Экспорт конфигурации
 export default API_CONFIG;
