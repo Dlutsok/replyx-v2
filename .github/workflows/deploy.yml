@@ -150,7 +150,7 @@ jobs:
       - name: Test docker-compose syntax
         run: |
           cd Deployed/
-          docker-compose -f docker-compose.yml config --quiet
+          docker compose -f docker-compose.yml config --quiet
           echo "✅ Docker compose syntax is valid!"
       
       - name: Deploy info
