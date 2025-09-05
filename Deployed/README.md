@@ -1,5 +1,81 @@
 # Руководство по развертыванию ReplyX в продакшене
 
+## ⚡ Быстрый старт на новом сервере (GHCR login, pull, compose up)
+
+Ниже пошагово показано, что сделать на чистом сервере, чтобы подтянуть образы из GHCR и запустить `Deployed/docker-compose.yml`.
+
+1) Установить Docker и Compose plugin
+```bash
+sudo apt update && sudo apt install -y ca-certificates curl gnupg
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release; echo $VERSION_CODENAME) stable" | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
+sudo apt update && sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+
+2) Создать каталог деплоя и положить сюда папку `Deployed/`
+```bash
+sudo mkdir -p /opt/replyx
+# Вариант A: скопировать с локальной машины
+# scp -r Deployed/ user@server:/opt/replyx/Deployed
+# Вариант B: клонировать репозиторий и перейти в каталог
+# git clone https://github.com/Dlutsok/replyx.git /opt/replyx/src && cp -r /opt/replyx/src/Deployed /opt/replyx/Deployed
+cd /opt/replyx/Deployed
+```
+
+3) (Рекомендуется) Настроить безопасный login в GHCR
+```bash
+# Если раньше записали файл с угловыми скобками — удалите его
+sudo rm -f /etc/ghcr/ghcr.env 2>/dev/null || true
+
+sudo install -d -m 0750 /etc/ghcr
+sudo tee /etc/ghcr/ghcr.env >/dev/null <<'EOF'
+GHCR_USERNAME=Dlutsok
+GHCR_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+EOF
+sudo chmod 600 /etc/ghcr/ghcr.env
+
+# Логин в GHCR (пароль подаём через stdin, без интерактива)
+set -a && source /etc/ghcr/ghcr.env && set +a
+printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
+```
+Примечания:
+- Вместо `ghp_xxx` вставьте НОВЫЙ рабочий токен с правами `read:packages` (без угловых скобок). Если старый токен где‑то светился — отзовите его в GitHub → Settings → Developer settings → Tokens.
+- Если пакеты в GHCR публичные, шаг логина можно пропустить, но лучше оставить — снимает rate‑limit.
+
+4) Подготовить файл окружения `.env.production`
+```bash
+cd /opt/replyx/Deployed
+sudo tee .env.production >/dev/null <<'EOF'
+# Обязательный тег образов
+TAG=latest
+
+# Бэкенд/воркеры
+DATABASE_URL=postgresql://user:pass@db:5432/replyx
+REDIS_URL=redis://redis:6379/0
+JWT_SECRET=change_me
+
+# Фронтенд
+PUBLIC_DOMAIN=your-domain.com
+API_DOMAIN=api.your-domain.com
+NEXT_PUBLIC_API_URL=https://api.your-domain.com
+EOF
+```
+
+5) Запуск (pull + up)
+```bash
+cd /opt/replyx/Deployed
+docker compose -f docker-compose.yml config --quiet
+docker compose pull
+docker compose up -d
+
+# Миграции БД (если используются)
+docker compose exec -T backend alembic upgrade head || true
+```
+
+6) (Опционально) Автообновление по systemd
+- Смотрите раздел «systemd» ниже или используйте готовый сценарий из инструкции (replyx-update.service / replyx-update.timer).
+
 ## 🟢 Статус готовности к продакшену
 
 ✅ **CORS безопасность** - Строгие CORS настройки для продакшена  
