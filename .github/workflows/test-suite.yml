@@ -130,6 +130,10 @@ jobs:
         env:
           DATABASE_URL: postgresql://replyx_test:test_password@localhost:5432/replyx_test
           REDIS_URL: redis://localhost:6379/1
+      - name: Ensure backend report dir
+        if: always()
+        run: |
+          mkdir -p tests/reports/backend && touch tests/reports/backend/.keep
           
       - name: Run integration tests
         run: |
@@ -161,7 +165,9 @@ jobs:
         if: always()
         with:
           name: backend-test-results
-          path: tests/reports/backend/
+          path: |
+            tests/reports/backend/
+            !tests/reports/backend/*.tmp
 
   # ========================== FRONTEND ТЕСТЫ ==========================
   frontend-tests:
@@ -193,6 +199,8 @@ jobs:
         run: |
           cd tests/frontend
           npm ci
+          # Ensure report dir exists to avoid 'No files found' warnings
+          mkdir -p ../reports/frontend && touch ../reports/frontend/.keep
           
       - name: Run linting
         run: |
@@ -226,7 +234,9 @@ jobs:
         if: always()
         with:
           name: frontend-test-results
-          path: tests/reports/frontend/
+          path: |
+            tests/reports/frontend/
+            !tests/reports/frontend/*.tmp
 
   # ========================== E2E ТЕСТЫ ==========================
   e2e-tests:
@@ -396,6 +406,10 @@ jobs:
             --junit-xml=../tests/reports/security/junit-security.xml
         env:
           DATABASE_URL: postgresql://replyx_security:security_password@localhost:5432/replyx_security
+      - name: Ensure security report dir
+        if: always()
+        run: |
+          mkdir -p tests/reports/security && touch tests/reports/security/.keep
           
       - name: Upload security test results
         uses: actions/upload-artifact@v4

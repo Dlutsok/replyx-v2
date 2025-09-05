@@ -42,8 +42,16 @@ jobs:
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
         if: always() && hashFiles('trivy-results.sarif') != ''
+        continue-on-error: true
         with:
           sarif_file: 'trivy-results.sarif'
+
+      - name: Upload SARIF as artifact (fs scan)
+        uses: actions/upload-artifact@v4
+        if: always() && hashFiles('trivy-results.sarif') != ''
+        with:
+          name: trivy-fs-scan-sarif
+          path: trivy-results.sarif
 
   # =============================================================================
   # SECRETS SCANNING  
@@ -133,8 +141,16 @@ jobs:
       - name: Upload image scan results
         uses: github/codeql-action/upload-sarif@v3
         if: always() && hashFiles(format('trivy-{0}-results.sarif', matrix.image)) != ''
+        continue-on-error: true
         with:
           sarif_file: 'trivy-${{ matrix.image }}-results.sarif'
+
+      - name: Upload SARIF as artifact (image scan)
+        uses: actions/upload-artifact@v4
+        if: always() && hashFiles(format('trivy-{0}-results.sarif', matrix.image)) != ''
+        with:
+          name: trivy-image-${{ matrix.image }}-sarif
+          path: trivy-${{ matrix.image }}-results.sarif
 
   # =============================================================================
   # CONFIGURATION SCANNING
@@ -174,14 +190,30 @@ jobs:
       - name: Upload config scan results
         uses: github/codeql-action/upload-sarif@v3
         if: always() && hashFiles('trivy-config-results.sarif') != ''
+        continue-on-error: true
         with:
           sarif_file: 'trivy-config-results.sarif'
+
+      - name: Upload SARIF as artifact (config scan)
+        uses: actions/upload-artifact@v4
+        if: always() && hashFiles('trivy-config-results.sarif') != ''
+        with:
+          name: trivy-config-sarif
+          path: trivy-config-results.sarif
       
       - name: Upload deployed config scan results
         uses: github/codeql-action/upload-sarif@v3
         if: always() && hashFiles('trivy-deployed-config-results.sarif') != ''
+        continue-on-error: true
         with:
           sarif_file: 'trivy-deployed-config-results.sarif'
+
+      - name: Upload SARIF as artifact (deployed config)
+        uses: actions/upload-artifact@v4
+        if: always() && hashFiles('trivy-deployed-config-results.sarif') != ''
+        with:
+          name: trivy-deployed-config-sarif
+          path: trivy-deployed-config-results.sarif
 
   # =============================================================================
   # SECURITY SUMMARY
