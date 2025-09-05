@@ -99,6 +99,10 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt -r ../tests/backend/requirements-test.txt
           
+      - name: Create test reports directories
+        run: |
+          mkdir -p tests/reports/backend tests/reports/frontend tests/reports/security tests/reports/performance tests/reports/e2e
+          
       - name: Set up test environment
         run: |
           cp backend/.env.example backend/.env.test
