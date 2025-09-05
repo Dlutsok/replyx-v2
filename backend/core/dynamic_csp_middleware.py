@@ -236,9 +236,7 @@ class DynamicCSPMiddleware(BaseHTTPMiddleware):
                 response = await call_next(request)
                 response.headers['Content-Security-Policy'] = dynamic_csp
                 
-                # Также добавляем X-Frame-Options как fallback
-                frame_options = f"ALLOW-FROM https://{allowed_domains[0]}" if allowed_domains else "SAMEORIGIN"
-                response.headers['X-Frame-Options'] = frame_options
+                # X-Frame-Options убран - используем только современный CSP frame-ancestors
                 
                 return response
                 

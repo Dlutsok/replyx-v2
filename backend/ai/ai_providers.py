@@ -263,25 +263,34 @@ class OpenAIProvider(BaseAIProvider):
             "max_tokens": kwargs.get('max_tokens', 1000)
         }
         
-        client_kwargs: Dict[str, Any] = {"timeout": 60.0}
+        client_kwargs: Dict[str, Any] = {"timeout": 60.0, "trust_env": False}
         if self.proxy_url:
-            # httpx использует параметр 'proxy' для всех версий
+            # Для установленной версии httpx используем параметр 'proxy'
             client_kwargs['proxy'] = self.proxy_url
             logger.info(f"🔗 Используется прокси: {self.proxy_url.split('@')[1] if '@' in self.proxy_url else self.proxy_url}")
-        async with httpx.AsyncClient(**client_kwargs) as client:
-            response = await client.post(
-                f"{self.base_url}/chat/completions",
-                headers=headers,
-                json=payload
-            )
-            response.raise_for_status()
-            data = response.json()
-            
-            return {
-                "content": data["choices"][0]["message"]["content"],
-                "usage": data.get("usage", {}),
-                "model": data.get("model", model)
-            }
+
+        try:
+            async with httpx.AsyncClient(**client_kwargs) as client:
+                response = await client.post(
+                    f"{self.base_url}/chat/completions",
+                    headers=headers,
+                    json=payload
+                )
+                response.raise_for_status()
+                data = response.json()
+                return {
+                    "content": data["choices"][0]["message"]["content"],
+                    "usage": data.get("usage", {}),
+                    "model": data.get("model", model)
+                }
+        except httpx.HTTPStatusError as e:
+            status = e.response.status_code if e.response else 'N/A'
+            body = e.response.text[:500] if e.response else ''
+            logger.warning(f"⚠️ OpenAI HTTP {status}: {body}")
+            raise
+        except (httpx.ProxyError, httpx.ConnectError, httpx.ReadTimeout, httpx.RemoteProtocolError) as e:
+            logger.warning(f"⚠️ OpenAI сеть/прокси ошибка: {repr(e)} via {self.proxy_url}")
+            raise
 
 
 class YandexProvider(BaseAIProvider):

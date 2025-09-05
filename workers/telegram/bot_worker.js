@@ -3,6 +3,9 @@ const axios = require('axios');
 const webhookConfig = require('../config/webhook');
 // Rate limiter для Telegram полностью отключен
 
+// Backend API URL configuration
+const BACKEND_API_URL = process.env.BACKEND_API_URL || 'http://localhost:8000';
+
 /**
  * 🤖 ИЗОЛИРОВАННЫЙ БОТ-ВОРКЕР
  * Каждый бот работает в отдельном процессе для максимальной изоляции
@@ -582,7 +585,7 @@ class BotWorker {
                 telegram_chat_id: telegramChatId
             });
 
-            const response = await axios.get(`http://127.0.0.1:8000/api/bot/dialogs?${searchParams}`);
+            const response = await axios.get(`${BACKEND_API_URL}/api/bot/dialogs?${searchParams}`);
             const dialogs = response.data;
 
             if (dialogs.length > 0) {
@@ -605,7 +608,7 @@ class BotWorker {
                 language_code: userInfo.language_code
             };
 
-            const createResponse = await axios.post(`http://127.0.0.1:8000/api/bot/dialogs`, createData);
+            const createResponse = await axios.post(`${BACKEND_API_URL}/api/bot/dialogs`, createData);
             return createResponse.data;
 
         } catch (error) {
@@ -619,7 +622,7 @@ class BotWorker {
      */
     async updateDialogUserInfo(dialogId, userInfo) {
         try {
-            await axios.patch(`http://127.0.0.1:8000/api/bot/dialogs/${dialogId}/user-info`, userInfo);
+            await axios.patch(`${BACKEND_API_URL}/api/bot/dialogs/${dialogId}/user-info`, userInfo);
             this.sendLog('info', `Обновлена информация о пользователе для диалога ${dialogId}`);
         } catch (error) {
             this.sendLog('error', `Ошибка обновления информации о пользователе: ${error.message}`);
@@ -631,7 +634,7 @@ class BotWorker {
      */
     async saveMessage(dialogId, sender, text) {
         try {
-            await axios.post(`http://127.0.0.1:8000/api/bot/dialogs/${dialogId}/messages`, {
+            await axios.post(`${BACKEND_API_URL}/api/bot/dialogs/${dialogId}/messages`, {
                 sender: sender,
                 text: text
             });
@@ -645,7 +648,7 @@ class BotWorker {
      */
     async getAIResponse(userId, text, assistant, dialogId = null) {
         try {
-            const response = await axios.post(`http://127.0.0.1:8000/api/bot/ai-response`, {
+            const response = await axios.post(`${BACKEND_API_URL}/api/bot/ai-response`, {
                 user_id: this.config.user_id,
                 message: text,
                 assistant_id: assistant.id,
@@ -1211,7 +1214,7 @@ class BotWorker {
     async requestHandoff(dialogId, reason, lastUserText) {
         try {
             const response = await axios.post(
-                `http://127.0.0.1:8000/api/dialogs/${dialogId}/handoff/request`,
+                `${BACKEND_API_URL}/api/dialogs/${dialogId}/handoff/request`,
                 {
                     reason: reason,
                     last_user_text: lastUserText,
@@ -1317,7 +1320,7 @@ class BotWorker {
      */
     async getFreshDialogStatus(dialogId) {
         try {
-            const response = await axios.get(`http://127.0.0.1:8000/api/dialogs/${dialogId}/status`);
+            const response = await axios.get(`${BACKEND_API_URL}/api/dialogs/${dialogId}/status`);
             const status = response.data;
             this.sendLog('info', `📊 Статус диалога ${dialogId}: handoff_status=${status.handoff_status}, is_taken_over=${status.is_taken_over}`);
             return status;

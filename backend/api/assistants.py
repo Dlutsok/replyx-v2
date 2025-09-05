@@ -290,16 +290,27 @@ def get_assistant_embed_code(
     # Используем переменные окружения для URL
     from core.app_config import FRONTEND_URL
     
-    # Добавляем timestamp для принудительного обновления токена при изменении доменов
-    domains_hash = hash(assistant.allowed_domains + str(assistant.updated_at))
+    # Нормализация доменов и стабильный хеш
+    import hashlib
+    raw_domains = assistant.allowed_domains or ""
+    normalized_domains = [
+        d.strip().lower().replace('https://', '').replace('http://', '').replace('www.', '').rstrip('/')
+        for d in raw_domains.split(',') if d.strip()
+    ]
+    # Убираем пустые, дубли и сортируем для стабильности
+    normalized_domains = sorted(list(set([d for d in normalized_domains if d])))
+    normalized_domains_str = ",".join(normalized_domains)
+    
+    domains_hash = hashlib.sha256(normalized_domains_str.encode('utf-8')).hexdigest()
     
     payload = {
         'user_id': current_user.id,
         'assistant_id': assistant_id,
         'type': 'site',
-        'allowed_domains': assistant.allowed_domains,
-        'domains_hash': domains_hash,  # Хеш для проверки актуальности
-        'issued_at': int(time.time())  # Время выдачи токена
+        'allowed_domains': normalized_domains_str,
+        'domains_hash': domains_hash,  # Стабильный sha256 от нормализованных доменов
+        'issued_at': int(time.time()),  # Время выдачи токена (без exp, бессрочный)
+        'widget_version': getattr(assistant, 'widget_version', 1)
     }
     site_token = jwt.encode(payload, SITE_SECRET, algorithm='HS256')
     
@@ -320,7 +331,7 @@ def get_assistant_embed_code(
         "token": site_token,
         "assistant_id": assistant_id,
         "assistant_name": assistant.name,
-        "allowed_domains": assistant.allowed_domains
+        "allowed_domains": normalized_domains_str
     }
 
 @router.post("/validate-widget-token")
@@ -328,7 +339,7 @@ def validate_widget_token(token_data: dict, db: Session = Depends(get_db)):
     """Валидация токена виджета на актуальность доменов"""
     try:
         token = token_data.get('token')
-        current_domain = token_data.get('domain', '').lower().replace('www.', '')
+        current_domain = (token_data.get('domain') or '').strip().lower().replace('https://', '').replace('http://', '').replace('www.', '').rstrip('/')
         
         if not token:
             return {"valid": False, "reason": "No token provided"}
@@ -337,7 +348,8 @@ def validate_widget_token(token_data: dict, db: Session = Depends(get_db)):
         
         # Декодируем токен
         try:
-            payload = jwt.decode(token, SITE_SECRET, algorithms=['HS256'])
+            # Бессрочный токен: отключаем проверку exp
+            payload = jwt.decode(token, SITE_SECRET, algorithms=['HS256'], options={"verify_exp": False})
         except jwt.InvalidTokenError as e:
             return {"valid": False, "reason": f"Invalid token: {str(e)}"}
             
@@ -349,31 +361,110 @@ def validate_widget_token(token_data: dict, db: Session = Depends(get_db)):
         assistant = db.query(models.Assistant).filter(models.Assistant.id == assistant_id).first()
         if not assistant:
             return {"valid": False, "reason": "Assistant not found"}
-            
-        # Проверяем актуальность доменов
-        current_domains = assistant.allowed_domains or ""
-        token_domains = payload.get('allowed_domains', "")
         
-        if current_domains != token_domains:
-            return {"valid": False, "reason": "Domains changed, token outdated"}
+        # Проверяем активность ассистента
+        if not getattr(assistant, 'is_active', True):
+            return {"valid": False, "reason": "Assistant disabled"}
+            
+        # Проверяем актуальность доменов и domains_hash (стабильный sha256 от нормализованного списка)
+        raw_current = assistant.allowed_domains or ""
+        current_domains_list = [
+            d.strip().lower().replace('https://', '').replace('http://', '').replace('www.', '').rstrip('/')
+            for d in raw_current.split(',') if d.strip()
+        ]
+        current_domains_list = sorted(list(set([d for d in current_domains_list if d])))
+        current_domains_str = ",".join(current_domains_list)
+        
+        token_domains = payload.get('allowed_domains', "")
+        token_domains_hash = payload.get('domains_hash')
+        token_widget_version = int(payload.get('widget_version') or 1)
+        
+        import hashlib
+        current_hash = hashlib.sha256(current_domains_str.encode('utf-8')).hexdigest()
+        
+        if token_domains_hash != current_hash:
+            return {"valid": False, "reason": "domains changed", "allowed_domains": current_domains_str}
+
+        # Проверяем версию виджета (точечный отзыв)
+        current_widget_version = int(getattr(assistant, 'widget_version', 1) or 1)
+        if token_widget_version != current_widget_version:
+            return {"valid": False, "reason": "version changed", "allowed_domains": current_domains_str}
             
         # Проверяем, что текущий домен разрешен
-        if not current_domains.strip():
+        if not current_domains_str.strip():
             return {"valid": False, "reason": "No domains configured"}
             
-        allowed_domains = [d.strip().lower().replace('https://', '').replace('http://', '').replace('www.', '').rstrip('/') 
-                          for d in current_domains.split(',') if d.strip()]
+        allowed_domains = current_domains_list
         
-        domain_allowed = any(current_domain == allowed or current_domain.endswith('.' + allowed) 
-                           for allowed in allowed_domains)
+        domain_allowed = True
+        if current_domain:
+            domain_allowed = any(current_domain == allowed or current_domain.endswith('.' + allowed) 
+                               for allowed in allowed_domains)
         
         if not domain_allowed:
             return {"valid": False, "reason": "Domain not allowed", "allowed_domains": allowed_domains}
             
-        return {"valid": True, "assistant_id": assistant_id}
-        
+        # Можно дополнительно вернуть user_id владельца, если нужно для фронта
+        return {"valid": True, "assistant_id": assistant_id, "allowed_domains": current_domains_str, "user_id": assistant.user_id}
     except Exception as e:
         return {"valid": False, "reason": f"Validation error: {str(e)}"}
+
+@router.post("/widgets")
+def create_widget_token(data: dict, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(get_db)):
+    """Выдать embed-код + свежий JWT для ассистента (виджета)."""
+    assistant_id = data.get('assistant_id')
+    if not assistant_id:
+        raise HTTPException(status_code=400, detail="assistant_id required")
+
+    assistant = db.query(models.Assistant).filter(
+        models.Assistant.id == assistant_id,
+        models.Assistant.user_id == current_user.id
+    ).first()
+    if not assistant:
+        raise HTTPException(status_code=404, detail="Assistant not found")
+
+    if not assistant.allowed_domains or assistant.allowed_domains.strip() == "":
+        raise HTTPException(status_code=400, detail="Для виджета необходимо указать разрешенные домены")
+
+    from core.app_config import SITE_SECRET
+    from core.app_config import FRONTEND_URL
+    import hashlib, time
+
+    raw_domains = assistant.allowed_domains or ""
+    normalized_domains = [
+        d.strip().lower().replace('https://', '').replace('http://', '').replace('www.', '').rstrip('/')
+        for d in raw_domains.split(',') if d.strip()
+    ]
+    normalized_domains = sorted(list(set([d for d in normalized_domains if d])))
+    normalized_domains_str = ",".join(normalized_domains)
+    domains_hash = hashlib.sha256(normalized_domains_str.encode('utf-8')).hexdigest()
+
+    payload = {
+        'user_id': current_user.id,
+        'assistant_id': assistant.id,
+        'type': 'site',
+        'allowed_domains': normalized_domains_str,
+        'domains_hash': domains_hash,
+        'issued_at': int(time.time()),
+        'widget_version': getattr(assistant, 'widget_version', 1)
+    }
+    site_token = jwt.encode(payload, SITE_SECRET, algorithm='HS256')
+
+    widget_theme = getattr(assistant, 'widget_theme', None) or 'blue'
+    if widget_theme and widget_theme.startswith('#'):
+        from urllib.parse import quote
+        theme_param = f"theme={quote(widget_theme)}"
+    else:
+        theme_param = f"theme={widget_theme}"
+
+    embed_code = f'<script src="{FRONTEND_URL}/widget.js?token={site_token}&assistant_id={assistant.id}&{theme_param}&type=floating&host={FRONTEND_URL}&v={domains_hash}" async></script>'
+    return {
+        "widget_id": assistant.id,
+        "site_token": site_token,
+        "embed_code": embed_code,
+        "allowed_domains": normalized_domains_str
+    }
+
 
 @router.post("/widget-config")
 def get_widget_config_by_token(token_data: dict, db: Session = Depends(get_db)):
@@ -391,7 +482,8 @@ def get_widget_config_by_token(token_data: dict, db: Session = Depends(get_db)):
         
         # Декодируем токен
         try:
-            payload = jwt.decode(token, SITE_SECRET, algorithms=['HS256'])
+            # Бессрочный токен: отключаем проверку exp
+            payload = jwt.decode(token, SITE_SECRET, algorithms=['HS256'], options={"verify_exp": False})
             print(f"[WIDGET_CONFIG] 🔓 Токен декодирован: assistant_id={payload.get('assistant_id')}")
         except jwt.InvalidTokenError as e:
             print(f"[WIDGET_CONFIG] ❌ Неверный токен: {e}")

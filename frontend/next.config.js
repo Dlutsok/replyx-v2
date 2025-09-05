@@ -36,13 +36,9 @@ const nextConfig = {
   async headers() {
     return [
       {
-        // Для iframe страниц - только базовые заголовки безопасности
+        // Для iframe страниц - только базовые заголовки безопасности (CSP устанавливается динамически через backend)
         source: '/chat-iframe',
         headers: [
-          {
-            key: 'Content-Security-Policy',
-            value: "frame-ancestors 'self' https://replyx.ru https://www.replyx.ru; default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:",
-          },
           {
             key: 'X-Content-Type-Options',
             value: 'nosniff',

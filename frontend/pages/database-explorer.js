@@ -59,7 +59,8 @@ const DATABASE_SCHEMA = {
       business_name: { type: 'String', description: 'Название бизнеса в виджете', example: 'СтенКом' },
       avatar_url: { type: 'Text', description: 'URL аватара оператора', example: '/uploads/avatars/user1_avatar.jpg' },
       widget_theme: { type: 'String', description: 'Тема виджета', example: '#313131', values: ['blue', 'green', 'purple', 'orange', 'HEX код'] },
-      widget_settings: { type: 'JSON', description: 'Дополнительные настройки виджета', example: '{"position": "bottom-right", "buttonSize": 80}' }
+      widget_settings: { type: 'JSON', description: 'Дополнительные настройки виджета', example: '{"position": "bottom-right", "buttonSize": 80}' },
+      widget_version: { type: 'Integer', description: 'Версия виджета для отзыва токенов', example: 1 }
     }
   },
 
@@ -633,7 +634,7 @@ function DatabaseExplorer() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/api/admin/database/tables/${tableName}/schema`, {
+      const response = await fetch(`${API_URL}/api/admin/database/tables/${tableName}/schema?_=${Date.now()}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 

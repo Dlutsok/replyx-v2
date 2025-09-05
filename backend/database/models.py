@@ -223,6 +223,7 @@ class Assistant(Base):
     website_integration_enabled = Column(Boolean, default=False)  # Включена ли интеграция с сайтом
     allowed_domains = Column(Text, nullable=True)  # Разрешенные домены для виджета (через запятую)
     knowledge_version = Column(Integer, default=1)  # Версия знаний для lazy reload
+    widget_version = Column(Integer, default=1)  # Версия виджета для отзыва токенов
     
     # Поля персонализации виджета
     operator_name = Column(String(255), nullable=True, default='Поддержка')  # Имя оператора

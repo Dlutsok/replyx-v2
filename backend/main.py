@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Response, Request, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from core.dynamic_cors_middleware import DynamicCORSMiddleware
+from core.dynamic_csp_middleware import DynamicCSPMiddleware
 from database.connection import engine, Base, SessionLocal, get_db
 from database import models
 import os
@@ -162,6 +163,14 @@ app.add_middleware(
     allow_headers=["*"],
     max_age=600,
 )
+
+# 🛡️ Динамический CSP Middleware для iframe страниц
+app.add_middleware(
+    DynamicCSPMiddleware,
+    iframe_path='/chat-iframe'
+)
+
+print("🛡️ DynamicCSPMiddleware добавлен для iframe страниц")
 
 # 🛡️ CSRF Protection Middleware
 # Включаем только в продакшене или при явном указании

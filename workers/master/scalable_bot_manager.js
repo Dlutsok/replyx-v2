@@ -8,6 +8,9 @@ const TelegramBot = require('node-telegram-bot-api');
 const WebhookServer = require('../services/webhook_server');
 const webhookConfig = require('../config/webhook');
 
+// Backend API URL configuration
+const BACKEND_API_URL = process.env.BACKEND_API_URL || 'http://localhost:8000';
+
 /**
  * 🧠 МАСТЕР-ПРОЦЕСС ДЛЯ МАСШТАБИРУЕМОЙ МУЛЬТИБОТ-СИСТЕМЫ
  * Управляет 1000+ ботов через изолированные воркер-процессы
@@ -104,7 +107,7 @@ class ScalableBotManager {
      */
     async loadBotsFromDB() {
         try {
-            const response = await axios.get('http://localhost:8000/api/bot-instances-all');
+            const response = await axios.get(`${BACKEND_API_URL}/api/bot-instances-all`);
             const botInstances = response.data;
             const activeBotIds = botInstances.filter(b => b.is_active).map(b => b.id);
             
@@ -191,7 +194,7 @@ class ScalableBotManager {
             }
             
             // Получаем ассистента
-            const assistantResponse = await axios.get(`http://localhost:8000/api/bot-instances/${botId}/assistant`);
+            const assistantResponse = await axios.get(`${BACKEND_API_URL}/api/bot-instances/${botId}/assistant`);
             const assistant = assistantResponse.data;
             
             if (!assistant) {
@@ -426,7 +429,7 @@ class ScalableBotManager {
                             return;
                         }
                         
-                        const response = await axios.get('http://localhost:8000/api/bot-instances-all');
+                        const response = await axios.get(`${BACKEND_API_URL}/api/bot-instances-all`);
                         const botConfig = response.data.find(b => b.id === botId && b.is_active);
                         
                         if (botConfig) {
@@ -686,7 +689,7 @@ class ScalableBotManager {
         try {
             // 6. Получение конфигурации
             console.log(`📋 [${restartId}] Фаза 4: Получение конфигурации из БД`);
-            const response = await axios.get('http://localhost:8000/api/bot-instances-all');
+            const response = await axios.get(`${BACKEND_API_URL}/api/bot-instances-all`);
             const botConfig = response.data.find(b => b.id === botId && b.is_active);
             
             if (botConfig) {
@@ -849,7 +852,7 @@ class ScalableBotManager {
         // Периодическая очистка неактивных воркеров (каждые 5 минут)
         setInterval(async () => {
             try {
-                const response = await axios.get('http://localhost:8000/api/bot-instances-all');
+                const response = await axios.get(`${BACKEND_API_URL}/api/bot-instances-all`);
                 const activeBotIds = response.data.filter(b => b.is_active).map(b => b.id);
                 await this.cleanupInactiveWorkers(activeBotIds);
             } catch (error) {
@@ -927,7 +930,7 @@ class ScalableBotManager {
      */
     async syncWithDatabase() {
         try {
-            const response = await axios.get('http://localhost:8000/api/bot-instances-all');
+            const response = await axios.get(`${BACKEND_API_URL}/api/bot-instances-all`);
             const botInstances = response.data;
             const activeBotIds = botInstances.filter(b => b.is_active).map(b => b.id);
             const currentWorkerIds = Array.from(this.workers.keys()).map(id => parseInt(id));
@@ -999,7 +1002,7 @@ class ScalableBotManager {
     async checkBotChanges(botId, newBotConfig) {
         try {
             // Получаем текущие данные ассистента
-            const assistantResponse = await axios.get(`http://localhost:8000/api/bot-instances/${botId}/assistant`);
+            const assistantResponse = await axios.get(`${BACKEND_API_URL}/api/bot-instances/${botId}/assistant`);
             const newAssistant = assistantResponse.data;
             
             if (!newAssistant) {
@@ -1289,7 +1292,7 @@ class ScalableBotManager {
                 
                 // Получаем информацию о ботах из БД
                 try {
-                    const response = await axios.get('http://localhost:8000/api/bot-instances-all');
+                    const response = await axios.get(`${BACKEND_API_URL}/api/bot-instances-all`);
                     const dbBots = response.data;
                     
                     // Формируем данные о ботах для мониторинга
@@ -1476,7 +1479,7 @@ class ScalableBotManager {
         // Очистка неактивных воркеров
         app.post('/workers/cleanup', async (req, res) => {
             try {
-                const response = await axios.get('http://localhost:8000/api/bot-instances-all');
+                const response = await axios.get(`${BACKEND_API_URL}/api/bot-instances-all`);
                 const activeBotIds = response.data.filter(b => b.is_active).map(b => b.id);
                 
                 await this.cleanupInactiveWorkers(activeBotIds);
@@ -1946,7 +1949,7 @@ class ScalableBotManager {
                 
                 // Запрос к FastAPI для получения bot_id по telegram_chat_id
                 console.log(`🔍 Получение диалога для Telegram чата ${telegram_chat_id}`);
-                const apiUrl = `http://127.0.0.1:8000/api/dialogs/by-telegram-chat/${telegram_chat_id}`;
+                const apiUrl = `${BACKEND_API_URL}/api/dialogs/by-telegram-chat/${telegram_chat_id}`;
                 console.log(`🔍 URL запроса: ${apiUrl}`);
                 
                 let fastApiResponse;
@@ -1993,7 +1996,7 @@ class ScalableBotManager {
                     console.log(`🤖 Получение bot instance для ассистента ${assistant_id}`);
                     let botInstanceResponse;
                     try {
-                        botInstanceResponse = await axios.get(`http://127.0.0.1:8000/api/bot-instances/by-assistant/${assistant_id}`, {
+                        botInstanceResponse = await axios.get(`${BACKEND_API_URL}/api/bot-instances/by-assistant/${assistant_id}`, {
                             timeout: 15000 // 15 секунд - временно увеличиваем для диагностики
                         });
                         console.log(`✅ Bot instance найден для ассистента ${assistant_id}, bot_id: ${botInstanceResponse.data?.id}`);
@@ -2078,7 +2081,7 @@ class ScalableBotManager {
                 console.log(`🔔 Отправка системного сообщения (${system_type}) в Telegram чат ${telegram_chat_id}: ${text}`);
 
                 // Находим бота по telegram_chat_id через FastAPI
-                const dialogResponse = await axios.get(`http://127.0.0.1:8000/api/dialogs/by-telegram-chat/${telegram_chat_id}`, {
+                const dialogResponse = await axios.get(`${BACKEND_API_URL}/api/dialogs/by-telegram-chat/${telegram_chat_id}`, {
                     timeout: 5000
                 });
 
@@ -2658,7 +2661,7 @@ class ScalableBotManager {
             console.log(`🔥 ГОРЯЧАЯ ПЕРЕЗАГРУЗКА настроек для бота ${botId}`);
             
             // Получаем актуальные данные ассистента
-            const assistantResponse = await axios.get(`http://localhost:8000/api/bot-instances/${botId}/assistant`);
+            const assistantResponse = await axios.get(`${BACKEND_API_URL}/api/bot-instances/${botId}/assistant`);
             const assistant = assistantResponse.data;
             
             if (!assistant) {
@@ -2667,7 +2670,7 @@ class ScalableBotManager {
             }
             
             // Получаем конфигурацию бота
-            const botConfigResponse = await axios.get('http://localhost:8000/api/bot-instances-all');
+            const botConfigResponse = await axios.get(`${BACKEND_API_URL}/api/bot-instances-all`);
             const botConfig = botConfigResponse.data.find(b => b.id === botId);
             
             if (!botConfig) {

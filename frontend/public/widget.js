@@ -68,15 +68,19 @@
   })();
 
   const defaultApiUrl = (() => {
-    // API URL для backend (порт 8000)
+    // API URL для backend (порт 8000 в dev)
     if (scriptSrc) {
       try {
         const u = new URL(scriptSrc);
-        // В продакшене API на том же хосте, но порт может отличаться
+        const host = u.hostname;
+        if (host === 'localhost' || host === '127.0.0.1') {
+          return 'http://localhost:8000';
+        }
+        // прод: используем протокол + hostname без смены порта
         return `${u.protocol}//${u.hostname}`;
       } catch (e) {}
     }
-    return 'http://localhost';
+    return 'http://localhost:8000';
   })();
 
   const config = {
