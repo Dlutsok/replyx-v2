@@ -194,25 +194,3 @@ networks:
     ipam:
       config:
         - subnet: 172.21.0.0/24
-  # Local PostgreSQL for testing
-  postgres:
-    image: postgres:14
-    container_name: replyx-postgres-test
-    environment:
-      POSTGRES_DB: replyx_test
-      POSTGRES_USER: replyx_user
-      POSTGRES_PASSWORD: test_password
-      POSTGRES_HOST_AUTH_METHOD: trust
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    networks:
-      - replyx-network
-    restart: unless-stopped
-
-volumes:
-  redis-data:
-    driver: local
-  postgres-data:  # Add postgres volume
-    driver: local
