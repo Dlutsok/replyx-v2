@@ -181,7 +181,7 @@ jobs:
   frontend-tests:
     name: Frontend Tests
     needs: setup
-    if: needs.setup.outputs.frontend-changed == 'true' || needs.setup.outputs.tests-changed == 'true'
+    if: (needs.setup.outputs.frontend-changed == 'true' || needs.setup.outputs.tests-changed == 'true') && hashFiles('tests/frontend/package.json') != ''
     runs-on: ubuntu-latest
     
     steps:
@@ -269,7 +269,7 @@ jobs:
   e2e-tests:
     name: End-to-End Tests
     needs: [backend-tests, frontend-tests]
-    if: always() && (needs.backend-tests.result == 'success' || needs.frontend-tests.result == 'success')
+    if: always() && needs.backend-tests.result == 'success' && needs.frontend-tests.result == 'success'
     runs-on: ubuntu-latest
     
     services:
