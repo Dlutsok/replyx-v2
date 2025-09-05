@@ -1,23 +1,24 @@
 (function() {
   'use strict';
   
-  // Конфигурация - может быть переопределена через window.ChatAIConfig
+  // Конфигурация - может быть переопределена через window.ReplyXConfig
+  const defaultOrigin = (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
   const defaultConfig = {
-    apiUrl: 'http://localhost:8000',
-    frontendUrl: 'http://localhost:3000',
+    apiUrl: defaultOrigin.replace(':3000', ':8000'),
+    frontendUrl: defaultOrigin,
     siteToken: 'test_site_token_12345',
     theme: 'blue'
   };
   
-  const config = window.ChatAIConfig ? { ...defaultConfig, ...window.ChatAIConfig } : defaultConfig;
+  const config = window.ReplyXConfig ? { ...defaultConfig, ...window.ReplyXConfig } : defaultConfig;
   
   // Проверяем, что виджет еще не загружен
-  if (window.ChatAIWidget) {
+  if (window.ReplyXWidget) {
     return;
   }
-  
+
   // Создаем namespace
-  window.ChatAIWidget = {
+  window.ReplyXWidget = {
     isMinimized: true,
     isLoaded: false,
     container: null,
@@ -35,7 +36,7 @@
     // Создаем основной контейнер
     createContainer: function() {
       this.container = document.createElement('div');
-      this.container.id = 'chatai-widget-container';
+      this.container.id = 'replyx-widget-container';
       this.container.style.cssText = `
         position: fixed;
         top: 0;
@@ -53,62 +54,34 @@
     loadStyles: function() {
       const style = document.createElement('style');
       style.textContent = `
-        @keyframes chatai-pulse {
-          0% { box-shadow: 0 12px 40px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.1); }
-          50% { box-shadow: 0 16px 50px rgba(0,0,0,0.3), 0 0 20px rgba(102, 126, 234, 0.4); }
-          100% { box-shadow: 0 12px 40px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.1); }
-        }
         
-        @keyframes chatai-float1 {
-          0%, 100% { transform: translateY(0) translateX(0); }
-          25% { transform: translateY(-3px) translateX(2px); }
-          50% { transform: translateY(-6px) translateX(0); }
-          75% { transform: translateY(-3px) translateX(-2px); }
-        }
-        
-        @keyframes chatai-float2 {
-          0%, 100% { transform: translateY(0) translateX(0); }
-          33% { transform: translateY(3px) translateX(-2px); }
-          66% { transform: translateY(6px) translateX(2px); }
-        }
-        
-        @keyframes chatai-slide-up {
+        @keyframes replyx-slide-up {
           from { transform: translateY(100%); opacity: 0; }
           to { transform: translateY(0); opacity: 1; }
         }
         
-        .chatai-widget-button {
+        .replyx-widget-button {
           position: fixed;
           bottom: 20px;
           right: 20px;
-          width: 80px;
-          height: 80px;
+          width: 56px;
+          height: 56px;
           background: linear-gradient(135deg, #667eea, #764ba2);
-          border-radius: 0.75rem;
+          border-radius: 50%;
           cursor: pointer;
-          box-shadow: 0 12px 40px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.1);
+          box-shadow: rgba(8, 15, 26, 0.08) 0px 2px 8px 0px, rgba(8, 15, 26, 0.12) 0px 2px 2px 0px;
           display: flex;
-          flex-direction: column;
           align-items: center;
           justify-content: center;
           color: white;
-          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
           z-index: 1000000;
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255,255,255,0.1);
-          overflow: hidden;
-          animation: chatai-pulse 3s ease-in-out infinite;
           pointer-events: auto;
+          border: none;
         }
         
-        .chatai-widget-button:hover {
-          transform: scale(1.05) rotate(2deg);
-          box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 30px rgba(102, 126, 234, 0.4);
-        }
-        
-        .chatai-chat-container {
+        .replyx-chat-container {
           position: fixed;
-          bottom: 20px;
+          bottom: 89px;
           right: 20px;
           width: 400px;
           height: 600px;
@@ -117,13 +90,18 @@
           box-shadow: 0 20px 60px rgba(0,0,0,0.15);
           display: flex;
           flex-direction: column;
-          z-index: 1000000;
-          animation: chatai-slide-up 0.3s ease-out;
+          z-index: 999999;
+          animation: replyx-slide-up 0.3s ease-out;
           pointer-events: auto;
+          cursor: default;
+          user-select: none;
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
         }
         
         @media (max-width: 480px) {
-          .chatai-chat-container {
+          .replyx-chat-container {
             width: 100vw;
             height: 100vh;
             bottom: 0;
@@ -135,34 +113,41 @@
       document.head.appendChild(style);
     },
     
+    // Chat иконка (speech bubble)
+    getChatIcon: function() {
+      return `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="#FFFFFF" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"></path>
+          <path d="M0 0h24v24H0z" fill="none"></path>
+        </svg>
+      `;
+    },
+    
+    // Close иконка (X)
+    getCloseIcon: function() {
+      return `
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="#FFFFFF" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M5.275 16L4 14.725L8.725 10L4 5.275L5.275 4L10 8.725L14.725 4L16 5.275L11.275 10L16 14.725L14.725 16L10 11.275L5.275 16Z"></path>
+          <path d="M0 0h24v24H0z" fill="none"></path>
+        </svg>
+      `;
+    },
+
     // Создаем свернутый виджет
     createMinimizedWidget: function() {
       const button = document.createElement('div');
-      button.className = 'chatai-widget-button';
-      button.innerHTML = `
-        <div style="position: relative; display: flex; align-items: center; justify-content: center; margin-bottom: 4px;">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/>
-            <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/>
-            <circle cx="12" cy="12" r="2"/>
-            <path d="M12 7v5l3 3"/>
-          </svg>
-          
-          <div style="position: absolute; width: 4px; height: 4px; background: white; border-radius: 50%; top: 5px; right: 5px; animation: chatai-float1 2s ease-in-out infinite; opacity: 0.7;"></div>
-          <div style="position: absolute; width: 3px; height: 3px; background: white; border-radius: 50%; bottom: 5px; left: 5px; animation: chatai-float2 2.5s ease-in-out infinite; opacity: 0.5;"></div>
-        </div>
-        
-        <div style="font-size: 10px; font-weight: 600; letter-spacing: 1px; opacity: 0.9; text-transform: uppercase;">
-          AI
-        </div>
-        
-        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 1px, transparent 1px), radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1) 1px, transparent 1px), radial-gradient(circle at 60% 40%, rgba(255,255,255,0.05) 1px, transparent 1px);"></div>
-      `;
+      button.className = 'replyx-widget-button';
+      button.innerHTML = this.getChatIcon();
       
       button.addEventListener('click', () => {
-        this.expand();
+        if (this.isMinimized) {
+          this.expand();
+        } else {
+          this.minimize();
+        }
       });
       
+      this.button = button; // Сохраняем ссылку для переключения иконок
       this.container.appendChild(button);
     },
     
@@ -171,35 +156,95 @@
       this.container.innerHTML = '';
       this.isMinimized = false;
       
+      // Создаем кнопку с крестиком
+      const button = document.createElement('div');
+      button.className = 'replyx-widget-button';
+      button.innerHTML = this.getCloseIcon();
+      
+      button.addEventListener('click', () => {
+        this.minimize();
+      });
+      
+      this.button = button;
+      
       const chatContainer = document.createElement('div');
-      chatContainer.className = 'chatai-chat-container';
+      chatContainer.className = 'replyx-chat-container';
       
       // Создаем iframe с нашим чатом (Safari-совместимо)
       const iframe = document.createElement('iframe');
       
       // Safari-совместимые атрибуты
-      iframe.setAttribute('src', config.frontendUrl + '/chat-iframe?site_token=' + encodeURIComponent(config.siteToken));
+      let iframeSrc = config.frontendUrl + '/chat-iframe?';
+      const params = [];
+      
+      if (config.siteToken) {
+        params.push('site_token=' + encodeURIComponent(config.siteToken));
+      }
+      
+      if (config.apiUrl) {
+        params.push('api=' + encodeURIComponent(config.apiUrl));
+      }
+      
+      iframeSrc += params.join('&');
+      
+      console.log('[ReplyX Widget] Loading iframe with src:', iframeSrc);
+      
+      iframe.setAttribute('src', iframeSrc);
       iframe.setAttribute('frameborder', '0');
       iframe.setAttribute('allowfullscreen', 'true');
+      iframe.setAttribute('tabindex', '0');
+      iframe.setAttribute('scrolling', 'no');
       
       // Применяем стили через объект для Safari
       const iframeStyles = {
         width: '100%',
         height: '100%',
         border: 'none',
-        borderRadius: '0.75rem'
+        borderRadius: '0.75rem',
+        pointerEvents: 'auto',
+        display: 'block',
+        outline: 'none'
       };
       
       for (const [key, value] of Object.entries(iframeStyles)) {
         iframe.style[key] = value;
       }
       
+      // Добавляем обработчики для правильного взаимодействия с iframe
+      chatContainer.addEventListener('click', (e) => {
+        // Передаем focus в iframe при клике на контейнер
+        e.stopPropagation();
+        iframe.focus();
+      });
+      
+      // Предотвращаем всплытие событий scroll к родительской странице
+      chatContainer.addEventListener('wheel', (e) => {
+        e.stopPropagation();
+      }, { passive: false });
+      
+      chatContainer.addEventListener('touchmove', (e) => {
+        e.stopPropagation();
+      }, { passive: false });
+      
+      iframe.addEventListener('load', () => {
+        console.log('[ReplyX Widget] Iframe loaded successfully');
+        // Устанавливаем focus на iframe после загрузки
+        setTimeout(() => {
+          iframe.focus();
+        }, 100);
+      });
+      
+      iframe.addEventListener('error', (e) => {
+        console.error('[ReplyX Widget] Iframe failed to load:', e);
+      });
+      
       chatContainer.appendChild(iframe);
       this.container.appendChild(chatContainer);
+      this.container.appendChild(button); // Добавляем кнопку закрытия
       
       // Слушаем сообщения от iframe
       window.addEventListener('message', (event) => {
-        if (event.data.type === 'chatAI_minimize') {
+        if (event.data.type === 'replyX_minimize') {
           this.minimize();
         }
       });
@@ -216,10 +261,10 @@
   // Автоматическая инициализация при загрузке DOM
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      window.ChatAIWidget.init();
+      window.ReplyXWidget.init();
     });
   } else {
-    window.ChatAIWidget.init();
+    window.ReplyXWidget.init();
   }
   
 })(); 

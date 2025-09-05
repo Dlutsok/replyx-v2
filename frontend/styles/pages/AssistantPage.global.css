@@ -1,0 +1,9 @@
+/* Global overrides for Assistant Page only */
+body.assistant-page .DashboardLayout_mainContainer__ISDaO {
+  padding-left: 0px;
+}
+
+/* Alternative selector in case the generated class name is different */
+body.assistant-page .DashboardLayout_mainContainer {
+  padding-left: 0px;
+}

@@ -8,12 +8,19 @@
   margin-bottom: 24px;
   display: flex;
   justify-content: flex-end;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #ffffff;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .toggleButtons {
   display: flex;
   background: #f3f4f6;
-  border-radius: 8px;
+  border-radius: 0.75rem;
   padding: 2px;
   gap: 2px;
 }
@@ -25,7 +32,7 @@
   padding: 8px 16px;
   background: transparent;
   border: none;
-  border-radius: 6px;
+  border-radius: 0.75rem;
   font-size: 14px;
   font-weight: 500;
   color: #6b7280;

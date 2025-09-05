@@ -2,6 +2,9 @@
 
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { DESIGN_TOKENS } from '../../constants/designSystem';
+import SectionWrapper from '../common/SectionWrapper';
+import Button from '../common/Button';
 
 // Компактные иконки для преимуществ (уменьшены до 20px)
 const TargetIcon = ({ className }) => (
@@ -32,8 +35,8 @@ const CurrencyDollarIcon = ({ className }) => (
 const PricingSection = () => {
   const [messages, setMessages] = useState(5000);
   
-  // Расчёт цены ChatAI: сообщения в месяц × 3₽
-  const chataiPrice = messages * 3;
+  // Расчёт цены ReplyX: сообщения в месяц × 5₽
+  const replyxPrice = messages * 5;
   
   // Логика ценообразования конкурентов (подписочная модель с лимитами)
   const getCompetitorPrice = (monthlyMessages) => {
@@ -45,14 +48,14 @@ const PricingSection = () => {
   };
   
   const competitorPrice = getCompetitorPrice(messages);
-  const savings = competitorPrice - chataiPrice;
+  const savings = competitorPrice - replyxPrice;
   const savingsPercent = Math.round((savings / competitorPrice) * 100);
 
   // Сравнение для 3 ключевых сценариев
   const pricingTable = [
-    { messages: "1K", chatai: 3000, competitor: 15000, savings: "80%" },
-    { messages: "5K", chatai: 15000, competitor: 25000, savings: "40%" },  
-    { messages: "15K", chatai: 45000, competitor: 50000, savings: "10%" }
+    { messages: "1K", replyx: 3000, competitor: 15000, savings: "80%" },
+    { messages: "5K", replyx: 15000, competitor: 25000, savings: "40%" },
+    { messages: "15K", replyx: 45000, competitor: 50000, savings: "10%" }
   ];
 
   const advantages = [
@@ -75,100 +78,104 @@ const PricingSection = () => {
   ];
 
   return (
-    <section className="py-12 bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Компактный заголовок */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          className="text-center mb-6"
-        >
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 leading-tight mb-2">
+      <SectionWrapper id="pricing">
+        <SectionWrapper.Header 
+        title={
+          <>
             Единственная{' '}
-            <span className="text-purple-600">честная цена</span>
+            <span className={DESIGN_TOKENS.colors.primary}>честная цена</span>
             {' '}на рынке AI‑поддержки
-          </h2>
-          <p className="text-lg text-gray-600 leading-relaxed">
-            Всего <span className="font-bold text-purple-600">3₽ за сообщение</span>. Никаких подписок, лимитов и штрафов
-          </p>
-        </motion.div>
+          </>
+        }
+        subtitle={
+          <>
+            Всего <span className="font-bold text-purple-600">5₽ за сообщение</span>. Никаких подписок, лимитов и штрафов
+          </>
+        }
+        className="mb-6"
+      />
 
-        {/* Объединённая панель: таблица + калькулятор */}
+        {/* Профессиональная панель: сравнение + калькулятор */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
-          className="bg-white rounded-lg border border-gray-200 mb-4"
+          className="bg-white rounded-xl border border-gray-200 mb-4 overflow-hidden"
         >
-          {/* Карточки сравнения */}
-          <div className="p-4 border-b border-gray-100">
-            <div className="grid grid-cols-3 gap-4">
-              {pricingTable.map((item, index) => (
-                <div key={index} className="bg-gray-50 rounded-lg p-4 text-center">
-                  <div className="text-lg font-bold text-gray-900 mb-2">{item.messages}</div>
-                  <div className="text-xs text-gray-500 mb-3">сообщений в месяц</div>
-                  
-                  <div className="space-y-2">
-                    <div className="bg-purple-50 rounded p-2">
-                      <div className="text-xs text-purple-600">ChatAI</div>
-                      <div className="font-bold text-purple-600">{item.chatai.toLocaleString()}₽</div>
-                    </div>
-                    
-                    <div className="bg-gray-100 rounded p-2">
-                      <div className="text-xs text-gray-500">Конкуренты</div>
-                      <div className="font-bold text-gray-600">{item.competitor.toLocaleString()}₽</div>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-3 text-xs font-semibold text-green-600">
-                    Экономия {item.savings}
-                  </div>
-                </div>
-              ))}
+          {/* Таблица сравнений по типовым объёмам */}
+          <div className="px-4 pt-4">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-gray-500">
+                    <th className="font-medium py-2 pr-4">Сообщений в месяц</th>
+                    <th className="font-medium py-2 pr-4">ReplyX</th>
+                    <th className="font-medium py-2 pr-4">Конкуренты</th>
+                    <th className="font-medium py-2">Экономия</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pricingTable.map((row, idx) => (
+                    <tr key={idx} className="border-t border-gray-100">
+                      <td className="py-3 pr-4 text-gray-900 font-semibold">{row.messages}</td>
+                      <td className="py-3 pr-4 text-purple-600 font-bold">{row.replyx.toLocaleString()}₽</td>
+                      <td className="py-3 pr-4 text-gray-700">{row.competitor.toLocaleString()}₽</td>
+                      <td className="py-3 text-green-600 font-semibold">{row.savings}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
 
-          {/* Компактный калькулятор в одной строке */}
-          <div className="p-4">
-            <div className="flex items-center gap-4 flex-wrap">
-              {/* Слайдер */}
-              <div className="flex-1 min-w-64">
-                <input
-                  type="range"
-                  min="100"
-                  max="15000"
-                  value={messages}
-                  onChange={(e) => setMessages(parseInt(e.target.value))}
-                  className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                  style={{
-                    background: `linear-gradient(to right, #7C4DFF 0%, #7C4DFF ${((messages - 100) / (15000 - 100)) * 100}%, #e5e7eb ${((messages - 100) / (15000 - 100)) * 100}%, #e5e7eb 100%)`
-                  }}
-                />
-                <div className="text-xs text-gray-500 mt-1 text-center">
-                  {messages.toLocaleString()} сообщ/мес (~{Math.round(messages / 30)} в день)
+          {/* Калькулятор */}
+          <div className="p-4 border-t border-gray-100">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-center">
+              {/* Управление объёмом */}
+              <div className="lg:col-span-2">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range"
+                    min={100}
+                    max={15000}
+                    value={messages}
+                    onChange={(e) => setMessages(parseInt(e.target.value))}
+                    className="w-full h-1 bg-gray-200 rounded-xl appearance-none cursor-pointer"
+                    style={{
+                      background: `linear-gradient(to right, #7C4DFF 0%, #7C4DFF ${((messages - 100) / (15000 - 100)) * 100}%, #e5e7eb ${((messages - 100) / (15000 - 100)) * 100}%, #e5e7eb 100%)`
+                    }}
+                  />
+                  <input
+                    type="number"
+                    min={100}
+                    max={15000}
+                    value={messages}
+                    onChange={(e) => setMessages(Math.max(100, Math.min(15000, parseInt(e.target.value) || 0)))}
+                    className="w-28 border border-gray-200 rounded-xl px-3 py-2 text-sm"
+                  />
                 </div>
+                <div className="text-xs text-gray-500 mt-1">{messages.toLocaleString()} сообщ/мес (~{Math.round(messages / 30)} в день)</div>
               </div>
 
-              {/* Результаты в одной строке */}
-              <div className="flex items-center gap-3 text-sm whitespace-nowrap">
-                <div className="text-purple-600 font-bold">
-                  ChatAI: {chataiPrice.toLocaleString()}₽/мес
+              {/* Итоги */}
+              <div className="bg-white rounded-xl border border-gray-200 p-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">ReplyX</span>
+                  <span className="text-purple-600 font-bold">{replyxPrice.toLocaleString()}₽/мес</span>
                 </div>
-                <div className="text-gray-400">|</div>
-                <div className="text-gray-500">
-                  Конкуренты: от {competitorPrice.toLocaleString()}₽/мес
+                <div className="flex items-center justify-between text-sm mt-1">
+                  <span className="text-gray-600">Конкуренты (от)</span>
+                  <span className="text-gray-800 font-semibold">{competitorPrice.toLocaleString()}₽/мес</span>
                 </div>
-                <div className="text-gray-400">|</div>
-                <div className="text-green-600 font-bold">
-                  Экономия: +{savingsPercent}%
+                <div className="flex items-center justify-between text-sm mt-1">
+                  <span className="text-gray-600">Экономия</span>
+                  <span className="text-green-600 font-bold">+{savingsPercent}%</span>
                 </div>
               </div>
             </div>
 
-            {/* Анимированный прогресс-бар экономии за год */}
+            {/* Экономия за год */}
             <div className="mt-3">
               <div className="flex justify-between text-xs text-gray-600 mb-1">
                 <span>Экономия за год</span>
@@ -180,9 +187,14 @@ const PricingSection = () => {
                   initial={{ width: 0 }}
                   whileInView={{ width: `${Math.min(savingsPercent, 100)}%` }}
                   viewport={{ once: true }}
-                  transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
+                  transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
                 />
               </div>
+            </div>
+
+            {/* Примечания */}
+            <div className="mt-3 text-xs text-gray-500">
+              Без абонентской платы. Оплата только за фактические сообщения.
             </div>
           </div>
         </motion.div>
@@ -193,12 +205,12 @@ const PricingSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
-          className="flex items-center justify-center gap-8 mb-6"
+          className="grid grid-cols-2 sm:flex sm:items-center sm:justify-center gap-4 sm:gap-8 mb-6"
         >
           {advantages.map((advantage, index) => (
             <div key={index} className="flex items-center gap-2">
-              <advantage.icon className="w-6 h-6 text-purple-600 flex-shrink-0" />
-              <span className="text-sm font-medium text-gray-700">{advantage.title}</span>
+              <advantage.icon className={`${DESIGN_TOKENS.icons.medium} ${DESIGN_TOKENS.colors.primary} flex-shrink-0`} />
+              <span className={`${DESIGN_TOKENS.typography.bodyText} font-medium`}>{advantage.title}</span>
             </div>
           ))}
         </motion.div>
@@ -209,25 +221,16 @@ const PricingSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
-          className="flex gap-3 justify-center"
+          className="grid grid-cols-1 sm:flex gap-3 justify-center"
         >
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="px-6 py-2.5 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200 h-11"
-          >
-            Рассчитать мою экономию
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="px-6 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:border-purple-600 hover:text-purple-600 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200 h-11"
-          >
+          <Button className="w-full sm:w-auto" variant="primary">
+            Рассчитать экономию
+          </Button>
+          <Button className="w-full sm:w-auto" variant="secondary">
             Связаться с менеджером
-          </motion.button>
+          </Button>
         </motion.div>
-      </div>
-    </section>
+    </SectionWrapper>
   );
 };
 

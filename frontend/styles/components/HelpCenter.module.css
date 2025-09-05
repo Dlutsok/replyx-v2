@@ -1,434 +1,735 @@
+/* Основной контейнер */
 .helpCenter {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border-radius: 0.75rem;
-  padding: 32px;
-  margin: 24px 0;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  background: transparent;
+  min-height: auto;
 }
 
-[data-theme="dark"] .helpCenter {
-  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-  border-color: #475569;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-}
-
-.header {
-  margin-bottom: 32px;
-}
-
-.titleSection {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.mainIcon {
-  width: 48px;
-  height: 48px;
-  color: #7C4DFF;
-  background: #ede9fe;
-  border-radius: 0.75rem;
-  padding: 12px;
-}
-
-[data-theme="dark"] .mainIcon {
-  background: #312e81;
-  color: #a5b4fc;
-}
-
-.title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0;
-}
-
-[data-theme="dark"] .title {
-  color: #f1f5f9;
-}
-
-.subtitle {
-  font-size: 16px;
-  color: #64748b;
-  margin: 4px 0 0 0;
-}
-
-[data-theme="dark"] .subtitle {
-  color: #94a3b8;
-}
-
-/* Быстрые задачи */
-.quickTips {
-  margin-bottom: 40px;
-}
-
-.sectionTitle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 20px;
-  font-weight: 600;
-  color: #374151;
-  margin: 0 0 20px 0;
-}
-
-[data-theme="dark"] .sectionTitle {
-  color: #e5e7eb;
-}
-
-.sectionIcon {
-  width: 20px;
-  height: 20px;
-  color: #7C4DFF;
-}
-
-.tipsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
-}
-
-.tipCard {
-  background: white;
-  border-radius: 0.75rem;
-  padding: 24px;
-  border: 1px solid #e5e7eb;
-  transition: all 0.2s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.tipCard:hover {
-  transform: translateY(-0.5px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-[data-theme="dark"] .tipCard {
-  background: #374151;
-  border-color: #4b5563;
-}
-
-.tipCard.completed {
-  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-  border-color: #22c55e;
-}
-
-[data-theme="dark"] .tipCard.completed {
-  background: linear-gradient(135deg, #065f46 0%, #047857 100%);
-  border-color: #10b981;
-}
-
-.tipHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.tipIcon {
-  width: 32px;
-  height: 32px;
-  color: #7C4DFF;
-  background: #ede9fe;
-  border-radius: 0.75rem;
-  padding: 8px;
-}
-
-[data-theme="dark"] .tipIcon {
-  background: #312e81;
-  color: #a5b4fc;
-}
-
-.completed .tipIcon {
-  color: #22c55e;
-  background: #dcfce7;
-}
-
-[data-theme="dark"] .completed .tipIcon {
-  color: #10b981;
-  background: #064e3b;
-}
-
-.completedIcon {
-  width: 24px;
-  height: 24px;
-  color: #22c55e;
-}
-
-.tipTitle {
-  font-size: 18px;
-  font-weight: 600;
-  color: #1f2937;
-  margin: 0 0 8px 0;
-}
-
-[data-theme="dark"] .tipTitle {
-  color: #f9fafb;
-}
-
-.tipDescription {
-  font-size: 14px;
-  color: #6b7280;
-  margin: 0 0 16px 0;
-  line-height: 1.5;
-}
-
-[data-theme="dark"] .tipDescription {
-  color: #d1d5db;
-}
-
-.tipButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: #7C4DFF;
-  color: white;
-  padding: 10px 16px;
-  border-radius: 0.75rem;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  transition: background 0.2s ease;
-}
-
-.tipButton:hover {
-  background: #7C4DFF;
-}
-
-/* Секции помощи */
-.helpSections {
-  margin-bottom: 40px;
-}
-
-.helpSection {
-  background: white;
-  border-radius: 0.75rem;
-  border: 1px solid #e5e7eb;
-  margin-bottom: 12px;
-  overflow: hidden;
-}
-
-[data-theme="dark"] .helpSection {
-  background: #374151;
-  border-color: #4b5563;
-}
-
-.sectionHeader {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.sectionHeader:hover {
-  background: #f9fafb;
-}
-
-[data-theme="dark"] .sectionHeader:hover {
-  background: #4b5563;
-}
-
-.sectionInfo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.sectionTitle {
-  font-size: 16px;
-  font-weight: 600;
-  color: #374151;
-  margin: 0;
-}
-
-[data-theme="dark"] .sectionTitle {
-  color: #e5e7eb;
-}
-
-.chevron {
-  width: 20px;
-  height: 20px;
-  color: #6b7280;
-  transition: transform 0.2s ease;
-}
-
-[data-theme="dark"] .chevron {
-  color: #9ca3af;
-}
-
-.sectionContent {
-  padding: 0 24px 24px 24px;
-  border-top: 1px solid #e5e7eb;
-  background: #f8fafc;
-}
-
-[data-theme="dark"] .sectionContent {
-  border-color: #4b5563;
-  background: #2d3748;
-}
-
-.helpItem {
-  padding: 20px 0;
+/* Главная секция с заголовком и табами */
+.mainSection {
   border-bottom: 1px solid #e5e7eb;
+  padding: 32px 0 0 0;
 }
 
-.helpItem:last-child {
-  border-bottom: none;
-}
-
-[data-theme="dark"] .helpItem {
-  border-color: #4b5563;
-}
-
-.itemTitle {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1f2937;
-  margin: 0 0 8px 0;
-}
-
-[data-theme="dark"] .itemTitle {
-  color: #f9fafb;
-}
-
-.itemContent {
-  font-size: 14px;
-  color: #6b7280;
-  margin: 0 0 12px 0;
-  line-height: 1.5;
-}
-
-[data-theme="dark"] .itemContent {
-  color: #d1d5db;
-}
-
-.itemLink {
-  display: inline-flex;
+.titleRow {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 4px;
-  color: #7C4DFF;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.itemLink:hover {
-  color: #7C4DFF;
-}
-
-/* Ресурсы */
-.resources {
   margin-bottom: 24px;
 }
 
-.resourcesGrid {
+.pageTitle {
+  font-size: 32px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+  letter-spacing: -0.025em;
+}
+
+.statusBadge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #166534;
+  font-weight: 500;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  background: #22c55e;
+  border-radius: 50%;
+}
+
+/* Табы */
+.tabsContainer {
+  margin-bottom: -1px;
+}
+
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tab {
+  background: none;
+  border: none;
+  padding: 16px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: #374151;
+}
+
+.activeTab {
+  color: #007aff;
+  border-bottom-color: #007aff;
+}
+
+/* Основной контент */
+.contentSection {
+  padding: 32px 0;
+}
+
+/* Секции */
+.sectionTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.025em;
+}
+
+.sectionDescription {
+  font-size: 16px;
+  color: #6b7280;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+/* Быстрые действия */
+.quickActions {
+  margin-bottom: 48px;
+}
+
+.actionsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 16px;
 }
 
-.resourceCard {
+.actionCard {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 16px;
-  background: white;
+  background: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 0.75rem;
+  border-radius: 8px;
   padding: 20px;
-  text-decoration: none;
   transition: all 0.2s ease;
 }
 
-.resourceCard:hover {
-  transform: translateY(-0.5px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  border-color: #7C4DFF;
+.actionCard:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-[data-theme="dark"] .resourceCard {
-  background: #374151;
-  border-color: #4b5563;
-}
-
-[data-theme="dark"] .resourceCard:hover {
-  border-color: #7C4DFF;
-}
-
-.resourceIcon {
+.cardIcon {
   width: 40px;
   height: 40px;
-  color: #7C4DFF;
-  background: #ede9fe;
-  border-radius: 0.75rem;
-  padding: 10px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #6b7280;
+}
+
+.cardContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.cardTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 4px 0;
+  line-height: 1.3;
+}
+
+.cardDescription {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.cardButton {
+  display: inline-block;
+  background: #007aff;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.cardButton:hover {
+  background: #0056cc;
+}
+
+.completed .cardIcon {
+  background: #dcfce7;
+  color: #22c55e;
+}
+
+.completedIcon {
+  width: 20px;
+  height: 20px;
+  color: #22c55e;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Каналы поддержки */
+.supportChannels {
+  margin-bottom: 48px;
+}
+
+.channelsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.channelCard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px;
+  transition: all 0.2s ease;
+}
+
+.channelCard:hover {
+  border-color: #007aff;
+  box-shadow: 0 1px 3px rgba(0, 122, 255, 0.1);
+}
+
+.channelIcon {
+  width: 40px;
+  height: 40px;
+  background: #f0f9ff;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #007aff;
   flex-shrink: 0;
 }
 
-[data-theme="dark"] .resourceIcon {
-  background: #312e81;
-  color: #a5b4fc;
+.channelInfo {
+  flex: 1;
+  min-width: 0;
 }
 
-.resourceCard h4 {
+.channelInfo h3 {
   font-size: 16px;
   font-weight: 600;
   color: #1f2937;
   margin: 0 0 4px 0;
 }
 
-[data-theme="dark"] .resourceCard h4 {
-  color: #f9fafb;
-}
-
-.resourceCard p {
+.channelInfo p {
   font-size: 14px;
   color: #6b7280;
   margin: 0;
 }
 
-[data-theme="dark"] .resourceCard p {
-  color: #d1d5db;
+.channelLink {
+  background: none;
+  border: 1px solid #007aff;
+  color: #007aff;
+  padding: 8px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
-.linkIcon {
+.channelLink:hover {
+  background: #007aff;
+  color: white;
+}
+
+/* База знаний */
+.knowledgeBase {
+  margin-bottom: 32px;
+}
+
+.knowledgeSections {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.knowledgeSection {
+  background: #ffffff;
+}
+
+.knowledgeHeader {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.knowledgeHeader:hover {
+  background: #f9fafb;
+}
+
+.knowledgeTitle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.knowledgeIcon {
+  width: 18px;
+  height: 18px;
+  color: #6b7280;
+}
+
+.knowledgeTitle span {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.chevron {
   width: 16px;
   height: 16px;
   color: #9ca3af;
-  margin-left: auto;
-  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.chevronExpanded {
+  transform: rotate(90deg);
+}
+
+.knowledgeContent {
+  padding: 0 20px 20px 20px;
+  border-top: 1px solid #f3f4f6;
+  background: #fafbfc;
+}
+
+.knowledgeItem {
+  padding: 16px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.knowledgeItem:last-child {
+  border-bottom: none;
+}
+
+.knowledgeItem h4 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 6px 0;
+}
+
+.knowledgeItem p {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0 0 8px 0;
+  line-height: 1.5;
+}
+
+.knowledgeLink {
+  color: #007aff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.knowledgeLink:hover {
+  text-decoration: underline;
+}
+
+/* Темная тема */
+/* Отключаем темную тему на мобильных устройствах */
+@media (max-width: 768px) {
+  [data-theme="dark"] .helpCenter {
+    background: #ffffff !important;
+  }
+
+  [data-theme="dark"] .mainSection {
+    border-color: #e5e7eb !important;
+  }
+
+  [data-theme="dark"] .pageTitle {
+    color: #1f2937 !important;
+  }
+
+  [data-theme="dark"] .statusBadge {
+    background: #dcfce7 !important;
+    border-color: #bbf7d0 !important;
+    color: #166534 !important;
+  }
+
+  [data-theme="dark"] .tabs {
+    border-color: #e5e7eb !important;
+  }
+
+  [data-theme="dark"] .tab {
+    color: #6b7280 !important;
+  }
+
+  [data-theme="dark"] .tab:hover {
+    color: #374151 !important;
+  }
+
+  [data-theme="dark"] .sectionTitle {
+    color: #1f2937 !important;
+  }
+
+  [data-theme="dark"] .sectionDescription {
+    color: #6b7280 !important;
+  }
+
+  [data-theme="dark"] .actionCard,
+  [data-theme="dark"] .channelCard {
+    background: #ffffff !important;
+    border-color: #e5e7eb !important;
+  }
+
+  [data-theme="dark"] .actionCard:hover,
+  [data-theme="dark"] .channelCard:hover {
+    border-color: #d1d5db !important;
+  }
+
+  [data-theme="dark"] .cardIcon {
+    background: #f3e8ff !important;
+    color: #7c3aed !important;
+  }
+
+  [data-theme="dark"] .cardTitle,
+  [data-theme="dark"] .channelInfo h3,
+  [data-theme="dark"] .knowledgeTitle span,
+  [data-theme="dark"] .knowledgeItem h4 {
+    color: #1f2937 !important;
+  }
+
+  [data-theme="dark"] .cardDescription,
+  [data-theme="dark"] .channelInfo p,
+  [data-theme="dark"] .knowledgeItem p {
+    color: #6b7280 !important;
+  }
+
+  [data-theme="dark"] .channelIcon {
+    background: #dbeafe !important;
+    color: #3b82f6 !important;
+  }
+
+  [data-theme="dark"] .knowledgeSections {
+    background: #f8fafc !important;
+  }
+
+  [data-theme="dark"] .knowledgeSection {
+    background: #ffffff !important;
+  }
+
+  [data-theme="dark"] .knowledgeHeader:hover {
+    background: #f3f4f6 !important;
+  }
+
+  [data-theme="dark"] .knowledgeContent {
+    background: #f8fafc !important;
+    border-color: #e5e7eb !important;
+  }
+
+  [data-theme="dark"] .knowledgeItem {
+    border-color: #e5e7eb !important;
+  }
+
+  [data-theme="dark"] .knowledgeIcon {
+    color: #6b7280 !important;
+  }
+
+  [data-theme="dark"] .chevron {
+    color: #9ca3af !important;
+  }
+}
+
+/* Темная тема только для десктопных устройств */
+@media (min-width: 769px) {
+  [data-theme="dark"] .helpCenter {
+    background: #1f2937;
+  }
+
+  [data-theme="dark"] .mainSection {
+    border-color: #374151;
+  }
+
+  [data-theme="dark"] .pageTitle {
+    color: #f9fafb;
+  }
+
+  [data-theme="dark"] .statusBadge {
+    background: #064e3b;
+    border-color: #065f46;
+    color: #6ee7b7;
+  }
+
+  [data-theme="dark"] .tabs {
+    border-color: #374151;
+  }
+
+  [data-theme="dark"] .tab {
+    color: #9ca3af;
+  }
+
+  [data-theme="dark"] .tab:hover {
+    color: #d1d5db;
+  }
+
+  [data-theme="dark"] .sectionTitle {
+    color: #f9fafb;
+  }
+
+  [data-theme="dark"] .sectionDescription {
+    color: #9ca3af;
+  }
+
+  [data-theme="dark"] .actionCard,
+  [data-theme="dark"] .channelCard {
+    background: #374151;
+    border-color: #4b5563;
+  }
+
+  [data-theme="dark"] .actionCard:hover,
+  [data-theme="dark"] .channelCard:hover {
+    border-color: #6b7280;
+  }
+
+  [data-theme="dark"] .cardIcon {
+    background: #4b5563;
+    color: #9ca3af;
+  }
+
+  [data-theme="dark"] .cardTitle,
+  [data-theme="dark"] .channelInfo h3,
+  [data-theme="dark"] .knowledgeTitle span,
+  [data-theme="dark"] .knowledgeItem h4 {
+    color: #f9fafb;
+  }
+
+  [data-theme="dark"] .cardDescription,
+  [data-theme="dark"] .channelInfo p,
+  [data-theme="dark"] .knowledgeItem p {
+    color: #d1d5db;
+  }
+
+  [data-theme="dark"] .channelIcon {
+    background: #1e3a8a;
+    color: #60a5fa;
+  }
+
+  [data-theme="dark"] .knowledgeSections {
+    background: #4b5563;
+  }
+
+  [data-theme="dark"] .knowledgeSection {
+    background: #374151;
+  }
+
+  [data-theme="dark"] .knowledgeHeader:hover {
+    background: #4b5563;
+  }
+
+  [data-theme="dark"] .knowledgeContent {
+    background: #2d3748;
+    border-color: #4b5563;
+  }
+
+  [data-theme="dark"] .knowledgeItem {
+    border-color: #4b5563;
+  }
+
+  [data-theme="dark"] .knowledgeIcon {
+    color: #9ca3af;
+  }
+
+  [data-theme="dark"] .chevron {
+    color: #6b7280;
+  }
+}
+
+[data-theme="dark"] .mainSection {
+  border-color: #374151;
+}
+
+[data-theme="dark"] .pageTitle {
+  color: #f9fafb;
+}
+
+[data-theme="dark"] .statusBadge {
+  background: #064e3b;
+  border-color: #065f46;
+  color: #6ee7b7;
+}
+
+[data-theme="dark"] .tabs {
+  border-color: #374151;
+}
+
+[data-theme="dark"] .tab {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .tab:hover {
+  color: #d1d5db;
+}
+
+[data-theme="dark"] .sectionTitle {
+  color: #f9fafb;
+}
+
+[data-theme="dark"] .sectionDescription {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .actionCard,
+[data-theme="dark"] .channelCard {
+  background: #374151;
+  border-color: #4b5563;
+}
+
+[data-theme="dark"] .actionCard:hover,
+[data-theme="dark"] .channelCard:hover {
+  border-color: #6b7280;
+}
+
+[data-theme="dark"] .cardIcon {
+  background: #4b5563;
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .cardTitle,
+[data-theme="dark"] .channelInfo h3,
+[data-theme="dark"] .knowledgeTitle span,
+[data-theme="dark"] .knowledgeItem h4 {
+  color: #f9fafb;
+}
+
+[data-theme="dark"] .cardDescription,
+[data-theme="dark"] .channelInfo p,
+[data-theme="dark"] .knowledgeItem p {
+  color: #d1d5db;
+}
+
+[data-theme="dark"] .channelIcon {
+  background: #1e3a8a;
+  color: #60a5fa;
+}
+
+[data-theme="dark"] .knowledgeSections {
+  background: #4b5563;
+}
+
+[data-theme="dark"] .knowledgeSection {
+  background: #374151;
+}
+
+[data-theme="dark"] .knowledgeHeader:hover {
+  background: #4b5563;
+}
+
+[data-theme="dark"] .knowledgeContent {
+  background: #2d3748;
+  border-color: #4b5563;
+}
+
+[data-theme="dark"] .knowledgeItem {
+  border-color: #4b5563;
+}
+
+[data-theme="dark"] .knowledgeIcon {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .chevron {
+  color: #6b7280;
 }
 
 /* Адаптивность */
 @media (max-width: 768px) {
-  .helpCenter {
-    padding: 20px;
+  .mainSection {
+    padding: 20px 0 0 0;
   }
-  
-  .titleSection {
+
+  .titleRow {
     flex-direction: column;
-    text-align: center;
-    gap: 12px;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
   }
-  
-  .tipsGrid {
+
+  .pageTitle {
+    font-size: 28px;
+  }
+
+  .tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tab {
+    padding: 12px 16px;
+    font-size: 13px;
+  }
+
+  .contentSection {
+    padding: 24px 0;
+  }
+
+  .actionsGrid,
+  .channelsGrid {
     grid-template-columns: 1fr;
   }
-  
-  .resourcesGrid {
-    grid-template-columns: 1fr;
+
+  .knowledgeHeader {
+    padding: 14px 16px;
   }
-  
-  .sectionHeader {
-    padding: 16px 20px;
+
+  .knowledgeContent {
+    padding: 0 16px 16px 16px;
   }
-  
-  .sectionContent {
-    padding: 0 20px 20px 20px;
+}
+
+@media (max-width: 480px) {
+  .pageTitle {
+    font-size: 24px;
   }
-} 
+
+  .actionCard,
+  .channelCard {
+    padding: 16px;
+  }
+
+  .cardIcon,
+  .channelIcon {
+    width: 36px;
+    height: 36px;
+  }
+}

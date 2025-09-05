@@ -12,6 +12,12 @@ from functools import wraps
 from fastapi import HTTPException, Request
 import logging
 from cache.redis_cache import cache
+from threading import Lock
+from monitoring.audit_logger import audit_log
+
+# Простой локальный in-memory fallback, если Redis недоступен
+_local_counters = {}
+_local_lock = Lock()
 
 logger = logging.getLogger(__name__)
 
@@ -39,8 +45,21 @@ class RateLimiter:
             (allowed: bool, info: dict)
         """
         if not self.redis.is_available():
-            # Если Redis недоступен, разрешаем запрос (graceful degradation)
-            return True, {"remaining": limit, "reset_time": int(time.time() + window)}
+            # Локальный fallback: ограничиваем в процессе при недоступном Redis
+            now = int(time.time())
+            reset_time = now + window
+            key = f"{namespace}:{identifier}"
+            with _local_lock:
+                window_data = _local_counters.get(key)
+                if not window_data or window_data["reset_time"] <= now:
+                    window_data = {"count": 0, "reset_time": reset_time}
+                    _local_counters[key] = window_data
+                if window_data["count"] < limit:
+                    window_data["count"] += 1
+                    remaining = max(0, limit - window_data["count"])
+                    return True, {"remaining": remaining, "reset_time": window_data["reset_time"], "mode": "local"}
+                else:
+                    return False, {"remaining": 0, "reset_time": window_data["reset_time"], "mode": "local"}
         
         current_time = int(time.time())
         key = f"{namespace}:{identifier}"
@@ -86,7 +105,21 @@ class RateLimiter:
         except Exception as e:
             logger.error(f"Rate limiter error: {e}")
             # При ошибке разрешаем запрос
-            return True, {"remaining": limit, "reset_time": int(time.time() + window), "error": str(e)}
+            # При ошибке Redis — fallback на локальные лимиты
+            now = int(time.time())
+            reset_time = now + window
+            key = f"{namespace}:{identifier}"
+            with _local_lock:
+                window_data = _local_counters.get(key)
+                if not window_data or window_data["reset_time"] <= now:
+                    window_data = {"count": 0, "reset_time": reset_time}
+                    _local_counters[key] = window_data
+                if window_data["count"] < limit:
+                    window_data["count"] += 1
+                    remaining = max(0, limit - window_data["count"])
+                    return True, {"remaining": remaining, "reset_time": window_data["reset_time"], "mode": "local", "error": str(e)}
+                else:
+                    return False, {"remaining": 0, "reset_time": window_data["reset_time"], "mode": "local", "error": str(e)}
     
     def get_user_stats(self, user_id: int) -> Dict:
         """Получение статистики rate limiting для пользователя"""
@@ -160,14 +193,32 @@ def rate_limit_api(limit: int = 100, window: int = 3600):
             )
             
             if not allowed:
+                # Логируем превышение rate limit для fail2ban
+                ip_address = getattr(request, 'client', None)
+                if ip_address:
+                    ip_address = ip_address.host
+                user_agent = request.headers.get('user-agent', 'Unknown') if request else 'Unknown'
+                
+                audit_log(
+                    operation='rate_limit_exceeded',
+                    user_id=getattr(request.state, 'user_id', None) if request else None,
+                    status='failed',
+                    details={
+                        'identifier': identifier,
+                        'limit': limit,
+                        'window': window,
+                        'requests_count': info.get('count', 0),
+                        'namespace': 'rate_limit_api'
+                    },
+                    ip_address=ip_address,
+                    user_agent=user_agent
+                )
+                
+                retry_minutes = max(1, (info["reset_time"] - int(time.time())) // 60)
+                
                 raise HTTPException(
                     status_code=429,
-                    detail={
-                        "error": "Rate limit exceeded",
-                        "message": f"Too many requests. Limit: {limit} per {window} seconds",
-                        "retry_after": info["reset_time"] - int(time.time()),
-                        "limit_info": info
-                    },
+                    detail=f"Слишком много попыток. Попробуйте через {retry_minutes} минут.",
                     headers={
                         "X-RateLimit-Limit": str(limit),
                         "X-RateLimit-Remaining": str(info["remaining"]),
@@ -220,14 +271,32 @@ def rate_limit_api(limit: int = 100, window: int = 3600):
             )
             
             if not allowed:
+                # Логируем превышение rate limit для fail2ban
+                ip_address = getattr(request, 'client', None)
+                if ip_address:
+                    ip_address = ip_address.host
+                user_agent = request.headers.get('user-agent', 'Unknown') if request else 'Unknown'
+                
+                audit_log(
+                    operation='rate_limit_exceeded',
+                    user_id=getattr(request.state, 'user_id', None) if request else None,
+                    status='failed',
+                    details={
+                        'identifier': identifier,
+                        'limit': limit,
+                        'window': window,
+                        'requests_count': info.get('count', 0),
+                        'namespace': 'rate_limit_api'
+                    },
+                    ip_address=ip_address,
+                    user_agent=user_agent
+                )
+                
+                retry_minutes = max(1, (info["reset_time"] - int(time.time())) // 60)
+                
                 raise HTTPException(
                     status_code=429,
-                    detail={
-                        "error": "Rate limit exceeded",
-                        "message": f"Too many requests. Limit: {limit} per {window} seconds",
-                        "retry_after": info["reset_time"] - int(time.time()),
-                        "limit_info": info
-                    },
+                    detail=f"Слишком много попыток. Попробуйте через {retry_minutes} минут.",
                     headers={
                         "X-RateLimit-Limit": str(limit),
                         "X-RateLimit-Remaining": str(info["remaining"]),
@@ -284,6 +353,21 @@ def rate_limit_metrics(limit: int = 20, window: int = 300):
                 )
                 
                 if not allowed:
+                    # Логируем превышение metrics rate limit для fail2ban
+                    audit_log(
+                        operation='rate_limit_exceeded',
+                        user_id=current_user.id if current_user else None,
+                        status='failed',
+                        details={
+                            'limit': limit,
+                            'window': window,
+                            'requests_count': info.get('count', 0),
+                            'namespace': 'rate_limit_metrics'
+                        },
+                        ip_address=None,  # Не доступно в этом контексте
+                        user_agent=None  # Не доступно в этом контексте
+                    )
+                    
                     raise HTTPException(
                         status_code=429,
                         detail={
@@ -326,6 +410,24 @@ def rate_limit_by_ip(limit: int = 200, window: int = 3600):
                 )
                 
                 if not allowed:
+                    # Логируем превышение IP rate limit для fail2ban
+                    user_agent = request.headers.get('user-agent', 'Unknown')
+                    
+                    audit_log(
+                        operation='rate_limit_exceeded',
+                        user_id=getattr(request.state, 'user_id', None) if request else None,
+                        status='failed',
+                        details={
+                            'identifier': identifier,
+                            'limit': limit,
+                            'window': window,
+                            'requests_count': info.get('count', 0),
+                            'namespace': 'rate_limit_ip'
+                        },
+                        ip_address=ip,
+                        user_agent=user_agent
+                    )
+                    
                     raise HTTPException(
                         status_code=429,
                         detail={

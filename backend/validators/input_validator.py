@@ -6,7 +6,7 @@
 import re
 import html
 from typing import Any, Dict, List, Optional, Union
-from pydantic import BaseModel, validator, Field
+from pydantic import BaseModel, field_validator, Field
 from fastapi import HTTPException
 import logging
 
@@ -266,7 +266,8 @@ class ValidatedMessageData(BaseModel):
     text: str = Field(..., min_length=1, max_length=MAX_TEXT_LENGTH)
     sender: Optional[str] = Field(None, pattern=r'^(user|assistant|manager)$')
     
-    @validator('text')
+    @field_validator('text')
+    @classmethod
     def validate_text_content(cls, v):
         return validate_text(v)
 
@@ -277,11 +278,13 @@ class ValidatedAssistantData(BaseModel):
     ai_model: Optional[str] = Field(None, pattern=r'^(gpt-4o|gpt-4o-mini)$')
     is_active: Optional[bool] = True
     
-    @validator('name')
+    @field_validator('name')
+    @classmethod
     def validate_name_content(cls, v):
         return validate_name(v)
     
-    @validator('system_prompt')
+    @field_validator('system_prompt')
+    @classmethod
     def validate_system_prompt_content(cls, v):
         if v:
             return validate_text(v, MAX_SYSTEM_PROMPT_LENGTH, "system_prompt")
@@ -292,13 +295,15 @@ class ValidatedUserProfileData(BaseModel):
     first_name: Optional[str] = Field(None, max_length=MAX_NAME_LENGTH)
     email: Optional[str] = Field(None, max_length=MAX_EMAIL_LENGTH)
     
-    @validator('first_name')
+    @field_validator('first_name')
+    @classmethod
     def validate_first_name_content(cls, v):
         if v:
             return validate_name(v, "first_name")
         return v
     
-    @validator('email')
+    @field_validator('email')
+    @classmethod
     def validate_email_content(cls, v):
         if v:
             return validate_email(v)

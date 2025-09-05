@@ -434,8 +434,12 @@ class FileValidator:
         Returns:
             Безопасный путь для сохранения
         """
-        # Базовая директория для загрузок
-        base_dir = Path("uploads")
+        # Базовая директория для загрузок (от корня проекта)
+        try:
+            from core.app_config import PROJECT_ROOT  # type: ignore
+            base_dir = PROJECT_ROOT / "uploads"
+        except Exception:
+            base_dir = Path("uploads")
         
         # Директория пользователя
         user_dir = base_dir / str(user_id)

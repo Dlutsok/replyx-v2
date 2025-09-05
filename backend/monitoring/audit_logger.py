@@ -2,6 +2,7 @@
 Модуль аудита и логирования критических операций
 """
 import logging
+from logging.handlers import TimedRotatingFileHandler
 import json
 from datetime import datetime
 from typing import Dict, Any, Optional, Union
@@ -14,7 +15,7 @@ from database import models
 
 # Настройка логгера для аудита
 audit_logger = logging.getLogger('audit')
-audit_handler = logging.FileHandler('logs/audit.log')
+audit_handler = TimedRotatingFileHandler('logs/audit.log', when='midnight', backupCount=14, encoding='utf-8')
 audit_handler.setLevel(logging.INFO)
 
 # Формат для аудит логов

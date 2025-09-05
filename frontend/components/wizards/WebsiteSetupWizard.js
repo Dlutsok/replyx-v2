@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  FiCheck, FiX, FiArrowRight, FiArrowLeft, FiUpload, FiLink, 
+import {
+  FiCheck, FiX, FiArrowRight, FiArrowLeft, FiUpload, FiLink,
   FiEye, FiSettings, FiExternalLink, FiRefreshCw, FiCopy,
   FiCheckCircle, FiAlertCircle, FiFile, FiSkipForward, FiGlobe,
   FiCode, FiKey, FiDollarSign
 } from 'react-icons/fi';
+import { useNotifications } from '../../hooks/useNotifications';
 import styles from '../../styles/components/WebsiteSetupWizard.module.css';
 
 const WebsiteSetupWizard = ({ isOpen, onClose, onComplete, selectedAssistant }) => {
+  const { showSuccess, showError, showWarning, showInfo } = useNotifications();
   const [currentStep, setCurrentStep] = useState(1);
   const [stepData, setStepData] = useState({
     siteToken: '',
@@ -18,7 +21,10 @@ const WebsiteSetupWizard = ({ isOpen, onClose, onComplete, selectedAssistant }) 
     filesUploaded: [],
     uploading: false,
     uploadCost: 0,
-    testCompleted: false
+    testCompleted: false,
+    // ИНДЕКСАЦИЯ САЙТА (single-page mode)
+    websiteUrl: '',
+    ingesting: false
   });
 
   const steps = [
@@ -53,7 +59,7 @@ const WebsiteSetupWizard = ({ isOpen, onClose, onComplete, selectedAssistant }) 
 
   const generateTokenAndCode = async () => {
     if (!selectedAssistant) {
-      alert('Ассистент не выбран');
+      showError('Ассистент не выбран', { title: 'Ошибка' });
       return;
     }
 
@@ -79,11 +85,11 @@ const WebsiteSetupWizard = ({ isOpen, onClose, onComplete, selectedAssistant }) 
           generating: false
         }));
       } else {
-        alert('Ошибка генерации токена');
+        showError('Ошибка генерации токена', { title: 'Ошибка' });
         setStepData(prev => ({ ...prev, generating: false }));
       }
     } catch (error) {
-      alert('Ошибка генерации токена');
+      showError('Ошибка генерации токена', { title: 'Ошибка' });
       setStepData(prev => ({ ...prev, generating: false }));
     }
   };
@@ -91,25 +97,9 @@ const WebsiteSetupWizard = ({ isOpen, onClose, onComplete, selectedAssistant }) 
   const copyToClipboard = async (text, type) => {
     try {
       await navigator.clipboard.writeText(text);
-      // Показываем уведомление
-      const notification = document.createElement('div');
-      notification.textContent = type === 'token' ? 'Токен скопирован!' : 'Код скопирован!';
-      notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #10b981;
-        color: white;
-        padding: 12px 20px;
-        border-radius: 0.75rem;
-        z-index: 10000;
-        font-weight: 500;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      `;
-      document.body.appendChild(notification);
-      setTimeout(() => document.body.removeChild(notification), 2000);
+      showSuccess(type === 'token' ? 'Токен скопирован!' : 'Код скопирован!');
     } catch (err) {
-      alert('Не удалось скопировать в буфер обмена');
+      showError('Не удалось скопировать в буфер обмена', { title: 'Ошибка' });
     }
   };
 
@@ -124,11 +114,11 @@ const WebsiteSetupWizard = ({ isOpen, onClose, onComplete, selectedAssistant }) 
     for (const file of files) {
       const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
       if (!allowedTypes.includes(fileExtension)) {
-        alert(`Файл ${file.name} имеет неподдерживаемый формат`);
+        showError(`Файл ${file.name} имеет неподдерживаемый формат`, { title: 'Неподдерживаемый формат' });
         continue;
       }
       if (file.size > maxSize) {
-        alert(`Файл ${file.name} слишком большой (максимум 10 МБ)`);
+        showError(`Файл ${file.name} слишком большой (максимум 10 МБ)`, { title: 'Слишком большой файл' });
         continue;
       }
       validFiles.push(file);
@@ -184,30 +174,83 @@ const WebsiteSetupWizard = ({ isOpen, onClose, onComplete, selectedAssistant }) 
       const errorCount = uploadedFiles.filter(f => f.status === 'error').length;
       
       if (successCount > 0) {
-        alert(`Успешно загружено ${successCount} файл(ов) в базу знаний`);
+        showSuccess(`Успешно загружено ${successCount} файл(ов) в базу знаний`);
       }
       if (errorCount > 0) {
-        alert(`Ошибка загрузки ${errorCount} файл(ов)`);
+        showError(`Ошибка загрузки ${errorCount} файл(ов)`, { title: 'Ошибка загрузки' });
       }
 
     } catch (error) {
       setStepData(prev => ({ ...prev, uploading: false }));
-      alert('Ошибка загрузки файлов');
+      showError('Ошибка загрузки файлов', { title: 'Ошибка' });
       console.error('Ошибка загрузки файлов:', error);
     }
   };
 
+  const handleWebsiteIngest = async () => {
+    if (!selectedAssistant) {
+      showError('Ассистент не выбран', { title: 'Ошибка' });
+      return;
+    }
+    const url = (stepData.websiteUrl || '').trim();
+    if (!url) {
+      showError('Укажите URL страницы', { title: 'Ошибка' });
+      return;
+    }
+    try {
+      // Простая валидация URL
+      const u = new URL(url);
+      if (!['http:', 'https:'].includes(u.protocol)) {
+        throw new Error('Неверный протокол URL');
+      }
+    } catch (e) {
+      showError('Некорректный URL', { title: 'Ошибка URL' });
+      return;
+    }
+
+    setStepData(prev => ({ ...prev, ingesting: true }));
+    try {
+      const token = localStorage.getItem('token');
+      const payload = {
+        url: stepData.websiteUrl.trim()
+      };
+
+      const resp = await fetch(`/api/assistants/${selectedAssistant.id}/ingest-website`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (resp.ok) {
+        const result = await resp.json();
+        showSuccess(`Страница успешно проиндексирована!\n\nДокумент: ${result.doc_id}\nСимволов: ${result.chars_indexed}`, { title: 'Успех' });
+        setStepData(prev => ({ ...prev, websiteUrl: '' }));
+      } else {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err?.detail || 'Ошибка индексации страницы');
+      }
+    } catch (e) {
+      showError(e.message || 'Ошибка индексации страницы', { title: 'Ошибка' });
+    } finally {
+      setStepData(prev => ({ ...prev, ingesting: false }));
+    }
+  };
+
   const openTestDemo = () => {
-    // Открываем демо страницу с виджетом
-    const demoUrl = `/chat-iframe?assistant_id=${selectedAssistant?.id}&theme=blue`;
+    // Открываем демо страницу с виджетом с настройками из ассистента
+    const theme = selectedAssistant?.widget_theme || 'blue';
+    const demoUrl = `/chat-iframe?assistant_id=${selectedAssistant?.id}&theme=${theme}`;
     window.open(demoUrl, '_blank');
   };
 
   if (!isOpen) return null;
 
-  return (
+  const wizardContent = (
     <div className={styles.overlay}>
-      <motion.div 
+      <motion.div
         className={styles.wizard}
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -327,7 +370,7 @@ const WebsiteSetupWizard = ({ isOpen, onClose, onComplete, selectedAssistant }) 
                       <div className={styles.codeBlock}>
                         <div className={styles.codeHeader}>
                           <FiCode />
-                          <span>Embed-код для сайта</span>
+                          <span>Код для вставки на сайт</span>
                         </div>
                         <div className={styles.codeContent}>
                           <code>{stepData.embedCode}</code>
@@ -343,9 +386,9 @@ const WebsiteSetupWizard = ({ isOpen, onClose, onComplete, selectedAssistant }) 
 
                       {/* Instructions */}
                       <div className={styles.instructions}>
-                        <h4>📋 Инструкция по установке:</h4>
+                         <h4>📋 Инструкция по установке:</h4>
                         <ol>
-                          <li>Скопируйте embed-код выше</li>
+                           <li>Скопируйте код для сайта выше</li>
                           <li>Вставьте код в HTML вашего сайта перед закрывающим тегом <code>&lt;/body&gt;</code></li>
                           <li>После вставки чат-виджет появится в правом нижнем углу сайта</li>
                         </ol>
@@ -437,10 +480,40 @@ const WebsiteSetupWizard = ({ isOpen, onClose, onComplete, selectedAssistant }) 
                   </div>
 
                   <div className={styles.linksSection}>
-                    <h4>Загрузка по ссылкам</h4>
-                    <div className={styles.comingSoon}>
-                      <FiLink />
-                      <span>Скоро появится</span>
+                    <h4>Загрузка с сайта</h4>
+                    <div className={styles.linkIngestBox}>
+                      <div className={styles.formRow}>
+                        <label>URL страницы сайта</label>
+                        <input
+                          type="text"
+                          placeholder="https://example.com/page"
+                          value={stepData.websiteUrl}
+                          onChange={(e) => setStepData(prev => ({ ...prev, websiteUrl: e.target.value }))}
+                          className={styles.input}
+                        />
+                        <p style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>
+                          Мы проиндексируем только эту страницу и добавим её как документ
+                        </p>
+                      </div>
+
+
+                      <button
+                        className={styles.generateBtn}
+                        onClick={handleWebsiteIngest}
+                        disabled={stepData.ingesting || !stepData.websiteUrl}
+                      >
+                        {stepData.ingesting ? (
+                          <>
+                            <FiRefreshCw className={styles.spin} />
+                            Индексируем страницу...
+                          </>
+                        ) : (
+                          <>
+                            <FiLink />
+                            Индексировать страницу
+                          </>
+                        )}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -568,6 +641,8 @@ const WebsiteSetupWizard = ({ isOpen, onClose, onComplete, selectedAssistant }) 
       </motion.div>
     </div>
   );
+
+  return createPortal(wizardContent, document.body);
 };
 
 export default WebsiteSetupWizard;

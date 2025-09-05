@@ -1,0 +1,124 @@
+/**
+ * ReplyX MVP 13 Design Tokens
+ * Унифицированные токены дизайна для всего приложения
+ * Все font-size уменьшены на 2px согласно ТЗ ui-designer агента
+ */
+
+:root {
+  /* Основная цветовая палитра */
+  --replyx-primary: #7C3AED;
+  --replyx-primary-gradient: #8B5CF6;
+  --replyx-primary-hover: #6D28D9;
+  --replyx-primary-50: #F3E8FF;
+  
+  /* Семантические цвета */
+  --replyx-success: #10B981;
+  --replyx-danger: #EF4444;
+  --replyx-warning: #F59E0B;
+  --replyx-info: #0EA5E9;
+  
+  /* Фоны и поверхности */
+  --replyx-bg: #FFFFFF;
+  --replyx-bg-soft: #F8FAFC;
+  --replyx-bg-muted: #F1F5F9;
+  
+  /* Границы */
+  --replyx-border: #E5E7EB;
+  --replyx-border-light: #F3F4F6;
+  --replyx-border-dark: #D1D5DB;
+  
+  /* Текст */
+  --replyx-text-strong: #111827;
+  --replyx-text: #374151;
+  --replyx-text-muted: #6B7280;
+  --replyx-text-light: #9CA3AF;
+  
+  /* Радиусы */
+  --replyx-radius-sm: 0.5rem;    /* 8px */
+  --replyx-radius-base: 0.75rem; /* 12px */
+  --replyx-radius-lg: 1rem;      /* 16px */
+  
+  /* Тени */
+  --replyx-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --replyx-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --replyx-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  
+  /* Типографика (исправлены размеры для читаемости) */
+  --replyx-font-xs: 12px;   /* увеличено с 10px */
+  --replyx-font-sm: 14px;   /* увеличено с 12px */
+  --replyx-font-base: 16px; /* увеличено с 14px */
+  --replyx-font-lg: 16px;   /* было 18px */
+  --replyx-font-xl: 18px;   /* было 20px */
+  --replyx-font-2xl: 22px;  /* было 24px */
+  --replyx-font-3xl: 26px;  /* было 28px */
+  --replyx-font-4xl: 30px;  /* было 32px */
+  --replyx-font-5xl: 34px;  /* было 36px */
+  --replyx-font-6xl: 40px;  /* было 42px */
+  
+  /* Шрифты */
+  --replyx-font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --replyx-font-family-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+
+  /* Отступы и интервалы */
+  --replyx-space-1: 0.25rem;  /* 4px */
+  --replyx-space-2: 0.5rem;   /* 8px */
+  --replyx-space-3: 0.75rem;  /* 12px */
+  --replyx-space-4: 1rem;     /* 16px */
+  --replyx-space-5: 1.25rem;  /* 20px */
+  --replyx-space-6: 1.5rem;   /* 24px */
+  --replyx-space-8: 2rem;     /* 32px */
+  --replyx-space-10: 2.5rem;  /* 40px */
+  --replyx-space-12: 3rem;    /* 48px */
+  --replyx-space-16: 4rem;    /* 64px */
+  
+  /* Специальные токены для интерактивных состояний */
+  --replyx-primary-rgba-05: rgba(124, 58, 237, 0.05);
+  --replyx-primary-rgba-08: rgba(124, 58, 237, 0.08);
+  --replyx-primary-rgba-10: rgba(124, 58, 237, 0.1);
+  --replyx-primary-rgba-12: rgba(124, 58, 237, 0.12);
+  --replyx-primary-rgba-15: rgba(124, 58, 237, 0.15);
+  --replyx-primary-rgba-20: rgba(124, 58, 237, 0.2);
+  --replyx-primary-rgba-25: rgba(124, 58, 237, 0.25);
+  --replyx-primary-rgba-30: rgba(124, 58, 237, 0.3);
+  
+  /* Градиенты */
+  --replyx-gradient-primary: linear-gradient(135deg, #7C3AED 0%, #6366F1 100%);
+  --replyx-gradient-primary-hover: linear-gradient(135deg, #6D28D9 0%, #5B21B6 100%);
+  --replyx-gradient-button: linear-gradient(to right, #7C3AED, #8B5CF6, #6366F1);
+  --replyx-gradient-button-hover: linear-gradient(to right, #6D28D9, #7C3AED, #5B21B6);
+}
+
+/* Темная тема (если потребуется в будущем) */
+@media (prefers-color-scheme: dark) {
+  /* Отключаем темную тему на мобильных устройствах */
+  @media (max-width: 768px) {
+    :root {
+      --replyx-bg: #FFFFFF !important;
+      --replyx-bg-soft: #F8FAFC !important;
+      --replyx-bg-muted: #F1F5F9 !important;
+      --replyx-text-strong: #111827 !important;
+      --replyx-text: #374151 !important;
+      --replyx-text-muted: #6B7280 !important;
+      --replyx-text-light: #9CA3AF !important;
+      --replyx-border: #E5E7EB !important;
+      --replyx-border-light: #F3F4F6 !important;
+      --replyx-border-dark: #D1D5DB !important;
+    }
+  }
+
+  /* Темная тема только для десктопных устройств */
+  @media (min-width: 769px) {
+    :root {
+      --replyx-bg: #1F2937;
+      --replyx-bg-soft: #374151;
+      --replyx-bg-muted: #4B5563;
+      --replyx-text-strong: #F9FAFB;
+      --replyx-text: #E5E7EB;
+      --replyx-text-muted: #9CA3AF;
+      --replyx-text-light: #6B7280;
+      --replyx-border: #4B5563;
+      --replyx-border-light: #374151;
+      --replyx-border-dark: #6B7280;
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiX, FiRefreshCw, FiMessageSquare, FiCheckCircle, FiUserCheck, FiMessageCircle, FiSmartphone } from 'react-icons/fi';
+import { FiX, FiRefreshCw, FiMessageSquare, FiCheckCircle, FiUserCheck, FiMessageCircle, FiSmartphone, FiHeadphones, FiUser } from 'react-icons/fi';
 import styles from '../../styles/pages/Dialogs.module.css';
-import { STATUS_ALL, STATUS_ACTIVE, STATUS_TAKEN_OVER } from '../../constants/dialogStatus';
+import { STATUS_ALL, STATUS_ACTIVE, STATUS_TAKEN_OVER, STATUS_HANDOFF_REQUESTED, STATUS_HANDOFF_ACTIVE } from '../../constants/dialogStatus';
 
 const AssistantIcon = ({ botType }) => {
   switch(botType) {
@@ -30,6 +30,8 @@ const FiltersPanel = ({
     switch(status) {
       case STATUS_ACTIVE: return dialogs.filter(d => d.is_taken_over !== 1 && d.auto_response).length;
       case STATUS_TAKEN_OVER: return dialogs.filter(d => d.is_taken_over === 1).length;
+      case STATUS_HANDOFF_REQUESTED: return dialogs.filter(d => d.handoff_status === 'requested').length;
+      case STATUS_HANDOFF_ACTIVE: return dialogs.filter(d => d.handoff_status === 'active').length;
       default: return dialogs.length;
     }
   };
@@ -37,7 +39,9 @@ const FiltersPanel = ({
   const statusOptions = [
     { key: STATUS_ALL, label: 'Все диалоги', icon: FiMessageSquare },
     { key: STATUS_ACTIVE, label: 'Активные', icon: FiCheckCircle },
-    { key: STATUS_TAKEN_OVER, label: 'Перехваченные', icon: FiUserCheck }
+    { key: STATUS_TAKEN_OVER, label: 'Перехваченные', icon: FiUserCheck },
+    { key: STATUS_HANDOFF_REQUESTED, label: 'Нужен оператор', icon: FiHeadphones },
+    { key: STATUS_HANDOFF_ACTIVE, label: 'У оператора', icon: FiUser }
   ];
 
   const getDialogCountForBot = (botAssistantId) => {
@@ -145,8 +149,8 @@ const FiltersPanel = ({
                 return (
                   <button
                     key={bot.id}
-                    className={`${styles.filterOption} ${selectedBot === bot.id ? styles.active : ''} ${dialogCount === 0 ? styles.disabled : ''}`}
-                    onClick={() => dialogCount > 0 ? onBotChange(bot.id) : null}
+                    className={`${styles.filterOption} ${selectedBot === bot.assistant_id ? styles.active : ''} ${dialogCount === 0 ? styles.disabled : ''}`}
+                    onClick={() => dialogCount > 0 ? onBotChange(bot.assistant_id) : null}
                   >
                     <AssistantIcon botType={bot.platform} />
                     <span className={styles.filterOptionLabel}>{bot.assistant_name}</span>

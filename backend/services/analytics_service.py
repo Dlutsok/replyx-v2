@@ -1,343 +1,314 @@
 """
-📊 СЕРВИС ДЛЯ АНАЛИТИКИ И МЕТРИК
-
-Выделение сложной логики расчета метрик из main.py в отдельный сервисный слой.
-Часть рефакторинга архитектуры для исправления монолитного main.py.
+Сервис аналитики для администраторской панели.
+Централизует сложные запросы и вычисления для повышения производительности.
 """
 
 import logging
-from typing import Dict, Any, Optional
 from datetime import datetime, timedelta
+from typing import Dict, List, Optional, Any, Tuple
+from functools import lru_cache
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_
-
+from sqlalchemy import func, desc, text, case
 from database import models
-from cache.redis_cache import chatai_cache
 
 logger = logging.getLogger(__name__)
 
-from core.app_config import TRIAL_DURATION_DAYS, TRIAL_MESSAGE_LIMIT
-
 
 class AnalyticsService:
-    """Сервис для расчета аналитики и метрик"""
+    """Сервис для работы с аналитикой"""
     
-    def __init__(self):
-        self.cache_ttl = 300  # 5 минут кэш для метрик
-    
-    def get_user_metrics(
-        self, 
-        db: Session, 
-        user_id: int, 
-        period: str = 'month',
-        date: Optional[str] = None
-    ) -> Dict[str, Any]:
-        """
-        Получение метрик пользователя с кэшированием
-        """
-        # Проверяем кэш для метрик
-        cached_metrics = chatai_cache.cache_user_metrics(
-            user_id=user_id, 
-            period=period, 
-            date=date
-        )
-        
-        if cached_metrics:
-            logger.debug(f"🚀 CACHE HIT: Метрики для пользователя {user_id}")
-            return cached_metrics
-        
-        logger.debug(f"🔍 CACHE MISS: Вычисляем метрики для пользователя {user_id}")
-        
-        # Получаем пользователя
-        user = db.query(models.User).filter(models.User.id == user_id).first()
-        if not user:
-            raise ValueError(f"User {user_id} not found")
-        
-        # Определяем временные диапазоны
-        start_time, end_time, previous_start, previous_end = self._get_time_ranges(period, date)
-        
-        # Собираем все метрики
-        metrics = self._calculate_period_metrics(db, user_id, start_time, end_time)
-        previous_metrics = self._calculate_period_metrics(db, user_id, previous_start, previous_end)
-        
-        # Расчет изменений
-        changes = self._calculate_changes(metrics, previous_metrics)
-        
-        # Информация о пробном периоде и доступе
-        trial_info = self._get_trial_info(user, db)
-        user_access = self._check_user_access(user, db)
-        
-        result = {
-            "period": period,
-            "totalMessages": trial_info.get("trial_messages_used", 0) if trial_info["is_trial_active"] else metrics["total_messages"],
-            "periodMessages": metrics["period_messages"],
-            "messageLimit": self._get_user_message_limit(user),
-            "autoResponseRate": metrics["auto_response_rate"],
-            "avgResponseTime": metrics["avg_response_time"],
-            "customerSatisfaction": metrics["avg_rating"],
-            "dialogs": metrics["period_dialogs"],
-            "changes": changes,
-            "trialInfo": trial_info,
-            "userAccess": user_access
-        }
-        
-        # Сохраняем результат в кэш
-        chatai_cache.set_user_metrics(
-            user_id=user_id,
-            period=period,
-            data=result,
-            date=date,
-            ttl=self.cache_ttl
-        )
-        
-        return result
-    
-    def get_admin_system_stats(self, db: Session) -> Dict[str, Any]:
-        """
-        Системная статистика для админов
-        """
-        # Проверяем кэш
-        cached_stats = chatai_cache.cache_system_stats()
-        if cached_stats:
-            logger.debug("🚀 CACHE HIT: System stats")
-            return cached_stats
-        
-        logger.debug("🔍 CACHE MISS: Calculating system stats")
-        
-        # Общая статистика
-        total_users = db.query(models.User).count()
-        active_users = db.query(models.User).filter(models.User.status == 'active').count()
-        total_dialogs = db.query(models.Dialog).count()
-        total_messages = db.query(models.DialogMessage).count()
-        total_assistants = db.query(models.Assistant).count()
-        total_documents = db.query(models.Document).count()
-        
-        # Статистика за последние 24 часа
-        last_24h = datetime.utcnow() - timedelta(hours=24)
-        new_users_24h = db.query(models.User).filter(models.User.created_at >= last_24h).count()
-        new_dialogs_24h = db.query(models.Dialog).filter(models.Dialog.started_at >= last_24h).count()
-        new_messages_24h = db.query(models.DialogMessage).filter(models.DialogMessage.timestamp >= last_24h).count()
-        
-        # Средняя оценка удовлетворенности
-        avg_satisfaction = db.query(
-            func.avg(models.Dialog.satisfaction)
-        ).filter(models.Dialog.satisfaction.isnot(None)).scalar() or 0
-        
-        result = {
-            "overview": {
-                "total_users": total_users,
-                "active_users": active_users,
-                "total_dialogs": total_dialogs,
-                "total_messages": total_messages,
-                "total_assistants": total_assistants,
-                "total_documents": total_documents,
-                "avg_satisfaction": round(float(avg_satisfaction), 2)
-            },
-            "last_24h": {
-                "new_users": new_users_24h,
-                "new_dialogs": new_dialogs_24h,
-                "new_messages": new_messages_24h
-            },
-            "timestamp": datetime.utcnow().isoformat()
-        }
-        
-        # Сохраняем в кэш на 1 минуту
-        chatai_cache.set_system_stats(result, 60)
-        
-        return result
-    
+    @staticmethod
+    @lru_cache(maxsize=32)
+    def _calculate_growth_rate(current: int, previous: int) -> float:
+        """Вычислить процент роста с кэшированием"""
+        if previous == 0:
+            return 100.0 if current > 0 else 0.0
+        return round(((current - previous) / previous) * 100, 2)
 
-    
-    def _get_time_ranges(self, period: str, date: Optional[str] = None):
-        """Определение временных диапазонов для периода"""
+    def get_real_growth_metrics(self, db: Session) -> Dict[str, float]:
+        """Вычисляет реальные метрики роста на основе данных БД"""
         now = datetime.utcnow()
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        yesterday_start = today_start - timedelta(days=1)
+        week_ago = today_start - timedelta(days=7)
+        two_weeks_ago = today_start - timedelta(days=14)
         
-        if period == 'custom' and date:
+        try:
+            # Рост пользователей (сегодня vs вчера)
+            users_today = db.query(models.User).filter(
+                models.User.created_at >= today_start
+            ).count()
+            
+            users_yesterday = db.query(models.User).filter(
+                models.User.created_at >= yesterday_start,
+                models.User.created_at < today_start
+            ).count()
+            
+            # Рост активных пользователей (эта неделя vs прошлая неделя)
+            active_this_week = db.query(models.Dialog).filter(
+                models.Dialog.started_at >= week_ago
+            ).distinct(models.Dialog.user_id).count()
+            
+            active_prev_week = db.query(models.Dialog).filter(
+                models.Dialog.started_at >= two_weeks_ago,
+                models.Dialog.started_at < week_ago
+            ).distinct(models.Dialog.user_id).count()
+            
+            # Рост AI запросов (сегодня vs вчера)
             try:
-                custom_date = datetime.strptime(date, '%Y-%m-%d')
-                start_time = custom_date.replace(hour=0, minute=0, second=0, microsecond=0)
-                end_time = start_time + timedelta(days=1)
-                previous_start = start_time - timedelta(days=1)
-                previous_end = start_time
-            except ValueError:
-                # Если дата некорректная, используем последний день
-                start_time = now - timedelta(days=1)
-                end_time = now
-                previous_start = now - timedelta(days=2)
-                previous_end = start_time
-        elif period == 'day':
-            start_time = now - timedelta(days=1)
-            end_time = now
-            previous_start = now - timedelta(days=2)
-            previous_end = start_time
-        elif period == 'week':
-            start_time = now - timedelta(days=7)
-            end_time = now
-            previous_start = now - timedelta(days=14)
-            previous_end = start_time
-        else:  # month
-            start_time = now - timedelta(days=30)
-            end_time = now
-            previous_start = now - timedelta(days=60)
-            previous_end = start_time
-        
-        return start_time, end_time, previous_start, previous_end
-    
-    def _calculate_period_metrics(self, db: Session, user_id: int, start_time: datetime, end_time: datetime) -> Dict[str, Any]:
-        """Расчет метрик за период"""
-        
-        # Сообщения за период
-        period_messages = db.query(func.count(models.DialogMessage.id)).join(
-            models.Dialog
-        ).filter(
-            models.Dialog.user_id == user_id,
-            models.DialogMessage.sender == 'assistant',
-            models.DialogMessage.timestamp >= start_time,
-            models.DialogMessage.timestamp <= end_time
-        ).scalar() or 0
-        
-        # Диалоги за период
-        period_dialogs = db.query(func.count(models.Dialog.id)).filter(
-            models.Dialog.user_id == user_id,
-            models.Dialog.started_at >= start_time,
-            models.Dialog.started_at <= end_time
-        ).scalar() or 0
-        
-        # Средний рейтинг
-        avg_rating = db.query(func.avg(models.Dialog.satisfaction)).filter(
-            models.Dialog.user_id == user_id,
-            models.Dialog.satisfaction.isnot(None),
-            models.Dialog.started_at >= start_time,
-            models.Dialog.started_at <= end_time
-        ).scalar() or 0
-        
-        # Время ответа
-        avg_response_time = db.query(func.avg(models.Dialog.first_response_time)).filter(
-            models.Dialog.user_id == user_id,
-            models.Dialog.first_response_time.isnot(None),
-            models.Dialog.started_at >= start_time,
-            models.Dialog.started_at <= end_time
-        ).scalar() or 0
-        
-        # Правильный расчет автоответов - диалоги с автоответом
-        auto_response_dialogs = db.query(func.count(models.Dialog.id)).filter(
-            models.Dialog.user_id == user_id,
-            models.Dialog.auto_response == 1,
-            models.Dialog.started_at >= start_time,
-            models.Dialog.started_at <= end_time
-        ).scalar() or 0
-        
-        auto_response_rate = round((auto_response_dialogs / period_dialogs * 100), 1) if period_dialogs > 0 else 0
-        
-        # Общее количество сообщений пользователя
-        total_messages = db.query(func.count(models.DialogMessage.id)).join(
-            models.Dialog
-        ).filter(
-            models.Dialog.user_id == user_id,
-            models.DialogMessage.sender == 'assistant'
-        ).scalar() or 0
-        
-        return {
-            "period_messages": period_messages,
-            "period_dialogs": period_dialogs,
-            "avg_rating": round(float(avg_rating), 1) if avg_rating else 0,
-            "avg_response_time": round(float(avg_response_time), 1) if avg_response_time else 0,
-            "auto_response_rate": auto_response_rate,
-            "total_messages": total_messages
-        }
-    
-    def _calculate_changes(self, current: Dict[str, Any], previous: Dict[str, Any]) -> Dict[str, float]:
-        """Расчет процентных изменений"""
-        def calculate_change(current_val, previous_val):
-            if previous_val == 0:
-                return 100 if current_val > 0 else 0
-            return round(((current_val - previous_val) / previous_val) * 100, 1)
-        
-        return {
-            "totalMessages": calculate_change(current["period_messages"], previous["period_messages"]),
-            "autoResponseRate": calculate_change(current["auto_response_rate"], previous["auto_response_rate"]),
-            "avgResponseTime": calculate_change(current["avg_response_time"], previous["avg_response_time"]),
-            "customerSatisfaction": calculate_change(current["avg_rating"], previous["avg_rating"])
-        }
-    
-    def _get_trial_info(self, user: models.User, db: Session) -> Dict[str, Any]:
-        """Информация о пробном периоде"""
-        is_trial_active = self._is_trial_period_active(user)
-        trial_days_left = self._get_trial_days_left(user)
-        trial_messages_used = self._get_trial_messages_used(user, db)
-        
-        return {
-            "is_trial_active": is_trial_active,
-            "trial_days_left": trial_days_left,
-            "trial_messages_used": trial_messages_used,
-            "trial_message_limit": TRIAL_MESSAGE_LIMIT,
-            "trial_end_date": (user.created_at + timedelta(days=TRIAL_DURATION_DAYS)).isoformat() if is_trial_active else None
-        }
-    
-    def _check_user_access(self, user: models.User, db: Session) -> Dict[str, Any]:
-        """Проверка доступа пользователя"""
-        is_blocked = self._is_user_blocked(user)
-        is_trial = self._is_trial_period_active(user)
-        trial_days_left = self._get_trial_days_left(user)
-        trial_messages_used = self._get_trial_messages_used(user, db)
-        
-        return {
-            "is_blocked": is_blocked,
-            "is_trial_active": is_trial,
-            "trial_days_left": trial_days_left,
-            "trial_messages_used": trial_messages_used,
-            "needs_upgrade": is_blocked or (is_trial and trial_days_left <= 1),
-            "block_reason": "trial_expired" if is_blocked else None,
-            "warning_message": self._get_warning_message(user, trial_days_left, trial_messages_used)
-        }
-    
-    def _is_trial_period_active(self, user: models.User) -> bool:
-        """Проверяет, активен ли пробный период для пользователя"""
-        trial_end = user.created_at + timedelta(days=TRIAL_DURATION_DAYS)
-        return datetime.utcnow() < trial_end
-    
-    def _get_trial_messages_used(self, user: models.User, db: Session) -> int:
-        """Возвращает количество сообщений, использованных в пробном периоде"""
-        message_count = db.query(func.count(models.DialogMessage.id)).join(
-            models.Dialog
-        ).filter(
-            models.Dialog.user_id == user.id,
-            models.DialogMessage.sender == 'assistant',
-            models.DialogMessage.timestamp >= user.created_at
-        ).scalar() or 0
-        
-        return message_count
-    
-    def _get_trial_days_left(self, user: models.User) -> int:
-        """Возвращает количество дней, оставшихся в пробном периоде"""
-        trial_end = user.created_at + timedelta(days=TRIAL_DURATION_DAYS)
-        days_left = (trial_end - datetime.utcnow()).days
-        return max(0, days_left)
-    
-    def _is_user_blocked(self, user: models.User) -> bool:
-        """Проверяет, заблокирован ли пользователь"""
-        return not self._is_trial_period_active(user)
-    
-    def _get_user_message_limit(self, user: models.User) -> Optional[int]:
-        """Возвращает лимит сообщений для пользователя"""
-        if self._is_trial_period_active(user):
-            return TRIAL_MESSAGE_LIMIT
-        else:
-            return 0
-    
-    def _get_warning_message(self, user: models.User, days_left: int, messages_used: int) -> Optional[str]:
-        """Возвращает предупреждающее сообщение для пользователя"""
-        if days_left == 0:
-            return "Ваш пробный период завершился. Обновите план для продолжения использования."
-        elif days_left == 1:
-            return "У вас остался 1 день пробного периода. Рекомендуем обновить план."
-        elif days_left <= 3:
-            return f"У вас осталось {days_left} дня пробного периода."
-        elif messages_used >= TRIAL_MESSAGE_LIMIT * 0.8:
-            return f"Вы использовали {messages_used} из {TRIAL_MESSAGE_LIMIT} сообщений пробного периода."
-        
-        return None
+                ai_requests_today = db.query(models.AITokenUsage).filter(
+                    models.AITokenUsage.created_at >= today_start,
+                    models.AITokenUsage.success == True
+                ).count()
+                
+                ai_requests_yesterday = db.query(models.AITokenUsage).filter(
+                    models.AITokenUsage.created_at >= yesterday_start,
+                    models.AITokenUsage.created_at < today_start,
+                    models.AITokenUsage.success == True
+                ).count()
+                
+                requests_change = self._calculate_growth_rate(ai_requests_today, ai_requests_yesterday)
+            except Exception as e:
+                logger.warning(f"Ошибка получения AI requests: {e}")
+                requests_change = 0.0
+            
+            return {
+                "userGrowth": self._calculate_growth_rate(users_today, users_yesterday),
+                "dailyActiveGrowth": self._calculate_growth_rate(active_this_week, active_prev_week),
+                "requestsChange": requests_change,
+            }
+            
+        except Exception as e:
+            logger.error(f"Ошибка вычисления growth metrics: {e}")
+            return {
+                "userGrowth": 0.0,
+                "dailyActiveGrowth": 0.0, 
+                "requestsChange": 0.0,
+            }
+
+    def get_real_ai_response_times(self, db: Session, period_days: int = 7) -> Dict[str, float]:
+        """Получает реальные времена ответа AI из таблицы AITokenUsage"""
+        try:
+            period_start = datetime.utcnow() - timedelta(days=period_days)
+            
+            # Получаем статистику времен ответа
+            response_time_stats = db.query(
+                func.avg(models.AITokenUsage.response_time).label('avg_time'),
+                func.percentile_cont(0.5).within_group(
+                    models.AITokenUsage.response_time
+                ).label('median_time'),
+                func.percentile_cont(0.95).within_group(
+                    models.AITokenUsage.response_time  
+                ).label('p95_time')
+            ).filter(
+                models.AITokenUsage.created_at >= period_start,
+                models.AITokenUsage.success == True,
+                models.AITokenUsage.response_time > 0
+            ).first()
+            
+            if response_time_stats and response_time_stats.avg_time is not None:
+                return {
+                    "average_response_time": round(float(response_time_stats.avg_time), 2),
+                    "median_response_time": round(float(response_time_stats.median_time or 0), 2),
+                    "p95_response_time": round(float(response_time_stats.p95_time or 0), 2)
+                }
+            else:
+                logger.warning("Нет данных о временах ответа AI")
+                return {
+                    "average_response_time": 0.0,
+                    "median_response_time": 0.0,
+                    "p95_response_time": 0.0
+                }
+                
+        except Exception as e:
+            logger.error(f"Ошибка получения AI response times: {e}")
+            return {
+                "average_response_time": 0.0,
+                "median_response_time": 0.0,
+                "p95_response_time": 0.0
+            }
+
+    def get_enhanced_ai_usage_stats(self, db: Session, period_days: int = 7) -> Dict[str, Any]:
+        """Получает улучшенную статистику использования AI за период"""
+        try:
+            now = datetime.utcnow()
+            today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+            period_start = today_start - timedelta(days=period_days)
+            
+            # Активные токены
+            active_tokens = db.query(models.AITokenPool).filter(
+                models.AITokenPool.is_active == True
+            ).count()
+            
+            # Запросы за сегодня с успешностью
+            usage_today = db.query(
+                func.count(models.AITokenUsage.id).label('total_requests'),
+                func.count(case((models.AITokenUsage.success == True, 1))).label('successful_requests'),
+                func.avg(models.AITokenUsage.response_time).label('avg_response_time'),
+                func.sum(models.AITokenUsage.total_tokens).label('total_tokens')
+            ).filter(
+                models.AITokenUsage.created_at >= today_start
+            ).first()
+            
+            # Запросы за период для получения данных, если сегодня пусто
+            usage_period = db.query(
+                func.count(models.AITokenUsage.id).label('total_requests'),
+                func.count(case((models.AITokenUsage.success == True, 1))).label('successful_requests'),
+                func.avg(models.AITokenUsage.response_time).label('avg_response_time'),
+                func.sum(models.AITokenUsage.total_tokens).label('total_tokens')
+            ).filter(
+                models.AITokenUsage.created_at >= period_start
+            ).first()
+            
+            # Используем данные за сегодня, если есть, иначе за период
+            usage_data = usage_today if (usage_today and usage_today.total_requests > 0) else usage_period
+            
+            if usage_data and usage_data.total_requests > 0:
+                success_rate = round((usage_data.successful_requests / usage_data.total_requests) * 100, 1)
+                
+                return {
+                    "active_tokens": active_tokens,
+                    "total_requests_today": usage_data.total_requests or 0,
+                    "successful_requests_today": usage_data.successful_requests or 0,
+                    "success_rate": success_rate,
+                    "average_response_time": round(float(usage_data.avg_response_time or 0), 2),
+                    "total_tokens_today": usage_data.total_tokens or 0
+                }
+            else:
+                return {
+                    "active_tokens": active_tokens,
+                    "total_requests_today": 0,
+                    "successful_requests_today": 0,
+                    "success_rate": 0.0,
+                    "average_response_time": 0.0,
+                    "total_tokens_today": 0
+                }
+                
+        except Exception as e:
+            logger.error(f"Ошибка получения AI usage stats: {e}")
+            return {
+                "active_tokens": 0,
+                "total_requests_today": 0,
+                "successful_requests_today": 0,
+                "success_rate": 0.0,
+                "average_response_time": 0.0,
+                "total_tokens_today": 0
+            }
+
+    def get_dialog_performance_metrics(self, db: Session, period_days: int = 7) -> Dict[str, Any]:
+        """Получает метрики производительности диалогов"""
+        try:
+            period_start = datetime.utcnow() - timedelta(days=period_days)
+            
+            # Статистика первого ответа в диалогах
+            first_response_stats = db.query(
+                func.avg(models.Dialog.first_response_time).label('avg_first_response'),
+                func.percentile_cont(0.5).within_group(
+                    models.Dialog.first_response_time
+                ).label('median_first_response'),
+                func.percentile_cont(0.95).within_group(
+                    models.Dialog.first_response_time
+                ).label('p95_first_response')
+            ).filter(
+                models.Dialog.started_at >= period_start,
+                models.Dialog.first_response_time.isnot(None),
+                models.Dialog.first_response_time > 0
+            ).first()
+            
+            # Количество диалогов с fallback
+            total_dialogs_period = db.query(models.Dialog).filter(
+                models.Dialog.started_at >= period_start
+            ).count()
+            
+            fallback_dialogs = db.query(models.Dialog).filter(
+                models.Dialog.started_at >= period_start,
+                models.Dialog.fallback == 1
+            ).count()
+            
+            fallback_rate = 0.0
+            if total_dialogs_period > 0:
+                fallback_rate = round((fallback_dialogs / total_dialogs_period) * 100, 1)
+            
+            result = {
+                "total_dialogs_period": total_dialogs_period,
+                "fallback_dialogs": fallback_dialogs,
+                "fallback_rate": fallback_rate
+            }
+            
+            if first_response_stats and first_response_stats.avg_first_response is not None:
+                result.update({
+                    "avg_first_response_time": round(float(first_response_stats.avg_first_response), 2),
+                    "median_first_response_time": round(float(first_response_stats.median_first_response or 0), 2),
+                    "p95_first_response_time": round(float(first_response_stats.p95_first_response or 0), 2)
+                })
+            else:
+                result.update({
+                    "avg_first_response_time": 0.0,
+                    "median_first_response_time": 0.0,
+                    "p95_first_response_time": 0.0
+                })
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Ошибка получения dialog performance metrics: {e}")
+            return {
+                "total_dialogs_period": 0,
+                "fallback_dialogs": 0,
+                "fallback_rate": 0.0,
+                "avg_first_response_time": 0.0,
+                "median_first_response_time": 0.0,
+                "p95_first_response_time": 0.0
+            }
+
+    def get_admin_system_stats(self, db: Session) -> Dict[str, Any]:
+        """Получает системную статистику для админ панели"""
+        try:
+            # Базовые метрики
+            total_users = db.query(models.User).count()
+            total_dialogs = db.query(models.Dialog).count()
+            total_messages = db.query(models.DialogMessage).count()
+            
+            # Активные пользователи сегодня
+            today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+            active_users_today = db.query(models.Dialog).filter(
+                models.Dialog.started_at >= today_start
+            ).distinct(models.Dialog.user_id).count()
+            
+            # AI токены и их использование
+            ai_stats = self.get_enhanced_ai_usage_stats(db)
+            
+            # Метрики роста
+            growth_metrics = self.get_real_growth_metrics(db)
+            
+            return {
+                "totalUsers": total_users,
+                "activeUsersToday": active_users_today,
+                "totalDialogs": total_dialogs,
+                "totalMessages": total_messages,
+                "dailyRequests": ai_stats.get("total_requests_today", 0),
+                "activeAITokens": ai_stats.get("active_tokens", 0),
+                "userGrowth": growth_metrics.get("userGrowth", 0.0),
+                "dailyActiveGrowth": growth_metrics.get("dailyActiveGrowth", 0.0),
+                "requestsChange": growth_metrics.get("requestsChange", 0.0),
+                "timestamp": datetime.utcnow().isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"Ошибка получения system stats: {e}")
+            return {
+                "totalUsers": 0,
+                "activeUsersToday": 0,
+                "totalDialogs": 0,
+                "totalMessages": 0,
+                "dailyRequests": 0,
+                "activeAITokens": 0,
+                "userGrowth": 0.0,
+                "dailyActiveGrowth": 0.0,
+                "requestsChange": 0.0,
+                "timestamp": datetime.utcnow().isoformat()
+            }
 
 
-# Создаем глобальный экземпляр сервиса
+# Глобальный экземпляр сервиса
 analytics_service = AnalyticsService()

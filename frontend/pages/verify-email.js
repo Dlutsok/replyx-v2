@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
 import Link from 'next/link';
-import styles from '../styles/pages/Login.module.css';
+import Image from 'next/image';
+import { createApiUrl } from '../config/api';
 
 const RESEND_TIMEOUT = 60; // секунд
 const RESEND_KEY = 'verify_email_last_resend';
@@ -81,17 +83,30 @@ export default function VerifyEmail() {
     setMessageType('');
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/confirm_email', {
+      const response = await fetch(createApiUrl('/api/confirm_email'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, code: codeString })
       });
       const data = await response.json();
       if (response.ok) {
-        setMessage('Email успешно подтвержден!');
+        setMessage('Email успешно подтвержден! Выполняется вход...');
         setMessageType('success');
         localStorage.removeItem('verify_email');
-        setTimeout(() => router.push('/login'), 2000);
+
+        // Если вернулся токен авторизации, автоматически входим в систему
+        if (data.access_token) {
+          localStorage.setItem('token', data.access_token);
+
+          // Перенаправляем на дашборд через 1 секунду
+          // Используем window.location для полного обновления страницы и проверки авторизации
+          setTimeout(() => {
+            window.location.href = '/dashboard';
+          }, 1000);
+        } else {
+          // Fallback на старое поведение если токен не вернулся
+          setTimeout(() => router.push('/login'), 2000);
+        }
       } else {
         let errorMsg = 'Ошибка подтверждения';
         if (data.detail) {
@@ -116,7 +131,7 @@ export default function VerifyEmail() {
     setMessageType("");
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:8000/api/resend_email_code", {
+      const response = await fetch(createApiUrl('/api/resend_email_code'), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, code: "" })
@@ -146,69 +161,156 @@ export default function VerifyEmail() {
   }, [email]);
 
   return (
-    <div className={styles.loginBg}>
-      <div className={styles.verifyCard}>
-        <div className={styles.logoContainer}>
-          <svg width="36" height="36" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="48" height="48" rx="12" fill="#7C4DFF"/>
-            <path d="M14 19L24 27L34 19" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-            <rect x="14" y="15" width="20" height="18" rx="5" stroke="#fff" strokeWidth="3"/>
-          </svg>
-          <span className={styles.logoText}>ChatAI</span>
-        </div>
-        
-        <h1 className={styles.verifyTitle}>Подтверждение Email</h1>
-        
-        <p className={styles.verifySubtitle}>
-          Мы отправили 6‑значный код на <strong>{email}</strong>
-        </p>
-        
-        <div className={styles.codeContainer}>
-          {code.map((digit, index) => (
-            <input
-              key={index}
-              ref={el => inputRefs.current[index] = el}
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength="1"
-              value={digit}
-              onChange={(e) => handleCodeChange(index, e.target.value.replace(/[^0-9]/g, ''))}
-              onKeyDown={(e) => handleKeyDown(index, e)}
-              disabled={loading}
-              className={styles.codeInput}
-            />
-          ))}
-        </div>
-        
-        {message && <p className={`${styles.message} ${styles[messageType]}`}>{message}</p>}
-        
-        <button 
-          onClick={() => handleSubmit(code.join(''))}
-          disabled={loading || code.join('').length !== 6}
-          className={styles.submitButton}
-        >
-          {loading ? 'Подтверждаем...' : 'Подтвердить'}
-        </button>
-        
-        <button 
-          onClick={handleResend}
-          disabled={loading || resendTimer > 0}
-          className={styles.resendButton}
-        >
-          {loading ? 'Отправляем...' : resendTimer > 0 ? `Отправить ещё код (${resendTimer}с)` : 'Отправить ещё код'}
-        </button>
-        
-        <p className={styles.expiryText}>
-          Код действителен 15 минут
-        </p>
-        
-        <div className={styles.registerText}>
-          <Link href="/login" className={styles.registerLink}>
-            ← Назад ко входу
+    <>
+      <Head>
+        <title>Подтверждение email - ReplyX</title>
+        <meta name="description" content="Подтвердите ваш email адрес для завершения регистрации в ReplyX." />
+        <meta name="robots" content="noindex, nofollow" />
+      </Head>
+      <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white">
+      {/* Левая панель с градиентным фоном в стиле дашборда */}
+      <div className="relative hidden lg:block overflow-hidden">
+        {/* Градиентный фон в стиле дашборда */}
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-white to-purple-50" />
+
+        {/* Анимированные пузырьки по всей левой половине - едва заметные */}
+        <div className="absolute top-10 left-10 w-96 h-96 rounded-full opacity-5 blur-3xl animate-pulse"
+             style={{background: 'radial-gradient(circle, #7C3AED, transparent)'}} />
+        <div className="absolute top-1/4 right-20 w-80 h-80 rounded-full opacity-8 blur-3xl animate-pulse"
+             style={{background: 'radial-gradient(circle, #8B5CF6, transparent)', animationDelay: '1s'}} />
+        <div className="absolute bottom-1/4 left-1/4 w-64 h-64 rounded-full opacity-6 blur-3xl animate-pulse"
+             style={{background: 'radial-gradient(circle, #A855F7, transparent)', animationDelay: '2s'}} />
+        <div className="absolute top-1/2 right-10 w-72 h-72 rounded-full opacity-7 blur-3xl animate-pulse"
+             style={{background: 'radial-gradient(circle, #7C3AED, transparent)', animationDelay: '3s'}} />
+        <div className="absolute bottom-20 left-20 w-80 h-80 rounded-full opacity-5 blur-3xl animate-pulse"
+             style={{background: 'radial-gradient(circle, #9333EA, transparent)', animationDelay: '4s'}} />
+        <div className="absolute top-3/4 right-1/3 w-56 h-56 rounded-full opacity-6 blur-3xl animate-pulse"
+             style={{background: 'radial-gradient(circle, #8B5CF6, transparent)', animationDelay: '5s'}} />
+        <div className="absolute bottom-1/3 left-1/2 w-68 h-68 rounded-full opacity-7 blur-3xl animate-pulse"
+             style={{background: 'radial-gradient(circle, #A855F7, transparent)', animationDelay: '6s'}} />
+
+        {/* Логотип в верхнем левом углу */}
+        <div className="absolute top-8 left-8 z-10">
+          <Link href="/" className="inline-flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-xl">
+            <Image src="/favicon.svg" alt="ReplyX" width={32} height={32} />
           </Link>
+        </div>
+
+        {/* Центральный контент - только текст */}
+        <div className="relative h-full w-full flex items-center justify-center">
+          <div className="max-w-lg text-center">
+            <div className="space-y-6">
+              {/* Основной заголовок */}
+              <div>
+                <div className="text-6xl sm:text-7xl font-extrabold leading-tight tracking-tight bg-gradient-to-r from-[#8B5CF6] to-[#7C3AED] bg-clip-text text-transparent mb-3">
+                  ReplyX
+                </div>
+                <div className="text-lg sm:text-xl text-gray-600 font-medium">
+                  Подтверждение email
+                </div>
+              </div>
+
+              {/* Описание */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 shadow-lg p-6">
+                <p className="text-gray-700 leading-relaxed text-base sm:text-lg">
+                  Мы отправили 6-значный код подтверждения на <strong className="text-purple-600">{email || 'ваш email'}</strong>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Правая панель — форма подтверждения email в стиле дашборда */}
+      <div className="flex items-center justify-center px-4 sm:px-6 xl:px-8 py-6 bg-white">
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-lg hover:shadow-xl transition-shadow duration-300 p-6 sm:p-8">
+            {/* Welcome Section в стиле дашборда */}
+            <div className="text-center mb-6">
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <div className="w-8 h-8 bg-purple-50 rounded-xl flex items-center justify-center">
+                  <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h2 className="text-lg font-semibold text-gray-900">Подтверждение email</h2>
+              </div>
+              <p className="text-gray-600 text-sm">
+                Введите 6-значный код из письма
+              </p>
+            </div>
+
+            {/* Поля для ввода кода */}
+            <div className="grid grid-cols-6 gap-3 mb-4">
+              {code.map((digit, index) => (
+                <input
+                  key={index}
+                  ref={(el) => (inputRefs.current[index] = el)}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength="1"
+                  value={digit}
+                  onChange={(e) => handleCodeChange(index, e.target.value.replace(/[^0-9]/g, ''))}
+                  onKeyDown={(e) => handleKeyDown(index, e)}
+                  disabled={loading}
+                  className="h-14 rounded-xl border border-gray-200 bg-white text-center text-xl font-semibold text-gray-900 outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                />
+              ))}
+            </div>
+
+            {/* Сообщения об ошибках/успехе */}
+            {message && (
+              <div className={`rounded-xl px-4 py-3 text-sm mb-4 ${
+                messageType === 'error'
+                  ? 'bg-red-50 border border-red-200 text-red-700'
+                  : 'bg-green-50 border border-green-200 text-green-700'
+              }`}>
+                {message}
+              </div>
+            )}
+
+            {/* Основная кнопка подтверждения */}
+            <button
+              onClick={() => handleSubmit(code.join(''))}
+              disabled={loading || code.join('').length !== 6}
+              className={`w-full rounded-xl px-6 py-3 text-white font-semibold transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-purple-200 mb-3 ${
+                loading || code.join('').length !== 6
+                  ? 'bg-purple-300 cursor-not-allowed'
+                  : 'bg-purple-600 hover:bg-purple-700 shadow-lg hover:shadow-xl'
+              }`}
+            >
+              {loading ? 'Подтверждаем...' : 'Подтвердить email'}
+            </button>
+
+            {/* Кнопка повторной отправки */}
+            <button
+              onClick={handleResend}
+              disabled={loading || resendTimer > 0}
+              className={`w-full rounded-xl border border-gray-200 px-6 py-3 font-medium transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-purple-200 ${
+                loading || resendTimer > 0
+                  ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 hover:border-purple-300'
+              }`}
+            >
+              {loading ? 'Отправляем...' : resendTimer > 0 ? `Отправить ещё код (${resendTimer}с)` : 'Отправить код повторно'}
+            </button>
+
+            {/* Информация о коде */}
+            <p className="mt-4 text-center text-sm text-gray-500">
+              Код действителен 15 минут
+            </p>
+
+            {/* Ссылка на вход */}
+            <div className="mt-6 text-center">
+              <Link href="/login" className="text-sm text-purple-600 hover:text-purple-700 font-medium transition-colors">
+                ← Назад ко входу
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </div>
+    </>
   );
 } 

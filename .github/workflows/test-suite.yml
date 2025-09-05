@@ -1,0 +1,573 @@
+name: ReplyX - Comprehensive Test Suite
+
+on:
+  push:
+    branches: [ main, develop, release/* ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Запускаем полный набор тестов каждую ночь
+    - cron: '0 2 * * *'
+
+# Отмена предыдущих запусков при новом push
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Общие переменные окружения
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.11'
+  POSTGRES_VERSION: '14'
+  REDIS_VERSION: '6'
+
+jobs:
+  # ========================== ПОДГОТОВКА ==========================
+  setup:
+    name: Setup and Validation
+    runs-on: ubuntu-latest
+    outputs:
+      backend-changed: ${{ steps.changes.outputs.backend }}
+      frontend-changed: ${{ steps.changes.outputs.frontend }}
+      tests-changed: ${{ steps.changes.outputs.tests }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Detect changes
+        uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - 'tests/backend/**'
+              - 'requirements*.txt'
+            frontend:
+              - 'frontend/**'
+              - 'tests/frontend/**'
+              - 'package*.json'
+            tests:
+              - 'tests/**'
+              - '.github/workflows/**'
+
+  # ========================== BACKEND ТЕСТЫ ==========================
+  backend-tests:
+    name: Backend Tests
+    needs: setup
+    if: needs.setup.outputs.backend-changed == 'true' || needs.setup.outputs.tests-changed == 'true'
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: replyx_test
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: replyx_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+          
+      redis:
+        image: redis:6
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install --upgrade pip
+          pip install -r requirements.txt -r ../tests/backend/requirements-test.txt
+          
+      - name: Set up test environment
+        run: |
+          cp backend/.env.example backend/.env.test
+          echo "TESTING=1" >> backend/.env.test
+          echo "DATABASE_URL=postgresql://replyx_test:test_password@localhost:5432/replyx_test" >> backend/.env.test
+          echo "REDIS_URL=redis://localhost:6379/1" >> backend/.env.test
+          
+      - name: Run database migrations
+        run: |
+          cd backend
+          alembic upgrade head
+        env:
+          DATABASE_URL: postgresql://replyx_test:test_password@localhost:5432/replyx_test
+          
+      - name: Run unit tests
+        run: |
+          cd backend
+          pytest tests/backend/unit/ -v --tb=short \
+            --cov=backend --cov-report=xml --cov-report=term-missing \
+            --junit-xml=../tests/reports/backend/junit-unit.xml
+        env:
+          DATABASE_URL: postgresql://replyx_test:test_password@localhost:5432/replyx_test
+          REDIS_URL: redis://localhost:6379/1
+          
+      - name: Run integration tests
+        run: |
+          cd backend
+          pytest tests/backend/integration/ -v --tb=short \
+            --junit-xml=../tests/reports/backend/junit-integration.xml
+        env:
+          DATABASE_URL: postgresql://replyx_test:test_password@localhost:5432/replyx_test
+          REDIS_URL: redis://localhost:6379/1
+          
+      - name: Run AI/ML tests
+        run: |
+          cd backend
+          pytest tests/backend/ai/ -v --tb=short \
+            --junit-xml=../tests/reports/backend/junit-ai.xml
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_TEST }}
+          DATABASE_URL: postgresql://replyx_test:test_password@localhost:5432/replyx_test
+          
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./backend/coverage.xml
+          flags: backend
+          name: backend-coverage
+          
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: backend-test-results
+          path: tests/reports/backend/
+
+  # ========================== FRONTEND ТЕСТЫ ==========================
+  frontend-tests:
+    name: Frontend Tests
+    needs: setup
+    if: needs.setup.outputs.frontend-changed == 'true' || needs.setup.outputs.tests-changed == 'true'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+          
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+          
+      - name: Install test dependencies
+        run: |
+          cd tests/frontend
+          npm ci
+          
+      - name: Run linting
+        run: |
+          cd frontend
+          npm run lint
+          
+      - name: Run unit tests
+        run: |
+          cd tests/frontend
+          npm test -- --coverage --watchAll=false --ci
+        env:
+          CI: true
+          NODE_ENV: test
+          
+      - name: Run component tests
+        run: |
+          cd tests/frontend
+          npm run test:components -- --watchAll=false --ci
+        env:
+          CI: true
+          
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./tests/reports/frontend/coverage/lcov.info
+          flags: frontend
+          name: frontend-coverage
+          
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: frontend-test-results
+          path: tests/reports/frontend/
+
+  # ========================== E2E ТЕСТЫ ==========================
+  e2e-tests:
+    name: End-to-End Tests
+    needs: [backend-tests, frontend-tests]
+    if: always() && (needs.backend-tests.result == 'success' || needs.frontend-tests.result == 'success')
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: replyx_e2e
+          POSTGRES_PASSWORD: e2e_password
+          POSTGRES_DB: replyx_e2e
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+          
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+          
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: Install dependencies
+        run: |
+          # Backend dependencies
+          cd backend
+          pip install -r requirements.txt
+          cd ..
+          
+          # Frontend dependencies
+          cd frontend
+          npm ci
+          cd ..
+          
+          # E2E test dependencies
+          cd tests/e2e
+          npm ci
+          npx playwright install --with-deps
+          
+      - name: Set up E2E environment
+        run: |
+          # Backend environment
+          cp backend/.env.example backend/.env.e2e
+          echo "TESTING=1" >> backend/.env.e2e
+          echo "DATABASE_URL=postgresql://replyx_e2e:e2e_password@localhost:5432/replyx_e2e" >> backend/.env.e2e
+          
+          # Frontend environment
+          echo "NEXT_PUBLIC_API_URL=http://localhost:8000" > frontend/.env.local
+          echo "NEXT_PUBLIC_APP_ENV=e2e" >> frontend/.env.local
+          
+      - name: Run database migrations
+        run: |
+          cd backend
+          alembic upgrade head
+        env:
+          DATABASE_URL: postgresql://replyx_e2e:e2e_password@localhost:5432/replyx_e2e
+          
+      - name: Start backend server
+        run: |
+          cd backend
+          python -m uvicorn main:app --host 0.0.0.0 --port 8000 &
+          sleep 10  # Wait for server to start
+        env:
+          DATABASE_URL: postgresql://replyx_e2e:e2e_password@localhost:5432/replyx_e2e
+          
+      - name: Start frontend server
+        run: |
+          cd frontend
+          npm run build
+          npm run start &
+          sleep 15  # Wait for frontend to start
+          
+      - name: Wait for services to be ready
+        run: |
+          curl --retry 10 --retry-delay 3 --retry-connrefused http://localhost:8000/docs
+          curl --retry 10 --retry-delay 3 --retry-connrefused http://localhost:3000
+          
+      - name: Run E2E tests
+        run: |
+          cd tests/e2e
+          npx playwright test --reporter=html
+        env:
+          E2E_BASE_URL: http://localhost:3000
+          E2E_API_URL: http://localhost:8000
+          
+      - name: Upload E2E test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: e2e-test-results
+          path: |
+            tests/reports/e2e/
+            tests/e2e/test-results/
+            tests/e2e/playwright-report/
+
+  # ========================== SECURITY ТЕСТЫ ==========================
+  security-tests:
+    name: Security Tests
+    needs: setup
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: replyx_security
+          POSTGRES_PASSWORD: security_password
+          POSTGRES_DB: replyx_security
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+          
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt -r ../tests/backend/requirements-test.txt
+          
+      - name: Run security linting (Bandit)
+        run: |
+          cd backend
+          bandit -r . -f json -o ../tests/reports/security/bandit-report.json || true
+          bandit -r . -f txt
+          
+      - name: Run dependency security check
+        run: |
+          cd backend
+          safety check --json --output ../tests/reports/security/safety-report.json || true
+          safety check
+          
+      - name: Run security tests
+        run: |
+          cd backend
+          pytest tests/backend/security/ -v --tb=short \
+            --junit-xml=../tests/reports/security/junit-security.xml
+        env:
+          DATABASE_URL: postgresql://replyx_security:security_password@localhost:5432/replyx_security
+          
+      - name: Upload security test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: security-test-results
+          path: tests/reports/security/
+
+  # ========================== PERFORMANCE ТЕСТЫ ==========================
+  performance-tests:
+    name: Performance Tests
+    needs: [backend-tests]
+    if: github.event_name == 'schedule' || contains(github.event.head_commit.message, '[perf]')
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: replyx_perf
+          POSTGRES_PASSWORD: perf_password
+          POSTGRES_DB: replyx_perf
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+          
+      redis:
+        image: redis:6
+        ports:
+          - 6379:6379
+          
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+          pip install locust psutil
+          
+      - name: Set up performance test environment
+        run: |
+          cd backend
+          alembic upgrade head
+        env:
+          DATABASE_URL: postgresql://replyx_perf:perf_password@localhost:5432/replyx_perf
+          
+      - name: Start backend server
+        run: |
+          cd backend
+          python -m uvicorn main:app --host 0.0.0.0 --port 8000 &
+          sleep 10
+        env:
+          DATABASE_URL: postgresql://replyx_perf:perf_password@localhost:5432/replyx_perf
+          REDIS_URL: redis://localhost:6379
+          
+      - name: Run performance tests
+        run: |
+          cd tests/backend/performance
+          locust -f load_tests.py --host=http://localhost:8000 \
+            -u 50 -r 5 -t 120s --only-summary \
+            --html ../../../tests/reports/performance/locust-report.html
+            
+      - name: Upload performance test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: performance-test-results
+          path: tests/reports/performance/
+
+  # ========================== ОТЧЕТНОСТЬ ==========================
+  test-summary:
+    name: Test Summary
+    needs: [backend-tests, frontend-tests, e2e-tests, security-tests]
+    if: always()
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Download all test results
+        uses: actions/download-artifact@v3
+        
+      - name: Create test summary
+        run: |
+          echo "# 📊 ReplyX Test Results Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Backend tests
+          if [ "${{ needs.backend-tests.result }}" = "success" ]; then
+            echo "✅ Backend Tests: **PASSED**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Backend Tests: **FAILED**" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Frontend tests
+          if [ "${{ needs.frontend-tests.result }}" = "success" ]; then
+            echo "✅ Frontend Tests: **PASSED**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Frontend Tests: **FAILED**" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # E2E tests
+          if [ "${{ needs.e2e-tests.result }}" = "success" ]; then
+            echo "✅ E2E Tests: **PASSED**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ E2E Tests: **FAILED**" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Security tests
+          if [ "${{ needs.security-tests.result }}" = "success" ]; then
+            echo "✅ Security Tests: **PASSED**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Security Tests: **FAILED**" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📈 **Test Coverage Reports:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Backend Coverage: Available in artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- Frontend Coverage: Available in artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- E2E Test Results: Available in artifacts" >> $GITHUB_STEP_SUMMARY
+          
+      - name: Comment PR with results (if PR)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            let comment = '## 🧪 Test Results Summary\n\n';
+            
+            const results = {
+              'Backend Tests': '${{ needs.backend-tests.result }}',
+              'Frontend Tests': '${{ needs.frontend-tests.result }}',
+              'E2E Tests': '${{ needs.e2e-tests.result }}',
+              'Security Tests': '${{ needs.security-tests.result }}'
+            };
+            
+            for (const [test, result] of Object.entries(results)) {
+              const icon = result === 'success' ? '✅' : result === 'failure' ? '❌' : '⏭️';
+              comment += `${icon} **${test}**: ${result.toUpperCase()}\n`;
+            }
+            
+            comment += '\n📊 Detailed reports are available in the workflow artifacts.';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  # ========================== РАЗВЕРТЫВАНИЕ ПОСЛЕ ТЕСТОВ ==========================
+  deploy-staging:
+    name: Deploy to Staging
+    needs: [backend-tests, frontend-tests, e2e-tests]
+    if: github.ref == 'refs/heads/develop' && needs.backend-tests.result == 'success' && needs.frontend-tests.result == 'success'
+    runs-on: ubuntu-latest
+    environment: staging
+    
+    steps:
+      - name: Deploy to staging
+        run: |
+          echo "🚀 Deploying to staging environment..."
+          # Здесь будет реальная логика развертывания
+          echo "Staging deployment completed"
+          
+  deploy-production:
+    name: Deploy to Production
+    needs: [backend-tests, frontend-tests, e2e-tests, security-tests]
+    if: github.ref == 'refs/heads/main' && needs.backend-tests.result == 'success' && needs.frontend-tests.result == 'success' && needs.e2e-tests.result == 'success'
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+      - name: Deploy to production
+        run: |
+          echo "🚀 Deploying to production environment..."
+          # Здесь будет реальная логика развертывания
+          echo "Production deployment completed"

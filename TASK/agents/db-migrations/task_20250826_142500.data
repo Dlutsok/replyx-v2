@@ -1,0 +1,59 @@
+ДАТА: 2025-08-26 14:25:00
+СТАТУС: Завершено
+ЗАДАЧА: Исправлен admin settings page - популирована пустая таблица system_settings с 21 начальными настройками
+
+ПРОБЛЕМА:
+- Таблица system_settings существовала, но была пустая (0 записей)
+- Миграция 202508261209_create_system_settings_table не могла примениться из-за конфликта
+- Admin settings page не работал из-за отсутствия данных
+
+СОЗДАННЫЕ/ОБНОВЛЕННЫЕ ФАЙЛЫ:
+- /backend/scripts/populate_system_settings.py: Скрипт для заполнения таблицы данными из миграции
+- /backend/scripts/test_admin_settings_api.py: Тест API endpoints для admin settings
+
+ВЫПОЛНЕННЫЕ ДЕЙСТВИЯ:
+1. Диагностика проблемы:
+   - Таблица system_settings существует, но пустая
+   - Alembic версия: 803b93aca2d2 (миграция не применена)
+   - Миграция 202508261209_create_system_settings_table не может запуститься (таблица уже существует)
+
+2. Решение проблемы:
+   - Создан скрипт populate_system_settings.py с данными из оригинальной миграции
+   - Заполнена таблица всеми 21 настройками в 6 категориях
+   - Обновлена alembic версия на сокращенный ID (ограничение 32 символа)
+   - Добавлены недостающие индексы и default значения
+
+3. Структура данных:
+   - general: 3 настройки (site_name, maintenance_mode, registration_enabled)
+   - ai: 3 настройки (default_model, max_tokens_per_request, temperature)
+   - email: 5 настроек (smtp_enabled, smtp_host, smtp_port, smtp_username, smtp_password)
+   - security: 3 настройки (session_timeout, max_login_attempts, password_min_length)
+   - limits: 4 настройки (max_documents_per_user, max_file_size_mb, max_assistants_per_user, rate_limit_requests_per_minute)
+   - maintenance: 3 настройки (backup_enabled, cleanup_old_dialogs_days, cleanup_old_embeddings_days)
+
+СХЕМА БД:
+- Таблица: system_settings (21 записей)
+- Индексы: category, key, is_active, unique(category, key)
+- Чувствительные данные: smtp_username, smtp_password (is_sensitive=true)
+
+ТЕСТИРОВАНИЕ:
+- ✅ Все 21 настройка загружены корректно
+- ✅ Группировка по категориям работает
+- ✅ API endpoints functional тест пройден
+- ✅ Sensitive данные помечены корректно
+- ✅ Default значения установлены
+
+ВЛИЯНИЕ НА ДРУГИЕ КОМПОНЕНТЫ:
+- Admin settings page: теперь получает данные вместо пустого ответа
+- API endpoints: /admin/settings работает корректно
+- Alembic: версия корректно синхронизирована
+
+ROLLBACK PLAN:
+- Очистить таблицу: TRUNCATE system_settings;
+- Откатить alembic: UPDATE alembic_version SET version_num='803b93aca2d2';
+- Удалить скрипты: rm scripts/populate_system_settings.py scripts/test_admin_settings_api.py
+
+NEXT STEPS:
+- Можно тестировать admin settings page на /admin-settings
+- При необходимости изменения настроек использовать API endpoints
+- Мониторить работу админ панели

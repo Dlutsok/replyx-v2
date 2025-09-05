@@ -24,7 +24,7 @@
 }
 
 .dialogCard.blue {
-  border-color: #dbeafe;
+  border-color: #f3e8ff;
 }
 
 .dialogCard:hover {
@@ -145,8 +145,8 @@
 }
 
 .statusBadge.blue {
-  background: #dbeafe;
-  color: #2563eb;
+  background: #f3e8ff;
+  color: #7c3aed;
 }
 
 @keyframes subtle-glow {
@@ -214,12 +214,12 @@
 }
 
 .footerBtn.takeover {
-  background: #dbeafe;
-  color: #2563eb;
+  background: #f3e8ff;
+  color: #7c3aed;
 }
 
 .footerBtn.takeover:hover {
-  background: #bfdbfe;
+  background: #e9d5ff;
 }
 
 .footerBtn.release {

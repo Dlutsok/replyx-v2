@@ -1,384 +1,287 @@
-/* Sidebar - Unified Landing Style */
+/* Sidebar - Vertical Icon Style */
 .sidebar {
   display: flex;
   flex-direction: column;
+  align-items: center;
   height: 100vh;
-  width: 260px;
-  background: #ffffff;
-  border-right: 1px solid rgba(226, 232, 240, 0.8);
+  width: 64px;
+  background: rgb(245, 247, 249);
+  border-right: 1px solid rgb(226, 232, 239);
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.02);
-  z-index: 99;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 101;
+  padding: 16px 0;
 }
 
 .sidebar.collapsed {
   width: 80px;
 }
 
-/* Заголовок в стиле лендинга */
+/* Логотип как первая иконка */
 .header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 20px;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.5);
-  min-height: 72px;
-  background: #ffffff;
-  position: relative;
-}
-
-/* В свернутом состоянии центрируем заголовок */
-.sidebar.collapsed .header {
   justify-content: center;
-  padding: 28px 16px;
+  margin-bottom: 24px;
 }
-
-
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex: 1;
-}
-
-/* В свернутом состоянии логотип не растягивается */
-.sidebar.collapsed .logo {
-  flex: none;
+  justify-content: center;
 }
 
 .logoIcon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
-  background: linear-gradient(135deg, rgba(124, 77, 255, 0.9) 0%, rgba(91, 47, 194, 0.9) 100%);
-  border: 1px solid rgba(124, 77, 255, 0.2);
-  border-radius: 0.75rem;
+  width: 40px;
+  height: 40px;
+  background: #8B5CF6;
+  border-radius: 8px;
   color: #ffffff;
-  flex-shrink: 0;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(124, 77, 255, 0.15);
-  position: relative;
-  overflow: hidden;
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
 
-
-
 .logoIcon:hover {
-  background: linear-gradient(135deg, rgba(124, 77, 255, 1) 0%, rgba(91, 47, 194, 1) 100%);
+  background: #7C3AED;
   transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(124, 77, 255, 0.25);
 }
 
 .logoText {
-  font-size: 20px;
-  font-weight: 700;
-  color: #1a1a1a;
-  white-space: nowrap;
-  letter-spacing: -0.02em;
-  transition: opacity 0.3s ease;
-}
-
-.sidebar.collapsed .logoText {
-  opacity: 0;
-  width: 0;
-  overflow: hidden;
-  transition: all 0.2s ease;
-}
-
-.toggleButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
-  border: none;
-  border-radius: 0.75rem;
-  color: #64748b;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.06),
-    0 1px 4px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(12px);
-  position: relative;
-  opacity: 1;
-  transform: scale(1);
-}
-
-/* Анимация скрытия кнопки в развернутом состоянии */
-.sidebar.collapsed .toggleButton {
-  opacity: 0;
-  transform: scale(0.8);
-  pointer-events: none;
-}
-
-.toggleButton:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(240, 245, 251, 1) 100%);
-  color: #7c4dff;
-  transform: scale(1.05);
-  box-shadow: 
-    0 4px 15px rgba(124, 77, 255, 0.15),
-    0 2px 8px rgba(124, 77, 255, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-.toggleButton:active {
-  transform: scale(0.98);
-}
-
-/* Кнопка переключения в свернутом состоянии */
-.toggleButtonCollapsed {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, #7c4dff 0%, #6366f1 100%);
-  border: none;
-  border-radius: 0.75rem;
-  color: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-  box-shadow: 
-    0 4px 15px rgba(124, 77, 255, 0.25),
-    0 2px 8px rgba(124, 77, 255, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  position: relative;
-  overflow: hidden;
-}
-
-.toggleButtonCollapsed::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
-  transform: translateX(-100%) translateY(-100%) rotate(45deg);
-  transition: transform 0.6s ease;
-}
-
-.toggleButtonCollapsed:hover {
-  background: linear-gradient(135deg, #7c4dff 0%, #5b47c2 100%);
-  transform: scale(1.05);
-  box-shadow: 
-    0 6px 20px rgba(124, 77, 255, 0.35),
-    0 3px 12px rgba(124, 77, 255, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-.toggleButtonCollapsed:hover::before {
-  transform: translateX(100%) translateY(100%) rotate(45deg);
-}
-
-.toggleButtonCollapsed:active {
-  transform: scale(0.98);
-}
-
-/* Навигация - минималистичный стиль */
-.navigation {
-  flex: 1;
-  padding: 16px 12px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  position: relative;
-}
-
-/* Группы меню */
-.menuGroup {
-  margin-bottom: 32px;
-}
-
-.menuGroup:last-child {
-  margin-bottom: 0;
-}
-
-.groupTitle {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #9ca3af;
-  margin: 0 12px 8px;
-  padding: 0;
-  transition: opacity 0.3s ease;
-}
-
-/* В свернутом состоянии скрыть заголовки групп */
-.sidebar.collapsed .groupTitle {
   display: none;
 }
 
-/* В свернутом состоянии уменьшить отступы между группами */
-.sidebar.collapsed .menuGroup {
-  margin-bottom: 20px;
+/* Кнопки переключения убраны из sidebar */
+
+/* Навигация - вертикальная колонка иконок */
+.navigation {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
 }
 
-.sidebar.collapsed .menuGroup:last-child {
-  margin-bottom: 0;
+/* Мобильный хедер с логотипом */
+.mobileHeader {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 20px 12px 20px;
+  margin: 0;
+  align-items: flex-start;
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.logoSection {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: left;
+  gap: 12px;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.logoIcon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #8B5CF6;
+  border-radius: 8px;
+  color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.logoIcon:hover {
+  background: #7C3AED;
+  transform: scale(1.05);
+}
+
+.logoIcon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.appName {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  letter-spacing: -0.02em;
+  text-align: left;
+}
+
+.divider {
+  height: 1px;
+  background: #e5e7eb;
+  width: 100%;
+  margin: 0;
+}
+
+/* На мобильных устройствах выравниваем навигацию по левому краю */
+@media (max-width: 768px) {
+  .navigation {
+    align-items: flex-start;
+    padding: 0 20px;
+    width: 100%;
+    box-sizing: border-box;
+    /* Гарантируем выравнивание по левому краю */
+    justify-content: flex-start;
+  }
+
+  .menuLink {
+    justify-content: flex-start;
+    text-align: left;
+  }
+}
+
+/* Убираем группировку - все иконки в один ряд */
+.menuGroup {
+  display: contents;
+}
+
+.groupTitle {
+  display: none;
 }
 
 .menuList {
   list-style: none;
   margin: 0;
   padding: 0;
+  display: contents;
 }
 
 .menuItem {
-  margin: 0 16px 6px;
+  margin: 0;
   position: relative;
-}
-
-/* В свернутом состоянии центрируем элементы меню */
-.sidebar.collapsed .menuItem {
-  margin: 0 12px 6px;
 }
 
 .menuLink {
   display: flex;
   align-items: center;
+  justify-content: center;
   width: 100%;
-  padding: 10px 12px;
+  height: 48px;
   background: transparent;
   border: none;
-  border-radius: 0.75rem;
   color: #6b7280;
   text-decoration: none;
   cursor: pointer;
   transition: all 0.2s ease;
-  gap: 12px;
-  text-align: left;
+  text-align: center;
   position: relative;
-  font-weight: 500;
-  font-size: 14px;
-  min-height: 40px;
+  border-radius: 8px;
+  padding: 12px 16px;
+  box-sizing: border-box;
 }
 
-/* В свернутом состоянии выровнять иконку по центру */
-.sidebar.collapsed .menuLink {
-  justify-content: center;
-  padding: 12px 8px;
+.menuLink svg {
+  width: 20px;
+  height: 20px;
 }
 
+/* Hover и active состояния */
 .menuLink:hover {
-  background: rgba(124, 77, 255, 0.05);
-  color: #1a1a1a;
+  background: #e5e7eb;
+  color: #374151;
+  transform: scale(1.05);
 }
 
 .menuLink.active {
-  background: rgba(124, 77, 255, 0.08);
-  color: #7C4DFF;
-  font-weight: 600;
+  background: #7C3AED;
+  color: #ffffff;
 }
 
 .menuLink.active:hover {
-  background: rgba(124, 77, 255, 0.12);
+  background: #6C2BD9;
+  color: #ffffff;
+  transform: scale(1.05);
 }
 
+/* Tooltip при наведении - только для ПК */
+@media (min-width: 769px) {
+  .menuLink:hover::after {
+    content: attr(title);
+    position: absolute;
+    left: calc(100% + 12px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: #1f2937;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    white-space: nowrap;
+    z-index: 1000;
+    opacity: 0;
+    animation: fadeInTooltip 0.2s ease forwards;
+    pointer-events: none;
+  }
+}
+
+/* Скрываем подсказки на мобильных устройствах */
+@media (max-width: 768px) {
+  .menuLink:hover::after {
+    display: none;
+  }
+}
+
+@keyframes fadeInTooltip {
+  to {
+    opacity: 1;
+  }
+}
+
+/* Текст полностью скрыт в вертикальном режиме */
 .menuText {
-  flex: 1;
-  font-size: 14px;
-  font-weight: inherit;
-  white-space: nowrap;
-  letter-spacing: -0.01em;
-  transition: opacity 0.2s ease;
+  display: none;
 }
 
-.sidebar.collapsed .menuText {
-  opacity: 0;
-  width: 0;
-  overflow: hidden;
-  transition: all 0.2s ease;
-}
-
-/* Badge для уведомлений */
+/* Badge для уведомлений - позиционируется поверх иконки */
 .badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
   background: #ef4444;
   color: white;
   font-size: 10px;
   font-weight: 600;
   padding: 2px 6px;
-  border-radius: 0.75rem;
+  border-radius: 8px;
   min-width: 16px;
   height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 2px solid rgb(226, 232, 239);
 }
 
-/* Активный индикатор */
-.menuItem::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 0;
-  background: linear-gradient(135deg, #7c4dff 0%, #6200ea 100%);
-  border-radius: 0.75rem;
-  transition: height 0.2s ease;
-  box-shadow: 0 0 10px rgba(124, 77, 255, 0.3);
-}
-
-.menuItem:has(.menuLink.active)::before {
-  height: 28px;
-}
-
-/* В свернутом состоянии делаем индикатор шире */
-.sidebar.collapsed .menuItem::before {
-  width: 3px;
-  left: 2px;
-}
-
-/* Hover эффекты для иконок */
+/* Иконки */
 .menuLink svg,
-.toggleButton svg {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.toggleButton svg,
+.toggleButtonCollapsed svg {
+  width: 20px;
+  height: 20px;
+  transition: all 0.2s ease;
 }
 
-.menuLink:hover svg {
-  transform: scale(1.1) rotate(2deg);
+.sidebar.collapsed .menuLink {
+  padding: 12px;
+  height: 44px;
 }
 
-.menuLink.active svg {
-  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4));
-  transform: scale(1.05);
-}
-
-.toggleButton:hover svg {
-  transform: scale(1.1) rotate(5deg);
-}
-
-/* Анимация появления */
-.menuItem {
-  animation: slideInLeft 0.3s ease-out forwards;
-  opacity: 0;
-  transform: translateX(-20px);
-}
-
-.menuItem:nth-child(1) { animation-delay: 0.1s; }
-.menuItem:nth-child(2) { animation-delay: 0.15s; }
-.menuItem:nth-child(3) { animation-delay: 0.2s; }
-.menuItem:nth-child(4) { animation-delay: 0.25s; }
-.menuItem:nth-child(5) { animation-delay: 0.3s; }
-.menuItem:nth-child(6) { animation-delay: 0.35s; }
-.menuItem:nth-child(7) { animation-delay: 0.4s; }
-
-@keyframes slideInLeft {
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+.sidebar.collapsed .menuLink svg {
+  width: 20px;
+  height: 20px;
 }
 
 /* Адаптивность */
@@ -389,63 +292,439 @@
     left: 0;
     z-index: 1000;
     transform: translateX(-100%);
-    transition: transform 0.3s ease;
-    box-shadow: 0 0 50px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    /* На мобильных делаем сайдбар шире для показа текста */
+    width: 280px;
+    /* Добавляем прокрутку для длинного контента */
+    max-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* Улучшаем прокрутку на мобильных */
+    -webkit-overflow-scrolling: touch;
+    /* Стилизуем scrollbar для мобильных */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(107, 114, 128, 0.3) transparent;
+    /* Скрываем меню до инициализации JavaScript */
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  /* Кастомный scrollbar для мобильных */
+  .sidebar::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .sidebar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .sidebar::-webkit-scrollbar-thumb {
+    background: rgba(107, 114, 128, 0.3);
+    border-radius: 2px;
+  }
+
+  .sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(107, 114, 128, 0.5);
   }
 
   .sidebar.open {
     transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
   }
 
+  /* Показываем меню после инициализации JavaScript */
+  .sidebar.loaded {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* На мобильных отменяем collapsed режим - показываем текст */
   .sidebar.collapsed {
     width: 280px;
-    transform: translateX(-100%);
+  }
+
+  /* Collapsed состояние при открытом меню */
+  .sidebar.collapsed.open {
+    transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* Скрываем групповые заголовки на мобильных */
+  .groupTitle {
+    display: none;
+  }
+
+  /* Убираем отступы у групповых контейнеров */
+  .menuGroup {
+    display: contents;
+    margin-bottom: 0;
+  }
+
+  /* На мобильных показываем текст меню */
+  .menuText {
+    display: block !important;
+    margin-left: 16px;
+    font-size: 14px;
+    font-weight: 400;
+    color: #374151;
+    white-space: nowrap;
+    opacity: 0;
+    text-align: left;
+    transform: translateX(-10px);
+    transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s;
+  }
+
+  /* Показываем текст при открытом меню */
+  .sidebar.open .menuText {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* Стили для активных пунктов на мобильных */
+  .menuLink.active .menuText {
+    color: #7C3AED;
+    font-weight: 500;
+  }
+
+  /* Адаптируем кнопки меню для мобильных - выравнивание по левому краю */
+  .menuLink {
+    justify-content: flex-start;
+    align-items: center;
+    text-align: left;
+    width: 100%;
+    padding: 16px 20px;
+    margin: 4px 0;
+    border-radius: 12px;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: row;
+    box-sizing: border-box;
+    /* Гарантируем выравнивание по левому краю экрана */
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .menuLink:hover {
+    background: #f3f4f6;
+    transform: translateX(4px);
+  }
+
+  .menuLink.active {
+    background: #f3f4f6;
+    color: #7C3AED;
+    transform: translateX(4px);
+  }
+
+  /* Адаптируем иконки для мобильных */
+  .menuLink svg {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+
+  /* Плавающая кнопка закрытия - минималистичный дизайн */
+  .floatingCloseButton {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #6b7280;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: none;
+    z-index: 1001;
+    /* Учитываем scrollbar при позиционировании */
+    margin-right: 4px;
+  }
+
+  /* Fallback для браузеров без поддержки backdrop-filter */
+  @supports not (backdrop-filter: blur(8px)) {
+    .floatingCloseButton {
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+  }
+
+  .floatingCloseButton:hover {
+    background: rgba(255, 255, 255, 0.95);
+    color: #374151;
+    transform: scale(1.05);
+  }
+
+  .floatingCloseButton:active {
+    transform: scale(0.95);
+    background: rgba(255, 255, 255, 1);
+  }
+
+  .floatingCloseButton svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2.5;
+  }
+
+  /* Показываем мобильный хедер с логотипом и названием */
+  .mobileHeader {
+    display: flex !important;
   }
 }
 
-/* Темная тема (если нужна) */
-@media (prefers-color-scheme: dark) {
-  .sidebar {
-    background: rgba(15, 23, 42, 0.95);
-    border-right-color: rgba(51, 65, 85, 0.8);
+/* Темная тема */
+[data-theme="dark"] .sidebar {
+  background: #374151;
+  border-right-color: #4b5563;
+}
+
+/* Отключаем темную тему на мобильных устройствах */
+@media (max-width: 768px) {
+  [data-theme="dark"] .sidebar {
+    background: #ffffff !important;
+    border-right-color: #e5e7eb !important;
   }
-  
-  .header {
-    background: rgba(15, 23, 42, 0.98);
-    border-bottom-color: rgba(51, 65, 85, 0.6);
+
+  [data-theme="dark"] .groupTitle {
+    color: #6b7280 !important;
   }
-  
-  .logoText,
-  .userName {
+
+  [data-theme="dark"] .menuText {
+    color: #374151 !important;
+  }
+
+  [data-theme="dark"] .menuLink.active .menuText {
+    color: #7c3aed !important;
+  }
+
+  [data-theme="dark"] .menuLink:hover {
+    background: #f3f4f6 !important;
+  }
+
+  [data-theme="dark"] .menuLink.active {
+    background: #f3e8ff !important;
+  }
+
+  /* Светлая тема для плавающей кнопки закрытия */
+  [data-theme="dark"] .floatingCloseButton {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    color: #6b7280 !important;
+  }
+
+  /* Fallback для светлой темы без backdrop-filter */
+  @supports not (backdrop-filter: blur(8px)) {
+    [data-theme="dark"] .floatingCloseButton {
+      background: rgba(255, 255, 255, 0.95) !important;
+      border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    }
+  }
+
+  [data-theme="dark"] .floatingCloseButton:hover {
+    background: rgba(243, 244, 246, 0.9) !important;
+    color: #374151 !important;
+  }
+
+  [data-theme="dark"] .floatingCloseButton:active {
+    background: rgba(229, 231, 235, 0.95) !important;
+  }
+
+  /* Светлая тема для scrollbar на мобильных */
+  [data-theme="dark"] .sidebar::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.3) !important;
+  }
+
+  [data-theme="dark"] .sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(156, 163, 175, 0.5) !important;
+  }
+}
+
+/* Отключаем темную тему на мобильных устройствах для десктопных элементов */
+@media (max-width: 768px) {
+  [data-theme="dark"] .header {
+    background: #ffffff !important;
+    border-bottom-color: #e5e7eb !important;
+  }
+
+  [data-theme="dark"] .logoText {
+    color: #1a1a1a !important;
+  }
+
+  [data-theme="dark"] .logoIcon {
+    background: #6b7280 !important;
+  }
+
+  [data-theme="dark"] .logoIcon:hover {
+    background: #7C3AED !important;
+    transform: scale(1.05) !important;
+  }
+
+  [data-theme="dark"] .logoImage {
+    filter: none !important;
+  }
+
+  /* Стили для мобильного хедера в светлой теме (темная отключена) */
+  [data-theme="dark"] .mobileHeader {
+    background: #ffffff !important;
+  }
+
+  [data-theme="dark"] .logoSection {
+    background: #ffffff !important;
+  }
+
+  [data-theme="dark"] .logoIcon {
+    background: #8B5CF6 !important;
+    color: #ffffff !important;
+  }
+
+  [data-theme="dark"] .logoIcon svg {
+    color: #ffffff !important;
+  }
+
+  [data-theme="dark"] .appName {
+    color: #1a1a1a !important;
+  }
+
+  [data-theme="dark"] .divider {
+    background: #e5e7eb !important;
+  }
+
+  [data-theme="dark"] .groupTitle {
+    color: #6b7280 !important;
+  }
+
+  [data-theme="dark"] .menuLink {
+    color: #374151 !important;
+  }
+
+  [data-theme="dark"] .menuLink:hover {
+    background: #f3f4f6 !important;
+    color: #1a1a1a !important;
+  }
+
+  [data-theme="dark"] .menuLink.active {
+    background: #f3e8ff !important;
+    color: #7c3aed !important;
+  }
+
+  [data-theme="dark"] .toggleButton,
+  [data-theme="dark"] .toggleButtonCollapsed {
+    color: #6b7280 !important;
+  }
+
+  [data-theme="dark"] .toggleButton:hover,
+  [data-theme="dark"] .toggleButtonCollapsed:hover {
+    color: #374151 !important;
+  }
+}
+
+/* Темная тема только для десктопных устройств */
+@media (min-width: 769px) {
+  [data-theme="dark"] .header {
+    background: #374151;
+    border-bottom-color: #4b5563;
+  }
+
+  [data-theme="dark"] .logoText {
+    color: #f9fafb;
+  }
+
+  [data-theme="dark"] .logoIcon {
+    background: #9ca3af;
+  }
+
+  [data-theme="dark"] .logoIcon:hover {
+    background: #d1d5db;
+  }
+
+  [data-theme="dark"] .groupTitle {
+    color: #6b7280;
+  }
+
+  [data-theme="dark"] .menuLink {
+    color: #d1d5db;
+  }
+
+  [data-theme="dark"] .menuLink:hover {
+    background: #4b5563;
+    color: #f3f4f6;
+  }
+
+  [data-theme="dark"] .menuLink.active {
+    background: #7C3AED;
     color: #ffffff;
   }
-  
-  .menuLink {
-    color: #cbd5e1;
+
+  [data-theme="dark"] .toggleButton,
+  [data-theme="dark"] .toggleButtonCollapsed {
+    color: #9ca3af;
   }
-  
-  .menuLink:hover {
-    background: rgba(124, 77, 255, 0.15);
+
+  [data-theme="dark"] .toggleButton:hover,
+  [data-theme="dark"] .toggleButtonCollapsed:hover {
+    color: #d1d5db;
   }
 }
 
-/* Accessibility улучшения */
+
+
+/* Версия приложения */
+.versionInfo {
+  margin-top: auto;
+  padding: 16px 0;
+  text-align: center;
+  border-top: 1px solid #e5e7eb;
+  margin-top: auto;
+}
+
+.versionText {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  letter-spacing: 0.025em;
+  user-select: none;
+}
+
+/* Адаптивность для версии */
+@media (max-width: 768px) {
+  .versionInfo {
+    padding: 20px;
+    text-align: left;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .versionText {
+    font-size: 13px;
+    color: #6b7280;
+  }
+}
+
+/* Темная тема для версии */
+[data-theme="dark"] .versionText {
+  color: #9ca3af;
+}
+
+@media (max-width: 768px) {
+  [data-theme="dark"] .versionText {
+    color: #6b7280 !important;
+  }
+}
+
+/* Accessibility */
 @media (prefers-reduced-motion: reduce) {
   .sidebar,
   .menuLink,
   .toggleButton,
   .logoIcon {
     transition: none;
-  }
-  
-  .menuItem {
-    animation: none;
-    opacity: 1;
-    transform: none;
-  }
-  
-  .menuLink:hover,
-  .menuLink.active {
-    transform: none;
   }
 }

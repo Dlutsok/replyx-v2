@@ -1,0 +1,216 @@
+/* Стили для модальных окон RecordEditor и CreateRecordModal */
+
+.modalOverlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 999999 !important;
+  padding: 20px !important;
+  overflow-y: auto !important;
+  isolation: isolate !important;
+}
+
+.modalContent {
+  @apply bg-white rounded-xl shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] flex flex-col;
+}
+
+.modalHeader {
+  @apply flex items-center justify-between p-6 border-b border-gray-200;
+}
+
+.modalTitle {
+  @apply text-xl font-semibold text-gray-900;
+}
+
+.closeButton {
+  @apply p-2 hover:bg-gray-100 rounded-lg transition-colors;
+}
+
+.modalBody {
+  @apply flex-1 overflow-y-auto p-6;
+}
+
+.errorAlert {
+  @apply mb-4 p-3 bg-red-50 border border-red-200 rounded-lg;
+}
+
+.errorHeader {
+  @apply flex items-center gap-2 text-red-800;
+}
+
+.errorTitle {
+  @apply text-sm font-medium;
+}
+
+.errorMessage {
+  @apply mt-1 text-sm text-red-700;
+}
+
+.formGrid {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-4;
+}
+
+.fieldContainer {
+  @apply space-y-1;
+}
+
+.fieldLabel {
+  @apply block text-sm font-medium text-gray-700;
+}
+
+.fieldRequired {
+  @apply text-red-500 ml-1;
+}
+
+.fieldType {
+  @apply text-xs text-gray-500 mb-2;
+}
+
+.fieldInput {
+  @apply w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors;
+}
+
+.fieldInputError {
+  @apply border-red-300;
+}
+
+.fieldInputReadonly {
+  @apply bg-gray-100 cursor-not-allowed;
+}
+
+.fieldTextarea {
+  @apply font-mono text-sm;
+}
+
+.fieldSelect {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+}
+
+.fieldHint {
+  @apply mt-1 text-xs text-gray-500;
+}
+
+.validationError {
+  @apply text-sm text-red-600;
+}
+
+.hintBox {
+  @apply mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg;
+}
+
+.hintContent {
+  @apply flex items-start gap-2;
+}
+
+.hintIcon {
+  @apply w-4 h-4 text-blue-600 mt-0.5;
+}
+
+.hintText {
+  @apply text-sm text-blue-800;
+}
+
+.hintTitle {
+  @apply font-medium;
+}
+
+.hintList {
+  @apply mt-1 list-disc list-inside space-y-1;
+}
+
+.modalFooter {
+  @apply flex items-center justify-end gap-3 p-6 border-t border-gray-200;
+}
+
+.cancelButton {
+  @apply px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors;
+}
+
+.saveButton {
+  @apply flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors;
+}
+
+.createButton {
+  @apply flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors;
+}
+
+/* Анимации */
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modalEnter {
+  animation: modalSlideIn 0.15s ease-out forwards;
+}
+
+/* Дополнительные стили для специфичных полей */
+.datetimeField {
+  @apply w-full;
+}
+
+.numberField {
+  @apply w-full;
+}
+
+.jsonField {
+  @apply font-mono text-sm;
+}
+
+.booleanSelect {
+  @apply w-full;
+}
+
+/* Hover эффекты для полей */
+.fieldInput:hover {
+  @apply border-gray-400;
+}
+
+.fieldInput:focus {
+  @apply ring-2 ring-blue-500 border-blue-500 outline-none;
+}
+
+/* Responsive адаптации */
+@media (max-width: 768px) {
+  .modalContent {
+    @apply mx-2 max-h-[95vh];
+  }
+
+  .formGrid {
+    @apply grid-cols-1;
+  }
+
+  .modalBody {
+    @apply p-4;
+  }
+
+  .modalHeader {
+    @apply p-4;
+  }
+
+  .modalFooter {
+    @apply p-4 flex-col gap-2;
+  }
+
+  .cancelButton,
+  .saveButton,
+  .createButton {
+    @apply w-full justify-center;
+  }
+}

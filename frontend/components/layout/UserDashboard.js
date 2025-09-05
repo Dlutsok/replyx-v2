@@ -69,7 +69,7 @@ const UserDashboard = ({ children, activeSection = 'dashboard' }) => {
         <div className={styles.sidebarHeader}>
           <div className={styles.logo}>
             <FiZap size={24} />
-            {!sidebarCollapsed && <span>ChatAI</span>}
+            {!sidebarCollapsed && <span>ReplyX</span>}
           </div>
           <button 
             className={styles.toggleBtn}

@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import styles from '../../styles/layout/Header.module.css';
-import { FiUser, FiBell, FiMenu } from 'react-icons/fi';
+import { FiUser, FiBell, FiMenu, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { MdAccountBalanceWallet } from 'react-icons/md';
 import BalanceDropdown from '../ui/BalanceDropdown';
 import ProfileDropdown from '../ui/ProfileDropdown';
 import ChangePasswordModal from '../ui/ChangePasswordModal';
 
-export default function Header({ onToggleSidebar, isMobile }) {
+export default function Header({ isMobile, sidebarOpen, setSidebarOpen }) {
   const [userBalance, setUserBalance] = useState(0);
   const [showBalanceDropdown, setShowBalanceDropdown] = useState(false);
   const [userName, setUserName] = useState('');
@@ -23,20 +23,21 @@ export default function Header({ onToggleSidebar, isMobile }) {
     const path = router.pathname;
     const pathMap = {
       '/dashboard': { title: 'Дашборд', breadcrumbs: [{ name: 'Главная', path: '/dashboard' }] },
+      '/start': { title: 'Настройка', breadcrumbs: [{ name: 'Главная', path: '/dashboard' }, { name: 'Настройка', path: '/start' }] },
       '/dialogs': { title: 'Диалоги', breadcrumbs: [{ name: 'Главная', path: '/dashboard' }, { name: 'Диалоги', path: '/dialogs' }] },
       '/ai-assistant': { title: 'AI Ассистент', breadcrumbs: [{ name: 'Главная', path: '/dashboard' }, { name: 'AI Ассистент', path: '/ai-assistant' }] },
       '/balance': { title: 'Баланс', breadcrumbs: [{ name: 'Главная', path: '/dashboard' }, { name: 'Баланс', path: '/balance' }] },
-      '/usage': { title: 'Аналитика', breadcrumbs: [{ name: 'Главная', path: '/dashboard' }, { name: 'Аналитика', path: '/usage' }] },
+      '/usage': { title: 'Расходы', breadcrumbs: [{ name: 'Расходы', path: '/usage' }] },
       '/help-center': { title: 'Поддержка', breadcrumbs: [{ name: 'Главная', path: '/dashboard' }, { name: 'Поддержка', path: '/help-center' }] },
       '/admin': { title: 'Админ панель', breadcrumbs: [{ name: 'Главная', path: '/dashboard' }, { name: 'Админ панель', path: '/admin' }] }
     };
-    return pathMap[path] || { title: 'ChatAI', breadcrumbs: [] };
+    return pathMap[path] || { title: 'ReplyX', breadcrumbs: [] };
   };
 
   // Определение статуса баланса для цветовой индикации
   const getBalanceStatus = () => {
-    if (userBalance < 60) return 'low'; // Меньше чем на 1 день (3₽ * 20 запросов)
-    if (userBalance < 300) return 'medium'; // Меньше чем на 5 дней
+    if (userBalance < 100) return 'low'; // Меньше чем на 1 день (5₽ * 20 запросов)
+    if (userBalance < 500) return 'medium'; // Меньше чем на 5 дней
     return 'good'; // Больше 5 дней
   };
 
@@ -45,7 +46,7 @@ export default function Header({ onToggleSidebar, isMobile }) {
     const token = localStorage.getItem('token');
     if (token) {
       // Получаем данные пользователя
-      fetch('http://localhost:8000/api/me', {
+      fetch('/api/me', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
         .then(res => res.json())
@@ -59,7 +60,7 @@ export default function Header({ onToggleSidebar, isMobile }) {
         });
 
       // Получаем баланс отдельно
-      fetch('http://localhost:8000/api/balance/current', {
+      fetch('/api/balance/current', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
         .then(res => res.json())
@@ -86,6 +87,9 @@ export default function Header({ onToggleSidebar, isMobile }) {
 
   const handleProfileClick = (e) => {
     e.stopPropagation();
+    // Закрываем другие dropdown перед открытием профиля
+    setShowBalanceDropdown(false);
+    setShowNotifications(false);
     setShowProfileDropdown(!showProfileDropdown);
   };
 
@@ -100,13 +104,25 @@ export default function Header({ onToggleSidebar, isMobile }) {
 
   const handleBalanceClick = (e) => {
     e.stopPropagation();
+    // Закрываем другие dropdown перед открытием баланса
+    setShowProfileDropdown(false);
+    setShowNotifications(false);
     setShowBalanceDropdown(!showBalanceDropdown);
   };
 
 
   const handleNotificationClick = (e) => {
     e.stopPropagation();
+    // Закрываем другие dropdown перед открытием уведомлений
+    setShowProfileDropdown(false);
+    setShowBalanceDropdown(false);
     setShowNotifications(!showNotifications);
+  };
+
+  const handleSidebarToggle = () => {
+    if (setSidebarOpen) {
+      setSidebarOpen(!sidebarOpen);
+    }
   };
 
   // Закрытие dropdown при клике вне
@@ -137,41 +153,22 @@ export default function Header({ onToggleSidebar, isMobile }) {
   return (
     <header className={styles.header}>
       <div className={styles.headerContent}>
-        {/* Левая часть - меню и заголовок */}
+        {/* Левая часть - заголовок страницы */}
         <div className={styles.leftSection}>
+          {/* Кнопка открытия сайдбара на мобильных */}
           {isMobile && (
-            <button 
-              className={styles.hamburgerButton}
-              onClick={onToggleSidebar}
+            <button
+              className={styles.sidebarToggle}
+              onClick={handleSidebarToggle}
               title="Открыть меню"
             >
-              <FiMenu className={styles.hamburgerIcon} />
+              <FiMenu className={styles.sidebarToggleIcon} />
             </button>
           )}
-          <div className={styles.pageInfo}>
-            <h1 className={styles.pageTitle}>{pageInfo.title}</h1>
-            {pageInfo.breadcrumbs.length > 1 && (
-              <nav className={styles.breadcrumbs}>
-                {pageInfo.breadcrumbs.map((crumb, index) => (
-                  <span key={crumb.path} className={styles.breadcrumbItem}>
-                    {index < pageInfo.breadcrumbs.length - 1 ? (
-                      <button 
-                        onClick={() => router.push(crumb.path)}
-                        className={styles.breadcrumbLink}
-                      >
-                        {crumb.name}
-                      </button>
-                    ) : (
-                      <span className={styles.breadcrumbCurrent}>{crumb.name}</span>
-                    )}
-                    {index < pageInfo.breadcrumbs.length - 1 && (
-                      <span className={styles.breadcrumbSeparator}>/</span>
-                    )}
-                  </span>
-                ))}
-              </nav>
-            )}
-          </div>
+
+          <h1 className={styles.pageTitle}>
+            <span className={styles.standardHeader}>{pageInfo.title}</span>
+          </h1>
         </div>
 
         

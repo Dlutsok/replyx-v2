@@ -1,0 +1,1025 @@
+/* Start Page - Horizontal Steps Design */
+
+.startContainer {
+  width: 100%;
+  min-height: 100vh;
+  background: #ffffff;
+  padding: 0;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Поддержка безопасных областей для устройств с notch */
+@supports (padding: max(0px)) {
+  .startContainer {
+    padding-top: max(8px, env(safe-area-inset-top));
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    padding-left: max(8px, env(safe-area-inset-left));
+    padding-right: max(8px, env(safe-area-inset-right));
+  }
+}
+
+/* Поддержка темной темы */
+@media (prefers-color-scheme: dark) {
+  /* Отключаем темную тему на мобильных устройствах */
+  @media (max-width: 768px) {
+    .startContainer {
+      background: #ffffff !important;
+      color: #1a1a1a !important;
+    }
+
+    .headerSection {
+      background: #ffffff !important;
+      border-color: rgba(229, 231, 235, 0.6) !important;
+    }
+
+    .stepCard {
+      background: #ffffff !important;
+      border-color: rgba(229, 231, 235, 0.6) !important;
+    }
+
+    .mainTitle {
+      color: #1a1a1a !important;
+    }
+
+    .mainSubtitle {
+      color: #6b7280 !important;
+    }
+
+    .stepTitle {
+      color: #1a1a1a !important;
+    }
+
+    .stepSubtitle {
+      color: #7C3AED !important;
+    }
+
+    .stepDescription {
+      color: #6b7280 !important;
+    }
+
+    .progressText {
+      color: #6b7280 !important;
+    }
+
+    .stepNumber {
+      background: #ffffff !important;
+      border-color: rgba(229, 231, 235, 0.6) !important;
+      color: #6b7280 !important;
+    }
+
+    .completionCard {
+      background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 50%) !important;
+      border-color: #bbf7d0 !important;
+    }
+
+    .completionTitle {
+      color: #1a1a1a !important;
+    }
+
+    .completionText {
+      color: #6b7280 !important;
+    }
+  }
+
+  /* Темная тема только для десктопных устройств */
+  @media (min-width: 769px) {
+    .startContainer {
+      background: #0f0f0f;
+      color: #ffffff;
+    }
+
+    .headerSection {
+      background: #1a1a1a;
+      border-color: #374151;
+    }
+
+    .stepCard {
+      background: #1a1a1a;
+      border-color: #374151;
+    }
+
+    .mainTitle {
+      color: #ffffff;
+    }
+
+    .mainSubtitle {
+      color: #9ca3af;
+    }
+
+    .stepTitle {
+      color: #ffffff;
+    }
+
+    .stepSubtitle {
+      color: #7C3AED;
+    }
+
+    .stepDescription {
+      color: #9ca3af;
+    }
+
+    .progressText {
+      color: #9ca3af;
+    }
+
+    .stepNumber {
+      background: #ffffff;
+      border-color: #374151;
+      color: #374151;
+    }
+
+    .completionCard {
+      background: #1a1a1a;
+      border-color: #16a34a;
+    }
+
+    .completionTitle {
+      color: #ffffff;
+    }
+
+    .completionText {
+      color: #9ca3af;
+    }
+  }
+}
+
+/* Поддержка уменьшенного движения */
+@media (prefers-reduced-motion: reduce) {
+  .stepCard {
+    animation: none;
+    transition: none;
+  }
+
+  .stepCard:hover {
+    transform: none;
+  }
+
+  .stepButton:hover {
+    transform: none;
+  }
+
+  .headerSection:hover {
+    transform: none;
+  }
+
+  .completionButton:hover {
+    transform: none;
+  }
+
+  .progressFill {
+    transition: none;
+  }
+}
+
+/* Поддержка высококонтрастного режима */
+@media (prefers-contrast: high) {
+  .stepCard {
+    border-width: 2px;
+  }
+
+  .headerSection {
+    border-width: 2px;
+  }
+
+  .stepButton {
+    border-width: 2px;
+  }
+}
+
+/* HEADER SECTION */
+.headerSection {
+  background: #ffffff;
+  border: 1px solid rgba(229, 231, 235, 0.6);
+  border-radius: 13px;
+  padding: 24px;
+  margin-bottom: 32px;
+  transition: all 150ms ease;
+}
+
+.headerSection:hover {
+  border-color: rgba(209, 213, 219, 0.7);
+}
+
+.headerContent {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.titleSection {
+  flex: 1;
+}
+
+.mainTitle {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #1a1a1a;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.mainSubtitle {
+  font-size: 15px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.progressSection {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.progressWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 200px;
+}
+
+.progressBar {
+  width: 100%;
+  height: 6px;
+  background: #f3f4f6;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #7C3AED 0%, #6C2BD9 100%);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.progressText {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  text-align: right;
+}
+
+/* STEPS GRID */
+.stepsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+/* STEP CARDS */
+.stepCard {
+  background: #ffffff;
+  border: 1px solid rgba(229, 231, 235, 0.6);
+  border-radius: 13px;
+  padding: 24px;
+  transition: all 150ms ease;
+  position: relative;
+  animation: slideInUp 0.6s ease-out;
+  animation-fill-mode: both;
+  display: flex;
+  flex-direction: column;
+  min-height: 280px;
+}
+
+.stepCard:hover {
+  border-color: rgba(209, 213, 219, 0.7);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Step States */
+.stepCompleted {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+  border-color: #bbf7d0;
+}
+
+.stepNext {
+  border-color: #7C3AED;
+  box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.1);
+}
+
+.stepPending {
+  opacity: 0.7;
+}
+
+.stepDisabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* STEP HEADER */
+.stepHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.stepIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  background: #f3f4f6;
+  border: 1px solid rgba(229, 231, 235, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  transition: all 150ms ease;
+}
+
+.stepCompleted .stepIcon {
+  background: #dcfce7;
+  border-color: #bbf7d0;
+  color: #166534;
+}
+
+.stepNext .stepIcon {
+  background: #7C3AED;
+  border-color: #7C3AED;
+  color: #ffffff;
+}
+
+.stepNumber {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid rgba(229, 231, 235, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+/* STEP CONTENT */
+.stepContent {
+  flex: 1;
+  margin-bottom: 20px;
+}
+
+.stepTitle {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  color: #1a1a1a;
+  line-height: 1.3;
+}
+
+.stepSubtitle {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #7C3AED;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stepDescription {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* STEP ACTIONS */
+.stepActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: auto;
+}
+
+.stepButton {
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 150ms ease;
+  cursor: pointer;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  min-width: 100px;
+  justify-content: center;
+}
+
+.stepButtonActive {
+  background-color: #7C3AED;
+  color: #ffffff;
+}
+
+.stepButtonActive:hover:not(:disabled) {
+  background-color: #6C2BD9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+}
+
+.stepButtonCompleted {
+  background-color: #dcfce7;
+  color: #166534;
+  cursor: default;
+}
+
+.stepButtonDisabled {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+  border: 1px solid #e5e7eb;
+}
+
+.stepButtonDisabled:hover {
+  background-color: #f3f4f6;
+  transform: none;
+  box-shadow: none;
+}
+
+/* COMPLETION SECTION */
+.completionSection {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+}
+
+.completionCard {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 50%);
+  border: 2px solid #bbf7d0;
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+}
+
+.completionIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #16a34a;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.completionTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 8px 0;
+}
+
+.completionText {
+  font-size: 15px;
+  color: #6b7280;
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}
+
+.completionButton {
+  background-color: #16a34a;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 28px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.completionButton:hover {
+  background-color: #15803d;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
+}
+
+/* ANIMATIONS */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* RESPONSIVE DESIGN */
+
+/* Очень большие экраны - 4K и выше */
+@media (min-width: 1921px) {
+  .startContainer {
+    padding: 0 40px;
+  }
+
+  .stepsGrid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 32px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  .stepCard {
+    padding: 32px;
+  }
+
+  .mainTitle {
+    font-size: 32px;
+  }
+
+  .headerSection {
+    padding: 40px;
+  }
+}
+
+/* Большие экраны - 1440px+ */
+@media (min-width: 1441px) and (max-width: 1920px) {
+  .stepsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 28px;
+  }
+
+  .stepCard {
+    padding: 28px;
+  }
+
+  .mainTitle {
+    font-size: 28px;
+  }
+
+  .headerSection {
+    padding: 32px;
+  }
+}
+
+/* Средние экраны - 1200px-1440px */
+@media (min-width: 1201px) and (max-width: 1440px) {
+  .stepsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+  }
+
+  .stepCard {
+    padding: 26px;
+  }
+
+  .mainTitle {
+    font-size: 26px;
+  }
+
+  .headerSection {
+    padding: 28px;
+  }
+}
+
+/* Стандартные десктопы - 1025px-1200px */
+@media (min-width: 1025px) and (max-width: 1200px) {
+  .stepsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .stepCard {
+    padding: 24px;
+  }
+
+  .mainTitle {
+    font-size: 24px;
+  }
+
+  .headerSection {
+    padding: 24px;
+  }
+}
+
+/* Маленькие десктопы - 769px-1024px */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .stepsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+  }
+
+  .stepCard {
+    padding: 22px;
+  }
+
+  .mainTitle {
+    font-size: 22px;
+  }
+
+  .headerSection {
+    padding: 20px;
+  }
+
+  .headerContent {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .progressSection {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+/* Планшеты landscape - 601px-768px */
+@media (min-width: 601px) and (max-width: 768px) {
+  .startContainer {
+    padding: 0 20px;
+  }
+
+  .stepsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .stepCard {
+    padding: 20px;
+  }
+
+  .mainTitle {
+    font-size: 20px;
+  }
+
+  .headerSection {
+    padding: 18px;
+    margin-bottom: 20px;
+  }
+
+  .headerContent {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .progressSection {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .progressWrapper {
+    min-width: 120px;
+  }
+
+  .stepIcon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .stepNumber {
+    width: 18px;
+    height: 18px;
+    font-size: 9px;
+  }
+}
+
+/* Планшеты portrait - 481px-600px */
+@media (min-width: 481px) and (max-width: 600px) {
+  .startContainer {
+    padding: 0 16px;
+  }
+
+  .stepsGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .stepCard {
+    padding: 18px;
+  }
+
+  .mainTitle {
+    font-size: 18px;
+  }
+
+  .headerSection {
+    padding: 16px;
+    margin-bottom: 18px;
+  }
+
+  .headerContent {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .progressSection {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .progressWrapper {
+    min-width: 100px;
+  }
+
+  .stepIcon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .stepNumber {
+    width: 16px;
+    height: 16px;
+    font-size: 8px;
+  }
+
+  .stepTitle {
+    font-size: 15px;
+  }
+
+  .stepDescription {
+    font-size: 12px;
+  }
+
+  .completionCard {
+    padding: 20px;
+    margin: 0 12px;
+  }
+}
+
+/* Большие мобильные - 376px-480px */
+@media (min-width: 376px) and (max-width: 480px) {
+  .startContainer {
+    padding: 0 12px;
+  }
+
+  .stepsGrid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .stepCard {
+    padding: 16px;
+  }
+
+  .mainTitle {
+    font-size: 18px;
+  }
+
+  .headerSection {
+    padding: 14px;
+    margin-bottom: 16px;
+  }
+
+  .headerContent {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .progressSection {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .progressWrapper {
+    min-width: 80px;
+  }
+
+  .stepIcon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .stepNumber {
+    width: 14px;
+    height: 14px;
+    font-size: 7px;
+    top: 8px;
+    right: 8px;
+  }
+
+  .stepTitle {
+    font-size: 14px;
+  }
+
+  .stepSubtitle {
+    font-size: 11px;
+  }
+
+  .stepDescription {
+    font-size: 11px;
+  }
+
+  .stepButton {
+    padding: 6px 12px;
+    font-size: 12px;
+    height: 32px;
+    min-width: 80px;
+  }
+
+  .completionCard {
+    padding: 18px;
+    margin: 0 8px;
+  }
+
+  .completionTitle {
+    font-size: 16px;
+  }
+
+  .completionText {
+    font-size: 13px;
+  }
+
+  .completionButton {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+}
+
+/* Маленькие мобильные - 320px-375px */
+@media (max-width: 375px) {
+  .startContainer {
+    padding: 0 8px;
+  }
+
+  .stepsGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .stepCard {
+    padding: 14px;
+  }
+
+  .mainTitle {
+    font-size: 16px;
+  }
+
+  .mainSubtitle {
+    font-size: 13px;
+  }
+
+  .headerSection {
+    padding: 12px;
+    margin-bottom: 14px;
+  }
+
+  .headerContent {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .progressSection {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .progressWrapper {
+    min-width: 70px;
+  }
+
+  .progressText {
+    font-size: 12px;
+  }
+
+  .stepIcon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .stepIcon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .stepNumber {
+    width: 12px;
+    height: 12px;
+    font-size: 6px;
+    top: 6px;
+    right: 6px;
+  }
+
+  .stepTitle {
+    font-size: 14px;
+  }
+
+  .stepSubtitle {
+    font-size: 11px;
+  }
+
+  .stepDescription {
+    font-size: 12px;
+  }
+
+  .stepActions {
+    justify-content: center;
+  }
+
+  .stepButton {
+    padding: 6px 12px;
+    font-size: 12px;
+    height: 32px;
+    min-width: 70px;
+  }
+
+  .completionCard {
+    padding: 16px;
+    margin: 0 4px;
+  }
+
+  .completionIcon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+  }
+
+  .completionIcon svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .completionTitle {
+    font-size: 16px;
+  }
+
+  .completionText {
+    font-size: 13px;
+  }
+
+  .completionButton {
+    padding: 10px 18px;
+    font-size: 13px;
+  }
+}
+
+/* Ориентация экрана - landscape для маленьких устройств */
+@media (max-height: 500px) and (orientation: landscape) {
+  .startContainer {
+    padding: 8px 12px;
+  }
+
+  .headerSection {
+    padding: 10px;
+    margin-bottom: 12px;
+  }
+
+  .mainTitle {
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  .mainSubtitle {
+    font-size: 11px;
+  }
+
+  .stepsGrid {
+    gap: 10px;
+  }
+
+  .stepCard {
+    padding: 12px;
+  }
+
+  .stepTitle {
+    font-size: 13px;
+    margin-bottom: 2px;
+  }
+
+  .stepSubtitle {
+    font-size: 10px;
+    margin-bottom: 6px;
+  }
+
+  .stepDescription {
+    font-size: 11px;
+  }
+
+  .stepButton {
+    padding: 5px 10px;
+    font-size: 11px;
+    height: 28px;
+    min-width: 60px;
+  }
+
+  .completionCard {
+    padding: 12px;
+  }
+
+  .completionTitle {
+    font-size: 14px;
+  }
+
+  .completionText {
+    font-size: 11px;
+  }
+
+  .completionButton {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+}

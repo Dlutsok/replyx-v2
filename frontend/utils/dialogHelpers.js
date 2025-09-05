@@ -67,11 +67,11 @@ export const getChannelName = (dialog) => {
     case CHANNEL_TELEGRAM:
       return 'Telegram';
     case CHANNEL_WEBSITE:
-      return 'Website';
+      return 'Сайт';
     case CHANNEL_WHATSAPP:
       return 'WhatsApp';
     default:
-      return 'Unknown';
+      return 'Неизвестно';
   }
 };
 

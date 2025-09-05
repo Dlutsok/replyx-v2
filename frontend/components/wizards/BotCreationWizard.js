@@ -6,8 +6,10 @@ import {
   FiMic, FiEye, FiBook, FiShield
 } from 'react-icons/fi';
 import styles from '../../styles/components/BotCreationWizard.module.css';
+import { useNotifications } from '../../hooks/useNotifications';
 
 const BotCreationWizard = ({ isOpen, onClose, onComplete, user }) => {
+  const { showSuccess, showError, showWarning, showInfo } = useNotifications();
   const [currentStep, setCurrentStep] = useState(1);
   const [botData, setBotData] = useState({
     name: '',
@@ -44,7 +46,7 @@ const BotCreationWizard = ({ isOpen, onClose, onComplete, user }) => {
     {
       id: 3,
       title: 'Детальная настройка',
-      subtitle: 'Создадим описание и системный промпт',
+      subtitle: 'Создадим описание и системную инструкцию',
       icon: FiCpu,
       fields: ['description', 'systemPrompt']
     },
@@ -57,7 +59,7 @@ const BotCreationWizard = ({ isOpen, onClose, onComplete, user }) => {
     },
     {
       id: 5,
-      title: 'Интеграция',
+      title: 'Где будет работать ассистент',
       subtitle: 'Выберите способы использования бота',
       icon: FiZap,
       fields: ['integrations']
@@ -367,10 +369,10 @@ const BotCreationWizard = ({ isOpen, onClose, onComplete, user }) => {
     setIsCreating(true);
     
     try {
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem('token');
       const systemPrompt = botData.systemPrompt || getSystemPromptForBot();
       
-      const response = await fetch('http://localhost:8000/api/assistants', {
+      const response = await fetch('/api/assistants', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -392,7 +394,7 @@ const BotCreationWizard = ({ isOpen, onClose, onComplete, user }) => {
         
         // Отмечаем первого бота как созданного
         try {
-          await fetch('http://localhost:8000/api/users/onboarding/mark-bot-created', {
+          await fetch('/api/users/onboarding/mark-bot-created', {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${token}`
@@ -409,7 +411,7 @@ const BotCreationWizard = ({ isOpen, onClose, onComplete, user }) => {
       }
     } catch (error) {
       console.error('Ошибка создания бота:', error);
-      alert('Произошла ошибка при создании бота. Попробуйте еще раз.');
+      showError('Произошла ошибка при создании бота. Попробуйте еще раз.', { title: 'Ошибка создания' });
     } finally {
       setIsCreating(false);
     }
@@ -666,7 +668,7 @@ const BotCreationWizard = ({ isOpen, onClose, onComplete, user }) => {
                 <div>
                   <h3 className={styles.stepTitle}>Детальная настройка</h3>
                   <p className={styles.stepDescription}>
-                    Опишем функции бота и создадим системный промпт для оптимальной работы
+                    Опишем функции бота и создадим системную инструкцию для оптимальной работы
                   </p>
                 </div>
               </div>
@@ -699,12 +701,12 @@ const BotCreationWizard = ({ isOpen, onClose, onComplete, user }) => {
                 <div className={styles.field}>
                   <label className={styles.label}>
                     <FiSettings className={styles.labelIcon} />
-                    Системный промпт (необязательно)
+                    Инструкция ассистенту (системное сообщение, необязательно)
                   </label>
                   <div className={styles.promptPreview}>
                     <div className={styles.promptPreviewHeader}>
                       <FiEye size={16} />
-                      <span>Автоматически сгенерированный промпт:</span>
+                      <span>Автоматически сгенерированная инструкция:</span>
                     </div>
                     <div className={styles.promptPreviewContent}>
                       {getSystemPromptForBot()}
@@ -712,14 +714,14 @@ const BotCreationWizard = ({ isOpen, onClose, onComplete, user }) => {
                   </div>
                   <textarea
                     className={styles.textarea}
-                    placeholder="Если хотите, можете написать свой промпт или отредактировать автоматический..."
+                    placeholder="Если хотите, напишите свою инструкцию или отредактируйте автоматическую..."
                     value={botData.systemPrompt}
                     onChange={(e) => handleInputChange('systemPrompt', e.target.value)}
                     rows={4}
                   />
                   <div className={styles.hint}>
                     <FiInfo size={14} />
-                    Оставьте пустым для использования автоматического промпта или напишите свой
+                    Оставьте пустым для использования автоматической инструкции или напишите свою
                   </div>
                 </div>
               </div>
@@ -781,7 +783,7 @@ const BotCreationWizard = ({ isOpen, onClose, onComplete, user }) => {
               <div className={styles.stepHeader}>
                 <FiZap className={styles.stepIcon} />
                 <div>
-                  <h3 className={styles.stepTitle}>Способы интеграции</h3>
+                  <h3 className={styles.stepTitle}>Каналы работы ассистента</h3>
                   <p className={styles.stepDescription}>
                     Выберите, как пользователи будут общаться с вашим AI-ассистентом
                   </p>
@@ -792,7 +794,7 @@ const BotCreationWizard = ({ isOpen, onClose, onComplete, user }) => {
                 <div className={styles.field}>
                   <label className={styles.label}>
                     <FiZap className={styles.labelIcon} />
-                    Выберите способы интеграции *
+                    Выберите каналы работы ассистента *
                   </label>
                   <div className={styles.integrationGrid}>
                     {integrationOptions.map((integration) => (
@@ -830,7 +832,7 @@ const BotCreationWizard = ({ isOpen, onClose, onComplete, user }) => {
                   </div>
                   <div className={styles.hint}>
                     <FiInfo size={14} />
-                    Вы можете выбрать несколько способов интеграции. Настройка будет доступна после создания бота.
+                    Можно выбрать несколько каналов. Настройка будет доступна после создания бота.
                   </div>
                 </div>
 
@@ -849,7 +851,7 @@ const BotCreationWizard = ({ isOpen, onClose, onComplete, user }) => {
                       })}
                     </div>
                     <p className={styles.integrationNote}>
-                      После создания бота вы получите подробные инструкции по настройке каждой интеграции.
+                      После создания бота вы получите подробные инструкции по настройке каждого канала.
                     </p>
                   </div>
                 )}

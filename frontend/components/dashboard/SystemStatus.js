@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createApiUrl } from '../../config/api';
 import { FiServer, FiWifi, FiDatabase, FiRefreshCw, FiCheckCircle, FiXCircle, FiAlertTriangle, FiSettings, FiPlay, FiPause } from 'react-icons/fi';
 import { useBotActions } from '../../hooks/useDashboardData';
 
@@ -17,29 +18,29 @@ const SystemStatus = ({ bots, loading, onRefresh, onUpdate }) => {
     // Симуляция проверки здоровья системы
     const checkSystemHealth = async () => {
       try {
-        // В реальном проекте здесь будет вызов API /api/health
-        const response = await fetch('http://localhost:8000/api/health');
+        // Используем базовый URL API
+        const response = await fetch(createApiUrl('/api/health'));
         if (response.ok) {
           const healthData = await response.json();
           setSystemHealth(prev => ({
             api: {
-              status: healthData.status === 'healthy' ? 'healthy' : 'warning',
-              response_time: healthData.response_time_ms || Math.random() * 100 + 50,
-              uptime: '99.9%'
+              status: healthData.status === 'healthy' ? 'healthy' : (healthData.status === 'degraded' ? 'warning' : 'error'),
+              response_time: healthData.response_time_ms || 0,
+              uptime: '—'
             },
             database: {
-              status: healthData.checks?.database?.status === 'ok' ? 'healthy' : 'warning',
-              connections: Math.floor(Math.random() * 20 + 5),
-              query_time: Math.random() * 50 + 10
+              status: healthData.checks?.database?.status === 'ok' ? 'healthy' : (healthData.checks?.database?.status === 'degraded' ? 'warning' : 'error'),
+              connections: 0,
+              query_time: 0
             },
             websocket: {
               status: 'healthy',
-              active_connections: Math.floor(Math.random() * 100 + 20)
+              active_connections: 0
             },
             redis: {
-              status: healthData.checks?.redis?.status === 'ok' ? 'healthy' : 'warning',
-              memory_usage: Math.floor(Math.random() * 30 + 40),
-              hit_rate: Math.floor(Math.random() * 20 + 75)
+              status: healthData.checks?.redis?.status === 'ok' ? 'healthy' : (healthData.checks?.redis?.status === 'degraded' ? 'warning' : 'error'),
+              memory_usage: 0,
+              hit_rate: 0
             }
           }));
         }
@@ -104,7 +105,7 @@ const SystemStatus = ({ bots, loading, onRefresh, onUpdate }) => {
         onUpdate();
       }
     } catch (error) {
-      }
+      console.error('Failed to toggle bot', error);
     } finally {
       setActionLoading(prev => ({ ...prev, [bot.id]: false }));
     }
@@ -273,7 +274,7 @@ const SystemStatus = ({ bots, loading, onRefresh, onUpdate }) => {
         {bots.length === 0 ? (
           <div className="text-center py-6 text-gray-500">
             <FiServer className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-            <p className="text-sm">Боты не найдены</p>
+            <p className="text-sm">AI-ассистенты не найдены</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-3 max-h-40 overflow-y-auto">

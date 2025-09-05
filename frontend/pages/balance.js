@@ -1,560 +1,33 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import Head from 'next/head';
 import { useAuth } from '../hooks/useAuth';
-import dashStyles from '../styles/pages/Dashboard.module.css';
-import { 
-  FiUser, FiCreditCard, FiRefreshCw, FiTrendingUp, FiTrendingDown,
-  FiZap, FiStar, FiTarget, FiShield, FiGift, FiPlus,
-  FiArrowUp, FiArrowDown, FiMessageSquare, FiFileText,
-  FiLoader, FiCheck, FiCalendar, FiActivity
+import { useNotifications } from '../hooks/useNotifications';
+import LoadingSpinner, { LoadingButton } from '../components/common/LoadingSpinner';
+import {
+  FiCheck, FiShield, FiZap, FiMessageSquare, FiBarChart
 } from 'react-icons/fi';
+import { API_URL } from '../config/api';
 
-// Простой заголовок страницы
-function SimplePageHeader() {
-  return (
-    <div className="mb-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-2">Управление балансом</h1>
-      <p className="text-gray-600">Пополните счёт и следите за расходами</p>
-    </div>
-  );
-}
 
-// Профессиональный виджет баланса
-function BalanceCard({ balance, balanceStats, loading, onRefresh }) {
-  const currentBalance = balance || 0;
-  const { totalTopups, totalSpent, avgTopup, thisMonth } = balanceStats;
 
-  // Расчет процента использования
-  const balancePercentage = totalTopups > 0 ? 
-    Math.max(0, ((totalTopups - currentBalance) / totalTopups) * 100) : 0;
-
-  const getBalanceColor = () => {
-    if (currentBalance <= 100) return 'text-red-600';
-    if (currentBalance <= 500) return 'text-yellow-600';
-    return 'text-green-600';
-  };
-
-  const formatAmount = (amount) => {
-    return new Intl.NumberFormat('ru-RU', {
-      style: 'currency',
-      currency: 'RUB',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
-  };
-
-  const handleTopUp = () => {
-    const form = document.getElementById('topup-form');
-    if (form) {
-      form.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="bg-white rounded-xl p-4 shadow-sm border">
-        <div className="animate-pulse space-y-3">
-          <div className="h-6 bg-gray-200 rounded w-24"></div>
-          <div className="h-8 bg-gray-200 rounded w-32"></div>
-          <div className="h-3 bg-gray-200 rounded w-28"></div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-white rounded-xl p-4 shadow-sm border">
-      {/* Заголовок */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-            <FiCreditCard className="text-gray-600" size={16} />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900">Баланс</h3>
-        </div>
-        <button
-          onClick={onRefresh}
-          className="p-1.5 hover:bg-gray-100 rounded-md transition-colors"
-          title="Обновить"
-        >
-          <FiRefreshCw className="text-gray-500" size={16} />
-        </button>
-      </div>
-
-      {/* Основной баланс */}
-      <div className="mb-4">
-        <div className={`text-3xl font-bold ${getBalanceColor()} mb-1`}>
-          {formatAmount(currentBalance)}
-        </div>
-        <p className="text-sm text-gray-600">
-          Доступно для отправки сообщений
-        </p>
-        
-        {/* Progress bar */}
-        <div className="mt-3">
-          <div className="flex justify-between text-xs text-gray-500 mb-1">
-            <span>Использовано</span>
-            <span>{balancePercentage.toFixed(1)}%</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="h-2 rounded-full bg-purple-600 transition-all duration-500"
-              style={{ width: `${Math.min(100, balancePercentage)}%` }}
-            ></div>
-          </div>
-        </div>
-      </div>
-
-      {/* Статистика */}
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="flex items-center justify-center text-green-600 mb-1">
-            <FiTrendingUp size={14} />
-          </div>
-          <div className="font-semibold text-sm text-gray-900">
-            {formatAmount(totalTopups)}
-          </div>
-          <div className="text-xs text-gray-500">Пополнено</div>
-        </div>
-        
-        <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="flex items-center justify-center text-red-600 mb-1">
-            <FiTrendingDown size={14} />
-          </div>
-          <div className="font-semibold text-sm text-gray-900">
-            {formatAmount(totalSpent)}
-          </div>
-          <div className="text-xs text-gray-500">Потрачено</div>
-        </div>
-      </div>
-
-      {/* Дополнительная статистика */}
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        <div className="bg-gray-50 rounded-lg p-2.5 text-center">
-          <div className="flex items-center justify-center text-gray-600 mb-1">
-            <FiActivity size={12} />
-          </div>
-          <div className="font-medium text-xs text-gray-900">
-            {formatAmount(avgTopup)}
-          </div>
-          <div className="text-xs text-gray-500">Среднее</div>
-        </div>
-        
-        <div className="bg-gray-50 rounded-lg p-2.5 text-center">
-          <div className="flex items-center justify-center text-gray-600 mb-1">
-            <FiCalendar size={12} />
-          </div>
-          <div className="font-medium text-xs text-gray-900">
-            {formatAmount(thisMonth)}
-          </div>
-          <div className="text-xs text-gray-500">За месяц</div>
-        </div>
-      </div>
-
-      {/* Действия */}
-      <div className="flex space-x-2">
-        <button
-          onClick={handleTopUp}
-          className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2.5 px-4 rounded-lg font-medium transition-colors flex items-center justify-center text-sm"
-        >
-          <FiCreditCard className="mr-2" size={14} />
-          Пополнить
-        </button>
-        
-        <button
-          onClick={() => {
-            const history = document.getElementById('transaction-history');
-            if (history) {
-              history.scrollIntoView({ behavior: 'smooth' });
-            }
-          }}
-          className="px-4 py-2.5 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
-        >
-          История
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// Профессиональный блок быстрого пополнения
-function QuickTopupGrid({ onAmountSelect }) {
-  const quickAmounts = [
-    { amount: 500, label: '500₽', subLabel: 'Минимум', icon: FiZap },
-    { amount: 1000, label: '1000₽', subLabel: 'Стандарт', isPopular: true, icon: FiStar },
-    { amount: 2500, label: '2500₽', subLabel: 'Про', icon: FiTarget },
-    { amount: 5000, label: '5000₽', subLabel: 'Бизнес', icon: FiTrendingUp }
-  ];
-
-  const calculateRequests = (sum) => {
-    return Math.floor(sum / 3);
-  };
-
-  return (
-    <div className="bg-white rounded-xl p-4 shadow-sm border">
-      {/* Заголовок */}
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 mb-1 flex items-center">
-          <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center mr-2">
-            <FiZap className="text-gray-600" size={16} />
-          </div>
-          Быстрое пополнение
-        </h3>
-        <p className="text-sm text-gray-600">
-          Выберите удобную сумму для пополнения
-        </p>
-      </div>
-
-      {/* Сетка с суммами */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {quickAmounts.map((item) => {
-          const IconComponent = item.icon;
-          return (
-            <div
-              key={item.amount}
-              className="relative group cursor-pointer"
-              onClick={() => onAmountSelect(item.amount)}
-            >
-              {item.isPopular && (
-                <div className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs px-2 py-0.5 rounded-full font-medium z-10">
-                  ХИТ
-                </div>
-              )}
-              
-              <div className="bg-gray-50 hover:bg-purple-50 border hover:border-purple-200 p-4 rounded-lg transition-all duration-200 group-hover:shadow-sm">
-                <div className="flex flex-col items-center text-center space-y-2">
-                  <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center group-hover:bg-purple-100">
-                    <IconComponent className="text-gray-600 group-hover:text-purple-600" size={16} />
-                  </div>
-                  
-                  <div>
-                    <div className="text-lg font-bold text-gray-900">
-                      {item.label}
-                    </div>
-                    <div className="text-xs text-gray-500 mb-1">
-                      {item.subLabel}
-                    </div>
-                    <div className="text-xs text-gray-400 bg-gray-100 rounded-full px-2 py-0.5">
-                      ≈ {calculateRequests(item.amount)} запросов
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Дополнительная информация */}
-      <div className="mt-4 p-3 bg-gray-50 rounded-lg border">
-        <div className="flex items-center space-x-2">
-          <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center">
-            <FiGift className="text-white" size={12} />
-          </div>
-          <div>
-            <p className="font-medium text-gray-900 text-sm">Есть промокод?</p>
-            <p className="text-xs text-gray-600">Введите его при пополнении для получения скидки</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Форма пополнения
-function TopupForm({ amount, setAmount, promoCode, setPromoCode, loading, onSubmit, message, messageType }) {
-  const calculateRequests = (sum) => {
-    return Math.floor(sum / 3);
-  };
-
-  const calculateDays = (sum) => {
-    const requestsPerDay = 10;
-    const totalRequests = calculateRequests(sum);
-    return Math.floor(totalRequests / requestsPerDay);
-  };
-
-  const handleAmountChange = (value) => {
-    setAmount(value);
-  };
-
-  return (
-    <div id="topup-form" className="bg-white rounded-xl p-4 shadow-sm border">
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-          <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center mr-2">
-            <FiPlus className="text-gray-600" size={16} />
-          </div>
-          Пополнение баланса
-        </h3>
-      </div>
-
-      <div className="space-y-4">
-        {/* Поле суммы */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Сумма пополнения (минимум 500₽)
-          </label>
-          <div className="relative">
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => handleAmountChange(e.target.value)}
-              placeholder="Введите сумму от 500₽"
-              min="500"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-            />
-            <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">
-              ₽
-            </span>
-          </div>
-          <div className="flex justify-between mt-1 text-xs text-gray-500">
-            <span>≈ {calculateRequests(parseFloat(amount) || 0)} запросов к AI</span>
-            <span>≈ {calculateDays(parseFloat(amount) || 0)} дней использования</span>
-          </div>
-        </div>
-
-        {/* Поле промокода */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Промокод (необязательно)
-          </label>
-          <input
-            type="text"
-            value={promoCode}
-            onChange={(e) => setPromoCode(e.target.value)}
-            placeholder="Введите промокод для получения скидки"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          />
-        </div>
-
-        {/* Кнопка пополнения */}
-        <button
-          onClick={onSubmit}
-          disabled={loading || !amount || parseFloat(amount) < 500}
-          className={`w-full bg-purple-600 hover:bg-purple-700 text-white py-2.5 px-4 rounded-lg font-medium transition-colors flex items-center justify-center ${loading || !amount || parseFloat(amount) < 500 ? 'opacity-50 cursor-not-allowed' : ''}`}
-        >
-          {loading ? (
-            <>
-              <FiLoader className="animate-spin mr-2" size={16} />
-              Обработка...
-            </>
-          ) : (
-            <>
-              <FiCreditCard size={16} className="mr-2" />
-              Пополнить на {amount || '0'}₽
-            </>
-          )}
-        </button>
-
-        {/* Сообщение */}
-        {message && (
-          <div className={`flex items-center p-3 rounded-lg text-sm ${
-            messageType === 'success' 
-              ? 'bg-green-50 border border-green-200 text-green-800' 
-              : 'bg-red-50 border border-red-200 text-red-800'
-          }`}>
-            {messageType === 'success' ? <FiCheck className="mr-2" size={14} /> : <FiZap className="mr-2" size={14} />}
-            {message}
-          </div>
-        )}
-
-        {/* Информационные блоки */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-3 border-t border-gray-200">
-          <div className="flex items-start space-x-2">
-            <div className="flex-shrink-0 p-1.5 bg-green-100 rounded-lg">
-              <FiShield className="w-4 h-4 text-green-600" />
-            </div>
-            <div>
-              <h4 className="font-medium text-gray-900 text-sm">Безопасные платежи</h4>
-              <p className="text-xs text-gray-500">SSL шифрование</p>
-            </div>
-          </div>
-          
-          <div className="flex items-start space-x-2">
-            <div className="flex-shrink-0 p-1.5 bg-purple-100 rounded-lg">
-              <FiZap className="w-4 h-4 text-purple-600" />
-            </div>
-            <div>
-              <h4 className="font-medium text-gray-900 text-sm">Мгновенное зачисление</h4>
-              <p className="text-xs text-gray-500">Средства поступают моментально</p>
-            </div>
-          </div>
-          
-          <div className="flex items-start space-x-2">
-            <div className="flex-shrink-0 p-1.5 bg-purple-100 rounded-lg">
-              <FiGift className="w-4 h-4 text-purple-600" />
-            </div>
-            <div>
-              <h4 className="font-medium text-gray-900 text-sm">Промокоды</h4>
-              <p className="text-xs text-gray-500">Скидки и бонусы</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// История операций в стиле ActiveDialogs
-function TransactionHistory({ transactions, loading, onRefresh }) {
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString('ru-RU', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const formatAmount = (amount) => {
-    return new Intl.NumberFormat('ru-RU', {
-      style: 'currency',
-      currency: 'RUB',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
-  };
-
-  const getTransactionIcon = (transaction) => {
-    if (transaction.amount > 0) {
-      return <FiArrowUp className="text-green-600" size={16} />;
-    }
-    
-    switch (transaction.transaction_type) {
-      case 'ai_message':
-        return <FiMessageSquare className="text-blue-600" size={16} />;
-      case 'document_upload':
-        return <FiFileText className="text-purple-600" size={16} />;
-      default:
-        return <FiArrowDown className="text-red-600" size={16} />;
-    }
-  };
-
-  return (
-    <div id="transaction-history" className="bg-white rounded-xl p-4 shadow-sm border">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-          <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center mr-2">
-            <FiActivity className="text-gray-600" size={16} />
-          </div>
-          История операций
-        </h3>
-        <button
-          onClick={onRefresh}
-          className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
-          title="Обновить"
-        >
-          <FiRefreshCw className="text-gray-500" size={16} />
-        </button>
-      </div>
-
-      {loading ? (
-        <div className="space-y-4">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="animate-pulse flex items-center space-x-4">
-              <div className="rounded-full bg-gray-200 h-10 w-10"></div>
-              <div className="flex-1 space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-              </div>
-              <div className="h-4 bg-gray-200 rounded w-20"></div>
-            </div>
-          ))}
-        </div>
-      ) : transactions.length === 0 ? (
-        <div className="text-center py-12">
-          <FiFileText size={48} className="mx-auto text-gray-300 mb-4" />
-          <h4 className="text-lg font-medium text-gray-900 mb-2">История операций пуста</h4>
-          <p className="text-gray-500">Здесь будут отображаться все ваши транзакции</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {transactions.map((transaction) => (
-            <div key={transaction.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-              <div className="flex-shrink-0 p-1.5 bg-white rounded-full border">
-                {getTransactionIcon(transaction)}
-              </div>
-              
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <p className="font-medium text-gray-900 truncate text-sm">
-                    {transaction.description || 'Операция'}
-                  </p>
-                  <span className={`font-semibold text-sm ${
-                    transaction.amount > 0 ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {transaction.amount > 0 ? '+' : ''}{formatAmount(transaction.amount)}
-                  </span>
-                </div>
-                
-                <div className="flex items-center justify-between mt-0.5">
-                  <p className="text-xs text-gray-500">
-                    {formatDate(transaction.created_at)}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Баланс: {formatAmount(transaction.balance_after)}
-                  </p>
-                </div>
-
-                {/* Дополнительная информация */}
-                {transaction.related_info && (
-                  <div className="mt-2 p-2 bg-white rounded border">
-                    {transaction.related_info.type === 'message' && (
-                      <div className="text-xs text-gray-600">
-                        <p className="italic">"{transaction.related_info.message_text}"</p>
-                        {transaction.related_info.dialog_info && (
-                          <p className="mt-1 text-xs">
-                            {transaction.related_info.dialog_info.telegram_username ? (
-                              `@${transaction.related_info.dialog_info.telegram_username}`
-                            ) : (
-                              transaction.related_info.dialog_info.user_email
-                            )}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                    
-                    {transaction.related_info.type === 'document' && (
-                      <div className="flex items-center text-xs text-gray-600">
-                        <FiFileText className="mr-1" size={10} />
-                        <span>{transaction.related_info.filename}</span>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Основной компонент страницы
+// Основной компонент страницы баланса в стиле дашборда
 export default function Balance() {
-  const [amount, setAmount] = useState('500');
-  const [promoCode, setPromoCode] = useState('');
   const [loading, setLoading] = useState(false);
+  const [dataLoading, setDataLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
   const [userBalance, setUserBalance] = useState(0);
+  const [amount, setAmount] = useState('500');
+  const [balanceStats, setBalanceStats] = useState(null);
   const [transactions, setTransactions] = useState([]);
-  const [transactionsLoading, setTransactionsLoading] = useState(false);
-  const [balanceStats, setBalanceStats] = useState({
-    totalTopups: 0,
-    totalSpent: 0,
-    avgTopup: 0,
-    thisMonth: 0
-  });
-  
-  const { user } = useAuth();
 
-  // Загрузка данных при монтировании компонента
+  const { user } = useAuth();
+  const { showError } = useNotifications();
+
+  // Загрузка баланса при монтировании
   useEffect(() => {
     if (user) {
       loadBalanceData();
-      loadTransactions();
     }
   }, [user]);
 
@@ -563,6 +36,8 @@ export default function Balance() {
     const handleBalanceUpdate = (event) => {
       if (event.detail && event.detail.newBalance !== undefined) {
         setUserBalance(event.detail.newBalance);
+        // Перезагружаем полные данные при обновлении баланса
+        loadBalanceData();
       }
     };
 
@@ -571,193 +46,487 @@ export default function Balance() {
   }, []);
 
   const loadBalanceData = async () => {
-    const token = localStorage.getItem('token');
-    
-    try {
-      // Получаем текущий баланс
-      const balanceResponse = await fetch('http://localhost:8000/api/balance/current', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const balanceData = await balanceResponse.json();
-      
-      if (balanceData.error) throw new Error(balanceData.message);
-      setUserBalance(balanceData.balance || 0);
+    if (!user) return;
 
-      // Получаем транзакции для статистики
-      const transactionsResponse = await fetch('http://localhost:8000/api/balance/transactions/detailed', {
+    const token = localStorage.getItem('token');
+    setDataLoading(true);
+
+    try {
+      // Загружаем статистику баланса
+      const statsResponse = await fetch(`${API_URL}/api/balance/stats`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      const transactionsData = await transactionsResponse.json();
+      
+      if (!statsResponse.ok) {
+        throw new Error('Failed to fetch balance stats');
+      }
+      
+      const statsData = await statsResponse.json();
+      setBalanceStats(statsData);
+      setUserBalance(statsData.current_balance || 0);
+
+      // Загружаем последние транзакции
+      const transactionsResponse = await fetch(`${API_URL}/api/balance/transactions?limit=10`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       
       if (transactionsResponse.ok) {
-        calculateBalanceStats(transactionsData);
+        const transactionsData = await transactionsResponse.json();
+        setTransactions(transactionsData);
       }
+
     } catch (err) {
-      setMessage(`Ошибка загрузки данных: ${err.message}`);
-      setMessageType('error');
-    }
-  };
-
-  const calculateBalanceStats = (data) => {
-    const now = new Date();
-    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    
-    const topups = data.filter(t => t.amount > 0);
-    const spent = data.filter(t => t.amount < 0);
-    
-    const totalTopups = topups.reduce((sum, t) => sum + t.amount, 0);
-    const totalSpent = Math.abs(spent.reduce((sum, t) => sum + t.amount, 0));
-    const thisMonthTopups = topups
-      .filter(t => new Date(t.created_at) >= thisMonth)
-      .reduce((sum, t) => sum + t.amount, 0);
-
-    setBalanceStats({
-      totalTopups,
-      totalSpent,
-      avgTopup: topups.length > 0 ? totalTopups / topups.length : 0,
-      thisMonth: thisMonthTopups
-    });
-  };
-
-  const loadTransactions = async () => {
-    const token = localStorage.getItem('token');
-    setTransactionsLoading(true);
-    
-    try {
-      const response = await fetch('http://localhost:8000/api/balance/transactions/detailed', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setTransactions(data);
-      }
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Ошибка загрузки транзакций:', error);
-      }
+      console.error('Ошибка загрузки данных баланса:', err);
+      showError('Ошибка загрузки данных баланса');
     } finally {
-      setTransactionsLoading(false);
+      setDataLoading(false);
     }
   };
 
-  const handleAmountSelect = (selectedAmount) => {
-    setAmount(selectedAmount.toString());
-    // Прокрутка к форме пополнения
-    const form = document.getElementById('topup-form');
-    if (form) {
-      form.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  const handleRecharge = async () => {
-    if (!amount || parseFloat(amount) <= 0) {
+  const handleRecharge = async (rechargeAmount) => {
+    if (!rechargeAmount || parseFloat(rechargeAmount) <= 0) {
       setMessage('Введите корректную сумму');
       setMessageType('error');
       return;
     }
 
-    if (parseFloat(amount) < 500) {
-      setMessage('Минимальная сумма пополнения составляет 500 рублей');
+    if (parseFloat(rechargeAmount) < 100) {
+      setMessage('Минимальная сумма пополнения составляет 100 рублей');
+      setMessageType('error');
+      return;
+    }
+
+    if (parseFloat(rechargeAmount) > 50000) {
+      setMessage('Максимальная сумма пополнения составляет 50 000 рублей');
       setMessageType('error');
       return;
     }
 
     setLoading(true);
-    setMessage('');
+    setMessage('Создание платежа...');
+    setMessageType('info');
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8000/api/balance/topup', {
+      
+      // Создаем форму для отправки данных на создание платежа
+      const formData = new FormData();
+      formData.append('amount', parseFloat(rechargeAmount));
+      formData.append('description', `Пополнение баланса ReplyX на ${rechargeAmount}₽`);
+
+      // Отправляем запрос на создание платежа
+      const response = await fetch(`${API_URL}/api/payments/create-payment`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ 
-          amount: parseFloat(amount),
-          promo_code: promoCode || null
-        })
+        body: formData
       });
 
-      const data = await response.json();
-
       if (response.ok) {
-        const newBalance = data.new_balance;
-        setUserBalance(newBalance);
-        
-        // Уведомляем другие компоненты об обновлении баланса
-        window.dispatchEvent(new CustomEvent('balanceUpdated', {
-          detail: { newBalance: newBalance }
-        }));
-
-        setMessage(`Баланс успешно пополнен на ${amount}₽${data.discount_amount ? ` (скидка: ${data.discount_amount}₽)` : ''}`);
-        setMessageType('success');
-        setPromoCode('');
-        
-        // Обновляем данные
-        loadBalanceData();
-        loadTransactions();
+        // Если ответ в HTML формате, заменяем содержимое страницы
+        if (response.headers.get('content-type')?.includes('text/html')) {
+          const html = await response.text();
+          document.open();
+          document.write(html);
+          document.close();
+        } else {
+          // Если JSON ответ, обрабатываем как обычно
+          const data = await response.json();
+          if (data.payment_url) {
+            window.location.href = data.payment_url;
+          }
+        }
       } else {
-        setMessage(data.message || 'Ошибка пополнения баланса');
-        setMessageType('error');
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Ошибка создания платежа');
       }
+
     } catch (error) {
-      setMessage('Ошибка соединения с сервером');
+      console.error('Ошибка создания платежа:', error);
+      setMessage(error.message || 'Произошла ошибка при создании платежа');
       setMessageType('error');
-    } finally {
       setLoading(false);
     }
   };
 
+
+  // Функция для форматирования типа транзакции
+  const formatTransactionType = (transactionType) => {
+    const types = {
+      'balance_topup': 'Пополнение',
+      'payment_topup': 'Пополнение',
+      'ai_message': 'Использование',
+      'bot_message': 'Использование', 
+      'widget_message': 'Использование',
+      'document_upload': 'Использование',
+      'welcome_bonus': 'Бонус'
+    };
+    return types[transactionType] || 'Операция';
+  };
+
+  // Функция для получения статуса транзакции
+  const getTransactionStatus = (transaction) => {
+    if (transaction.amount > 0) {
+      return {
+        text: 'Пополнение баланса',
+        className: 'bg-green-100 text-green-800'
+      };
+    } else {
+      const messageCount = Math.abs(transaction.amount / 5);
+      return {
+        text: `${messageCount} сообщений`,
+        className: 'bg-blue-100 text-blue-800'
+      };
+    }
+  };
+
+  // Функция для форматирования даты
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('ru-RU', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
+
+
+
   if (!user) {
     return (
-      <div className={dashStyles.loadingContainer}>
-        <div className={dashStyles.loadingSpinner}></div>
-        <span>Загрузка...</span>
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner size="lg" text="Загрузка данных пользователя..." />
+      </div>
+    );
+  }
+
+  if (dataLoading && !balanceStats) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner size="lg" text="Загрузка данных баланса..." />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto">
-        <SimplePageHeader />
+    <>
+      <Head>
+        <title>Баланс - ReplyX</title>
+        <meta name="description" content="Управление балансом и оплата услуг в платформе ReplyX." />
+        <meta name="robots" content="noindex, nofollow" />
+      </Head>
 
-        {/* Main Content */}
-        <div className="space-y-6">
-          {/* Top Row - Баланс и Быстрое пополнение */}
-          <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-            {/* Баланс */}
-            <BalanceCard 
-              balance={userBalance}
-              balanceStats={balanceStats}
-              loading={false}
-              onRefresh={loadBalanceData}
-            />
-
-            {/* Быстрые действия пополнения */}
-            <QuickTopupGrid onAmountSelect={handleAmountSelect} />
+      <div className="bg-white px-4 sm:px-6 xl:px-8 pt-4 sm:pt-6 xl:pt-8 pb-4 sm:pb-6 xl:pb-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Заголовок страницы */}
+          <div className="bg-white rounded-xl border border-gray-200 p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8 mb-4 sm:mb-6">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-center">
+                <FiZap className="text-purple-600" size={18} />
+              </div>
+              <div>
+                <h1 className="text-xl font-semibold text-gray-900 mb-1">Баланс</h1>
+                <p className="text-sm text-gray-600">Управление балансом и пополнение счета</p>
+              </div>
+            </div>
           </div>
 
-          {/* Форма пополнения */}
-          <TopupForm
-            amount={amount}
-            setAmount={setAmount}
-            promoCode={promoCode}
-            setPromoCode={setPromoCode}
-            loading={loading}
-            onSubmit={handleRecharge}
-            message={message}
-            messageType={messageType}
-          />
+          {/* Основная информация о балансе */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
+            {/* Текущий баланс */}
+            <div className="bg-white border border-gray-200 rounded-xl p-5 sm:p-6 transition-all hover:border-gray-300">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-center">
+                  <FiZap className="text-purple-600" size={18} />
+                </div>
+                <div>
+                  <div className="text-lg font-semibold text-gray-900">Ваш баланс</div>
+                  <div className="text-sm text-gray-600">Доступные средства</div>
+                </div>
+              </div>
+              
+              {/* Основная сумма баланса */}
+              <div className="text-center mb-6">
+                <div className="text-4xl font-bold text-gray-900 mb-2">
+                  {(userBalance || 0).toLocaleString('ru-RU')}₽
+                </div>
+                <div className="flex items-center justify-center gap-2 text-gray-600">
+                  <FiMessageSquare size={16} />
+                  <span className="font-medium">{Math.floor((userBalance || 0) / 5)} сообщений</span>
+                </div>
+              </div>
+
+              {/* Статус и дополнительная информация */}
+              <div className="space-y-3">
+                {/* Статус баланса */}
+                <div className={`flex items-center justify-center gap-2 p-3 rounded-xl border ${
+                  userBalance > 0 
+                    ? 'bg-green-50 border-green-200' 
+                    : 'bg-orange-50 border-orange-200'
+                }`}>
+                  <div className={`w-2 h-2 rounded-full ${
+                    userBalance > 0 ? 'bg-green-500' : 'bg-orange-500'
+                  }`}></div>
+                  <span className={`font-medium text-sm ${
+                    userBalance > 0 ? 'text-green-700' : 'text-orange-700'
+                  }`}>
+                    {userBalance > 0 ? 'Баланс активен' : 'Требуется пополнение'}
+                  </span>
+                </div>
+
+                {/* Быстрые факты */}
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Стоимость сообщения</span>
+                      <span className="font-semibold text-gray-900">5₽</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Остаток сообщений</span>
+                      <span className="font-semibold text-gray-900">{Math.floor((userBalance || 0) / 5)}</span>
+                    </div>
+                    {userBalance > 0 && (
+                      <div className="flex justify-between items-center pt-2 border-t border-gray-200">
+                        <span className="text-gray-600">Хватит примерно на</span>
+                        <span className="font-semibold text-purple-600">
+                          {Math.floor((userBalance || 0) / 5) < 10 ? 'несколько дней' :
+                           Math.floor((userBalance || 0) / 5) < 50 ? '1-2 недели' :
+                           Math.floor((userBalance || 0) / 5) < 200 ? '1 месяц' : '2+ месяца'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Быстрая ссылка на историю */}
+                <div className="pt-2">
+                  <button 
+                    onClick={() => {
+                      const historyElement = document.querySelector('#transaction-history');
+                      if (historyElement) {
+                        historyElement.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }}
+                    className="w-full flex items-center justify-center gap-2 p-2.5 text-sm font-medium text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                  >
+                    <FiBarChart size={14} />
+                    <span>Смотреть историю операций</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Пополнить баланс */}
+            <div className="lg:col-span-2 bg-white border border-gray-200 rounded-xl p-5 sm:p-6 transition-all hover:border-gray-300">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-center">
+                  <FiZap className="text-purple-600" size={18} />
+                </div>
+                <div>
+                  <div className="text-lg font-semibold text-gray-900">Пополнение баланса</div>
+                  <div className="text-sm text-gray-600">Выберите сумму или введите свою</div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                {/* Основная форма пополнения */}
+                <div className="lg:col-span-3 space-y-5">
+                  {/* Поле ввода суммы */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Сумма пополнения
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        placeholder="1000"
+                        min="100"
+                        max="50000"
+                        className="w-full px-4 py-3 text-xl font-medium border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all text-center"
+                      />
+                      <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg">₽</div>
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1 text-center">
+                      Минимум 100₽ • Максимум 50,000₽
+                    </div>
+                  </div>
+
+                  {/* Быстрые суммы */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                      Популярные суммы
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[500, 1000, 2500, 5000].map((sum) => (
+                        <button
+                          key={sum}
+                          onClick={() => setAmount(sum.toString())}
+                          className={`p-3 rounded-xl text-center transition-all border ${
+                            amount === sum.toString()
+                              ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
+                              : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="text-lg font-semibold">{sum}₽</div>
+                          <div className="text-xs opacity-75">≈ {Math.floor(sum / 5)} сообщений</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Кнопка пополнения */}
+                  <div className="pt-2">
+                    <LoadingButton
+                      onClick={() => handleRecharge(amount)}
+                      loading={loading}
+                      disabled={!amount || parseFloat(amount) < 100}
+                      className="w-full py-3.5 text-base font-semibold bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 text-white rounded-xl transition-colors"
+                    >
+                      {loading ? 'Создание платежа...' : 'Пополнить баланс'}
+                    </LoadingButton>
+                    
+                    {amount && parseFloat(amount) >= 100 && (
+                      <div className="text-center text-sm text-gray-600 mt-2">
+                        Вы получите ≈ {Math.floor(parseFloat(amount) / 5)} сообщений
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Сообщения об ошибках/успехе */}
+                  {message && (
+                    <div className={`p-4 rounded-xl text-sm border ${
+                      messageType === 'success'
+                        ? 'bg-green-50 text-green-800 border-green-200'
+                        : 'bg-red-50 text-red-800 border-red-200'
+                    }`}>
+                      {message}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Боковая информация */}
+                <div className="lg:col-span-2 space-y-4">
+                  {/* Безопасность */}
+                  <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <FiShield className="text-purple-600" size={16} />
+                      <h4 className="font-medium text-gray-900">Безопасность</h4>
+                    </div>
+                    <div className="space-y-2 text-sm text-gray-600">
+                      <div className="flex items-start gap-2">
+                        <FiCheck size={14} className="text-green-600 mt-0.5 flex-shrink-0" />
+                        <span>SSL шифрование</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <FiCheck size={14} className="text-green-600 mt-0.5 flex-shrink-0" />
+                        <span>Мгновенное зачисление</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <FiCheck size={14} className="text-green-600 mt-0.5 flex-shrink-0" />
+                        <span>Возврат средств</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Тарификация */}
+                  <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <FiZap className="text-purple-600" size={16} />
+                      <h4 className="font-medium text-gray-900">Тарифы</h4>
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">За сообщение</span>
+                        <span className="font-semibold text-gray-900">5₽</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Минимум</span>
+                        <span className="font-semibold text-gray-900">100₽</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Абонплата</span>
+                        <span className="font-semibold text-green-600">0₽</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
 
           {/* История операций */}
-          <TransactionHistory 
-            transactions={transactions}
-            loading={transactionsLoading}
-            onRefresh={loadTransactions}
-          />
+          <div id="transaction-history" className="bg-white border border-gray-200 rounded-xl p-5 sm:p-6 mb-6 transition-all hover:border-gray-300">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-center">
+                <FiBarChart className="text-purple-600" size={18} />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">История операций</h3>
+            </div>
+            {dataLoading ? (
+              <div className="flex justify-center py-12">
+                <LoadingSpinner size="sm" text="Загрузка транзакций..." />
+              </div>
+            ) : transactions.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <FiBarChart size={24} className="text-gray-400" />
+                </div>
+                <p className="text-gray-600 mb-2">История транзакций пуста</p>
+                <p className="text-sm text-gray-500">Совершите первое пополнение баланса</p>
+              </div>
+            ) : (
+              <div className="overflow-hidden">
+                {/* Заголовки таблицы */}
+                <div className="grid grid-cols-4 gap-4 pb-4 mb-6 border-b border-gray-200">
+                  <div className="text-sm font-medium text-gray-500 uppercase tracking-wider">
+                    Дата
+                  </div>
+                  <div className="text-sm font-medium text-gray-500 uppercase tracking-wider">
+                    Тип
+                  </div>
+                  <div className="text-sm font-medium text-gray-500 uppercase tracking-wider text-right">
+                    Сумма
+                  </div>
+                  <div className="text-sm font-medium text-gray-500 uppercase tracking-wider text-right">
+                    Статус
+                  </div>
+                </div>
+                
+                {/* Строки транзакций */}
+                <div className="space-y-4">
+                  {transactions.map((transaction) => {
+                    const status = getTransactionStatus(transaction);
+                    return (
+                      <div key={transaction.id} className="grid grid-cols-4 gap-4 py-3 hover:bg-gray-50 rounded-lg transition-colors">
+                        <div className="text-sm text-gray-900">
+                          {formatDate(transaction.created_at)}
+                        </div>
+                        <div className="text-sm text-gray-900">
+                          {formatTransactionType(transaction.transaction_type)}
+                        </div>
+                        <div className={`text-sm font-medium text-right ${
+                          transaction.amount > 0 ? 'text-green-600' : 'text-gray-600'
+                        }`}>
+                          {transaction.amount > 0 ? '+' : ''}{Math.abs(transaction.amount).toLocaleString('ru-RU')}₽
+                        </div>
+                        <div className="text-sm text-gray-500 text-right">
+                          {status.text}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
         </div>
-    </div>
+      </div>
+    </>
   );
 }

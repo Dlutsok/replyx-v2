@@ -9,14 +9,59 @@
   text-align: center;
   margin-bottom: 48px;
   padding: 40px 0;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: linear-gradient(135deg, #f8fafc 0%, rgb(245, 247, 249) 100%);
   border-radius: 0.75rem;
   border: 1px solid #e2e8f0;
 }
 
-[data-theme="dark"] .pageHeader {
-  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-  border-color: #475569;
+/* Отключаем темную тему на мобильных устройствах */
+@media (max-width: 768px) {
+  [data-theme="dark"] .pageHeader {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%) !important;
+    border-color: #e5e7eb !important;
+  }
+
+  [data-theme="dark"] .pageTitle {
+    color: #1e293b !important;
+  }
+
+  [data-theme="dark"] .pageSubtitle {
+    color: #64748b !important;
+  }
+
+  [data-theme="dark"] .loadingSpinner {
+    border-color: #e5e7eb !important;
+    border-top-color: #7c3aed !important;
+  }
+
+  [data-theme="dark"] .loadingContainer span {
+    color: #6b7280 !important;
+  }
+}
+
+/* Темная тема только для десктопных устройств */
+@media (min-width: 769px) {
+  [data-theme="dark"] .pageHeader {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-color: #475569;
+  }
+
+  [data-theme="dark"] .pageTitle {
+    color: #f1f5f9;
+  }
+
+  [data-theme="dark"] .pageSubtitle {
+    color: #94a3b8;
+  }
+
+  [data-theme="dark"] .loadingSpinner {
+    border-color: #374151;
+    border-top-color: #8b5cf6;
+  }
+
+  [data-theme="dark"] .loadingContainer span {
+    color: #9ca3af;
+  }
 }
 
 .pageTitle {
@@ -24,14 +69,10 @@
   font-weight: 800;
   color: #1e293b;
   margin: 0 0 16px 0;
-  background: linear-gradient(135deg, #7C4DFF 0%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #7C3AED 0%, #8b5cf6 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-}
-
-[data-theme="dark"] .pageTitle {
-  color: #f1f5f9;
 }
 
 .pageSubtitle {
@@ -41,10 +82,6 @@
   max-width: 600px;
   margin: 0 auto;
   line-height: 1.6;
-}
-
-[data-theme="dark"] .pageSubtitle {
-  color: #94a3b8;
 }
 
 .loadingContainer {
@@ -60,14 +97,9 @@
   width: 32px;
   height: 32px;
   border: 3px solid #e5e7eb;
-  border-top: 3px solid #7C4DFF;
+  border-top: 3px solid #7C3AED;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-}
-
-[data-theme="dark"] .loadingSpinner {
-  border-color: #374151;
-  border-top-color: #8b5cf6;
 }
 
 @keyframes spin {
@@ -78,10 +110,6 @@
 .loadingContainer span {
   color: #6b7280;
   font-size: 16px;
-}
-
-[data-theme="dark"] .loadingContainer span {
-  color: #9ca3af;
 }
 
 /* Адаптивность */

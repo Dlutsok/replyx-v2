@@ -2,29 +2,25 @@
 
 import { motion } from 'framer-motion';
 import HeroContent from './HeroContent';
-import HeroImage from './HeroImage';
+import HeroWidget from './HeroWidget';
 import { DESIGN_TOKENS } from '../../constants/designSystem';
 
 const HeroSection = () => {
   return (
-    <section className="min-h-screen bg-white flex items-center py-12">
-      <div className={`${DESIGN_TOKENS.spacing.maxWidth} ${DESIGN_TOKENS.spacing.containerPadding} w-full`}>
-        <div className={`grid grid-cols-1 lg:grid-cols-2 ${DESIGN_TOKENS.spacing.gridGap} lg:gap-8 items-center`}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-          >
+    <section className="relative h-[680px] md:h-[720px] lg:h-[760px] flex items-center overflow-hidden">
+      {/* Subtle background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white via-white to-purple-50/30 pointer-events-none" />
+      <div className={`${DESIGN_TOKENS.spacing.maxWidth} ${DESIGN_TOKENS.spacing.containerPadding} w-full relative`} style={{maxWidth: '1200px', margin: '0 auto'}}>
+        <div className={`grid grid-cols-1 lg:grid-cols-5 ${DESIGN_TOKENS.spacing.gridGap} lg:gap-10 items-center`}>
+          <motion.div {...DESIGN_TOKENS.animation.default} className="lg:col-span-3">
             <HeroContent />
           </motion.div>
-          
+
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
-            className="order-first lg:order-last"
+            {...DESIGN_TOKENS.animation.withDelay(0.15)}
+            className="hidden md:block order-first lg:order-last lg:col-span-2"
           >
-            <HeroImage />
+            <HeroWidget />
           </motion.div>
         </div>
       </div>

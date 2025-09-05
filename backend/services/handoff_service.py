@@ -259,7 +259,7 @@ class HandoffService:
             system_message = models.DialogMessage(
                 dialog_id=dialog_id,
                 sender="system",
-                text="✅ Оператор подключился",
+                text="Оператор подключился",
                 message_kind="system",
                 system_type="handoff_started",
                 timestamp=datetime.utcnow()
@@ -284,7 +284,7 @@ class HandoffService:
                 if loop.is_running():
                     asyncio.create_task(self._send_ws_notification(dialog_id, "handoff_started", manager_id))
                     # Отправляем системное сообщение в Telegram при подключении оператора
-                    asyncio.create_task(self._send_telegram_system_message(dialog_id, "✅ Оператор подключился", "handoff_started"))
+                    asyncio.create_task(self._send_telegram_system_message(dialog_id, "Оператор подключился", "handoff_started"))
                 else:
                     logger.debug(f"Skipping WS notification for dialog {dialog_id} - no active event loop")
             except RuntimeError:
@@ -345,12 +345,14 @@ class HandoffService:
             dialog.handoff_status = HandoffStatus.RELEASED
             dialog.is_taken_over = 0  # Re-enable AI (0 for False in integer field)
             dialog.handoff_resolved_at = datetime.utcnow()
+            # Clear assignment - dialog is no longer tied to operator
+            dialog.assigned_manager_id = None
             
             # Create system message
             system_message = models.DialogMessage(
                 dialog_id=dialog_id,
                 sender="system",
-                text="✅ Диалог возвращен к боту. Спасибо за обращение!",
+                text="Диалог возвращен к AI-ассистенту. Спасибо за обращение!",
                 message_kind="system",
                 system_type="handoff_released",
                 timestamp=datetime.utcnow()
@@ -374,7 +376,7 @@ class HandoffService:
                 if loop.is_running():
                     asyncio.create_task(self._send_ws_notification(dialog_id, "handoff_released"))
                     # Отправляем системное сообщение в Telegram
-                    asyncio.create_task(self._send_telegram_system_message(dialog_id, "✅ Диалог возвращен к боту. Спасибо за обращение!", "handoff_released"))
+                    asyncio.create_task(self._send_telegram_system_message(dialog_id, "Диалог возвращен к AI-ассистенту. Спасибо за обращение!", "handoff_released"))
                 else:
                     logger.debug(f"Skipping WS notification for dialog {dialog_id} - no active event loop")
             except RuntimeError:
@@ -420,7 +422,7 @@ class HandoffService:
             system_message = models.DialogMessage(
                 dialog_id=dialog_id,
                 sender="system",
-                text="❌ Запрос оператора отменен",
+                text="Запрос оператора отменен",
                 message_kind="system",
                 system_type="handoff_cancelled",
                 timestamp=datetime.utcnow()

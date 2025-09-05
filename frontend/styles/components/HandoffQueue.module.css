@@ -1,0 +1,272 @@
+/* HandoffQueue.module.css */
+
+.handoffQueue {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.queueHeader {
+  margin-bottom: 20px;
+}
+
+.queueHeader h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.queueDescription {
+  color: #6b7280;
+  font-size: 14px;
+  margin: 0;
+}
+
+.queueList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.queueItem {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.queueItem:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.queueItemHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.queueItemInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.priorityWrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Removed queuePosition - no longer showing position numbers */
+
+.dialogInfo h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 4px 0;
+}
+
+.dialogMeta {
+  font-size: 11px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.urgentIcon {
+  color: #ef4444;
+}
+
+.warningIcon {
+  color: #f59e0b;
+}
+
+.normalIcon {
+  color: #7C3AED;
+}
+
+.statusRequested {
+  background: #f3e8ff;
+  color: #7c3aed;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.statusActive {
+  background: #F3E8FF;
+  color: #7C3AED;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.statusDefault {
+  background: #f3f4f6;
+  color: #6b7280;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.queueItemContent {
+  margin-bottom: 16px;
+}
+
+.reasonInfo {
+  margin-bottom: 8px;
+}
+
+.reason {
+  color: #6b7280;
+  font-size: 10px;
+}
+
+.lastMessage {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #374151;
+  font-size: 11px;
+  background: white;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.queueItemActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.takeButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(to right, #7C3AED, #8B5CF6, #6366F1);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.takeButton:hover:not(:disabled) {
+  background: linear-gradient(to right, #6D28D9, #7C3AED, #5B21B6);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.takeButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cancelButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton:hover:not(:disabled) {
+  background: #e5e7eb;
+  color: #374151;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.cancelButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.activeIndicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #7C3AED;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  color: #6b7280;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.emptyState h3 {
+  margin: 16px 0 8px 0;
+  color: #374151;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.emptyState p {
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .handoffQueue {
+    padding: 16px;
+  }
+  
+  .queueItem {
+    padding: 12px;
+  }
+  
+  .queueItemHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .queueItemActions {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .takeButton,
+  .cancelButton {
+    justify-content: center;
+    width: 100%;
+  }
+}

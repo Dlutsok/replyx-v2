@@ -17,8 +17,8 @@ export default function TutorialTooltip({
   useEffect(() => {
     const checkIfShown = async () => {
       try {
-        const token = localStorage.getItem('access_token');
-        const response = await fetch('http://localhost:8000/api/users/onboarding/status', {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/users/onboarding/status', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -46,8 +46,8 @@ export default function TutorialTooltip({
 
   const saveTip = async () => {
     try {
-      const token = localStorage.getItem('access_token');
-      await fetch('http://localhost:8000/api/users/onboarding/save-tip', {
+      const token = localStorage.getItem('token');
+      await fetch('/api/users/onboarding/save-tip', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

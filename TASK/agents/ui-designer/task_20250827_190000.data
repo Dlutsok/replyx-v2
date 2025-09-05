@@ -1,0 +1,157 @@
+ДАТА: 2025-08-27 19:00:00
+СТАТУС: Завершено
+ЗАДАЧА: Создание концепции виджета метрик производительности PerformanceMetrics для дашборда ReplyX
+
+ПРОАНАЛИЗИРОВАННЫЕ КОМПОНЕНТЫ/СТРАНИЦЫ:
+- Dashboard.module.css (строки 184-246): Существующие стили метрик - современная карточная система с hover эффектами
+- BalanceWidget.js (строки 76-178): Структура виджета 340px высота, заголовок + контент + действия
+- ActiveDialogs.js (строки 150-304): Реальный UI паттерн для списков, responsive дизайн
+- RealtimeMetrics.js: Существующий компонент метрик в реальном времени - сетка 2x4, анимации
+
+СОЗДАННЫЕ КОНЦЕПЦИИ И WIREFRAMES:
+- Концепция PerformanceMetrics: Компактный виджет производительности с 5 ключевыми метриками
+- Information Architecture: Приоритизация метрик - главная (messages_per_hour) + 4 вторичных
+- Структура информации: Заголовок → Основная метрика → Сетка вторичных метрик → Индикаторы трендов
+
+ДИЗАЙН РЕШЕНИЯ:
+- Цветовая схема: Фиолетовый акцент #7C3AED для основной метрики, семантические цвета для индикаторов
+- Типографика: text-2xl для главной метрики, text-lg для вторичных, text-xs для подписей
+- Spacing и Layout: Высота ~300px (меньше BalanceWidget), p-6 padding, gap-4 между элементами
+- Компоненты UI: Иконки Feather Icons, цветные круги-контейнеры, тренд-стрелки
+
+СОВРЕМЕННЫЕ ТРЕНДЫ И РЕФЕРЕНСЫ:
+- Источники вдохновения: Linear.app (компактные метрики), Vercel Dashboard (производительность)
+- Адаптированные паттерны: Grid layout с главной метрикой сверху, цветовые индикаторы производительности
+- UX лучшие практики: Визуальная иерархия, hover states для подробностей, responsive сжатие
+
+ТЕХНИЧЕСКОЕ ЗАДАНИЕ ДЛЯ FRONTEND-UIUX:
+
+HTML/JSX структура:
+```jsx
+<div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-[300px] flex flex-col">
+  {/* Header */}
+  <div className="flex items-center justify-between mb-4">
+    <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+      <FiBarChart className="mr-2 text-purple-600" />
+      Производительность
+    </h3>
+    <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+      <FiRefreshCw className="w-4 h-4" />
+    </button>
+  </div>
+  
+  {/* Main metric - Messages per hour */}
+  <div className="mb-6">
+    <div className="flex items-center space-x-3">
+      <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-purple-100 to-indigo-100 flex items-center justify-center">
+        <FiMessageSquare className="w-6 h-6 text-purple-600" />
+      </div>
+      <div className="flex-1">
+        <div className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+          {messages_per_hour}
+        </div>
+        <div className="text-sm text-gray-500">сообщений/час</div>
+      </div>
+      <TrendIndicator value={trend_messages} />
+    </div>
+  </div>
+  
+  {/* Secondary metrics grid 2x2 */}
+  <div className="grid grid-cols-2 gap-4 flex-1">
+    <MetricCard 
+      icon={FiClock} 
+      value={avg_response_time} 
+      suffix="с"
+      label="Время ответа"
+      color="yellow"
+      trend={trend_response}
+    />
+    <MetricCard 
+      icon={FiCheckCircle} 
+      value={success_rate} 
+      suffix="%"
+      label="Успешность"
+      color="green"
+      trend={trend_success}
+    />
+    <MetricCard 
+      icon={FiUsers} 
+      value={active_dialogs_count}
+      label="Активные"
+      color="blue"
+      trend={trend_dialogs}
+    />
+    <MetricCard 
+      icon={FiZap} 
+      value={formatTokens(tokens_used)}
+      label="AI токены"
+      color="orange"
+      trend={trend_tokens}
+    />
+  </div>
+</div>
+```
+
+Tailwind классы:
+- Контейнер: "bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-[300px] flex flex-col"
+- Главная метрика: "text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent"
+- Иконки: "w-12 h-12 rounded-xl bg-gradient-to-r from-purple-100 to-indigo-100 flex items-center justify-center"
+- Вторичные метрики: "grid grid-cols-2 gap-4 flex-1"
+- Карточки метрик: "p-3 rounded-lg border border-gray-200 hover:shadow-sm transition-all duration-200"
+
+Responsive стратегия:
+- Mobile (320-767px): Сетка 2x2 сохраняется, уменьшаются отступы (p-4), главная метрика text-xl
+- Desktop (768px+): Полный размер, text-2xl для главной метрики
+
+Интерактивные состояния:
+- Hover на виджете: "hover:shadow-md transition-shadow duration-200"
+- Hover на метриках: "hover:bg-gray-50 hover:border-gray-300"
+- Focus: "focus:ring-2 focus:ring-purple-200 focus:border-purple-300"
+- Loading: Skeleton с animate-pulse для всех элементов
+
+Анимации Framer Motion:
+- Появление виджета: fadeIn с delay
+- Обновление метрик: числовые значения с transition
+- Тренд-индикаторы: slideIn для стрелок
+
+Файлы для изменения:
+- Создать: frontend/components/dashboard/PerformanceMetrics.js
+- Создать: frontend/styles/components/PerformanceMetrics.module.css
+- Обновить: frontend/pages/dashboard.js (добавить в grid)
+
+СЛЕДОВАНИЕ ДИЗАЙН-СИСТЕМЕ REPLYX:
+- Светлая тема: белый фон #FFFFFF, серые границы #E5E7EB
+- Фиолетовый акцент: #7C3AED для основной метрики, градиент от #8B5CF6 до #7C3AED
+- Закругления: rounded-xl для карточек и контейнеров иконок
+- Тени: мягкие тени shadow-sm по умолчанию, shadow-md на hover
+- Типографика: font-bold для значений, font-semibold для заголовков, text-gray-500 для подписей
+
+ACCESSIBILITY И UX:
+- Навигация с клавиатуры: focus states с ring-2 ring-purple-200
+- Читаемость: контрасты соответствуют WCAG AA, размеры от text-xs до text-2xl
+- Responsive design: grid адаптируется, метрики остаются читаемыми на мобильных
+- User scenarios: быстрое сканирование производительности, детали по hover
+
+ФАЙЛЫ ДИЗАЙН ДОКУМЕНТАЦИИ:
+- docs/ui/components/PerformanceMetrics.md: Создана детальная спецификация компонента
+
+ЗАВИСИМОСТИ И ИНТЕГРАЦИЯ:
+- API зависимости: Endpoint для получения метрик производительности
+- Состояние приложения: loading, error, empty states для всех метрик
+- WebSocket интеграция: Real-time обновления через существующий useWebSocket
+- Интеграция с backend: Получение данных через API /dashboard/performance
+
+РИСКИ И ОГРАНИЧЕНИЯ:
+- Технические ограничения: Большое количество анимаций может снизить производительность
+- Performance соображения: Частые обновления метрик через WebSocket
+- Browser compatibility: CSS gradients и backdrop-filter в старых браузерах
+
+КРИТЕРИИ УСПЕХА ДЛЯ FRONTEND-UIUX:
+- Виджет соответствует высоте других (~300px) и вписывается в grid
+- Все 5 метрик отображаются читаемо на мобильных устройствах  
+- Анимации работают плавно (60fps)
+- Hover states реагируют быстро (<100ms)
+- Градиентный текст для главной метрики отображается корректно
+- Цветовые индикаторы семантически понятны (зеленый=хорошо, красный=плохо)
+- Responsive сетка не ломается при разных размерах экрана
+- Loading состояние показывает skeleton в правильных местах

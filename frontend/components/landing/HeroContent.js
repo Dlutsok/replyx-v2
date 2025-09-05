@@ -2,6 +2,9 @@
 
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { DESIGN_TOKENS } from '../../constants/designSystem';
+import Button from '../common/Button';
 
 // Профессиональные иконки
 const LightningIcon = ({ className }) => (
@@ -93,7 +96,7 @@ const IndustryCarousel = () => {
     { icon: CogIcon, name: 'Производство', bgColor: 'bg-orange-50', iconColor: 'text-orange-600' },
     { icon: TruckIcon, name: 'Логистика', bgColor: 'bg-indigo-50', iconColor: 'text-indigo-600' },
     { icon: HomeIcon, name: 'Недвижимость', bgColor: 'bg-teal-50', iconColor: 'text-teal-600' },
-    { icon: BuildingOfficeIcon, name: 'B2B сервисы', bgColor: 'bg-gray-50', iconColor: 'text-gray-600' },
+    { icon: BuildingOfficeIcon, name: 'B2B сервисы', bgColor: 'bg-white border border-gray-200', iconColor: 'text-gray-600' },
     { icon: PhoneIcon, name: 'Телеком', bgColor: 'bg-pink-50', iconColor: 'text-pink-600' },
     { icon: ShoppingBagIcon, name: 'E-commerce', bgColor: 'bg-cyan-50', iconColor: 'text-cyan-600' }
   ];
@@ -107,8 +110,8 @@ const IndustryCarousel = () => {
             key={`first-${index}`}
             className="flex items-center gap-3 mx-4 flex-shrink-0 group cursor-pointer"
           >
-            <div className={`w-10 h-10 ${industry.bgColor} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-              <industry.icon className={`w-5 h-5 ${industry.iconColor}`} />
+            <div className={`${DESIGN_TOKENS.icons.xl} ${industry.bgColor} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
+              <industry.icon className={`${DESIGN_TOKENS.icons.small} ${industry.iconColor}`} />
             </div>
             <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors duration-300 whitespace-nowrap">
               {industry.name}
@@ -121,8 +124,8 @@ const IndustryCarousel = () => {
             key={`second-${index}`}
             className="flex items-center gap-3 mx-4 flex-shrink-0 group cursor-pointer"
           >
-            <div className={`w-10 h-10 ${industry.bgColor} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-              <industry.icon className={`w-5 h-5 ${industry.iconColor}`} />
+            <div className={`${DESIGN_TOKENS.icons.xl} ${industry.bgColor} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
+              <industry.icon className={`${DESIGN_TOKENS.icons.small} ${industry.iconColor}`} />
             </div>
             <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors duration-300 whitespace-nowrap">
               {industry.name}
@@ -135,100 +138,70 @@ const IndustryCarousel = () => {
 };
 
 const HeroContent = () => {
-  const handleStartCTA = () => {
-    // Логика для быстрого запуска
-    // User clicked start ChatAI
-  };
+  const router = useRouter();
 
-  const handleDemoCTA = () => {
-    // Логика для показа демо
-    // User clicked view demo
+  const handleStartCTA = () => {
+    router.push('/register');
   };
 
   return (
     <div className="space-y-8">
-      {/* Заголовок H1 */}
+      {/* Новый профессиональный заголовок */}
       <motion.h1 
-        className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.1 }}
+        className={`${DESIGN_TOKENS.typography.h1} text-left text-3xl sm:text-4xl md:text-5xl`}
+        {...DESIGN_TOKENS.animation.withDelay(0.1)}
       >
-        AI-ассистент, который{' '}
-        <span className="text-purple-600">знает ваш бизнес</span>{' '}
-        и работает лучше операторов
+        Автоматизируйте общение <br/>с клиентами через{' '}
+        <span className={DESIGN_TOKENS.colors.primary}><br/>AI-ассистента</span>
       </motion.h1>
 
       {/* Подзаголовок */}
       <motion.p 
-        className="text-lg text-gray-600 leading-relaxed max-w-2xl"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
+        className={DESIGN_TOKENS.typography.sectionSubtitle + ' max-w-3xl text-left'}
+        {...DESIGN_TOKENS.animation.withDelay(0.2)}
       >
-        Мгновенные точные ответы 24/7. Экономия до 80% расходов на поддержку. 
-        Российская разработка с полным соответствием 152-ФЗ.
+      Виджет на сайт за 5 минут без программистов
       </motion.p>
 
       {/* Бейджи с ключевыми метриками */}
       <motion.div 
-        className="flex flex-wrap gap-4 pt-4"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.25 }}
+        className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2"
+        {...DESIGN_TOKENS.animation.withDelay(0.25)}
       >
-        <div className="flex items-center gap-3 bg-white rounded-xl px-4 py-3 shadow-sm border border-gray-200">
-          <LightningIcon className="w-6 h-6 text-purple-600" />
-          <span className="text-sm font-semibold text-gray-900">0.8 сек</span>
-          <span className="text-sm text-gray-600">время ответа</span>
-        </div>
-        <div className="flex items-center gap-3 bg-white rounded-xl px-4 py-3 shadow-sm border border-gray-200">
-          <CPUIcon className="w-6 h-6 text-purple-600" />
-          <span className="text-sm font-semibold text-gray-900">98.7%</span>
-          <span className="text-sm text-gray-600">точность ответов</span>
-        </div>
-        <div className="flex items-center gap-3 bg-white rounded-xl px-4 py-3 shadow-sm border border-gray-200">
-          <TrendingUpIcon className="w-6 h-6 text-purple-600" />
-          <span className="text-sm font-semibold text-gray-900">до 80%</span>
-          <span className="text-sm text-gray-600">экономия на поддержке</span>
-        </div>
-        <div className="flex items-center gap-3 bg-white rounded-xl px-4 py-3 shadow-sm border border-gray-200">
-          <ClockIcon className="w-6 h-6 text-purple-600" />
-          <span className="text-sm font-semibold text-gray-900">24/7</span>
-          <span className="text-sm text-gray-600">без выходных</span>
-        </div>
+        {[
+          { icon: LightningIcon, label: '2,7 секунды', sub: 'время ответа' },
+          { icon: CPUIcon, label: '98.7%', sub: 'точность ответов' },
+          { icon: AcademicCapIcon, label: '100%', sub: 'знает вашу компанию' },
+          { icon: ClockIcon, label: '24/7', sub: 'без выходных' }
+        ].map((b, i) => (
+          <div key={i} className="flex items-center gap-3 bg-white rounded-xl px-4 py-3 shadow-sm border border-gray-200">
+            <b.icon className={`${DESIGN_TOKENS.icons.medium} ${DESIGN_TOKENS.colors.primary}`} />
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-gray-900">{b.label}</span>
+              <span className="text-sm text-gray-600">{b.sub}</span>
+            </div>
+          </div>
+        ))}
       </motion.div>
 
-      {/* CTA кнопки */}
+      {/* CTA и доверие */}
       <motion.div 
-        className="flex flex-col sm:flex-row gap-4 pt-6"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.3 }}
+        className="pt-4"
+        {...DESIGN_TOKENS.animation.withDelay(0.3)}
       >
-        <button
-          onClick={handleStartCTA}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-        >
-          Запустить за 5 минут
-        </button>
-        <button
-          onClick={handleDemoCTA}
-          className="bg-white border-2 border-gray-300 text-gray-700 hover:border-purple-600 hover:text-purple-600 px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200 hover:shadow-md"
-        >
-          Посмотреть в действии
-        </button>
+        <Button className="w-full sm:w-auto" onClick={handleStartCTA} variant="primary" size="default">
+          Создать ассистента бесплатно
+        </Button>
       </motion.div>
 
-      {/* Социальное доказательство */}
-      <motion.div 
-        className="pt-12"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.4 }}
-      >
-        <p className="text-sm text-gray-500 mb-8">Доверяют компании из разных отраслей</p>
-        <IndustryCarousel />
+      <motion.div className="grid grid-cols-2 gap-3 text-sm text-gray-600 sm:flex sm:flex-wrap sm:items-center sm:gap-4" {...DESIGN_TOKENS.animation.withDelay(0.35)}>
+        <div className="inline-flex items-center gap-1">
+          <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+          <span className="font-semibold text-gray-900">4.9<span className="font-normal text-gray-600">/5</span></span>
+        </div>
+        <div className="inline-flex items-center gap-2"><span>✓</span> Соответствие 152‑ФЗ</div>
       </motion.div>
     </div>
   );

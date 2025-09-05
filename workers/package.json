@@ -1,25 +1,58 @@
 {
-  "name": "chatai-workers",
+  "name": "replyx-workers",
   "version": "1.0.0",
-  "description": "ChatAI Telegram Bot Workers",
+  "description": "ReplyX Telegram Bot Workers - Scalable multi-bot management system",
   "main": "master/scalable_bot_manager.js",
   "scripts": {
-    "start": "node master/scalable_bot_manager.js start",
+    "start": "node master/scalable_bot_manager.js",
+    "start:dev": "NODE_ENV=development node master/scalable_bot_manager.js",
+    "start:prod": "NODE_ENV=production node master/scalable_bot_manager.js",
     "stop": "node master/scalable_bot_manager.js stop",
     "restart": "node master/scalable_bot_manager.js restart",
     "status": "node master/scalable_bot_manager.js status",
-    "logs": "node master/scalable_bot_manager.js logs"
+    "logs": "node master/scalable_bot_manager.js logs",
+    "logs:tail": "tail -f logs/master.log",
+    "health": "curl -f http://localhost:8443/health || exit 1",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:smoke": "node master/scalable_bot_manager.js --dry-run",
+    "cleanup": "node scripts/cleanup_processes.js",
+    "monitor": "node scripts/monitor_workers.js"
   },
   "dependencies": {
     "express": "^4.19.2",
     "cors": "^2.8.5",
     "axios": "^1.7.2",
     "node-telegram-bot-api": "^0.66.0",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "redis": "^4.6.0",
+    "rate-limiter-flexible": "^3.0.0",
+    "uuid": "^9.0.0",
+    "prom-client": "^15.0.0"
+  },
+  "devDependencies": {
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   },
-  "author": "ChatAI Team",
-  "license": "MIT"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/replyx/workers.git"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "workers",
+    "scalable",
+    "nodejs",
+    "replyx"
+  ],
+  "author": "ReplyX Team",
+  "license": "MIT",
+  "homepage": "https://github.com/replyx/workers#readme",
+  "config": {
+    "max_workers": 1000,
+    "default_timeout": 90000,
+    "heartbeat_interval": 45000
+  }
 }

@@ -1,0 +1,102 @@
+# fail2ban jail конфигурация для ChatAI application
+# Этот файл должен быть скопирован в /etc/fail2ban/jail.local
+
+[DEFAULT]
+# Исключить локальные IP адреса и доверенные сети
+ignoreip = 127.0.0.1/8 ::1 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
+
+# Время блокировки по умолчанию (1 час)
+bantime = 3600
+
+# Период наблюдения за неудачными попытками (10 минут)
+findtime = 600
+
+# Максимальное количество неудачных попыток перед блокировкой
+maxretry = 5
+
+# Backend для блокировки (iptables)
+banaction = iptables-multiport
+
+# Action по умолчанию - блокировать и отправить email
+action = %(action_mwl)s
+
+# Email для уведомлений
+destemail = admin@your-domain.com
+sender = fail2ban@your-domain.com
+
+# Jail для защиты от брут-форс атак на аутентификацию ChatAI
+[chatai-auth]
+enabled = true
+filter = fail2ban-chatai
+logpath = /opt/chatai/backend/logs/audit.log
+maxretry = 3
+findtime = 300
+bantime = 1800
+port = 8000
+protocol = tcp
+
+# Jail для защиты от API abuse
+[chatai-api-abuse]
+enabled = true
+filter = fail2ban-chatai
+logpath = /opt/chatai/backend/logs/audit.log
+          /opt/chatai/backend/logs/api.log
+maxretry = 10
+findtime = 600
+bantime = 3600
+port = 8000
+protocol = tcp
+
+# Jail для защиты nginx (если используется)
+[chatai-nginx]
+enabled = false
+filter = nginx-limit-req
+logpath = /var/log/nginx/access.log
+maxretry = 5
+findtime = 600
+bantime = 7200
+port = 80,443
+protocol = tcp
+
+# Jail для защиты от CSRF атак
+[chatai-csrf]
+enabled = true
+filter = fail2ban-chatai
+logpath = /opt/chatai/backend/logs/audit.log
+maxretry = 2
+findtime = 300
+bantime = 3600
+port = 8000
+protocol = tcp
+
+# Jail для защиты от SQL injection попыток
+[chatai-sqli]
+enabled = true
+filter = fail2ban-chatai
+logpath = /opt/chatai/backend/logs/audit.log
+maxretry = 1
+findtime = 300
+bantime = 86400
+port = 8000
+protocol = tcp
+
+# Jail для защиты от превышения rate limit
+[chatai-ratelimit]
+enabled = true
+filter = fail2ban-chatai
+logpath = /opt/chatai/backend/logs/audit.log
+maxretry = 20
+findtime = 300
+bantime = 1800
+port = 8000
+protocol = tcp
+
+# Jail для защиты SSH (рекомендуется всегда включать)
+[sshd]
+enabled = true
+port = ssh
+logpath = %(sshd_log)s
+backend = %(sshd_backend)s
+maxretry = 3
+findtime = 600
+bantime = 3600

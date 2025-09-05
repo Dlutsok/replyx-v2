@@ -67,7 +67,7 @@
 }
 
 .userEmail {
-  font-size: 12px;
+  font-size: 14px;
   color: #64748b;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -78,7 +78,7 @@
 /* Разделитель */
 .separator {
   height: 1px;
-  background: #f1f5f9;
+  background: rgb(245, 247, 249);
   margin: 0;
 }
 
@@ -153,7 +153,7 @@
   
   .actionButton {
     padding: 8px 10px;
-    font-size: 12px;
+    font-size: 14px;
   }
   
   .actionIcon {

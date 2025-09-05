@@ -1,0 +1,311 @@
+/* Система уведомлений ReplyX в фирменном стиле */
+
+/* Контейнеры для разных позиций */
+.container {
+  position: fixed;
+  z-index: 999999; /* Очень высокий z-index */
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 420px;
+  width: auto;
+  min-width: 320px;
+}
+
+/* Позиционирование контейнеров */
+.topRight {
+  top: 20px;
+  right: 20px;
+}
+
+.topLeft {
+  top: 20px;
+  left: 20px;
+}
+
+.bottomRight {
+  bottom: 20px;
+  right: 20px;
+}
+
+.bottomLeft {
+  bottom: 20px;
+  left: 20px;
+}
+
+.topCenter {
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.bottomCenter {
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Основное уведомление - в стиле ReplyX */
+.notification {
+  pointer-events: auto;
+  background: #FFFFFF;
+  border-radius: 12px; /* rounded-xl в стиле ReplyX */
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  padding: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 320px;
+  max-width: 420px;
+  backdrop-filter: blur(10px);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.notification:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+/* Типы уведомлений - цвета в стиле ReplyX */
+.success {
+  background: linear-gradient(135deg, #FFFFFF 0%, #F0FDF4 100%);
+}
+
+.error {
+  background: linear-gradient(135deg, #FFFFFF 0%, #FEF2F2 100%);
+}
+
+.warning {
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFFBEB 100%);
+}
+
+.info {
+  background: linear-gradient(135deg, #FFFFFF 0%, #F5F3FF 100%);
+}
+
+.loading {
+  background: linear-gradient(135deg, #FFFFFF 0%, #F9FAFB 100%);
+}
+
+/* Контейнер иконки */
+.iconContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px; /* rounded-lg */
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Иконки разных типов */
+.successIcon {
+  color: #10B981;
+}
+
+.errorIcon {
+  color: #EF4444;
+}
+
+.warningIcon {
+  color: #F59E0B;
+}
+
+.infoIcon {
+  color: #7C3AED; /* Фирменный фиолетовый */
+}
+
+.loadingIcon {
+  color: #6B7280;
+}
+
+/* Контент уведомления */
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  line-height: 1.4;
+  margin-bottom: 4px;
+  font-family: 'Manrope', sans-serif;
+}
+
+.message {
+  font-size: 14px;
+  color: #4B5563;
+  line-height: 1.5;
+  font-family: 'Manrope', sans-serif;
+  word-wrap: break-word;
+}
+
+/* Кнопка действия */
+.actionButton {
+  background: none;
+  border: none;
+  color: #7C3AED; /* Фирменный фиолетовый */
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 0;
+  margin-top: 8px;
+  font-family: 'Manrope', sans-serif;
+  transition: all 0.15s ease;
+  border-radius: 4px;
+}
+
+.actionButton:hover {
+  color: #6D28D9;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Кнопка закрытия */
+.closeButton {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #9CA3AF;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+}
+
+.closeButton:hover {
+  background: #F3F4F6;
+  color: #374151;
+}
+
+.closeButton:active {
+  background: #E5E7EB;
+  transform: scale(0.95);
+}
+
+/* Прогресс-бар для автозакрытия (опционально) */
+.notification.withProgress::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: #7C3AED;
+  border-radius: 0 0 12px 12px;
+  opacity: 0.3;
+  animation: progress var(--duration, 5000ms) linear forwards;
+}
+
+@keyframes progress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+/* Специальные эффекты для разных типов */
+.success::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at top left, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.error::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at top left, rgba(239, 68, 68, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.info::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at top left, rgba(124, 58, 237, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Адаптивность */
+@media (max-width: 640px) {
+  .container {
+    max-width: calc(100vw - 32px);
+    left: 16px !important;
+    right: 16px !important;
+    transform: none !important;
+  }
+  
+  .notification {
+    min-width: unset;
+    width: 100%;
+    padding: 14px;
+    gap: 10px;
+  }
+  
+  .iconContainer {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .title {
+    font-size: 14px;
+  }
+  
+  .message {
+    font-size: 13px;
+  }
+  
+  .closeButton {
+    top: 10px;
+    right: 10px;
+  }
+}
+
+/* Темная тема (если будет добавлена) */
+@media (prefers-color-scheme: dark) {
+  .notification {
+    background: #1F2937;
+    border-color: #374151;
+    color: #F9FAFB;
+  }
+  
+  .title {
+    color: #F9FAFB;
+  }
+  
+  .message {
+    color: #D1D5DB;
+  }
+  
+  .closeButton:hover {
+    background: #374151;
+    color: #F3F4F6;
+  }
+}

@@ -1,20 +1,21 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '../hooks/useAuth';
-import { useModalState } from '../hooks/useModalState';
-import AssistantsList from '../components/ai-assistant/AssistantsList';
-import AssistantDetails from '../components/ai-assistant/AssistantDetails';
-import ModalManager from '../components/ai-assistant/ModalManager';
-import { DESIGN_TOKENS } from '../constants/designSystem';
+import { useRouter } from 'next/router';
+import { useAuth, useModalState } from '@/hooks';
+import { useNotifications } from '../hooks/useNotifications';
+import { AssistantsList, AssistantDetails, ModalManager } from '@/components/ai-assistant';
+import { PageHeader, MetricCard, StandardCard } from '@/components/common';
+import { DESIGN_TOKENS } from '@/constants';
 import styles from '../styles/pages/AISettings.module.css';
 import dashStyles from '../styles/pages/Dashboard.module.css';
 import { 
-  FiUser, FiCpu, FiStar, FiEye, FiEyeOff
+  FiCpu, FiStar, FiPlus, FiSettings
 } from 'react-icons/fi';
 
 export default function AIAssistant() {
-  // Аутентификация
+  // Аутентификация и роутинг
   const { user } = useAuth();
+  const router = useRouter();
+  const { showSuccess, showError, showWarning } = useNotifications();
   
   // Модальные окна
   const { modals, modalData, openModal, closeModal, closeAllModals } = useModalState();
@@ -33,7 +34,7 @@ export default function AIAssistant() {
   const [assistantSettings, setAssistantSettings] = useState({
     name: '',
     description: '',
-    system_message: '',
+    system_prompt: '',
     is_active: true
   });
   const [saving, setSaving] = useState(false);
@@ -55,6 +56,34 @@ export default function AIAssistant() {
     type: '',
     description: ''
   });
+
+  const loadBots = async () => {
+    try {
+      const response = await fetch('/api/bot-instances', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setBots(Array.isArray(data) ? data : []);
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки ботов:', error);
+    }
+  };
+
+  const loadAssistantSettings = async (assistantId) => {
+    try {
+      const response = await fetch(`/api/assistants/${assistantId}/settings`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setSelectedAssistant(prev => prev ? { ...prev, ...data } : data);
+      }
+    } catch (e) {
+      console.error('Ошибка загрузки настроек ассистента:', e);
+    }
+  };
   
   // Настройки виджета
   const [widgetSettings, setWidgetSettings] = useState({
@@ -90,16 +119,7 @@ export default function AIAssistant() {
   });
   
   const [assistantStats, setAssistantStats] = useState({});
-  const [toasts, setToasts] = useState([]);
 
-  // Toast функции
-  const showToast = (message, type = 'success') => {
-    const id = Date.now();
-    setToasts(prev => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setToasts(prev => prev.filter(toast => toast.id !== id));
-    }, 5000);
-  };
 
   // API функции
   const loadAssistants = async () => {
@@ -116,7 +136,7 @@ export default function AIAssistant() {
       }
     } catch (error) {
       console.error('Ошибка загрузки ассистентов:', error);
-      showToast('Ошибка загрузки ассистентов', 'error');
+      showError('Ошибка загрузки ассистентов', 'ASSISTANTS_LOAD_ERROR');
     } finally {
       setLoading(false);
     }
@@ -171,16 +191,8 @@ export default function AIAssistant() {
 
   // Обработчики событий
   const handleSelectAssistant = (assistant) => {
-    setSelectedAssistant(assistant);
-    setAssistantSettings({
-      name: assistant.name,
-      description: assistant.description || '',
-      system_message: assistant.system_message || '',
-      is_active: assistant.is_active
-    });
-    loadDialogs(assistant.id);
-    loadDocuments(assistant.id);
-    setStats(assistantStats[assistant.id] || {});
+    // Перенаправляем на новую страницу ассистента
+    router.push(`/assistant/${assistant.id}`);
   };
 
   const handleBackToList = () => {
@@ -195,13 +207,27 @@ export default function AIAssistant() {
   const handleQuickCreateAssistant = () => {
     openModal('showQuickWizard');
   };
+  
+  // Обработчик завершения создания ассистента
+  const handleAssistantCreated = async (wizardData) => {
+    if (wizardData.assistantId) {
+      // Закрываем все модальные окна
+      closeAllModals();
+      
+      // Обновляем список ассистентов
+      await loadAssistants();
+      
+      // Перенаправляем на страницу созданного ассистента
+      router.push(`/assistant/${wizardData.assistantId}`);
+    }
+  };
 
   const handleEditAssistant = (assistant) => {
     setSelectedAssistant(assistant);
     setAssistantSettings({
       name: assistant.name,
       description: assistant.description || '',
-      system_message: assistant.system_message || '',
+      system_prompt: assistant.system_prompt || '',
       is_active: assistant.is_active
     });
   };
@@ -219,14 +245,16 @@ export default function AIAssistant() {
 
       if (response.ok) {
         setAssistants(prev => prev.filter(a => a.id !== assistantId));
-        showToast('Ассистент удален');
+        showSuccess('Ассистент удален', 'ASSISTANT_DELETE_SUCCESS');
         if (selectedAssistant?.id === assistantId) {
           handleBackToList();
         }
+      } else if (response.status === 403) {
+        showError('Удаление доступно только владельцу организации', 'ASSISTANT_DELETE_PERMISSION_ERROR');
       }
     } catch (error) {
       console.error('Ошибка удаления ассистента:', error);
-      showToast('Ошибка удаления ассистента', 'error');
+      showError('Ошибка удаления ассистента', 'ASSISTANT_DELETE_ERROR');
     }
   };
 
@@ -245,11 +273,11 @@ export default function AIAssistant() {
         setAssistants(prev => prev.map(a => 
           a.id === assistantId ? { ...a, is_active: isActive } : a
         ));
-        showToast(`Ассистент ${isActive ? 'активирован' : 'деактивирован'}`);
+        showSuccess(`Ассистент ${isActive ? 'активирован' : 'деактивирован'}`, isActive ? 'ASSISTANT_ACTIVATE_SUCCESS' : 'ASSISTANT_DEACTIVATE_SUCCESS');
       }
     } catch (error) {
       console.error('Ошибка изменения статуса ассистента:', error);
-      showToast('Ошибка изменения статуса ассистента', 'error');
+      showError('Ошибка изменения статуса ассистента', 'ASSISTANT_STATUS_ERROR');
     }
   };
 
@@ -273,11 +301,11 @@ export default function AIAssistant() {
         setAssistants(prev => prev.map(a => 
           a.id === selectedAssistant.id ? updatedAssistant : a
         ));
-        showToast('Настройки сохранены');
+        showSuccess('Настройки сохранены', 'ASSISTANT_SETTINGS_SAVE_SUCCESS');
       }
     } catch (error) {
       console.error('Ошибка сохранения настроек:', error);
-      showToast('Ошибка сохранения настроек', 'error');
+      showError('Ошибка сохранения настроек', 'ASSISTANT_SETTINGS_SAVE_ERROR');
     } finally {
       setSaving(false);
     }
@@ -295,21 +323,24 @@ export default function AIAssistant() {
       setUploading(true);
       const formData = new FormData();
       formData.append('file', file);
+      formData.append('assistant_id', selectedAssistant.id);
 
-      const response = await fetch(`/api/assistants/${selectedAssistant.id}/documents`, {
+      const response = await fetch(`/api/documents`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
         body: formData
       });
 
-      if (response.ok) {
+      if (response.status === 402) {
+        showError('Недостаточно средств на балансе. Перейдите в раздел Баланс для пополнения.', 'INSUFFICIENT_BALANCE_ERROR');
+      } else if (response.ok) {
         const newDocument = await response.json();
         setDocuments(prev => [...prev, newDocument]);
-        showToast('Документ загружен');
+        showSuccess('Документ загружен', 'DOCUMENT_UPLOAD_SUCCESS');
       }
     } catch (error) {
       console.error('Ошибка загрузки документа:', error);
-      showToast('Ошибка загрузки документа', 'error');
+      showError('Ошибка загрузки документа', 'DOCUMENT_UPLOAD_ERROR');
     } finally {
       setUploading(false);
     }
@@ -324,19 +355,22 @@ export default function AIAssistant() {
 
       if (response.ok) {
         setDocuments(prev => prev.filter(d => d.id !== documentId));
-        showToast('Документ удален');
+        showSuccess('Документ удален', 'DOCUMENT_DELETE_SUCCESS');
       }
     } catch (error) {
       console.error('Ошибка удаления документа:', error);
-      showToast('Ошибка удаления документа', 'error');
+      showError('Ошибка удаления документа', 'DOCUMENT_DELETE_ERROR');
     }
   };
 
   const handleRefreshData = () => {
     if (selectedAssistant) {
       loadDialogs(selectedAssistant.id);
+      loadDocuments(selectedAssistant.id);
+      loadAssistantSettings(selectedAssistant.id);
     }
     loadStats();
+    loadBots();
   };
 
   // Bot handlers
@@ -355,11 +389,11 @@ export default function AIAssistant() {
       if (response.ok) {
         const newBot = await response.json();
         setBots(prev => [...prev, newBot]);
-        showToast('Бот создан');
+        showSuccess('Бот создан', 'BOT_CREATE_SUCCESS');
       }
     } catch (error) {
       console.error('Ошибка создания бота:', error);
-      showToast('Ошибка создания бота', 'error');
+      showError('Ошибка создания бота', 'BOT_CREATE_ERROR');
     } finally {
       setCreatingBot(false);
     }
@@ -379,11 +413,11 @@ export default function AIAssistant() {
       if (response.ok) {
         const updatedBot = await response.json();
         setBots(prev => prev.map(b => b.id === botId ? updatedBot : b));
-        showToast('Бот обновлен');
+        showSuccess('Бот обновлен', 'BOT_UPDATE_SUCCESS');
       }
     } catch (error) {
       console.error('Ошибка обновления бота:', error);
-      showToast('Ошибка обновления бота', 'error');
+      showError('Ошибка обновления бота', 'BOT_UPDATE_ERROR');
     }
   };
 
@@ -396,11 +430,11 @@ export default function AIAssistant() {
 
       if (response.ok) {
         setBots(prev => prev.filter(b => b.id !== botId));
-        showToast('Бот удален');
+        showSuccess('Бот удален', 'BOT_DELETE_SUCCESS');
       }
     } catch (error) {
       console.error('Ошибка удаления бота:', error);
-      showToast('Ошибка удаления бота', 'error');
+      showError('Ошибка удаления бота', 'BOT_DELETE_ERROR');
     }
   };
 
@@ -413,91 +447,80 @@ export default function AIAssistant() {
     setWidgetSettings(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSaveWidgetSettings = () => {
-    showToast('Настройки виджета сохранены');
-    closeModal('showWidgetSettings');
+  const handleSaveWidgetSettings = async (newSettings) => {
+    if (!selectedAssistant) return;
+    
+    try {
+      // Обновляем selectedAssistant с новыми настройками персонализации
+      const updatedAssistant = {
+        ...selectedAssistant,
+        operator_name: newSettings.operatorName,
+        business_name: newSettings.businessName,
+        avatar_url: newSettings.avatarUrl,
+        widget_theme: newSettings.theme,
+        widget_settings: {
+          allowedDomains: newSettings.allowedDomains || ''
+        }
+      };
+      
+      setSelectedAssistant(updatedAssistant);
+      
+      // Также обновляем в основном списке ассистентов
+      setAssistants(prev => prev.map(a => 
+        a.id === selectedAssistant.id ? updatedAssistant : a
+      ));
+      
+      showSuccess('Настройки виджета сохранены', 'WIDGET_SETTINGS_SAVE_SUCCESS');
+      closeModal('showWidgetSettings');
+    } catch (error) {
+      console.error('Ошибка обновления настроек виджета:', error);
+      showError('Ошибка сохранения настроек', 'WIDGET_SETTINGS_SAVE_ERROR');
+    }
   };
 
   // Загрузка данных при монтировании
   useEffect(() => {
     loadAssistants();
+    loadBots();
   }, []);
 
-  // Welcome Header component
+  // Обработка URL параметров для автоматического выбора ассистента и таба
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const assistantIdParam = urlParams.get('assistant');
+    const tabParam = urlParams.get('tab');
+    
+    if (assistantIdParam && assistants.length > 0) {
+      const assistant = assistants.find(a => a.id.toString() === assistantIdParam);
+      if (assistant) {
+        // Вместо выбора ассистента на текущей странице, перенаправляем на новую страницу
+        const targetUrl = `/assistant/${assistantIdParam}${tabParam ? `?tab=${tabParam}` : ''}`;
+        router.push(targetUrl);
+        return;
+      }
+    }
+  }, [assistants, router]);
+
+  // Welcome Header component - унифицированный под минималистичный стиль dashboard
   const WelcomeHeader = () => {
-    const getGreeting = () => {
-      const hour = new Date().getHours();
-      if (hour < 12) return 'Доброе утро';
-      if (hour < 18) return 'Добрый день';
-      return 'Добрый вечер';
-    };
-
-    const [hiddenWidgets, setHiddenWidgets] = useState(new Set());
-    const toggleWidget = (widgetId) => {
-      setHiddenWidgets(prev => {
-        const newSet = new Set(prev);
-        if (newSet.has(widgetId)) {
-          newSet.delete(widgetId);
-        } else {
-          newSet.add(widgetId);
-        }
-        return newSet;
-      });
-    };
-
-    const availableWidgets = [
-      { id: 'stats', title: 'Статистика' },
-      { id: 'assistants', title: 'Ассистенты' }
-    ];
-
     return (
       <div className={dashStyles.welcomeSection}>
         <div className={dashStyles.welcomeContent}>
           <div className={dashStyles.avatarSection}>
             <div className={dashStyles.avatar}>
-              <FiCpu size={28} />
+              <FiCpu size={24} />
             </div>
             <div className={dashStyles.userInfo}>
-              <h1 className={dashStyles.welcomeTitle}>
-                {getGreeting()}, {user?.first_name || user?.email?.split('@')[0]}!
-              </h1>
+              <h1 className={dashStyles.welcomeTitle}>AI-Ассистенты</h1>
               <p className={dashStyles.welcomeSubtitle}>
-                Управление AI-ассистентами и интеграциями
+                Управление и настройка ассистентов
               </p>
             </div>
           </div>
-          
-          <div className="flex items-center space-x-4">
-            <div className="relative group">
-              <div className={`${dashStyles.badge} cursor-help`}>
-                <FiStar size={16} />
-                <span>AI Эксперт</span>
-              </div>
-              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                {assistants.length} активных ассистентов
-                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        {/* Переключатель виджетов для мобильных устройств */}
-        <div className="mt-6 md:hidden">
-          <div className="flex flex-wrap gap-2">
-            {availableWidgets.map(widget => (
-              <button
-                key={widget.id}
-                onClick={() => toggleWidget(widget.id)}
-                className={`flex items-center px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                  hiddenWidgets.has(widget.id)
-                    ? 'bg-gray-100 text-gray-500'
-                    : 'bg-blue-100 text-blue-700'
-                }`}
-              >
-                {hiddenWidgets.has(widget.id) ? <FiEyeOff className="w-3 h-3 mr-1" /> : <FiEye className="w-3 h-3 mr-1" />}
-                {widget.title}
-              </button>
-            ))}
+          <div className={dashStyles.badge}>
+            <FiStar size={14} />
+            <span>{assistants.length} ассистентов</span>
           </div>
         </div>
       </div>
@@ -509,8 +532,8 @@ export default function AIAssistant() {
       <div style={{
         width: '100%',
         minHeight: '100vh',
-        backgroundColor: '#fafbfc',
-        padding: '32px',
+        backgroundColor: '#ffffff',
+        padding: '24px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center'
@@ -519,39 +542,39 @@ export default function AIAssistant() {
           backgroundColor: '#ffffff',
           border: '1px solid #f3f4f6',
           borderRadius: '0.75rem',
-          padding: '48px',
+          padding: '32px',
           textAlign: 'center',
           boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
           maxWidth: '400px',
           width: '100%'
         }}>
           <div style={{
-            width: '48px',
-            height: '48px',
-            border: '3px solid #f3f4f6',
-            borderTop: '3px solid #4f46e5',
+            width: '40px',
+            height: '40px',
+            border: '2px solid #f3f4f6',
+            borderTop: '2px solid #6b7280',
             borderRadius: '50%',
-            margin: '0 auto 24px',
+            margin: '0 auto 20px',
             animation: 'spin 1s linear infinite'
           }} />
-          
+
           <h3 style={{
-            fontSize: '16px',
+            fontSize: '15px',
             fontWeight: '600',
             color: '#0f172a',
-            margin: '0 0 8px 0'
+            margin: '0 0 6px 0'
           }}>
             Загрузка ассистентов
           </h3>
-          
+
           <p style={{
-            fontSize: '14px',
+            fontSize: '13px',
             color: '#64748b',
             margin: '0'
           }}>
             Подождите, идет загрузка данных...
           </p>
-          
+
           <style jsx>{`
             @keyframes spin {
               0% { transform: rotate(0deg); }
@@ -564,30 +587,8 @@ export default function AIAssistant() {
   }
 
   return (
-    <>
-      {selectedAssistant ? (
-        <AssistantDetails
-          assistant={selectedAssistant}
-          onBack={handleBackToList}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          assistantSettings={assistantSettings}
-          onSettingsChange={handleSettingsChange}
-          onSaveSettings={handleSaveSettings}
-          saving={saving}
-          documents={documents}
-          onDocumentUpload={handleDocumentUpload}
-          onDocumentDelete={handleDocumentDelete}
-          uploading={uploading}
-          dialogs={dialogs}
-          selectedChannel={selectedChannel}
-          onChannelChange={setSelectedChannel}
-          channels={channels}
-          stats={stats}
-          globalStats={globalStats}
-          onRefreshData={handleRefreshData}
-        />
-      ) : (
+    <div>
+      <div className="bg-white px-4 sm:px-6 xl:px-8 pt-4 sm:pt-6 xl:pt-8 pb-4 sm:pb-6 xl:pb-8 animate-fade-in rounded-2xl">
         <AssistantsList
           assistants={assistants}
           onSelectAssistant={handleSelectAssistant}
@@ -605,14 +606,14 @@ export default function AIAssistant() {
           onChannelChange={setSelectedChannel}
           totalDialogs={globalStats.totalDialogs}
         />
-      )}
+      </div>
 
       <ModalManager
         modals={modals}
         modalData={modalData}
         onCloseModal={closeModal}
         onDeleteAssistant={handleConfirmDeleteAssistant}
-        onCreateAssistant={handleCreateAssistant}
+        onCreateAssistant={handleAssistantCreated}
         onDeleteBot={handleDeleteBot}
         onCreateBot={handleCreateBot}
         onEditBot={handleEditBot}
@@ -625,65 +626,6 @@ export default function AIAssistant() {
         selectedAssistant={selectedAssistant}
       />
 
-      {/* Toast notifications */}
-      <div style={{
-        position: 'fixed',
-        top: '24px',
-        right: '24px',
-        zIndex: 1000,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '12px'
-      }}>
-        <AnimatePresence>
-          {toasts.map(toast => (
-            <motion.div
-              key={toast.id}
-              initial={{ opacity: 0, y: -20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -20, scale: 0.95 }}
-              style={{
-                backgroundColor: '#ffffff',
-                border: '1px solid #f3f4f6',
-                borderRadius: '0.75rem',
-                padding: '16px 20px',
-                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-                minWidth: '300px',
-                maxWidth: '400px',
-                borderLeftWidth: '4px',
-                borderLeftColor: toast.type === 'error' ? '#dc2626' : toast.type === 'warning' ? '#f59e0b' : '#10b981',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px'
-              }}
-            >
-              <div style={{
-                width: '20px',
-                height: '20px',
-                borderRadius: '50%',
-                backgroundColor: toast.type === 'error' ? '#fef2f2' : toast.type === 'warning' ? '#fef3c7' : '#ecfdf5',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: toast.type === 'error' ? '#dc2626' : toast.type === 'warning' ? '#f59e0b' : '#10b981',
-                fontSize: '12px'
-              }}>
-                {toast.type === 'error' ? '✕' : toast.type === 'warning' ? '!' : '✓'}
-              </div>
-              
-              <div style={{
-                fontSize: '14px',
-                color: '#0f172a',
-                fontWeight: '500',
-                flex: 1,
-                lineHeight: '1.4'
-              }}>
-                {toast.message}
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
-    </>
+    </div>
   );
 }

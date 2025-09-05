@@ -1,0 +1,387 @@
+/* Стили для страницы Database Explorer */
+
+.container {
+  @apply min-h-screen bg-gray-50;
+}
+
+.header {
+  @apply bg-white border-b border-gray-200;
+}
+
+.headerContent {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6;
+}
+
+.headerTop {
+  @apply flex items-center justify-between;
+}
+
+.headerLeft {
+  @apply flex items-center gap-4;
+}
+
+.headerIcon {
+  @apply w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center;
+}
+
+.headerIconSvg {
+  @apply w-6 h-6 text-blue-600;
+}
+
+.headerText {
+  /* No specific classes needed, using inline styles */
+}
+
+.headerTitle {
+  @apply text-3xl font-bold text-gray-900;
+}
+
+.headerSubtitle {
+  @apply text-gray-600 mt-1;
+}
+
+.modeToggle {
+  @apply flex items-center bg-gray-100 rounded-lg p-1;
+}
+
+.modeButton {
+  @apply flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors;
+}
+
+.modeButtonActive {
+  @apply bg-white text-blue-600 shadow-sm;
+}
+
+.modeButtonInactive {
+  @apply text-gray-600 hover:text-gray-900;
+}
+
+.modeButtonIcon {
+  @apply w-4 h-4;
+}
+
+.mainContent {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8;
+}
+
+.loadingPage {
+  @apply min-h-screen bg-gray-50 flex items-center justify-center;
+}
+
+.loadingContent {
+  @apply text-center;
+}
+
+.loadingIcon {
+  @apply w-12 h-12 text-gray-400 mx-auto mb-4;
+}
+
+.loadingText {
+  @apply text-gray-600;
+}
+
+/* Схема БД - существующие стили */
+.schemaSearch {
+  @apply mb-8;
+}
+
+.searchWrapper {
+  @apply relative;
+}
+
+.searchIcon {
+  @apply absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400;
+}
+
+.searchInput {
+  @apply w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+}
+
+.schemaGrid {
+  @apply grid grid-cols-1 lg:grid-cols-3 gap-8;
+}
+
+.tablesList {
+  @apply lg:col-span-1;
+}
+
+.tablesHeader {
+  @apply text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2;
+}
+
+.tablesHeaderIcon {
+  @apply w-5 h-5;
+}
+
+.tablesContainer {
+  @apply space-y-2 max-h-screen overflow-y-auto;
+}
+
+.tableCard {
+  @apply p-4 rounded-lg cursor-pointer transition-all;
+}
+
+.tableCardActive {
+  @apply bg-blue-50 border-2 border-blue-200 shadow-sm;
+}
+
+.tableCardInactive {
+  @apply bg-white border border-gray-200 hover:shadow-md;
+}
+
+.tableCardTitle {
+  @apply font-semibold text-gray-900;
+}
+
+.tableCardDescription {
+  @apply text-sm text-gray-600 mt-1;
+}
+
+.tableCardMeta {
+  @apply flex items-center gap-4 mt-2 text-xs text-gray-500;
+}
+
+.tableDetails {
+  @apply lg:col-span-2;
+}
+
+.detailsCard {
+  @apply bg-white rounded-xl border border-gray-200 p-6 mb-6;
+}
+
+.detailsTitle {
+  @apply text-2xl font-bold text-gray-900 mb-2;
+}
+
+.detailsDescription {
+  @apply text-gray-600 mb-4;
+}
+
+.detailsMeta {
+  @apply flex items-center gap-4 text-sm text-gray-500;
+}
+
+.detailsMetaIcon {
+  @apply w-4 h-4;
+}
+
+.fieldsContainer {
+  @apply space-y-4;
+}
+
+.fieldCard {
+  @apply bg-white rounded-lg border cursor-pointer transition-all;
+}
+
+.fieldCardActive {
+  @apply border-blue-200 shadow-md ring-2 ring-blue-100;
+}
+
+.fieldCardInactive {
+  @apply border-gray-200 hover:shadow-sm hover:border-gray-300;
+}
+
+.fieldCardContent {
+  @apply p-4;
+}
+
+.fieldCardHeader {
+  @apply flex items-start justify-between;
+}
+
+.fieldCardLeft {
+  @apply flex-1;
+}
+
+.fieldCardName {
+  @apply flex items-center gap-3 mb-2;
+}
+
+.fieldCardNameText {
+  @apply font-semibold text-gray-900 font-mono;
+}
+
+.fieldCardType {
+  @apply px-2 py-1 text-xs font-medium rounded-md;
+}
+
+.fieldCardDescription {
+  @apply text-gray-600 text-sm mb-2;
+}
+
+.fieldCardExample {
+  @apply text-sm;
+}
+
+.fieldCardExampleLabel {
+  @apply text-gray-500;
+}
+
+.fieldCardExampleValue {
+  @apply bg-gray-100 px-2 py-1 rounded text-gray-800;
+}
+
+.fieldCardValues {
+  @apply mt-2 text-sm;
+}
+
+.fieldCardValuesLabel {
+  @apply text-gray-500;
+}
+
+.fieldCardValuesContainer {
+  @apply flex flex-wrap gap-1 mt-1;
+}
+
+.fieldCardValue {
+  @apply bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs;
+}
+
+.fieldCardIcon {
+  @apply w-4 h-4 ml-4 transition-transform text-gray-400;
+}
+
+.fieldCardIconRotated {
+  @apply rotate-180;
+}
+
+.emptyState {
+  @apply bg-white rounded-xl border border-gray-200 p-8 text-center;
+}
+
+.emptyStateIcon {
+  @apply w-12 h-12 text-gray-400 mx-auto mb-4;
+}
+
+.emptyStateTitle {
+  @apply text-lg font-semibold text-gray-900 mb-2;
+}
+
+.emptyStateDescription {
+  @apply text-gray-600;
+}
+
+/* Режим данных */
+.dataGrid {
+  @apply grid grid-cols-1 lg:grid-cols-4 gap-8;
+}
+
+.dataTablesList {
+  @apply lg:col-span-1;
+}
+
+.dataTablesHeader {
+  @apply text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2;
+}
+
+.dataTablesContainer {
+  @apply space-y-2 max-h-screen overflow-y-auto;
+}
+
+.dataTableCard {
+  @apply p-4 rounded-lg cursor-pointer transition-all;
+}
+
+.dataTableCardActive {
+  @apply bg-blue-50 border-2 border-blue-200 shadow-sm;
+}
+
+.dataTableCardInactive {
+  @apply bg-white border border-gray-200 hover:shadow-md;
+}
+
+.dataTableContent {
+  @apply lg:col-span-3;
+}
+
+/* Responsive адаптации */
+@media (max-width: 1024px) {
+  .schemaGrid {
+    @apply grid-cols-1 gap-6;
+  }
+
+  .dataGrid {
+    @apply grid-cols-1 gap-6;
+  }
+
+  .tablesList,
+  .dataTablesList {
+    @apply lg:col-span-1;
+  }
+
+  .tableDetails,
+  .dataTableContent {
+    @apply lg:col-span-1;
+  }
+}
+
+@media (max-width: 768px) {
+  .headerTop {
+    @apply flex-col gap-4 items-start;
+  }
+
+  .modeToggle {
+    @apply w-full;
+  }
+
+  .modeButton {
+    @apply flex-1 justify-center;
+  }
+
+  .mainContent {
+    @apply px-2 py-4;
+  }
+}
+
+/* Анимации */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fieldCard {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.tableCard {
+  animation: fadeInUp 0.2s ease-out;
+}
+
+/* Цвета для типов данных */
+.typeColorInteger {
+  @apply text-blue-600 bg-blue-50;
+}
+
+.typeColorString {
+  @apply text-green-600 bg-green-50;
+}
+
+.typeColorDateTime {
+  @apply text-purple-600 bg-purple-50;
+}
+
+.typeColorBoolean {
+  @apply text-orange-600 bg-orange-50;
+}
+
+.typeColorFloat {
+  @apply text-cyan-600 bg-cyan-50;
+}
+
+.typeColorText {
+  @apply text-gray-600 bg-gray-50;
+}
+
+.typeColorJSON {
+  @apply text-pink-600 bg-pink-50;
+}
+
+.typeColorVector {
+  @apply text-indigo-600 bg-indigo-50;
+}

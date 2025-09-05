@@ -34,10 +34,10 @@ const AdminDashboard = ({ children, activeSection = 'overview' }) => {
       href: '/admin-analytics'
     },
     {
-      id: 'advanced-analytics',
-      label: 'Расширенная аналитика',
+      id: 'start-analytics',
+      label: 'Аналитика /start',
       icon: FiTrendingUp,
-      href: '/admin-advanced-analytics'
+      href: '/admin-start-analytics'
     },
     {
       id: 'bots-monitoring',
@@ -76,7 +76,7 @@ const AdminDashboard = ({ children, activeSection = 'overview' }) => {
       <div className={`${styles.sidebar} ${sidebarCollapsed ? styles.collapsed : ''}`}>
         <div className={styles.sidebarHeader}>
           <div className={styles.logo}>
-            <FiShield size={24} />
+            <FiShield size={20} />
             {!sidebarCollapsed && <span>Admin Panel</span>}
           </div>
           <button 
@@ -89,7 +89,7 @@ const AdminDashboard = ({ children, activeSection = 'overview' }) => {
 
         <div className={styles.adminInfo}>
           <div className={styles.adminAvatar}>
-            <FiShield size={20} />
+            <FiShield size={16} />
           </div>
           {!sidebarCollapsed && (
             <div className={styles.adminDetails}>
@@ -111,7 +111,7 @@ const AdminDashboard = ({ children, activeSection = 'overview' }) => {
             {menuItems.slice(0, 4).map(item => (
               <Link key={item.id} href={item.href}>
                 <div className={`${styles.navItem} ${activeSection === item.id ? styles.active : ''}`}>
-                  <item.icon size={20} />
+                  <item.icon size={16} />
                   {!sidebarCollapsed && <span>{item.label}</span>}
                 </div>
               </Link>
@@ -125,7 +125,7 @@ const AdminDashboard = ({ children, activeSection = 'overview' }) => {
             {menuItems.slice(4, 6).map(item => (
               <Link key={item.id} href={item.href}>
                 <div className={`${styles.navItem} ${activeSection === item.id ? styles.active : ''}`}>
-                  <item.icon size={20} />
+                  <item.icon size={16} />
                   {!sidebarCollapsed && <span>{item.label}</span>}
                 </div>
               </Link>
@@ -139,17 +139,16 @@ const AdminDashboard = ({ children, activeSection = 'overview' }) => {
             {menuItems.slice(6).map(item => (
               <Link key={item.id} href={item.href}>
                 <div className={`${styles.navItem} ${activeSection === item.id ? styles.active : ''}`}>
-                  <item.icon size={20} />
+                  <item.icon size={16} />
                   {!sidebarCollapsed && <span>{item.label}</span>}
                 </div>
               </Link>
             ))}
             
-            <div className={styles.sectionDivider}></div>
-            <button className={styles.logoutBtn} onClick={handleLogout}>
-              <FiLogOut size={20} />
+            <div className={styles.logoutBtn} onClick={handleLogout}>
+              <FiLogOut size={16} />
               {!sidebarCollapsed && <span>Выйти</span>}
-            </button>
+            </div>
           </div>
         </nav>
       </div>

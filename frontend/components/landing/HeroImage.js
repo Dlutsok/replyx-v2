@@ -64,85 +64,104 @@ const HeroImage = () => {
   }, [messageIndex]);
 
   return (
-    <div className="relative max-w-lg mx-auto">
-      {/* Мокап браузера/интерфейса */}
+    <div className="relative max-w-[23rem] mx-auto">
+      {/* Dynamic animated background */}
+      <div className="absolute inset-0 -m-8">
+        <motion.div 
+          className="absolute -top-16 -right-10 w-48 h-48 rounded-full blur-2xl opacity-70"
+          style={{
+            background: 'radial-gradient(circle, rgba(147,51,234,0.4) 0%, rgba(168,85,247,0.3) 35%, rgba(192,132,252,0.2) 70%, transparent 100%)'
+          }}
+          animate={{ 
+            scale: [1, 1.2, 1], 
+            x: [0, 10, 0],
+            y: [0, -5, 0]
+          }}
+          transition={{ 
+            duration: 8, 
+            repeat: Infinity, 
+            ease: "easeInOut" 
+          }}
+        />
+        <motion.div 
+          className="absolute -bottom-12 -left-8 w-40 h-40 rounded-full blur-2xl opacity-60"
+          style={{
+            background: 'radial-gradient(circle, rgba(59,130,246,0.4) 0%, rgba(147,51,234,0.3) 50%, rgba(168,85,247,0.2) 80%, transparent 100%)'
+          }}
+          animate={{ 
+            scale: [1.1, 0.9, 1.1], 
+            x: [0, -8, 0],
+            y: [0, 8, 0]
+          }}
+          transition={{ 
+            duration: 6, 
+            repeat: Infinity, 
+            ease: "easeInOut",
+            delay: 1
+          }}
+        />
+        <motion.div 
+          className="absolute top-1/2 -right-12 w-24 h-24 rounded-full blur-xl opacity-50"
+          style={{
+            background: 'radial-gradient(circle, rgba(236,72,153,0.5) 0%, rgba(192,132,252,0.3) 60%, transparent 100%)'
+          }}
+          animate={{ 
+            scale: [0.8, 1.3, 0.8], 
+            rotate: [0, 180, 360]
+          }}
+          transition={{ 
+            duration: 10, 
+            repeat: Infinity, 
+            ease: "linear"
+          }}
+        />
+      </div>
+
+      
       <motion.div
-        className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden"
+        className="relative bg-white shadow-xl border border-gray-200 overflow-hidden"
+        style={{ borderRadius: '16px' }}
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
       >
-        {/* Шапка браузера */}
-        <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            {/* Кнопка закрытия */}
-            <div className="w-3 h-3 bg-red-400 rounded-full flex items-center justify-center hover:bg-red-500 transition-colors cursor-pointer">
-              <svg className="w-2 h-2 text-red-800" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </div>
-            {/* Кнопка сворачивания */}
-            <div className="w-3 h-3 bg-yellow-400 rounded-full flex items-center justify-center hover:bg-yellow-500 transition-colors cursor-pointer">
-              <svg className="w-2 h-2 text-yellow-800" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-              </svg>
-            </div>
-            {/* Кнопка разворачивания */}
-            <div className="w-3 h-3 bg-green-400 rounded-full flex items-center justify-center hover:bg-green-500 transition-colors cursor-pointer">
-              <svg className="w-2 h-2 text-green-800" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 11-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 010-2h4a1 1 0 011 1v4a1 1 0 01-2 0V6.414l-2.293 2.293a1 1 0 11-1.414-1.414L13.586 5H12zm-9 7a1 1 0 012 0v1.586l2.293-2.293a1 1 0 111.414 1.414L6.414 15H8a1 1 0 010 2H4a1 1 0 01-1-1v-4zm13-1a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 010-2h1.586l-2.293-2.293a1 1 0 111.414-1.414L15 13.586V12a1 1 0 011-1z" clipRule="evenodd" />
-              </svg>
-            </div>
-          </div>
-          <div className="flex-1 mx-4">
-            <div className="bg-white rounded-lg px-3 py-1 text-sm text-gray-500 border">
-              chatai.ru/dashboard
-            </div>
-          </div>
-        </div>
-
         {/* Заголовок чата */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="bg-gray-50 border-b border-gray-200 px-4 py-2">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                <svg className="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">ChatAI Помощник</h3>
-                <div className="flex items-center space-x-1">
-                  <svg className="w-3 h-3 text-green-500 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
-                    <circle cx="10" cy="10" r="8" />
-                  </svg>
-                  <p className="text-sm text-gray-500">отвечает мгновенно</p>
-                </div>
+            <div>
+              <h3 className="font-semibold text-gray-900">ReplyX</h3>
+              <div className="flex items-center space-x-2 mt-1">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <p className="text-xs text-gray-600">Онлайн</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-full">
-              <span className="text-green-500">⚡</span>
-              <span>0.8 сек</span>
+            <div className="text-xs text-gray-500 bg-green-50 px-2 py-1 rounded-md border border-green-200">
+              <span>⚡ 2,7 секунды</span>
             </div>
           </div>
         </div>
 
         {/* Область сообщений */}
-        <div className="h-80 p-6 space-y-4 overflow-y-auto bg-gray-50">
+        <div className="h-80 p-4 space-y-4 overflow-y-auto bg-white">
           {demoMessages.slice(0, messageIndex + 1).map((message, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
+              initial={{ opacity: 0, y: 15, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.4, type: "spring", stiffness: 200, damping: 20 }}
               className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div className={`max-w-sm px-4 py-3 rounded-2xl ${
-                message.type === 'user' 
-                  ? 'bg-purple-600 text-white rounded-br-md' 
-                  : 'bg-white text-gray-800 shadow-sm border border-gray-200 rounded-bl-md'
-              }`}>
-                <p className="text-sm leading-relaxed">{message.text}</p>
+                            <div
+                className="max-w-sm px-4 py-3 shadow-sm"
+                style={{
+                  borderRadius: '16px',
+                  ...(message.type === 'user'
+                    ? { backgroundColor: '#374151', color: 'white', borderBottomRightRadius: '4px' }
+                    : { backgroundColor: '#f3f4f6', color: '#1f2937', border: '1px solid #e5e7eb', borderBottomLeftRadius: '4px' }
+                  )
+                }}
+              >
+                <p className="text-sm leading-relaxed font-medium">{message.text}</p>
               </div>
             </motion.div>
           ))}
@@ -152,9 +171,10 @@ const HeroImage = () => {
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
               className="flex justify-start"
             >
-              <div className="bg-white text-gray-800 shadow-sm border border-gray-200 px-4 py-3 rounded-2xl rounded-bl-md">
+              <div className="bg-gray-100 text-gray-800 shadow-md px-4 py-3 border border-gray-200" style={{ borderRadius: '16px', borderBottomLeftRadius: '4px' }}>
                 <div className="flex space-x-1">
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
@@ -166,27 +186,30 @@ const HeroImage = () => {
         </div>
 
         {/* Поле ввода */}
-        <div className="p-6 border-t border-gray-200 bg-white">
+        <div className="p-4 border-t border-gray-200 bg-gray-50">
           <div className="flex items-center space-x-3">
-            <div className="flex-1 bg-gray-100 rounded-xl px-4 py-3">
+            <div className="flex-1 bg-white px-4 py-3 shadow-sm border border-gray-200" style={{ borderRadius: '16px' }}>
               <input 
                 type="text" 
                 placeholder="Напишите сообщение..." 
-                className="w-full bg-transparent text-sm focus:outline-none text-gray-700"
+                className="w-full bg-transparent text-sm focus:outline-none text-gray-700 placeholder-gray-400"
                 disabled
               />
             </div>
-            <motion.button 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="w-10 h-10 bg-purple-600 text-white rounded-xl flex items-center justify-center hover:bg-purple-700 transition-colors shadow-sm"
+            <button
+              className="w-12 h-12 text-white flex items-center justify-center shadow-md cursor-default"
+              style={{
+                backgroundColor: 'rgb(147, 51, 234)',
+                borderRadius: '0.9rem'
+              }}
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
               </svg>
-            </motion.button>
+            </button>
           </div>
         </div>
+
       </motion.div>
     </div>
   );

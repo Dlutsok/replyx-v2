@@ -58,7 +58,7 @@ async def user_dialogs_ws(websocket: WebSocket, token: str = Query(None), db: Se
             
     except Exception as e:
         logger.error(f"Ошибка WebSocket подключения: {e}")
-        await websocket.close(code=1011, reason="Internal server error")
+        await websocket.close(code=1011, reason="Ошибка соединения")
 
 @router.websocket("/ws/dialogs/{dialog_id}")
 async def dialog_ws(websocket: WebSocket, dialog_id: int, token: str = None, db: Session = Depends(get_db)):

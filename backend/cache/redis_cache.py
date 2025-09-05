@@ -1,3 +1,4 @@
+import os
 import redis
 import json
 import hashlib
@@ -12,9 +13,13 @@ logger = logging.getLogger(__name__)
 class RedisCache:
     """Менеджер Redis кэша для оптимизации производительности"""
     
-    def __init__(self, redis_url: str = "redis://localhost:6379", db: int = 0):
+    def __init__(self, redis_url: str = None, db: int = 0):
+        # Разрешаем конфигурацию через переменную окружения REDIS_URL
+        # Пример: redis://:password@redis:6379/0
+        effective_url = redis_url or os.getenv("REDIS_URL", "redis://localhost:6379/0")
         try:
-            self.redis_client = redis.from_url(redis_url, db=db, decode_responses=False)
+            # Если URL уже содержит номер базы, параметр db передавать не нужно
+            self.redis_client = redis.from_url(effective_url, decode_responses=False)
             # Тест подключения
             self.redis_client.ping()
             logger.info("✅ Redis подключен успешно")
@@ -232,20 +237,35 @@ class ChatAICache:
         return cache.set("system_stats", data, ttl)
     
     @staticmethod
-    def cache_ai_response(messages_hash: str, model: str, user_id: int):
-        """Получение AI ответа из кэша"""
-        return cache.get("ai_response", 
-                        messages_hash=messages_hash, 
-                        model=model, 
-                        user_id=user_id)
+    def cache_ai_response(messages_hash: str, model: str, user_id: int, *, assistant_id: int, knowledge_version: int = 0):
+        """Получение AI ответа из кэша
+        Ключ включает assistant_id и knowledge_version, чтобы исключить устаревшие ответы
+        после изменения системного промпта/знаний.
+        """
+        return cache.get(
+            "ai_response",
+            messages_hash=messages_hash,
+            model=model,
+            user_id=user_id,
+            assistant_id=assistant_id,
+            knowledge_version=knowledge_version,
+        )
     
     @staticmethod
-    def set_ai_response(messages_hash: str, model: str, user_id: int, response: str, ttl: int = 86400):
-        """Сохранение AI ответа в кэш"""
-        return cache.set("ai_response", response, ttl,
-                        messages_hash=messages_hash, 
-                        model=model, 
-                        user_id=user_id)
+    def set_ai_response(messages_hash: str, model: str, user_id: int, response: str, ttl: int = 86400, *, assistant_id: int, knowledge_version: int = 0):
+        """Сохранение AI ответа в кэш
+        Ключ включает assistant_id и knowledge_version.
+        """
+        return cache.set(
+            "ai_response",
+            response,
+            ttl,
+            messages_hash=messages_hash,
+            model=model,
+            user_id=user_id,
+            assistant_id=assistant_id,
+            knowledge_version=knowledge_version,
+        )
     
     @staticmethod
     def cache_best_token(model: str):
@@ -321,6 +341,39 @@ class ChatAICache:
         
         logger.info(f"Инвалидирован кэш знаний user_id={user_id}, assistant_id={assistant_id}, удалено ключей: {total_deleted}")
         return total_deleted
+
+    # === RAG / Retrieval cache ===
+    @staticmethod
+    def get_retrieved_chunks(user_id: int, assistant_id: int, knowledge_version: int, query_hash: str):
+        """Получение кэша результата ретрива топ-K чанков для запроса
+        Ключ включает user_id, assistant_id и knowledge_version, чтобы исключить устаревшие результаты.
+        """
+        try:
+            return cache.get(
+                "rag_retrieval",
+                user_id=user_id,
+                assistant_id=assistant_id or 0,
+                knowledge_version=knowledge_version or 0,
+                query_hash=query_hash,
+            )
+        except Exception:
+            return None
+
+    @staticmethod
+    def cache_retrieved_chunks(user_id: int, assistant_id: int, knowledge_version: int, query_hash: str, chunks: list, ttl: int = 60):
+        """Сохранение результата ретрива топ-K чанков (короткий TTL)"""
+        try:
+            return cache.set(
+                "rag_retrieval",
+                chunks,
+                ttl,
+                user_id=user_id,
+                assistant_id=assistant_id or 0,
+                knowledge_version=knowledge_version or 0,
+                query_hash=query_hash,
+            )
+        except Exception:
+            return False
 
 
 # Экспортируем для использования

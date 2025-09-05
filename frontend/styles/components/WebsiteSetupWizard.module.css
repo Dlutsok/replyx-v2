@@ -17,7 +17,7 @@
   background: white;
   border-radius: 0.75rem;
   width: 100%;
-  max-width: 900px;
+  max-width: 630px;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
@@ -111,7 +111,7 @@
 }
 
 .progressCircle.completed {
-  background: #10b981;
+  background: #7C3AED;
   color: white;
 }
 
@@ -129,7 +129,7 @@
 }
 
 .progressDescription {
-  font-size: 12px;
+  font-size: 14px;
   color: #6b7280;
   line-height: 1.3;
 }
@@ -145,7 +145,7 @@
 }
 
 .progressLine.completed {
-  background: #10b981;
+  background: #7C3AED;
 }
 
 .progressStep:last-child .progressLine {
@@ -270,7 +270,7 @@
 }
 
 .successIcon {
-  color: #10b981;
+  color: #7C3AED;
   font-size: 20px;
   flex-shrink: 0;
 }
@@ -278,13 +278,13 @@
 .successTitle {
   font-size: 14px;
   font-weight: 600;
-  color: #065f46;
+  color: #5B21B6;
   margin-bottom: 2px;
 }
 
 .successText {
   font-size: 13px;
-  color: #047857;
+  color: #6D28D9;
 }
 
 .codeBlock {
@@ -311,7 +311,7 @@
   background: #1f2937;
   color: #f9fafb;
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.6;
   overflow-x: auto;
 }
@@ -330,7 +330,7 @@
   border: 1px solid #4b5563;
   border-radius: 0.75rem;
   padding: 6px 12px;
-  font-size: 12px;
+  font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -477,11 +477,11 @@
   border-radius: 0.75rem;
   margin-bottom: 8px;
   font-size: 14px;
-  color: #065f46;
+  color: #5B21B6;
 }
 
 .fileSuccess {
-  color: #10b981;
+  color: #7C3AED;
   margin-left: auto;
 }
 
@@ -533,18 +533,18 @@
 .demoSection h4 {
   font-size: 16px;
   font-weight: 600;
-  color: #065f46;
+  color: #5B21B6;
   margin: 0 0 8px 0;
 }
 
 .demoSection p {
   font-size: 14px;
-  color: #047857;
+  color: #6D28D9;
   margin: 0 0 16px 0;
 }
 
 .demoBtn {
-  background: #10b981;
+  background: #7C3AED;
   color: white;
   border: none;
   border-radius: 0.75rem;
@@ -559,7 +559,7 @@
 }
 
 .demoBtn:hover {
-  background: #059669;
+  background: #6D28D9;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
@@ -624,8 +624,8 @@
 }
 
 .checkbox input:checked + .checkmark {
-  background: #10b981;
-  border-color: #10b981;
+  background: #7C3AED;
+  border-color: #7C3AED;
 }
 
 .checkbox input:checked + .checkmark::after {

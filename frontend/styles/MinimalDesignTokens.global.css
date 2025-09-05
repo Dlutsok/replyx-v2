@@ -1,0 +1,288 @@
+/* ===============================================
+   MINIMAL DESIGN TOKENS
+   Единая система для чистого минималистичного дизайна
+   =============================================== */
+
+/* ЦВЕТОВАЯ ПАЛИТРА */
+:root {
+  /* Основные цвета */
+  --minimal-bg-primary: #ffffff;
+  --minimal-bg-secondary: #f9fafb;
+  --minimal-bg-tertiary: #f3f4f6;
+
+  /* Границы и разделители */
+  --minimal-border-light: #f3f4f6;
+  --minimal-border-medium: #e5e7eb;
+  --minimal-border-dark: #d1d5db;
+
+  /* Текст */
+  --minimal-text-primary: #1a1a1a;
+  --minimal-text-secondary: #6b7280;
+  --minimal-text-tertiary: #9ca3af;
+
+  /* Акцентный цвет */
+  --minimal-accent: #7C3AED;
+  --minimal-accent-hover: #6D28D9;
+
+  /* Состояния */
+  --minimal-success: #10b981;
+  --minimal-warning: #f59e0b;
+  --minimal-error: #ef4444;
+  --minimal-error-bg: #fef2f2;
+  --minimal-error-border: #fecaca;
+}
+
+/* ПРОПОРЦИИ И РАЗМЕРЫ */
+:root {
+  /* Отступы */
+  --minimal-space-xs: 4px;
+  --minimal-space-sm: 8px;
+  --minimal-space-md: 12px;
+  --minimal-space-lg: 16px;
+  --minimal-space-xl: 20px;
+  --minimal-space-2xl: 24px;
+  --minimal-space-3xl: 32px;
+
+  /* Радиусы скруглений */
+  --minimal-radius-sm: 4px;
+  --minimal-radius-md: 6px;
+  --minimal-radius-lg: 8px;
+  --minimal-radius-xl: 12px;
+
+  /* Размеры иконок */
+  --minimal-icon-xs: 12px;
+  --minimal-icon-sm: 14px;
+  --minimal-icon-md: 16px;
+  --minimal-icon-lg: 18px;
+  --minimal-icon-xl: 20px;
+  --minimal-icon-2xl: 24px;
+
+  /* Толщины границ */
+  --minimal-border-width-thin: 1px;
+  --minimal-border-width-medium: 2px;
+}
+
+/* ТИПОГРАФИЯ */
+:root {
+  /* Размеры шрифтов */
+  --minimal-font-size-xs: 11px;
+  --minimal-font-size-sm: 12px;
+  --minimal-font-size-md: 14px;
+  --minimal-font-size-lg: 16px;
+  --minimal-font-size-xl: 18px;
+  --minimal-font-size-2xl: 20px;
+  --minimal-font-size-3xl: 24px;
+  --minimal-font-size-4xl: 28px;
+
+  /* Высоты строк */
+  --minimal-line-height-tight: 1.1;
+  --minimal-line-height-normal: 1.2;
+  --minimal-line-height-relaxed: 1.4;
+  --minimal-line-height-loose: 1.5;
+
+  /* Толщины шрифтов */
+  --minimal-font-weight-light: 300;
+  --minimal-font-weight-normal: 400;
+  --minimal-font-weight-medium: 500;
+  --minimal-font-weight-semibold: 600;
+  --minimal-font-weight-bold: 700;
+
+  /* Межбуквенные расстояния */
+  --minimal-letter-spacing-tight: -0.02em;
+  --minimal-letter-spacing-normal: -0.01em;
+  --minimal-letter-spacing-wide: 0.01em;
+}
+
+/* ТЕНИ И ЭФФЕКТЫ */
+:root {
+  /* Минималистичные тени */
+  --minimal-shadow-none: none;
+  --minimal-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --minimal-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --minimal-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+}
+
+/* ПЕРЕХОДЫ */
+:root {
+  --minimal-transition-fast: 0.15s ease;
+  --minimal-transition-normal: 0.2s ease;
+  --minimal-transition-slow: 0.3s ease;
+}
+
+/* ЗАГОЛОВКИ */
+.minimal-heading-1 {
+  font-size: var(--minimal-font-size-4xl);
+  font-weight: var(--minimal-font-weight-semibold);
+  line-height: var(--minimal-line-height-tight);
+  letter-spacing: var(--minimal-letter-spacing-tight);
+  color: var(--minimal-text-primary);
+  margin: 0;
+}
+
+.minimal-heading-2 {
+  font-size: var(--minimal-font-size-3xl);
+  font-weight: var(--minimal-font-weight-semibold);
+  line-height: var(--minimal-line-height-tight);
+  letter-spacing: var(--minimal-letter-spacing-tight);
+  color: var(--minimal-text-primary);
+  margin: 0;
+}
+
+.minimal-heading-3 {
+  font-size: var(--minimal-font-size-2xl);
+  font-weight: var(--minimal-font-weight-medium);
+  line-height: var(--minimal-line-height-normal);
+  letter-spacing: var(--minimal-letter-spacing-normal);
+  color: var(--minimal-text-primary);
+  margin: 0;
+}
+
+.minimal-heading-4 {
+  font-size: var(--minimal-font-size-xl);
+  font-weight: var(--minimal-font-weight-medium);
+  line-height: var(--minimal-line-height-normal);
+  letter-spacing: var(--minimal-letter-spacing-normal);
+  color: var(--minimal-text-primary);
+  margin: 0;
+}
+
+/* ТЕКСТ */
+.minimal-text-body {
+  font-size: var(--minimal-font-size-md);
+  font-weight: var(--minimal-font-weight-normal);
+  line-height: var(--minimal-line-height-relaxed);
+  color: var(--minimal-text-primary);
+  margin: 0;
+}
+
+.minimal-text-secondary {
+  font-size: var(--minimal-font-size-md);
+  font-weight: var(--minimal-font-weight-normal);
+  line-height: var(--minimal-line-height-relaxed);
+  color: var(--minimal-text-secondary);
+  margin: 0;
+}
+
+.minimal-text-caption {
+  font-size: var(--minimal-font-size-sm);
+  font-weight: var(--minimal-font-weight-normal);
+  line-height: var(--minimal-line-height-normal);
+  color: var(--minimal-text-secondary);
+  margin: 0;
+}
+
+/* КОНТЕЙНЕРЫ */
+.minimal-card {
+  background: var(--minimal-bg-primary);
+  border: var(--minimal-border-width-thin) solid var(--minimal-border-light);
+  border-radius: var(--minimal-radius-lg);
+  padding: var(--minimal-space-xl);
+}
+
+.minimal-card-secondary {
+  background: var(--minimal-bg-secondary);
+  border: var(--minimal-border-width-thin) solid var(--minimal-border-light);
+  border-radius: var(--minimal-radius-md);
+  padding: var(--minimal-space-lg);
+}
+
+/* ФОРМЫ */
+.minimal-input {
+  width: 100%;
+  padding: var(--minimal-space-md) var(--minimal-space-lg);
+  border: var(--minimal-border-width-thin) solid var(--minimal-border-medium);
+  border-radius: var(--minimal-radius-md);
+  font-size: var(--minimal-font-size-md);
+  background: var(--minimal-bg-primary);
+  transition: border-color var(--minimal-transition-fast);
+  color: var(--minimal-text-primary);
+}
+
+.minimal-input:focus {
+  outline: none;
+  border-color: var(--minimal-accent);
+}
+
+.minimal-button-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--minimal-space-sm);
+  padding: var(--minimal-space-md) var(--minimal-space-xl);
+  background: var(--minimal-accent);
+  color: var(--minimal-bg-primary);
+  border: none;
+  border-radius: var(--minimal-radius-md);
+  font-size: var(--minimal-font-size-md);
+  font-weight: var(--minimal-font-weight-medium);
+  cursor: pointer;
+  transition: background-color var(--minimal-transition-fast);
+}
+
+.minimal-button-primary:hover {
+  background: var(--minimal-accent-hover);
+}
+
+.minimal-button-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--minimal-space-sm);
+  padding: var(--minimal-space-md) var(--minimal-space-xl);
+  background: var(--minimal-bg-primary);
+  color: var(--minimal-accent);
+  border: var(--minimal-border-width-thin) solid var(--minimal-accent);
+  border-radius: var(--minimal-radius-md);
+  font-size: var(--minimal-font-size-md);
+  font-weight: var(--minimal-font-weight-medium);
+  cursor: pointer;
+  transition: all var(--minimal-transition-fast);
+}
+
+.minimal-button-secondary:hover {
+  background: var(--minimal-accent);
+  color: var(--minimal-bg-primary);
+}
+
+/* ИКОНКИ */
+.minimal-icon-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--minimal-radius-md);
+  background: var(--minimal-bg-secondary);
+  border: var(--minimal-border-width-thin) solid var(--minimal-border-light);
+  color: var(--minimal-accent);
+}
+
+/* СПИННЕР */
+.minimal-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--minimal-border-light);
+  border-top: 2px solid var(--minimal-accent);
+  border-radius: 50%;
+  animation: minimal-spin 1s linear infinite;
+}
+
+@keyframes minimal-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* СЕТКИ И МАКЕТЫ */
+.minimal-grid {
+  display: grid;
+  gap: var(--minimal-space-xl);
+}
+
+.minimal-flex {
+  display: flex;
+  gap: var(--minimal-space-lg);
+}
+
+.minimal-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--minimal-space-md);
+}

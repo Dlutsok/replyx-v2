@@ -1,0 +1,169 @@
+/* Стили для компонента DataTable */
+
+.dataTable {
+  @apply bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm;
+}
+
+.tableHeader {
+  @apply p-6 border-b border-gray-200 bg-gray-50;
+}
+
+.tableTitle {
+  @apply text-xl font-semibold text-gray-900 mb-4;
+}
+
+.searchContainer {
+  @apply flex flex-wrap gap-4 items-center;
+}
+
+.searchInput {
+  @apply flex-1 min-w-64;
+}
+
+.searchIcon {
+  @apply absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4;
+}
+
+.filterSelect {
+  @apply px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+}
+
+.bulkActions {
+  @apply mt-4 p-3 bg-blue-50 rounded-lg flex items-center justify-between;
+}
+
+.bulkActionsText {
+  @apply text-sm text-blue-800;
+}
+
+.deleteSelected {
+  @apply flex items-center gap-2 px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors;
+}
+
+.tableContainer {
+  @apply overflow-x-auto;
+}
+
+.table {
+  @apply w-full;
+}
+
+.tableHead {
+  @apply bg-gray-50;
+}
+
+.tableHeadCell {
+  @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors;
+}
+
+.tableBody {
+  @apply bg-white divide-y divide-gray-200;
+}
+
+.tableRow {
+  @apply hover:bg-gray-50 transition-colors;
+}
+
+.tableRowSelected {
+  @apply bg-blue-50;
+}
+
+.tableCell {
+  @apply px-6 py-4 text-sm text-gray-900 max-w-xs;
+}
+
+.cellTooltip {
+  @apply group relative;
+}
+
+.cellTooltipText {
+  @apply truncate;
+}
+
+.cellTooltipHover {
+  @apply invisible group-hover:visible absolute z-10 bg-gray-900 text-white text-sm rounded p-2 top-8 left-0 max-w-xs break-words shadow-lg;
+}
+
+.booleanBadge {
+  @apply px-2 py-1 text-xs rounded;
+}
+
+.booleanTrue {
+  @apply bg-green-100 text-green-800;
+}
+
+.booleanFalse {
+  @apply bg-red-100 text-red-800;
+}
+
+.nullValue {
+  @apply text-gray-400 italic;
+}
+
+.actionButtons {
+  @apply flex items-center gap-2 justify-end;
+}
+
+.actionButton {
+  @apply p-1 rounded hover:bg-opacity-10 transition-colors;
+}
+
+.editButton {
+  @apply text-blue-600 hover:bg-blue-100;
+}
+
+.deleteButton {
+  @apply text-red-600 hover:bg-red-100;
+}
+
+.pagination {
+  @apply px-6 py-4 border-t border-gray-200 flex items-center justify-between;
+}
+
+.paginationInfo {
+  @apply text-sm text-gray-600;
+}
+
+.paginationControls {
+  @apply flex items-center gap-2;
+}
+
+.paginationButton {
+  @apply flex items-center gap-1 px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors;
+}
+
+.paginationCurrent {
+  @apply px-3 py-2 text-sm text-gray-600;
+}
+
+.loadingContainer {
+  @apply flex items-center justify-center p-8;
+}
+
+.loadingText {
+  @apply ml-3 text-gray-600;
+}
+
+.errorContainer {
+  @apply p-6 text-center;
+}
+
+.errorText {
+  @apply text-red-600 mb-4;
+}
+
+.retryButton {
+  @apply px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors;
+}
+
+.emptyState {
+  @apply p-8 text-center text-gray-600;
+}
+
+.refreshButton {
+  @apply flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50 transition-colors;
+}
+
+.createButton {
+  @apply flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors;
+}

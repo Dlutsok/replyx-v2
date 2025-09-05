@@ -11,8 +11,8 @@ import os
 import secrets
 import re
 
-# 🔐 БЕЗОПАСНОСТЬ: SECRET_KEY из переменных окружения
-SECRET_KEY = os.getenv("SECRET_KEY", secrets.token_urlsafe(32))
+# 🔐 БЕЗОПАСНОСТЬ: SECRET_KEY из переменных окружения (используем app_config для консистентности)
+from core.app_config import SECRET_KEY
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
@@ -208,6 +208,61 @@ def get_user_from_token(token: str, db: Session):
         return None
     
     return user
+
+def get_current_user_optional(request: Request, db: Session = Depends(get_db)):
+    """
+    Получает текущего пользователя или возвращает None, если пользователь не авторизован.
+    Используется для эндпоинтов, которые могут работать как с авторизованными, так и с анонимными пользователями.
+    """
+    # Пытаемся извлечь токен из заголовка Authorization
+    authorization = request.headers.get("Authorization")
+    if not authorization or not authorization.startswith("Bearer "):
+        return None
+    
+    token = authorization.split(" ")[1]
+    if not token:
+        return None
+        
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_identifier = payload.get("sub")
+        email = payload.get("email")
+        
+        if user_identifier is None:
+            return None
+            
+        # Проверяем время истечения токена
+        exp = payload.get("exp")
+        if exp is None:
+            return None
+            
+        current_time = datetime.now(timezone.utc)
+        token_exp_time = datetime.fromtimestamp(exp, timezone.utc)
+        
+        if current_time >= token_exp_time:
+            return None
+    except JWTError:
+        return None
+    
+    # Получаем пользователя из БД
+    try:
+        if email:
+            user = db.query(models.User).filter(models.User.email == email).first()
+        else:
+            # Fallback на поиск по ID, если email отсутствует
+            try:
+                user_id = int(user_identifier)
+                user = db.query(models.User).filter(models.User.id == user_id).first()
+            except (ValueError, TypeError):
+                return None
+        
+        if user and user.status == 'active':
+            return user
+    except Exception:
+        return None
+    
+    return None
+
 
 def get_current_admin(current_user: models.User = Depends(get_current_user)):
     if current_user.role != "admin":

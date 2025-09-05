@@ -1,0 +1,433 @@
+# UI/UX КОНЦЕПЦИЯ: АДМИНСКАЯ СТРАНИЦА /admin-bots-monitoring
+
+## АНАЛИЗ СУЩЕСТВУЮЩЕЙ АРХИТЕКТУРЫ
+
+### Изученные компоненты:
+- ✅ AdminDashboard layout (sidebar + main content)
+- ✅ AdminPanel styles (фиолетовый акцент #8B5CF6, светлая тема)
+- ✅ BotsManagement component (базовое управление ботами)
+- ✅ Backend API (bot_manager.py, api/admin.py, api/bots.py)
+- ✅ Database schema (BotInstance модель)
+
+### Текущее состояние системы:
+- Есть основной компонент BotsManagement с базовым функционалом
+- API поддерживает CRUD операции с ботами
+- Отсутствует real-time мониторинг
+- Нет централизованной админской панели для ботов
+
+## UI/UX КОНЦЕПЦИЯ
+
+### 1. АРХИТЕКТУРНЫЙ ПОДХОД
+
+**Layout Structure:**
+```
+AdminDashboard (wrapper)
+└── AdminBotsMonitoring (main component)
+    ├── Header (фильтры + действия)
+    ├── StatsOverview (KPI карточки)
+    ├── BotsGrid (основная таблица/сетка)
+    └── BotDetailsModal (детальная информация)
+```
+
+**Responsive Strategy:**
+- Desktop: 4-колоночная сетка для статистики, детализированная таблица
+- Tablet: 2-колоночная сетка, упрощенная таблица
+- Mobile: 1-колоночная сетка, карточки вместо таблицы
+
+### 2. ДЕТАЛЬНЫЙ WIREFRAME
+
+#### Header Section
+```
+[🤖 Мониторинг ботов (42)]                    [🔄 Обновить] [⚙️ Настройки]
+
+[📊 Статистика за: [7 дней ▼]] [🔍 Поиск бота...] [Статус: [Все ▼]] [Пользователь: [Все ▼]]
+```
+
+#### KPI Overview (4 карточки в ряд)
+```
+[📈 АКТИВНЫХ БОТОВ]    [⚡ СООБЩЕНИЙ/ЧАС]    [👥 АКТИВНЫХ ЮЗЕРОВ]    [❌ С ОШИБКАМИ]
+   38 из 42               1,247                   156                      4
+  ↗️ +12.5%              ↗️ +8.3%               ↗️ +15.2%                ↘️ -2
+```
+
+#### Main Bots Grid
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│ ID  │ BOT NAME      │ USER          │ STATUS    │ MESSAGES │ ERRORS │ ... │
+├─────────────────────────────────────────────────────────────────────────┤
+│ 🟢 23│ Support Bot   │ user@x.com    │ ✅ Онлайн │   1,456  │   0    │ ⚙️   │
+│ 🔴 31│ Sales Bot     │ sales@y.com   │ ❌ Ошибка │     892  │   12   │ ⚙️   │
+│ 🟡 15│ FAQ Bot       │ info@z.com    │ 🔄 Старт  │       0  │   0    │ ⚙️   │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+#### Bot Details Modal (при клике на строку)
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  🤖 Sales Bot                                         [❌ Закрыть]│
+├──────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  📊 Статистика за 24ч:          🔧 Управление:                  │
+│  • Сообщений: 892               [▶️ Старт] [⏸️ Стоп]              │
+│  • Пользователей: 34            [🔄 Перезагрузка]                │
+│  • Среднее время ответа: 1.2с   [📋 Логи] [⚙️ Настройки]        │
+│                                                                  │
+│  📈 График активности (последние 24ч)                           │
+│  ┌──────────────────────────────────────────────────────────────┐│
+│  │     ▄▆█▅▃▁▂▄▆██▇▅▃▁▁▂▄▆██▇▅▃▁                              ││
+│  └──────────────────────────────────────────────────────────────┘│
+│                                                                  │
+│  ⚠️ Последние ошибки:                                           │
+│  • 15:23 - Rate limit exceeded (Telegram API)                   │
+│  • 14:15 - Network timeout                                      │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### 3. СОВРЕМЕННЫЕ ДИЗАЙН ТРЕНДЫ
+
+**Вдохновение от Vercel Dashboard:**
+- Минималистичная навигация с боковым меню
+- Карточки со скругленными углами (16px border-radius)
+- Тонкие тени (shadow-sm, shadow-md)
+- Hover эффекты с плавной анимацией
+
+**Подходы Linear.app для real-time:**
+- Цветовые индикаторы статуса (зеленый/красный/желтый)
+- Живые счетчики с анимацией
+- Мгновенные уведомления об изменениях
+- Subtle background updates
+
+**Современная цветовая схема:**
+```
+Primary: #8B5CF6 (фиолетовый акцент)
+Success: #10B981 (зеленый для активных ботов)
+Warning: #F59E0B (желтый для состояний загрузки)
+Error: #EF4444 (красный для ошибок)
+Background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)
+Cards: white with rgba(226, 232, 240, 0.8) border
+```
+
+### 4. КОМПОНЕНТНАЯ АРХИТЕКТУРА
+
+```javascript
+AdminBotsMonitoring/
+├── components/
+│   ├── BotsStatsCards.js       // KPI карточки
+│   ├── BotsFilterPanel.js      // Фильтры и поиск
+│   ├── BotsDataTable.js        // Основная таблица
+│   ├── BotStatusBadge.js       // Индикатор статуса
+│   ├── BotDetailsModal.js      // Модальное окно деталей
+│   ├── BotActionsMenu.js       // Dropdown меню действий
+│   └── RealTimeIndicator.js    // Индикатор real-time обновлений
+├── hooks/
+│   ├── useBotsMonitoring.js    // Основной хук данных
+│   ├── useRealTimeUpdates.js   // WebSocket подключение
+│   └── useBotActions.js        // Действия с ботами
+└── styles/
+    └── AdminBotsMonitoring.module.css
+```
+
+### 5. ТЕХНИЧЕСКОЕ ЗАДАНИЕ
+
+#### 5.1 Основной компонент AdminBotsMonitoring
+
+**Структура состояния:**
+```javascript
+const [state, setState] = useState({
+  bots: [],
+  loading: true,
+  filters: {
+    search: '',
+    status: 'all', // all, online, offline, error
+    user: 'all',
+    period: '7d'
+  },
+  selectedBot: null,
+  showBotDetails: false,
+  realTimeData: {
+    connected: false,
+    lastUpdate: null
+  }
+});
+```
+
+**Tailwind классы для основного layout:**
+```css
+.adminBotsMonitoring {
+  @apply min-h-screen bg-gradient-to-br from-gray-50 to-slate-100 p-8;
+}
+
+.header {
+  @apply bg-white rounded-xl shadow-sm border border-gray-200/80 p-6 mb-6;
+}
+
+.headerTitle {
+  @apply text-2xl font-bold text-gray-900 flex items-center gap-3 mb-4;
+}
+
+.headerControls {
+  @apply flex flex-wrap items-center gap-4;
+}
+```
+
+#### 5.2 KPI Cards компонент
+
+**Структура данных:**
+```javascript
+const statsCards = [
+  {
+    title: 'Активных ботов',
+    value: activeBots,
+    total: totalBots,
+    change: '+12.5%',
+    changeType: 'positive',
+    icon: FiActivity,
+    color: 'green'
+  },
+  {
+    title: 'Сообщений/час',
+    value: messagesPerHour,
+    change: '+8.3%',
+    changeType: 'positive', 
+    icon: FiMessageSquare,
+    color: 'blue'
+  }
+  // ... остальные карточки
+];
+```
+
+**Tailwind классы:**
+```css
+.statsGrid {
+  @apply grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-6;
+}
+
+.statCard {
+  @apply bg-white rounded-xl shadow-sm border border-gray-200/80 p-6 hover:shadow-md transition-all duration-200;
+}
+
+.statCard.green {
+  @apply border-l-4 border-l-green-500;
+}
+
+.statValue {
+  @apply text-3xl font-bold text-gray-900 mb-2;
+}
+
+.statChange.positive {
+  @apply text-green-600 bg-green-100 px-2 py-1 rounded-full text-sm font-medium inline-flex items-center gap-1;
+}
+```
+
+#### 5.3 Bots Data Table
+
+**Колонки таблицы:**
+```javascript
+const columns = [
+  { key: 'status', title: 'Статус', width: '80px' },
+  { key: 'id', title: 'ID', width: '60px' },
+  { key: 'name', title: 'Имя бота', width: '200px' },
+  { key: 'user', title: 'Пользователь', width: '180px' },
+  { key: 'messages', title: 'Сообщений', width: '100px' },
+  { key: 'uptime', title: 'Время работы', width: '120px' },
+  { key: 'errors', title: 'Ошибки', width: '80px' },
+  { key: 'lastActivity', title: 'Последняя активность', width: '150px' },
+  { key: 'actions', title: 'Действия', width: '120px' }
+];
+```
+
+**Tailwind классы для таблицы:**
+```css
+.botsTable {
+  @apply bg-white rounded-xl shadow-sm border border-gray-200/80 overflow-hidden;
+}
+
+.tableHeader {
+  @apply bg-gray-50 border-b border-gray-200;
+}
+
+.tableRow {
+  @apply border-b border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer;
+}
+
+.statusBadge.online {
+  @apply bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1;
+}
+
+.statusBadge.offline {
+  @apply bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1;
+}
+
+.statusBadge.loading {
+  @apply bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium inline-flex items-center gap-1;
+}
+```
+
+#### 5.4 Real-time Updates
+
+**WebSocket подключение:**
+```javascript
+const useRealTimeUpdates = (enabled = true) => {
+  const [wsConnection, setWsConnection] = useState(null);
+  const [lastUpdate, setLastUpdate] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    // Подключение к WebSocket для real-time обновлений
+    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL}/admin-bots`);
+    
+    ws.onopen = () => {
+      setIsConnected(true);
+      setWsConnection(ws);
+    };
+    
+    ws.onmessage = (event) => {
+      const update = JSON.parse(event.data);
+      setLastUpdate(update);
+    };
+
+    return () => {
+      ws.close();
+      setIsConnected(false);
+    };
+  }, [enabled]);
+
+  return { isConnected, lastUpdate, wsConnection };
+};
+```
+
+#### 5.5 Адаптивность
+
+**Mobile First подход:**
+```css
+/* Mobile (default) */
+.botsGrid {
+  @apply space-y-4;
+}
+
+.botCard {
+  @apply bg-white rounded-lg shadow-sm border border-gray-200 p-4;
+}
+
+/* Tablet */
+@media (min-width: 768px) {
+  .botsGrid {
+    @apply grid grid-cols-2 gap-4 space-y-0;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .botsGrid {
+    @apply block space-y-0;
+  }
+  
+  /* Показываем таблицу вместо карточек */
+  .botCard {
+    @apply hidden;
+  }
+  
+  .botsTable {
+    @apply block;
+  }
+}
+```
+
+### 6. API ИНТЕГРАЦИЯ
+
+#### 6.1 Новые эндпоинты (требуют реализации в backend)
+
+```python
+# В api/admin.py
+@router.get("/admin/bots-monitoring")
+async def get_bots_monitoring_data(
+    period: str = Query('7d', enum=['24h', '7d', '30d']),
+    status: str = Query('all', enum=['all', 'online', 'offline', 'error']),
+    user_id: Optional[int] = Query(None),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_admin)
+):
+    """Получить данные для мониторинга ботов"""
+    # Логика получения статистики ботов
+    pass
+
+@router.get("/admin/bots-monitoring/stats")
+async def get_bots_stats():
+    """KPI метрики для админки"""
+    pass
+
+@router.post("/admin/bots/{bot_id}/action")
+async def execute_bot_action(
+    bot_id: int, 
+    action: str,  # start, stop, restart, reload
+    db: Session = Depends(get_db)
+):
+    """Выполнить действие с ботом"""
+    pass
+```
+
+#### 6.2 Frontend API клиент
+
+```javascript
+// services/adminBotsApi.js
+export class AdminBotsAPI {
+  static async getBotsMonitoringData(filters) {
+    const params = new URLSearchParams(filters);
+    return fetch(`/api/admin/bots-monitoring?${params}`);
+  }
+
+  static async getBotsStats(period = '7d') {
+    return fetch(`/api/admin/bots-monitoring/stats?period=${period}`);
+  }
+
+  static async executeBotAction(botId, action) {
+    return fetch(`/api/admin/bots/${botId}/action`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action })
+    });
+  }
+}
+```
+
+### 7. ПЛАН РЕАЛИЗАЦИИ
+
+#### Фаза 1: Базовая структура (2-3 часа)
+1. ✅ Создание page компонента /admin-bots-monitoring
+2. ✅ Настройка AdminDashboard с новым пунктом меню
+3. ✅ Базовая структура компонентов
+4. ✅ Основные стили и layout
+
+#### Фаза 2: Статические данные (3-4 часа)  
+1. ✅ KPI карточки с мокданными
+2. ✅ Таблица ботов с фильтрацией
+3. ✅ Модальное окно деталей
+4. ✅ Responsive адаптация
+
+#### Фаза 3: API интеграция (4-5 часов)
+1. ✅ Подключение к существующим API
+2. ✅ Хуки для управления состоянием
+3. ✅ Обработка loading/error состояний
+4. ✅ Действия с ботами (start/stop/restart)
+
+#### Фаза 4: Real-time (3-4 часа)
+1. ✅ WebSocket подключение
+2. ✅ Живые обновления статистики  
+3. ✅ Push уведомления об ошибках
+4. ✅ Индикаторы активности
+
+### 8. ЗАКЛЮЧЕНИЕ
+
+Концепция создает современную админскую панель для мониторинга ботов в real-time с:
+
+- ✅ **Интуитивным UX** - карточный дизайн, цветовая индикация
+- ✅ **Полной адаптивностью** - от мобильных до больших экранов  
+- ✅ **Real-time мониторингом** - WebSocket обновления
+- ✅ **Богатым функционалом** - фильтрация, поиск, детальная статистика
+- ✅ **Современным дизайном** - следует трендам Vercel/Linear
+- ✅ **Легкой расширяемостью** - модульная архитектура
+
+Готов к передаче frontend-uiux агенту для реализации.

@@ -1,0 +1,428 @@
+/* AdminAnalytics.module.css - Стили для страницы админской аналитики */
+
+.adminAnalyticsPage {
+  @apply min-h-screen bg-gray-50;
+}
+
+.container {
+  @apply mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8;
+  max-width: 1400px;
+}
+
+/* Header стили */
+.header {
+  @apply bg-white border border-gray-200 rounded-xl shadow-sm;
+}
+
+.headerContent {
+  @apply p-6;
+}
+
+.title {
+  @apply text-2xl sm:text-3xl font-bold text-gray-900 mb-2;
+}
+
+.subtitle {
+  @apply text-gray-600 text-sm sm:text-base;
+}
+
+.lastUpdated {
+  @apply text-xs text-gray-500 mt-1;
+}
+
+.actions {
+  @apply flex flex-col sm:flex-row gap-3 mt-4 sm:mt-0;
+}
+
+.refreshBtn {
+  @apply inline-flex items-center gap-2 px-4 py-2 
+         border border-gray-300 rounded-xl
+         text-sm font-medium text-gray-700
+         bg-white hover:bg-gray-50
+         focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2
+         disabled:opacity-50 disabled:cursor-not-allowed
+         transition-all duration-200;
+}
+
+.refreshBtn:disabled {
+  @apply animate-pulse;
+}
+
+.exportBtn {
+  @apply inline-flex items-center gap-2 px-4 py-2
+         bg-gradient-to-r from-purple-600 to-violet-600
+         hover:from-purple-700 hover:to-violet-700
+         text-white rounded-xl text-sm font-medium
+         focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2
+         transition-all duration-200;
+}
+
+/* Period filter стили */
+.periodFilter {
+  @apply mt-6 pt-4 border-t border-gray-200;
+}
+
+.periodLabel {
+  @apply flex items-center gap-2 mb-3;
+}
+
+.periodLabelText {
+  @apply text-sm font-medium text-gray-700;
+}
+
+.periodButtons {
+  @apply flex flex-wrap gap-2;
+}
+
+.periodButton {
+  @apply px-4 py-2 rounded-xl text-sm font-medium
+         transition-all duration-200;
+}
+
+.periodButton.active {
+  @apply bg-purple-100 text-purple-700 border border-purple-200;
+}
+
+.periodButton.inactive {
+  @apply bg-gray-100 text-gray-700 border border-transparent hover:bg-gray-200;
+}
+
+/* Tabs стили */
+.tabsContainer {
+  @apply bg-white border border-gray-200 rounded-xl shadow-sm;
+}
+
+.tabsNavDesktop {
+  @apply hidden sm:block px-6;
+}
+
+.tabsNav {
+  @apply -mb-px flex space-x-8;
+}
+
+.tab {
+  @apply inline-flex items-center gap-2 py-4 px-1 
+         border-b-2 font-medium text-sm transition-colors duration-200
+         cursor-pointer;
+}
+
+.tab.active {
+  @apply border-purple-500 text-purple-600;
+}
+
+.tab.inactive {
+  @apply border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300;
+}
+
+.tab:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+.tabIcon {
+  @apply transition-colors duration-200;
+}
+
+.tabIcon.active {
+  @apply text-purple-600;
+}
+
+.tabIcon.inactive {
+  @apply text-gray-400 group-hover:text-gray-500;
+}
+
+.tabsMobile {
+  @apply sm:hidden py-4 px-6;
+}
+
+.tabSelect {
+  @apply block w-full rounded-xl border border-gray-300 px-3 py-2 
+         bg-white text-gray-900 text-sm
+         focus:border-purple-500 focus:ring-purple-500
+         disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.tabDescription {
+  @apply px-6 pb-4 text-sm text-gray-600;
+}
+
+/* Content стили */
+.contentArea {
+  @apply bg-white border border-gray-200 rounded-xl shadow-sm p-6;
+}
+
+/* Loading стили */
+.loadingContainer {
+  @apply flex items-center justify-center py-12;
+}
+
+.loadingSpinner {
+  @apply animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600;
+}
+
+.loadingText {
+  @apply text-gray-600 ml-3;
+}
+
+/* Error стили */
+.errorContainer {
+  @apply bg-red-50 border border-red-200 rounded-xl p-4 mb-6;
+}
+
+.errorText {
+  @apply text-red-700 text-sm;
+}
+
+.retryBtn {
+  @apply mt-2 text-red-700 hover:text-red-800 underline text-sm;
+}
+
+/* Metrics grid стили */
+.metricsGrid {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6;
+}
+
+.metricCard {
+  @apply bg-white border border-gray-200 rounded-xl p-6 shadow-sm 
+         hover:shadow-md transition-all duration-200;
+}
+
+.metricHeader {
+  @apply flex items-center justify-between mb-4;
+}
+
+.metricIcon {
+  @apply w-10 h-10 rounded-xl flex items-center justify-center;
+}
+
+.metricIcon.blue {
+  @apply bg-blue-50 text-blue-600 border border-blue-200;
+}
+
+.metricIcon.green {
+  @apply bg-green-50 text-green-600 border border-green-200;
+}
+
+.metricIcon.purple {
+  @apply bg-purple-50 text-purple-600 border border-purple-200;
+}
+
+.metricIcon.orange {
+  @apply bg-orange-50 text-orange-600 border border-orange-200;
+}
+
+.metricGrowth {
+  @apply flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium bg-gray-50;
+}
+
+.metricGrowth.positive {
+  @apply text-green-600;
+}
+
+.metricGrowth.negative {
+  @apply text-red-600;
+}
+
+.metricTitle {
+  @apply text-sm font-medium text-gray-600 mb-2;
+}
+
+.metricValue {
+  @apply text-2xl font-bold text-gray-900;
+}
+
+/* Table стили */
+.tableContainer {
+  @apply bg-white border border-gray-200 rounded-xl overflow-hidden;
+}
+
+.tableHeader {
+  @apply hidden sm:grid bg-gray-50 border-b border-gray-200 p-4 text-sm font-medium text-gray-700;
+}
+
+.tableRow {
+  @apply p-4 border-b border-gray-200 hover:bg-gray-50 transition-colors;
+}
+
+.tableRow:last-child {
+  @apply border-b-0;
+}
+
+.tableCell {
+  @apply text-sm;
+}
+
+.tableCellPrimary {
+  @apply font-medium text-gray-900;
+}
+
+.tableCellSecondary {
+  @apply text-gray-600;
+}
+
+.tableCellMuted {
+  @apply text-gray-500;
+}
+
+/* Pagination стили */
+.paginationContainer {
+  @apply flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-gray-50;
+}
+
+.paginationInfo {
+  @apply text-sm text-gray-700;
+}
+
+.paginationButtons {
+  @apply flex items-center gap-2;
+}
+
+.paginationBtn {
+  @apply p-2 rounded-lg border border-gray-300 hover:bg-gray-50 
+         disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.paginationPageBtn {
+  @apply px-3 py-2 rounded-lg text-sm font-medium border border-gray-300 hover:bg-gray-50;
+}
+
+.paginationPageBtn.active {
+  @apply bg-purple-100 text-purple-700 border-purple-300;
+}
+
+/* Chart стили */
+.chartContainer {
+  @apply bg-white border border-gray-200 rounded-xl p-6;
+}
+
+.chartTitle {
+  @apply text-base font-semibold text-gray-900 mb-4;
+}
+
+.chartBar {
+  @apply flex items-center gap-3 mb-2;
+}
+
+.chartLabel {
+  @apply text-sm text-gray-600 flex-shrink-0;
+}
+
+.chartBarBg {
+  @apply flex-1 bg-gray-200 rounded-full h-4 relative overflow-hidden;
+}
+
+.chartBarFill {
+  @apply h-full rounded-full transition-all duration-300;
+}
+
+.chartValue {
+  @apply text-sm text-gray-900 text-right font-medium;
+}
+
+/* Empty state стили */
+.emptyState {
+  @apply text-center py-12;
+}
+
+.emptyIcon {
+  @apply mx-auto text-gray-400 mb-4;
+}
+
+.emptyTitle {
+  @apply text-lg font-medium text-gray-900 mb-2;
+}
+
+.emptyText {
+  @apply text-gray-600;
+}
+
+/* Badge/Status стили */
+.statusBadge {
+  @apply inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium;
+}
+
+.statusBadge.success {
+  @apply bg-green-100 text-green-700;
+}
+
+.statusBadge.warning {
+  @apply bg-yellow-100 text-yellow-700;
+}
+
+.statusBadge.danger {
+  @apply bg-red-100 text-red-700;
+}
+
+.statusBadge.info {
+  @apply bg-blue-100 text-blue-700;
+}
+
+.statusBadge.purple {
+  @apply bg-purple-100 text-purple-700;
+}
+
+.statusBadge.gray {
+  @apply bg-gray-100 text-gray-700;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .metricsGrid {
+    @apply grid-cols-1 gap-4;
+  }
+  
+  .metricCard {
+    @apply p-4;
+  }
+  
+  .metricValue {
+    @apply text-xl;
+  }
+  
+  .chartBar {
+    @apply gap-2 mb-3;
+  }
+  
+  .chartLabel {
+    @apply w-16 text-xs;
+  }
+  
+  .chartValue {
+    @apply w-20 text-xs;
+  }
+}
+
+/* Focus styles for accessibility */
+.focusable:focus-visible {
+  @apply outline-none ring-2 ring-purple-500 ring-offset-2;
+}
+
+/* Animations */
+.fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slideIn {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

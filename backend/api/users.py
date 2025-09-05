@@ -24,11 +24,7 @@ router = APIRouter()
 
 # --- Admin User Management ---
 
-@router.get("/admin/users", response_model=List[schemas.UserRead])
-@rate_limit_api(limit=100, window=60)  # 100 запросов в минуту для админа
-def get_users(db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_admin)):
-    users = crud.get_users(db)
-    return users
+# GET /admin/users endpoint перенесен в api/admin.py для лучшей организации
 
 @router.post("/admin/users", response_model=schemas.UserRead)
 @rate_limit_api(limit=20, window=60)  # 20 создани пользователей в минуту
@@ -66,6 +62,9 @@ def delete_user_endpoint(user_id: int, db: Session = Depends(get_db), current_us
     if not user:
         raise HTTPException(status_code=404, detail="Пользователь не найден")
     
+    # Сохраняем email перед удалением
+    user_email = user.email
+    
     # Получаем все боты пользователя перед удалением
     user_bot_instances = db.query(models.BotInstance).filter(models.BotInstance.user_id == user_id).all()
     
@@ -94,9 +93,9 @@ def delete_user_endpoint(user_id: int, db: Session = Depends(get_db), current_us
         except Exception as e:
             print(f"⚠️ Ошибка синхронизации мастер-процесса: {e}")
         
-        print(f"✅ Пользователь {user_id} ({user.email}) и все связанные данные успешно удалены")
+        print(f"✅ Пользователь {user_id} ({user_email}) и все связанные данные успешно удалены")
         
-        return {"ok": True, "message": f"Пользователь {user.email} и все связанные данные удалены"}
+        return {"ok": True, "message": f"Пользователь {user_email} и все связанные данные удалены"}
         
     except HTTPException:
         # Повторно выбрасываем HTTP исключения

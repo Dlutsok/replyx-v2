@@ -3,7 +3,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: #fafafa;
+  background: #ffffff;
 }
 
 .messagesContainer {
@@ -15,10 +15,29 @@
   gap: 12px;
 }
 
+/* Новая строка сообщения как в примере: аватар + тело */
+.messageRow { display: grid; grid-template-columns: 36px 1fr; align-items: start; gap: 10px; }
+.messageRow.user { grid-template-columns: 1fr 36px; }
+
+.avatar { width: 36px; height: 36px; border-radius: 50%; background: #f3e8ff; color:#7c3aed; display:flex; align-items:center; justify-content:center; font-weight:700; }
+.msgBody { background:#fff; border:1px solid #e6e8ea; border-radius: 12px; padding: 10px 12px; box-shadow: 0 1px 2px rgba(17,24,39,0.06); max-width: 75%; width: fit-content; }
+.msgHeader { display:flex; align-items:center; gap:8px; margin-bottom:4px; }
+.senderName { font-weight:600; color:#374151; font-size:14px; }
+.msgTime { color:#9ca3af; font-size:13px; font-weight:500; }
+.msgText { color:#374151; font-size:15px; font-weight:400; line-height:1.6; white-space:pre-wrap; }
+
+.messageRow.assistant .msgBody { background:#f9fafb; border-color:#e5e7eb; }
+.messageRow.manager .msgBody { background:#7c3aed; border-color:#7c3aed; }
+.messageRow.manager .senderName, .messageRow.manager .msgText, .messageRow.manager .msgTime { color:#fff; }
+
+/* Выравнивание справа для пользователя: аватар справа, баббл перед ним */
+.messageRow.user .avatar { order: 2; justify-self: end; }
+.messageRow.user .msgBody { order: 1; justify-self: end; margin-left: auto; }
+
 .messageWrapper {
   display: flex;
   flex-direction: column;
-  max-width: 80%;
+  max-width: 72%;
 }
 
 .messageWrapper.user {
@@ -33,66 +52,91 @@
 }
 
 .senderLabel {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
   color: #6b7280;
   margin-bottom: 4px;
   padding-left: 12px;
 }
 
 .messageBubble {
-  background: white;
-  border-radius: 0.75rem;
+  background: #ffffff;
+  border-radius: 12px;
   padding: 12px 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 2px rgba(17, 24, 39, 0.06);
+  border: 1px solid #e6e8ea;
   position: relative;
   max-width: 100%;
   word-wrap: break-word;
 }
 
 .messageWrapper.user .messageBubble {
-  background: #3b82f6;
-  color: white;
-  border-color: #3b82f6;
+  background: #ffffff;
+  color: #111827;
+  border-color: #e6e8ea;
 }
 
 .messageWrapper.assistant .messageBubble {
-  background: #f3f4f6;
-  border-color: #e5e7eb;
+  background: #f6f7f9;
+  border-color: #e6e8ea;
 }
 
 .messageWrapper.manager .messageBubble {
-  background: #fef3c7;
-  border-color: #f59e0b;
+  background: #7c3aed;
+  border-color: #7c3aed;
+  color: #ffffff;
 }
 
 .messageText {
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.6;
   white-space: pre-wrap;
   margin-bottom: 4px;
 }
 
-.messageWrapper.user .messageText {
-  color: white;
-}
+.messageWrapper.manager .messageText { color: #ffffff; }
 
 .messageTime {
-  font-size: 11px;
-  opacity: 0.7;
+  font-size: 12px;
+  font-weight: 400;
+  opacity: 0.6;
   text-align: right;
   margin-top: 4px;
 }
 
-.messageWrapper.user .messageTime {
-  color: rgba(255, 255, 255, 0.8);
-}
+.messageWrapper.manager .messageTime { color: rgba(255, 255, 255, 0.9); }
 
 .messageWrapper.assistant .messageTime,
-.messageWrapper.manager .messageTime {
+.messageWrapper.user .messageTime {
+  color: #9ca3af;
+}
+
+/* System messages */
+.messageWrapper.system { align-items: center; max-width: 100%; }
+.messageWrapper.system .messageBubble {
+  background: #fbfbfd;
+  border-style: dashed;
+  border-color: #e5e7eb;
   color: #6b7280;
 }
+
+/* Системные сообщения в общей сетке (как уведомления по центру) */
+.messageRow.system { grid-template-columns: 1fr; }
+.messageRow.system .msgBody { display:none; }
+.messageRow.system .avatar { display:none; }
+.messageRow.system .messageWrapper { width: 100%; display:flex; justify-content: center; }
+
+/* Профессиональные уведомления */
+.systemNotice { display:flex; align-items:flex-start; gap:10px; margin: 8px auto; padding: 10px 12px; border-radius: 12px; border:1px solid; max-width: 80%; box-shadow: 0 1px 2px rgba(17,24,39,0.06); }
+.systemIcon { width:18px; height:18px; margin-top:2px; }
+.systemContent { display:flex; flex-direction:column; gap:4px; }
+.systemText { font-size:15px; font-weight:400; line-height:1.6; }
+.systemTime { font-size:13px; font-weight:500; color:#6b7280; }
+.systemNotice.info { background:#f3e8ff; border-color:#e9d5ff; color:#6b21a8; }
+.systemNotice.success { background:#ecfdf5; border-color:#a7f3d0; color:#065f46; }
+.systemNotice.warning { background:#fffbeb; border-color:#fde68a; color:#92400e; }
+.systemNotice.error { background:#fef2f2; border-color:#fecaca; color:#7f1d1d; }
 
 .loadingState,
 .errorState,
@@ -118,7 +162,7 @@
 }
 
 .emptyState p {
-  font-size: 14px;
+  font-size: 15px;
   margin: 0;
 }
 

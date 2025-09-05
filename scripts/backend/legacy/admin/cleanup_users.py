@@ -9,7 +9,7 @@ sys.path.append(str(Path(__file__).parent))
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from core.app_config import DATABASE_URL
-from database.models import User, Dialog, DialogMessage, Document, UserKnowledge, KnowledgeEmbedding, BalanceTransaction, Assistant, DialogFeedback, DialogRating, MessageRating, BotInstance, AITokenUsage, ReferralCode, Referral, PromoCodeUsage, UserBalance
+from database.models import User, Dialog, DialogMessage, Document, UserKnowledge, KnowledgeEmbedding, BalanceTransaction, Assistant, DialogFeedback, DialogRating, MessageRating, BotInstance, AITokenUsage, UserBalance
 import os
 from dotenv import load_dotenv
 
@@ -147,20 +147,7 @@ def cleanup_users():
         deleted_transactions = db.query(BalanceTransaction).filter(BalanceTransaction.user_id.in_(user_ids_to_delete)).delete(synchronize_session=False)
         print(f"   🗑️  Удалено транзакций: {deleted_transactions}")
         
-        # 13. Удаляем использование промокодов
-        deleted_promo_usage = db.query(PromoCodeUsage).filter(PromoCodeUsage.user_id.in_(user_ids_to_delete)).delete(synchronize_session=False)
-        print(f"   🗑️  Удалено использований промокодов: {deleted_promo_usage}")
-        
-        # 14. Удаляем рефералы (как реферера, так и рефералы)
-        deleted_referrals_made = db.query(Referral).filter(Referral.referrer_id.in_(user_ids_to_delete)).delete(synchronize_session=False)
-        deleted_referrals_received = db.query(Referral).filter(Referral.referred_id.in_(user_ids_to_delete)).delete(synchronize_session=False)
-        print(f"   🗑️  Удалено рефералов (сделанных/полученных): {deleted_referrals_made}/{deleted_referrals_received}")
-        
-        # 15. Удаляем реферальные коды
-        deleted_referral_codes = db.query(ReferralCode).filter(ReferralCode.user_id.in_(user_ids_to_delete)).delete(synchronize_session=False)
-        print(f"   🗑️  Удалено реферальных кодов: {deleted_referral_codes}")
-        
-        # 16. Удаляем балансы пользователей
+        # 13. Удаляем балансы пользователей
         deleted_balances = db.query(UserBalance).filter(UserBalance.user_id.in_(user_ids_to_delete)).delete(synchronize_session=False)
         print(f"   🗑️  Удалено балансов: {deleted_balances}")
         

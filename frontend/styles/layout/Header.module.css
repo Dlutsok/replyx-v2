@@ -1,18 +1,18 @@
-/* Header - Unified Landing Style */
+/* Header - Lyro Style */
 .header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 100;
-  background: rgba(255, 255, 255, 0.95);
-  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
-  backdrop-filter: blur(12px);
-  transition: all 0.3s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  background: rgb(245, 247, 249);
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-left: 84px;
 }
 
-.header:hover {
-  background: rgba(255, 255, 255, 0.98);
-  border-bottom-color: rgba(226, 232, 240, 1);
+/* Свернутое состояние sidebar */
+.header.sidebarCollapsed {
+  margin-left: 84px;
 }
 
 .headerContent {
@@ -20,13 +20,13 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  height: 64px;
-  max-width: 1400px;
+  height: 58px;
+  max-width: none;
   margin: 0 auto;
   gap: 24px;
 }
 
-/* Левая секция - меню и заголовок */
+/* Левая секция - заголовок страницы */
 .leftSection {
   flex: 1;
   min-width: 200px;
@@ -35,36 +35,80 @@
   gap: 12px;
 }
 
-/* Гамбургер-меню для мобильных */
-.hamburgerButton {
+/* Кнопка открытия сайдбара на мобильных */
+.sidebarToggle {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 40px;
   height: 40px;
-  background: transparent;
-  border: 1px solid rgba(226, 232, 240, 0.6);
-  border-radius: 0.75rem;
+  border: none;
+  background: #ffffff;
+  border-radius: 8px;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.sidebarToggle:hover {
+  background: #f9fafb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+.sidebarToggle:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.sidebarToggleIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.pageTitle {
+  margin: 0;
+  padding: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+  line-height: 1.2;
+}
+
+.standardHeader {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* Кнопка сворачивания убрана из Header */
+
+/* Гамбургер-меню для мобильных */
+.hamburgerButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
   color: #6b7280;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.15s ease;
   flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .hamburgerButton:hover {
-  background: rgba(124, 77, 255, 0.05);
-  border-color: rgba(124, 77, 255, 0.2);
-  color: #7C4DFF;
-  transform: translateY(-1px);
-}
-
-.hamburgerButton:active {
-  transform: scale(0.98);
+  background: #f9fafb;
+  border-color: #d1d5db;
+  color: #374151;
 }
 
 .hamburgerIcon {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
 }
 
 .pageInfo {
@@ -73,14 +117,6 @@
   gap: 4px;
 }
 
-.pageTitle {
-  font-size: 18px;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin: 0;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-}
 
 .breadcrumbs {
   display: flex;
@@ -95,8 +131,8 @@
 }
 
 .breadcrumbLink {
-  font-size: 12px;
-  color: #64748b;
+  font-size: 10px;
+  color: #9ca3af;
   background: none;
   border: none;
   cursor: pointer;
@@ -104,20 +140,19 @@
 }
 
 .breadcrumbLink:hover {
-  color: #7C4DFF;
+  color: #007aff;
 }
 
 .breadcrumbCurrent {
-  font-size: 12px;
-  color: #94a3b8;
+  font-size: 10px;
+  color: #9ca3af;
 }
 
 .breadcrumbSeparator {
-  font-size: 12px;
-  color: #cbd5e1;
+  font-size: 14px;
+  color: #d1d5db;
   margin: 0 2px;
 }
-
 
 /* Правая секция */
 .rightSection {
@@ -136,22 +171,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  background: transparent;
-  border: 1px solid rgba(226, 232, 240, 0.6);
-  border-radius: 0.75rem;
+  width: 36px;
+  height: 36px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.15s ease;
   color: #6b7280;
   position: relative;
 }
 
 .notificationButton:hover {
-  background: rgba(124, 77, 255, 0.05);
-  border-color: rgba(124, 77, 255, 0.2);
-  color: #7C4DFF;
-  transform: translateY(-1px);
+  background: #f9fafb;
+  border-color: #d1d5db;
+  color: #374151;
 }
 
 .notificationIcon {
@@ -168,7 +202,7 @@
   font-size: 10px;
   font-weight: 600;
   padding: 2px 6px;
-  border-radius: 0.75rem;
+  border-radius: 6px;
   min-width: 16px;
   height: 16px;
   display: flex;
@@ -182,23 +216,23 @@
   right: 0;
   width: 320px;
   background: white;
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  border-radius: 0.75rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   margin-top: 8px;
   z-index: 1000;
 }
 
 .notificationsHeader {
   padding: 16px 20px 12px;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+  border-bottom: 1px solid #f3f4f6;
 }
 
 .notificationsHeader h3 {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: #1e293b;
+  color: #1f2937;
 }
 
 .notificationsList {
@@ -209,22 +243,22 @@
 .noNotifications {
   padding: 40px 20px;
   text-align: center;
-  color: #64748b;
+  color: #9ca3af;
   font-size: 14px;
   margin: 0;
 }
 
 .notificationItem {
   padding: 12px 20px;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.4);
+  border-bottom: 1px solid #f3f4f6;
   font-size: 14px;
-  color: #475569;
+  color: #6b7280;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
 .notificationItem:hover {
-  background: rgba(248, 250, 252, 0.6);
+  background: #f9fafb;
 }
 
 .notificationItem:last-child {
@@ -240,73 +274,62 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 16px;
-  border: 1px solid rgba(226, 232, 240, 0.6);
-  border-radius: 0.75rem;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.15s ease;
   font-size: 14px;
   font-weight: 500;
-  min-width: 85px;
-  height: 40px;
+  min-width: 90px;
+  height: 36px;
   position: relative;
-  background: rgba(124, 77, 255, 0.08);
-  color: #7C4DFF;
+  background: #ffffff;
+  color: #1f2937;
 }
 
 .balanceButton:hover {
-  transform: translateY(-1px);
-  background: rgba(124, 77, 255, 0.12);
-  border-color: rgba(124, 77, 255, 0.2);
+  background: #f9fafb;
+  border-color: #d1d5db;
 }
 
-/* Цветовые состояния кнопки - минималистичные */
+/* Цветовые состояния кнопки - минималистичный стиль */
 .balanceButton.good {
-  background: rgba(124, 77, 255, 0.08);
-  color: #7C4DFF;
-  border-color: rgba(124, 77, 255, 0.2);
+  background: #ffffff;
+  color: #16a34a;
+  border-color: #bbf7d0;
 }
 
 .balanceButton.good:hover {
-  background: rgba(124, 77, 255, 0.12);
-  border-color: rgba(124, 77, 255, 0.3);
+  background: #f0fdf4;
+  border-color: #86efac;
 }
 
 .balanceButton.medium {
-  background: rgba(251, 191, 36, 0.08);
-  color: #f59e0b;
-  border-color: rgba(251, 191, 36, 0.2);
+  background: #ffffff;
+  color: #d97706;
+  border-color: #fde047;
 }
 
 .balanceButton.medium:hover {
-  background: rgba(251, 191, 36, 0.12);
-  border-color: rgba(251, 191, 36, 0.3);
+  background: #fffbeb;
+  border-color: #fcd34d;
 }
 
 .balanceButton.low {
-  background: rgba(239, 68, 68, 0.08);
-  color: #ef4444;
-  border-color: rgba(239, 68, 68, 0.2);
-  animation: pulseRed 2s ease-in-out infinite;
+  background: #ffffff;
+  color: #dc2626;
+  border-color: #fca5a5;
 }
 
 .balanceButton.low:hover {
-  background: rgba(239, 68, 68, 0.12);
-  border-color: rgba(239, 68, 68, 0.3);
-}
-
-@keyframes pulseRed {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.8;
-  }
+  background: #fef2f2;
+  border-color: #f87171;
 }
 
 .balanceAmount {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 /* Профиль */
@@ -318,26 +341,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(135deg, #7c4dff 0%, #6366f1 100%);
-  border: 1px solid rgba(124, 77, 255, 0.2);
-  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  background: #6b7280;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   color: white;
-  box-shadow: 0 2px 8px rgba(124, 77, 255, 0.15);
 }
 
 .profileButton:hover {
-  background: linear-gradient(135deg, #7c4dff 0%, #5b47c2 100%);
-  transform: translateY(-1px) scale(1.02);
-  box-shadow: 0 4px 12px rgba(124, 77, 255, 0.25);
+  background: #4b5563;
 }
 
 .profileIcon {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
 }
 
 /* Адаптивность */
@@ -345,13 +365,27 @@
   .leftSection {
     min-width: 180px;
   }
-  
+
   .pageTitle {
     font-size: 18px;
   }
 }
 
+@media (max-width: 1024px) and (min-width: 769px) {
+  .header {
+    margin-left: 260px;
+  }
+
+  .header.sidebarCollapsed {
+    margin-left: 80px;
+  }
+}
+
 @media (max-width: 768px) {
+  .header {
+    margin-left: 0;
+  }
+
   .headerContent {
     padding: 12px 16px;
     height: 64px;
@@ -370,18 +404,17 @@
     display: none;
   }
   
-  
   .balanceButton {
     padding: 6px 12px;
     min-width: 75px;
-    height: 36px;
+    height: 32px;
     font-size: 13px;
   }
 
   .profileButton,
   .notificationButton {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
   }
   
   .profileIcon,
@@ -392,21 +425,6 @@
   
   .notificationsDropdown {
     width: 280px;
-  }
-}
-
-@media (max-width: 768px) {
-  .headerContent {
-    gap: 12px;
-    padding: 16px;
-  }
-  
-  .pageTitle {
-    font-size: 18px;
-  }
-  
-  .breadcrumbs {
-    display: none;
   }
 }
 
@@ -425,5 +443,197 @@
   
   .pageTitle {
     font-size: 16px;
+  }
+}
+
+/* Темная тема */
+/* Отключаем темную тему на мобильных устройствах */
+@media (max-width: 768px) {
+  [data-theme="dark"] .header {
+    background: #ffffff !important;
+    border-bottom-color: #e5e7eb !important;
+  }
+
+  [data-theme="dark"] .hamburgerButton {
+    border-color: #e5e7eb !important;
+    color: #6b7280 !important;
+  }
+
+  [data-theme="dark"] .hamburgerButton:hover {
+    background: #f3f4f6 !important;
+    border-color: #d1d5db !important;
+    color: #374151 !important;
+  }
+
+  [data-theme="dark"] .pageTitle {
+    color: #1a1a1a !important;
+  }
+
+  [data-theme="dark"] .breadcrumbLink {
+    color: #6b7280 !important;
+  }
+
+  [data-theme="dark"] .breadcrumbLink:hover {
+    color: #7c3aed !important;
+  }
+
+  [data-theme="dark"] .breadcrumbCurrent {
+    color: #6b7280 !important;
+  }
+
+  [data-theme="dark"] .notificationButton {
+    border-color: #e5e7eb !important;
+    color: #6b7280 !important;
+  }
+
+  [data-theme="dark"] .notificationButton:hover {
+    background: #f3f4f6 !important;
+    border-color: #d1d5db !important;
+    color: #374151 !important;
+  }
+
+  [data-theme="dark"] .notificationsDropdown {
+    background: #ffffff !important;
+    border-color: #e5e7eb !important;
+  }
+
+  [data-theme="dark"] .notificationsHeader {
+    border-bottom-color: #e5e7eb !important;
+  }
+
+  [data-theme="dark"] .notificationsHeader h3 {
+    color: #1a1a1a !important;
+  }
+
+  [data-theme="dark"] .noNotifications {
+    color: #6b7280 !important;
+  }
+
+  [data-theme="dark"] .notificationItem {
+    color: #374151 !important;
+    border-bottom-color: #e5e7eb !important;
+  }
+
+  [data-theme="dark"] .notificationItem:hover {
+    background: #f3f4f6 !important;
+  }
+
+  [data-theme="dark"] .balanceButton {
+    background: #ffffff !important;
+    color: #374151 !important;
+    border-color: #e5e7eb !important;
+  }
+
+  [data-theme="dark"] .balanceButton:hover {
+    background: #f3f4f6 !important;
+    border-color: #d1d5db !important;
+  }
+
+  [data-theme="dark"] .profileButton {
+    background: #6b7280 !important;
+  }
+
+  [data-theme="dark"] .profileButton:hover {
+    background: #374151 !important;
+  }
+}
+
+/* Темная тема только для десктопных устройств */
+@media (min-width: 769px) {
+  [data-theme="dark"] .header {
+    background: #374151;
+    border-bottom-color: #4b5563;
+  }
+
+  [data-theme="dark"] .hamburgerButton {
+    border-color: #4b5563;
+    color: #9ca3af;
+  }
+
+  [data-theme="dark"] .hamburgerButton:hover {
+    background: #4b5563;
+    border-color: #6b7280;
+    color: #d1d5db;
+  }
+
+  [data-theme="dark"] .pageTitle {
+    color: #f9fafb;
+  }
+
+  [data-theme="dark"] .breadcrumbLink {
+    color: #6b7280;
+  }
+
+  [data-theme="dark"] .breadcrumbLink:hover {
+    color: #60a5fa;
+  }
+
+  [data-theme="dark"] .breadcrumbCurrent {
+    color: #6b7280;
+  }
+
+  [data-theme="dark"] .notificationButton {
+    border-color: #4b5563;
+    color: #9ca3af;
+  }
+
+  [data-theme="dark"] .notificationButton:hover {
+    background: #4b5563;
+    border-color: #6b7280;
+    color: #d1d5db;
+  }
+
+  [data-theme="dark"] .notificationsDropdown {
+    background: #374151;
+    border-color: #4b5563;
+  }
+
+  [data-theme="dark"] .notificationsHeader {
+    border-bottom-color: #4b5563;
+  }
+
+  [data-theme="dark"] .notificationsHeader h3 {
+    color: #f9fafb;
+  }
+
+  [data-theme="dark"] .noNotifications {
+    color: #6b7280;
+  }
+
+  [data-theme="dark"] .notificationItem {
+    color: #d1d5db;
+    border-bottom-color: #4b5563;
+  }
+
+  [data-theme="dark"] .notificationItem:hover {
+    background: #4b5563;
+  }
+
+  [data-theme="dark"] .balanceButton {
+    background: #374151;
+    color: #d1d5db;
+    border-color: #4b5563;
+  }
+
+  [data-theme="dark"] .balanceButton:hover {
+    background: #4b5563;
+    border-color: #6b7280;
+  }
+
+  [data-theme="dark"] .profileButton {
+    background: #9ca3af;
+  }
+
+  [data-theme="dark"] .profileButton:hover {
+    background: #d1d5db;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .balanceButton,
+  .notificationButton,
+  .profileButton {
+    transition: none;
   }
 }

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, Body, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Query, Body, UploadFile, File, Form, BackgroundTasks
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 from typing import List, Optional
@@ -15,6 +15,180 @@ from validators.rate_limiter import rate_limit_api
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+def _background_index_document(doc_id: int, user_id: int, assistant_id: Optional[int], text: str, doc_type: str, importance: int = 10):
+    """Фоновая индексация документа/знания в отдельной сессии."""
+    try:
+        from database.connection import SessionLocal
+        from services.embeddings_service import embeddings_service
+        db = SessionLocal()
+        try:
+            embeddings_service.index_document(
+                doc_id=doc_id,
+                user_id=user_id,
+                assistant_id=assistant_id,
+                text=text,
+                doc_type=doc_type,
+                importance=importance,
+                db=db,
+            )
+        finally:
+            db.close()
+    except Exception as e:
+        logger = logging.getLogger(__name__)
+        logger.warning(f"[BG_INDEX] failed: {e}")
+
+def _background_generate_summary(doc_id: int, user_id: int):
+    """Фоновая генерация выжимки и сохранение в UserKnowledge(type='summary')."""
+    try:
+        from database.connection import SessionLocal
+        db = SessionLocal()
+        try:
+            # Получаем пользователя для analyze_document_internal
+            current_user = db.query(models.User).filter(models.User.id == user_id).first()
+            if not current_user:
+                return
+            # Проверяем, нет ли уже сохраненной выжимки
+            existing = db.query(models.UserKnowledge).filter(
+                models.UserKnowledge.doc_id == doc_id,
+                models.UserKnowledge.user_id == user_id,
+                models.UserKnowledge.type == 'summary'
+            ).first()
+            if existing:
+                return
+            # Генерируем выжимку
+            result = analyze_document_internal(doc_id, current_user, db)
+            summaries = result.get("summaries", [])
+            doc_type = result.get("doc_type")
+            # Сохраняем
+            knowledge = models.UserKnowledge(
+                user_id=user_id,
+                assistant_id=None,
+                doc_id=doc_id,
+                content=json.dumps(summaries),
+                type='summary',
+                doc_type=doc_type,
+                importance=10
+            )
+            db.add(knowledge)
+            db.commit()
+        finally:
+            db.close()
+    except Exception as e:
+        logger = logging.getLogger(__name__)
+        logger.warning(f"[BG_SUMMARY] failed: {e}")
+
+
+def _background_generate_summary_and_index(doc_id: int, user_id: int, assistant_id: Optional[int], text: str, doc_type: str):
+    """Фоновая генерация выжимки и ПОСЛЕДУЮЩАЯ индексация очищенных данных."""
+    from database.connection import SessionLocal
+    db = SessionLocal()
+    try:
+        logger.info(f"🔄 Starting background summary generation for doc_id={doc_id}")
+        
+        # 1. Генерируем выжимку
+        _background_generate_summary(doc_id, user_id)
+        logger.info(f"✅ Summary generated for doc_id={doc_id}")
+        
+        # 2. Получаем сгенерированную выжимку
+        summary_record = db.query(models.UserKnowledge).filter(
+            models.UserKnowledge.doc_id == doc_id,
+            models.UserKnowledge.user_id == user_id,
+            models.UserKnowledge.type == 'summary'
+        ).first()
+        
+        text_for_embeddings = text  # Fallback to original
+        
+        if summary_record:
+            try:
+                summaries_data = json.loads(summary_record.content)
+                # Объединяем все выжимки в единый текст для embeddings
+                summary_parts = []
+                for summary_item in summaries_data:
+                    if isinstance(summary_item, dict) and 'summary' in summary_item:
+                        summary_parts.append(summary_item['summary'])
+                text_for_embeddings = "\n\n".join(summary_parts)
+                logger.info(f"📄 Using cleaned summary text ({len(text_for_embeddings)} chars) for embeddings")
+            except Exception as e:
+                logger.warning(f"Failed to parse summary JSON, using original text: {e}")
+        else:
+            logger.warning("No summary found after generation, using original text")
+        
+        # 3. ТОЛЬКО ПОСЛЕ выжимки индексируем очищенные данные
+        if assistant_id is not None:
+            from services.embeddings_service import embeddings_service
+            indexed_chunks = embeddings_service.index_document(
+                doc_id=doc_id,
+                user_id=user_id,
+                assistant_id=assistant_id,
+                text=text_for_embeddings,  # Используем ОЧИЩЕННЫЙ текст
+                doc_type=doc_type,
+                importance=10,
+                db=db
+            )
+            logger.info(f"✅ Document {doc_id} indexed with {indexed_chunks} chunks using cleaned summary for assistant {assistant_id}")
+        
+    except Exception as e:
+        logger.warning(f"[BG_SUMMARY_INDEX] failed for doc_id={doc_id}: {e}")
+    finally:
+        db.close()
+
+
+def _generate_summary_and_index_sync(doc_id: int, user_id: int, assistant_id: Optional[int], text: str, doc_type: str, db: Session):
+    """Синхронная генерация выжимки и индексация (для fallback)."""
+    try:
+        logger.info(f"🔄 Synchronous summary generation and indexing for doc_id={doc_id}")
+        
+        # 1. Генерируем выжимку синхронно
+        current_user = db.query(models.User).filter(models.User.id == user_id).first()
+        if not current_user:
+            return
+            
+        result = analyze_document_internal(doc_id, current_user, db)
+        summaries = result.get("summaries", [])
+        doc_type_result = result.get("doc_type")
+        
+        # Сохраняем выжимку
+        knowledge = models.UserKnowledge(
+            user_id=user_id,
+            assistant_id=None,
+            doc_id=doc_id,
+            content=json.dumps(summaries),
+            type='summary',
+            doc_type=doc_type_result,
+            importance=10
+        )
+        db.add(knowledge)
+        db.commit()
+        
+        # 2. Получаем очищенный текст
+        text_for_embeddings = text
+        try:
+            summary_parts = []
+            for summary_item in summaries:
+                if isinstance(summary_item, dict) and 'summary' in summary_item:
+                    summary_parts.append(summary_item['summary'])
+            if summary_parts:
+                text_for_embeddings = "\n\n".join(summary_parts)
+                logger.info(f"📄 Using cleaned summary text for embeddings")
+        except Exception as e:
+            logger.warning(f"Failed to process summaries, using original text: {e}")
+        
+        # 3. Индексируем очищенные данные
+        if assistant_id is not None:
+            from services.embeddings_service import embeddings_service
+            indexed_chunks = embeddings_service.index_document(
+                doc_id=doc_id,
+                user_id=user_id,
+                assistant_id=assistant_id,
+                text=text_for_embeddings,
+                doc_type=doc_type,
+                importance=10,
+                db=db
+            )
+            logger.info(f"✅ Document {doc_id} indexed with {indexed_chunks} chunks using cleaned summary")
+            
+    except Exception as e:
+        logger.warning(f"[SYNC_SUMMARY_INDEX] failed for doc_id={doc_id}: {e}")
 
 # get_db импортируется из database.connection
 
@@ -22,9 +196,9 @@ router = APIRouter()
 def invalidate_knowledge_cache(user_id: int, assistant_id: int):
     """Wrapper для инвалидации кэша знаний"""
     try:
-        import chatai_cache
+        from cache.redis_cache import chatai_cache
         chatai_cache.invalidate_knowledge_cache(user_id, assistant_id)
-    except ImportError:
+    except Exception:
         pass
 
 def hot_reload_assistant_bots(assistant_id: int, db: Session):
@@ -171,23 +345,38 @@ def get_user_knowledge(user_id: int, assistant_id: int = Query(None), db: Sessio
 def get_documents(
     page: int = Query(1, ge=1, description="Номер страницы"),
     limit: int = Query(50, ge=1, le=100, description="Количество документов на странице"),
+    assistant_id: Optional[int] = Query(None, description="ID ассистента для фильтрации документов"),
     current_user: models.User = Depends(auth.get_current_user), 
     db: Session = Depends(get_db)
 ):
-    """Получение документов пользователя с пагинацией и кэшированием"""
+    """Получение документов пользователя с пагинацией и фильтрацией по ассистенту"""
     
-    # Подсчет общего количества
-    total = db.query(models.Document).filter(models.Document.user_id == current_user.id).count()
+    if assistant_id is not None:
+        # Фильтрация документов по ассистенту через таблицу UserKnowledge
+        query = db.query(models.Document).join(
+            models.UserKnowledge, 
+            models.Document.id == models.UserKnowledge.doc_id
+        ).filter(
+            models.Document.user_id == current_user.id,
+            models.UserKnowledge.assistant_id == assistant_id
+        )
+        
+        total = query.count()
+        offset = (page - 1) * limit
+        documents = query.order_by(models.Document.upload_date.desc()).offset(offset).limit(limit).all()
+    else:
+        # Показываем все документы пользователя
+        total = db.query(models.Document).filter(models.Document.user_id == current_user.id).count()
+        
+        offset = (page - 1) * limit
+        documents = db.query(models.Document).filter(
+            models.Document.user_id == current_user.id
+        ).order_by(models.Document.upload_date.desc()).offset(offset).limit(limit).all()
     
-    # Пагинация с эффективной загрузкой
-    offset = (page - 1) * limit
-    documents = db.query(models.Document).filter(
-        models.Document.user_id == current_user.id
-    ).order_by(models.Document.upload_date.desc()).offset(offset).limit(limit).all()
-    
-    # Подготавливаем результат
+    # Подготавливаем результат с совместимостью для фронтенда
     result = {
-        "items": documents,
+        "documents": documents,  # Фронтенд ожидает "documents"
+        "items": documents,      # Обратная совместимость 
         "total": total,
         "page": page,
         "pages": (total + limit - 1) // limit,
@@ -198,7 +387,13 @@ def get_documents(
 
 @router.post("/documents", response_model=schemas.DocumentRead)
 @rate_limit_api(limit=10, window=300)  # 10 файлов за 5 минут
-async def upload_document(file: UploadFile = File(...), current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(get_db)):
+async def upload_document(
+    file: UploadFile = File(...),
+    assistant_id: Optional[int] = Form(None),
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db),
+    background_tasks: BackgroundTasks = None,
+):
     """Безопасная загрузка документов с улучшенной валидацией"""
     from validators.file_validator import file_validator
     from services.balance_service import BalanceService
@@ -255,53 +450,72 @@ async def upload_document(file: UploadFile = File(...), current_user: models.Use
         cache.delete_pattern(f"user_documents:{current_user.id}:*")
         
         # 🚀 АВТОМАТИЧЕСКАЯ ИНДЕКСАЦИЯ ЧЕРЕЗ EMBEDDINGS (БЕЗ HOT-RELOAD)
-        # Новый подход: создаем embeddings для lazy-retrieval без перезагрузки ботов
+        # Новый подход: индексируем ТОЛЬКО под конкретного ассистента, если он указан
         try:
             logger.info(f"Starting automatic embedding indexing for doc_id={doc.id}, user_id={current_user.id}")
-            
+
             # Извлекаем текст из документа
             text = extract_document_text(doc.id, current_user, file_path)
+            # Считаем doc_hash для грубой проверки изменений
+            try:
+                import hashlib
+                doc_hash = hashlib.md5(text.encode('utf-8')).hexdigest()
+                doc.doc_hash = doc_hash
+                db.commit()
+            except Exception:
+                pass
             
             # Определяем тип документа для лучшей обработки
             doc_type = determine_document_type(secure_filename)
             
             # Импортируем сервис embeddings
             from services.embeddings_service import embeddings_service
-            
-            # Получаем всех ассистентов пользователя
-            assistants = db.query(models.Assistant).filter(models.Assistant.user_id == current_user.id).all()
-            
-            if assistants:
-                # Индексируем документ для каждого ассистента (или можно без привязки к ассистенту)
-                for assistant in assistants:
-                    indexed_chunks = embeddings_service.index_document(
-                        doc_id=doc.id,
-                        user_id=current_user.id,
-                        assistant_id=assistant.id,
-                        text=text,
-                        doc_type=doc_type,
-                        importance=10,
-                        db=db
-                    )
-                    
-                    logger.info(f"Indexed {indexed_chunks} chunks for assistant {assistant.id}")
-                
-                logger.info(f"✅ Document indexed with embeddings for {len(assistants)} assistants - NO BOT RELOAD NEEDED!")
-                
+
+            target_assistant_id: Optional[int] = None
+            if assistant_id is not None:
+                # Проверяем, что ассистент принадлежит пользователю
+                assistant = db.query(models.Assistant).filter(
+                    models.Assistant.id == int(assistant_id),
+                    models.Assistant.user_id == current_user.id
+                ).first()
+                if not assistant:
+                    raise HTTPException(status_code=404, detail="Assistant not found")
+                target_assistant_id = assistant.id
+
+            if target_assistant_id is not None:
+                # Создаём запись знаний, чтобы документ был привязан к ассистенту и отображался в UI
+                try:
+                    existing_knowledge = db.query(models.UserKnowledge).filter(
+                        models.UserKnowledge.user_id == current_user.id,
+                        models.UserKnowledge.assistant_id == target_assistant_id,
+                        models.UserKnowledge.doc_id == doc.id
+                    ).first()
+                    if not existing_knowledge:
+                        knowledge = models.UserKnowledge(
+                            user_id=current_user.id,
+                            assistant_id=target_assistant_id,
+                            doc_id=doc.id,
+                            content=text,  # сохраняем исходный текст как знание 'original'
+                            type='original',
+                            doc_type=doc_type,
+                            importance=10
+                        )
+                        db.add(knowledge)
+                        db.commit()
+                except Exception as e:
+                    logger.warning(f"[UPLOAD_DOCUMENT] failed to create UserKnowledge link: {e}")
+                # Запускаем ФОНОВУЮ генерацию выжимки и последующую индексацию
+                if background_tasks is not None:
+                    logger.info(f"🧵 Scheduling background summary generation and indexing for doc_id={doc.id}")
+                    background_tasks.add_task(_background_generate_summary_and_index, doc.id, current_user.id, target_assistant_id, text, doc_type)
+                else:
+                    # Если background_tasks недоступны, делаем синхронно (только для тестов)
+                    logger.info(f"🔄 Generating summary and indexing synchronously for doc_id={doc.id}")
+                    _generate_summary_and_index_sync(doc.id, current_user.id, target_assistant_id, text, doc_type, db)
             else:
-                # Если нет ассистентов, индексируем для пользователя без привязки к ассистенту
-                indexed_chunks = embeddings_service.index_document(
-                    doc_id=doc.id,
-                    user_id=current_user.id,
-                    assistant_id=None,  # Общие знания для всех ассистентов
-                    text=text,
-                    doc_type=doc_type,
-                    importance=10,
-                    db=db
-                )
-                
-                logger.info(f"✅ Document indexed with {indexed_chunks} chunks as general knowledge")
-                
+                # Без assistant_id больше НЕ выполняем индексацию для всех ассистентов (избегаем "размазывания")
+                logger.info("ℹ️ Document uploaded without assistant_id - skipping assistant-specific embedding indexing")
+
         except Exception as e:
             logger.error(f"Failed to index document embeddings {doc.id}: {e}")
             # Не прерываем процесс загрузки, если индексация не удалась
@@ -315,6 +529,114 @@ async def upload_document(file: UploadFile = File(...), current_user: models.Use
         if os.path.exists(file_path):
             os.remove(file_path)
         raise HTTPException(status_code=500, detail="Ошибка сохранения файла")
+
+@router.post("/documents/import-website", response_model=schemas.DocumentRead)
+def import_website(
+    data: dict,
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Импортирует страницу сайта по URL как документ и индексирует под ассистента"""
+    from services.embeddings_service import embeddings_service
+    from services.balance_service import BalanceService
+    import re
+    import time
+    import requests
+    try:
+        from bs4 import BeautifulSoup  # type: ignore
+    except Exception:
+        raise HTTPException(status_code=500, detail="Отсутствует зависимость beautifulsoup4 на сервере")
+
+    url = (data or {}).get('url')
+    assistant_id = (data or {}).get('assistant_id')
+    if not url:
+        raise HTTPException(status_code=400, detail="url обязателен")
+
+    # Проверка баланса как для загрузки документа
+    balance_service = BalanceService(db)
+    if not balance_service.check_sufficient_balance(current_user.id, "document_upload"):
+        raise HTTPException(status_code=402, detail="Недостаточно средств на балансе для импорта сайта")
+
+    # Вытягиваем содержимое страницы
+    try:
+        headers = {"User-Agent": "ChatAI-Importer/1.0"}
+        resp = requests.get(url, headers=headers, timeout=20)
+        resp.raise_for_status()
+        html = resp.text
+    except Exception as e:
+        logger.error(f"Website fetch failed: {e}")
+        raise HTTPException(status_code=400, detail="Не удалось загрузить страницу по указанному URL")
+
+    # Извлекаем текст
+    soup = BeautifulSoup(html, 'html.parser')
+    # Удаляем скрипты/стили
+    for tag in soup(["script", "style", "noscript"]):
+        tag.extract()
+    text = soup.get_text("\n")
+    # Нормализуем пробелы
+    text = re.sub(r"\n{2,}", "\n\n", text)
+    text = text.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="Не удалось извлечь текст со страницы")
+
+    # Готовим безопасное имя файла
+    try:
+        from urllib.parse import urlparse
+        parsed = urlparse(url)
+        host = (parsed.netloc or 'site').replace(':', '_')
+    except Exception:
+        host = 'site'
+    ts = int(time.time())
+    safe_name = f"website_{host}_{ts}.txt"
+
+    # Путь сохранения
+    upload_dir = os.path.join("uploads", str(current_user.id))
+    os.makedirs(upload_dir, exist_ok=True)
+    file_path = os.path.join(upload_dir, safe_name)
+
+    try:
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(text)
+        size = len(text.encode("utf-8"))
+        doc = crud.create_document(db, current_user.id, safe_name, size)
+
+        # Индексация для ассистента, если указан
+        target_assistant_id = None
+        if assistant_id is not None:
+            assistant = db.query(models.Assistant).filter(
+                models.Assistant.id == int(assistant_id),
+                models.Assistant.user_id == current_user.id
+            ).first()
+            if not assistant:
+                raise HTTPException(status_code=404, detail="Assistant not found")
+            target_assistant_id = assistant.id
+
+        if target_assistant_id is not None:
+            try:
+                embeddings_service.index_document(
+                    doc_id=doc.id,
+                    user_id=current_user.id,
+                    assistant_id=target_assistant_id,
+                    text=text,
+                    doc_type='website',
+                    importance=10,
+                    db=db
+                )
+            except Exception as e:
+                logger.warning(f"Embedding index failed for website doc_id={doc.id}: {e}")
+
+        # Списание средств
+        try:
+            balance_service.charge_for_service(current_user.id, "document_upload", f"Импорт сайта {host}")
+        except Exception as e:
+            logger.error(f"Charge failed after website import: {e}")
+
+        return doc
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Website import failed: {e}")
+        raise HTTPException(status_code=500, detail="Внутренняя ошибка импорта сайта")
 
 @router.delete("/documents/{doc_id}")
 def delete_document(doc_id: int, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(get_db)):
@@ -336,7 +658,7 @@ def delete_document(doc_id: int, current_user: models.User = Depends(auth.get_cu
         raise
     except Exception as e:
         logger.error(f"[DELETE_DOCUMENT] Error: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error during document deletion")
+        raise HTTPException(status_code=500, detail="Ошибка при удалении документа. Попробуйте позже.")
 
 @router.get("/documents/{doc_id}/text")
 def get_document_text(doc_id: int, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(get_db)):
@@ -344,8 +666,9 @@ def get_document_text(doc_id: int, current_user: models.User = Depends(auth.get_
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
     
-    # Используем user_id для пути к файлу, как в upload_document
-    file_path = os.path.join("uploads", str(current_user.id), doc.filename)
+    # Используем тот же метод получения пути, что и при сохранении
+    from validators.file_validator import file_validator
+    file_path = file_validator.get_safe_upload_path(current_user.id, doc.filename)
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found")
     
@@ -381,6 +704,56 @@ def get_document_text(doc_id: int, current_user: models.User = Depends(auth.get_
     
     return {"text": text}
 
+
+@router.get("/documents/{doc_id}/summary")
+def get_document_summary(doc_id: int, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(get_db)):
+    """Возвращает выжимку документа из БД; при отсутствии — генерирует и сохраняет."""
+    # Проверяем владение документом
+    doc = db.query(models.Document).filter(
+        models.Document.id == doc_id,
+        models.Document.user_id == current_user.id
+    ).first()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    # Ищем сохраненную выжимку
+    existing = db.query(models.UserKnowledge).filter(
+        models.UserKnowledge.doc_id == doc_id,
+        models.UserKnowledge.user_id == current_user.id,
+        models.UserKnowledge.type == 'summary'
+    ).first()
+
+    if existing:
+        try:
+            content = json.loads(existing.content)
+        except Exception:
+            content = existing.content
+        return {"summaries": content, "doc_type": existing.doc_type}
+
+    # Если нет — генерируем и сохраняем
+    try:
+        result = analyze_document_internal(doc_id, current_user, db)
+        summaries = result.get("summaries", [])
+        doc_type = result.get("doc_type")
+
+        try:
+            knowledge = models.UserKnowledge(
+                user_id=current_user.id,
+                assistant_id=None,  # глобальная выжимка, не привязана к ассистенту
+                doc_id=doc_id,
+                content=json.dumps(summaries),
+                type='summary',
+                doc_type=doc_type,
+                importance=10
+            )
+            db.add(knowledge)
+            db.commit()
+        except Exception:
+            db.rollback()
+        return {"summaries": summaries, "doc_type": doc_type}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Summary generation failed: {e}")
+
 def analyze_document_internal(doc_id: int, current_user: models.User, db: Session):
     """Внутренняя функция анализа документа для автоматической индексации"""
     print(f"[analyze_document_internal] Analyzing doc_id={doc_id} for user {current_user.id}")
@@ -389,8 +762,9 @@ def analyze_document_internal(doc_id: int, current_user: models.User, db: Sessio
         print(f"[analyze_document_internal] Document not found in DB for user_id={current_user.id}, doc_id={doc_id}")
         raise Exception("Document not found")
     
-    # Используем user_id для пути к файлу, как в upload_document
-    file_path = os.path.join("uploads", str(current_user.id), doc.filename)
+    # Используем тот же метод получения пути, что и при сохранении
+    from validators.file_validator import file_validator
+    file_path = file_validator.get_safe_upload_path(current_user.id, doc.filename)
     if not os.path.exists(file_path):
         print(f"[analyze_document_internal] File not found: {file_path}")
         raise Exception("File not found")
@@ -596,6 +970,37 @@ def analyze_document_internal(doc_id: int, current_user: models.User, db: Sessio
     
     return {"summaries": summaries, "doc_type": doc_type}
 
+@router.get("/documents/{doc_id}/summary-status")
+def get_document_summary_status(doc_id: int, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(get_db)):
+    """Проверяет статус генерации выжимки документа."""
+    # Проверяем владение документом
+    doc = db.query(models.Document).filter(
+        models.Document.id == doc_id,
+        models.Document.user_id == current_user.id
+    ).first()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    # Проверяем, есть ли уже сохраненная выжимка
+    existing_summary = db.query(models.UserKnowledge).filter(
+        models.UserKnowledge.doc_id == doc_id,
+        models.UserKnowledge.user_id == current_user.id,
+        models.UserKnowledge.type == 'summary'
+    ).first()
+
+    if existing_summary:
+        return {
+            "status": "completed",
+            "has_summary": True,
+            "created_at": existing_summary.created_at
+        }
+    else:
+        return {
+            "status": "processing",
+            "has_summary": False,
+            "created_at": None
+        }
+
 @router.post("/analyze-document/{doc_id}")
 def analyze_document(doc_id: int, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(get_db)):
     print(f"[analyze_document] User {current_user.id} ({current_user.email}) requests analysis for doc_id={doc_id}")
@@ -604,8 +1009,9 @@ def analyze_document(doc_id: int, current_user: models.User = Depends(auth.get_c
         print(f"[analyze_document] Document not found in DB for user_id={current_user.id}, doc_id={doc_id}")
         raise HTTPException(status_code=404, detail="Document not found")
     
-    # Используем user_id для пути к файлу, как в upload_document
-    file_path = os.path.join("uploads", str(current_user.id), doc.filename)
+    # Используем тот же метод получения пути, что и при сохранении
+    from validators.file_validator import file_validator
+    file_path = file_validator.get_safe_upload_path(current_user.id, doc.filename)
     if not os.path.exists(file_path):
         print(f"[analyze_document] File not found: {file_path}")
         print(f"[analyze_document] Critical error in initialization: 404: File not found")
@@ -829,7 +1235,7 @@ class KnowledgeIn(BaseModel):
     assistant_id: Optional[int] = None  # Добавляем assistant_id
 
 @router.post("/knowledge/confirm")
-def confirm_knowledge(data: KnowledgeIn, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(get_db)):
+def confirm_knowledge(data: KnowledgeIn, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(get_db), background_tasks: BackgroundTasks = None):
     # Проверить, что документ принадлежит пользователю
     doc = db.query(models.Document).filter(models.Document.id == data.doc_id, models.Document.user_id == current_user.id).first()
     if not doc:
@@ -850,6 +1256,46 @@ def confirm_knowledge(data: KnowledgeIn, current_user: models.User = Depends(aut
     
     # Инвалидируем кэш знаний
     invalidate_knowledge_cache(current_user.id, data.assistant_id)
+
+    # Индексируем подтвержденное знание как отдельный источник (incremental)
+    try:
+        if background_tasks is not None:
+            background_tasks.add_task(
+                _background_index_document,
+                knowledge.doc_id,
+                current_user.id,
+                data.assistant_id,
+                knowledge.content,
+                data.doc_type or 'confirmed_knowledge',
+                data.importance or 10,
+            )
+        else:
+            from services.embeddings_service import embeddings_service
+            embeddings_service.index_document(
+                doc_id=knowledge.doc_id,
+                user_id=current_user.id,
+                assistant_id=data.assistant_id,
+                text=knowledge.content,
+                doc_type=data.doc_type or 'confirmed_knowledge',
+                importance=data.importance or 10,
+                db=db,
+            )
+    except Exception as e:
+        logger = logging.getLogger(__name__)
+        logger.warning(f"[CONFIRM_KNOWLEDGE] indexing failed: {e}")
+
+    # Увеличиваем версию знаний ассистента(ов), чтобы кэш ответов перестал совпадать
+    try:
+        from services.embeddings_service import embeddings_service
+        if data.assistant_id:
+            embeddings_service.increment_knowledge_version(data.assistant_id, db)
+        else:
+            assistants = db.query(models.Assistant).filter(models.Assistant.user_id == current_user.id).all()
+            for assistant in assistants:
+                embeddings_service.increment_knowledge_version(assistant.id, db)
+    except Exception as _e:
+        logger = logging.getLogger(__name__)
+        logger.warning(f"[CONFIRM_KNOWLEDGE] Failed to bump knowledge version: {_e}")
     
     # 🔥 ГОРЯЧАЯ перезагрузка настроек для конкретного ассистента или всех ассистентов
     print(f"[CONFIRM_KNOWLEDGE] Добавлено знание для пользователя {current_user.id}, ассистент {data.assistant_id}")
@@ -926,7 +1372,7 @@ def get_confirmed_knowledge(
     }
 
 @router.put("/knowledge/{knowledge_id}")
-def update_knowledge(knowledge_id: int, data: KnowledgeIn, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(get_db)):
+def update_knowledge(knowledge_id: int, data: KnowledgeIn, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(get_db), background_tasks: BackgroundTasks = None):
     # Проверяем, что знание принадлежит пользователю
     knowledge = db.query(models.UserKnowledge).filter(
         models.UserKnowledge.id == knowledge_id,
@@ -947,6 +1393,55 @@ def update_knowledge(knowledge_id: int, data: KnowledgeIn, current_user: models.
     
     # Инвалидируем кэш знаний
     invalidate_knowledge_cache(current_user.id, knowledge.assistant_id)
+
+    # Фоновая переиндексация обновленного знания
+    try:
+        if background_tasks is not None:
+            background_tasks.add_task(
+                _background_index_document,
+                knowledge.doc_id,
+                current_user.id,
+                knowledge.assistant_id,
+                knowledge.content,
+                knowledge.doc_type or 'confirmed_knowledge',
+                knowledge.importance or 10,
+            )
+        else:
+            from services.embeddings_service import embeddings_service
+            # Перед индексацией удалим старые confirmed_knowledge embeddings по этому doc_id
+            try:
+                db.query(models.KnowledgeEmbedding).filter(
+                    models.KnowledgeEmbedding.doc_id == knowledge.doc_id,
+                    models.KnowledgeEmbedding.source == 'confirmed_knowledge'
+                ).delete(synchronize_session=False)
+                db.commit()
+            except Exception:
+                db.rollback()
+            embeddings_service.index_document(
+                doc_id=knowledge.doc_id,
+                user_id=current_user.id,
+                assistant_id=knowledge.assistant_id,
+                text=knowledge.content,
+                doc_type=knowledge.doc_type or 'confirmed_knowledge',
+                importance=knowledge.importance or 10,
+                db=db,
+            )
+    except Exception as e:
+        logger = logging.getLogger(__name__)
+        logger.warning(f"[UPDATE_KNOWLEDGE] indexing failed: {e}")
+
+    # Увеличиваем версию знаний ассистента(ов)
+    try:
+        from services.embeddings_service import embeddings_service
+        if knowledge.assistant_id:
+            embeddings_service.increment_knowledge_version(knowledge.assistant_id, db)
+        else:
+            assistants = db.query(models.Assistant).filter(models.Assistant.user_id == current_user.id).all()
+            for assistant in assistants:
+                embeddings_service.increment_knowledge_version(assistant.id, db)
+    except Exception as _e:
+        logger = logging.getLogger(__name__)
+        logger.warning(f"[UPDATE_KNOWLEDGE] Failed to bump knowledge version: {_e}")
     
     # 🔥 ГОРЯЧАЯ перезагрузка настроек для конкретного ассистента или всех ассистентов
     if knowledge.assistant_id:
@@ -971,6 +1466,32 @@ def delete_knowledge(knowledge_id: int, current_user: models.User = Depends(auth
         
         if success:
             logger.info(f"[DELETE_KNOWLEDGE] ✅ Knowledge {knowledge_id} completely deleted with full cleanup")
+            # Бамп версии знаний ассистента(ов) после удаления
+            try:
+                from services.embeddings_service import embeddings_service
+                # Пытаемся найти ассистента этой записи (она уже удалена, поэтому берём из логики enhanced_knowledge_deletion не получится)
+                # В качестве безопасного варианта — инкремент для всех ассистентов пользователя
+                assistants = db.query(models.Assistant).filter(models.Assistant.user_id == current_user.id).all()
+                for assistant in assistants:
+                    embeddings_service.increment_knowledge_version(assistant.id, db)
+            except Exception as _e:
+                logger.warning(f"[DELETE_KNOWLEDGE] Failed to bump knowledge version: {_e}")
+
+            # Очистка embeddings источника confirmed_knowledge для документов, где не осталось подтвержденных знаний
+            try:
+                # Находим doc_id без оставшихся подтвержденных знаний
+                subq = db.query(models.UserKnowledge.doc_id).filter(
+                    models.UserKnowledge.user_id == current_user.id
+                ).subquery()
+                deleted = db.query(models.KnowledgeEmbedding).filter(
+                    ~models.KnowledgeEmbedding.doc_id.in_(subq),
+                    models.KnowledgeEmbedding.source == 'confirmed_knowledge'
+                ).delete(synchronize_session=False)
+                db.commit()
+                logger.info(f"[DELETE_KNOWLEDGE] cleaned {deleted} orphan confirmed_knowledge embeddings")
+            except Exception as _e:
+                db.rollback()
+                logger.warning(f"[DELETE_KNOWLEDGE] embeddings cleanup failed: {_e}")
             return {"ok": True}
         else:
             raise HTTPException(status_code=404, detail="Knowledge not found or deletion failed")
@@ -979,7 +1500,7 @@ def delete_knowledge(knowledge_id: int, current_user: models.User = Depends(auth
         raise
     except Exception as e:
         logger.error(f"[DELETE_KNOWLEDGE] Error: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error during knowledge deletion")
+        raise HTTPException(status_code=500, detail="Ошибка при удалении знаний. Попробуйте позже.")
 
 @router.get("/knowledge/stats")
 def get_knowledge_stats(current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(get_db)):

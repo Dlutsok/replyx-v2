@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { 
   FiHelpCircle, FiBook, FiPlay, FiMessageSquare, FiSettings, 
-  FiTrendingUp, FiChevronDown, FiChevronUp, FiExternalLink,
-  FiVideo, FiFileText, FiUser, FiZap, FiCheckCircle
+  FiTrendingUp, FiChevronDown, FiChevronRight, FiExternalLink,
+  FiVideo, FiFileText, FiUser, FiZap, FiCheckCircle, FiMail, FiPhone
 } from 'react-icons/fi';
 import styles from '../../styles/components/HelpCenter.module.css';
 
@@ -98,122 +98,139 @@ const HelpCenter = ({ user }) => {
 
   return (
     <div className={styles.helpCenter}>
-      <div className={styles.header}>
-        <div className={styles.titleSection}>
-          <FiHelpCircle className={styles.mainIcon} />
-          <div>
-            <h2 className={styles.title}>Центр помощи</h2>
-            <p className={styles.subtitle}>Быстрые инструкции и полезные советы</p>
+      {/* Главная информация */}
+      <div className={styles.mainSection}>
+        <div className={styles.titleRow}>
+          <h1 className={styles.pageTitle}>Поддержка</h1>
+          <div className={styles.statusBadge}>
+            <span className={styles.statusDot}></span>
+            Все системы работают
+          </div>
+        </div>
+        
+        <div className={styles.tabsContainer}>
+          <div className={styles.tabs}>
+            <button className={`${styles.tab} ${styles.activeTab}`}>Общая информация</button>
+            <button className={styles.tab}>Контакты</button>
+            <button className={styles.tab}>FAQ</button>
+            <button className={styles.tab}>Статус системы</button>
           </div>
         </div>
       </div>
 
-      {/* Быстрые задачи */}
-      <div className={styles.quickTips}>
-        <h3 className={styles.sectionTitle}>
-          <FiZap className={styles.sectionIcon} />
-          Быстрые задачи
-        </h3>
-        <div className={styles.tipsGrid}>
-          {quickTips.map(tip => (
-            <div key={tip.id} className={`${styles.tipCard} ${tip.completed ? styles.completed : ''}`}>
-              <div className={styles.tipHeader}>
-                {tip.icon === FiUser ? (
-                  <FiUser className={styles.tipIcon} />
-                ) : tip.icon === FiMessageSquare ? (
-                  <FiMessageSquare className={styles.tipIcon} />
-                ) : tip.icon === FiTrendingUp ? (
-                  <FiTrendingUp className={styles.tipIcon} />
-                ) : (
-                  <FiUser className={styles.tipIcon} />
+      {/* Основной контент */}
+      <div className={styles.contentSection}>
+        {/* Быстрые действия */}
+        <div className={styles.quickActions}>
+          <h2 className={styles.sectionTitle}>Быстрые действия</h2>
+          <div className={styles.actionsGrid}>
+            {quickTips.map(tip => (
+              <div key={tip.id} className={`${styles.actionCard} ${tip.completed ? styles.completed : ''}`}>
+                <div className={styles.cardIcon}>
+                  <tip.icon />
+                </div>
+                <div className={styles.cardContent}>
+                  <h3 className={styles.cardTitle}>{tip.title}</h3>
+                  <p className={styles.cardDescription}>{tip.description}</p>
+                </div>
+                {!tip.completed && (
+                  <a href={tip.link} className={styles.cardButton}>
+                    {tip.action}
+                  </a>
                 )}
                 {tip.completed && <FiCheckCircle className={styles.completedIcon} />}
               </div>
-              <h4 className={styles.tipTitle}>{tip.title}</h4>
-              <p className={styles.tipDescription}>{tip.description}</p>
-              {!tip.completed && (
-                <a href={tip.link} className={styles.tipButton}>
-                  {tip.action}
-                </a>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Секции помощи */}
-      <div className={styles.helpSections}>
-        <h3 className={styles.sectionTitle}>
-          <FiBook className={styles.sectionIcon} />
-          База знаний
-        </h3>
-        
-        {helpSections.map(section => (
-          <div key={section.id} className={styles.helpSection}>
-            <button
-              className={styles.sectionHeader}
-              onClick={() => toggleSection(section.id)}
-            >
-              <div className={styles.sectionInfo}>
-                {section.icon === FiPlay ? (
-                  <FiPlay className={styles.sectionIcon} />
-                ) : section.icon === FiSettings ? (
-                  <FiSettings className={styles.sectionIcon} />
-                ) : section.icon === FiTrendingUp ? (
-                  <FiTrendingUp className={styles.sectionIcon} />
-                ) : (
-                  <FiPlay className={styles.sectionIcon} />
-                )}
-                <span className={styles.sectionTitle}>{section.title}</span>
-              </div>
-              {expandedSection === section.id ? 
-                <FiChevronUp className={styles.chevron} /> : 
-                <FiChevronDown className={styles.chevron} />
-              }
-            </button>
-            
-            {expandedSection === section.id && (
-              <div className={styles.sectionContent}>
-                {section.items.map((item, index) => (
-                  <div key={index} className={styles.helpItem}>
-                    <h4 className={styles.itemTitle}>{item.title}</h4>
-                    <p className={styles.itemContent}>{item.content}</p>
-                    {item.link && (
-                      <a href={item.link} className={styles.itemLink}>
-                        Перейти <FiExternalLink size={14} />
-                      </a>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
 
-      {/* Дополнительные ресурсы */}
-      <div className={styles.resources}>
-        <h3 className={styles.sectionTitle}>
-          <FiFileText className={styles.sectionIcon} />
-          Дополнительные ресурсы
-        </h3>
-        <div className={styles.resourcesGrid}>
-          <a href="/docs" className={styles.resourceCard}>
-            <FiBook className={styles.resourceIcon} />
-            <div>
-              <h4>Полная документация</h4>
-              <p>Подробные инструкции по всем функциям</p>
+        {/* Каналы поддержки */}
+        <div className={styles.supportChannels}>
+          <h2 className={styles.sectionTitle}>Каналы поддержки</h2>
+          <p className={styles.sectionDescription}>
+            Выберите удобный способ связи с нашей службой поддержки
+          </p>
+          
+          <div className={styles.channelsGrid}>
+            <div className={styles.channelCard}>
+              <div className={styles.channelIcon}>
+                <FiMail />
+              </div>
+              <div className={styles.channelInfo}>
+                <h3>Электронная почта</h3>
+                <p>support@replyx.com</p>
+              </div>
+              <a href="mailto:support@replyx.com" className={styles.channelLink}>
+                Написать
+              </a>
             </div>
-            <FiExternalLink className={styles.linkIcon} />
-          </a>
-          <a href="mailto:support@chatai.com" className={styles.resourceCard}>
-            <FiMessageSquare className={styles.resourceIcon} />
-            <div>
-              <h4>Техническая поддержка</h4>
-              <p>Свяжитесь с нашей командой</p>
+            
+            <div className={styles.channelCard}>
+              <div className={styles.channelIcon}>
+                <FiMessageSquare />
+              </div>
+              <div className={styles.channelInfo}>
+                <h3>Онлайн-чат</h3>
+                <p>Ответим в течение 15 минут</p>
+              </div>
+              <button className={styles.channelLink}>
+                Начать чат
+              </button>
             </div>
-            <FiExternalLink className={styles.linkIcon} />
-          </a>
+            
+            <div className={styles.channelCard}>
+              <div className={styles.channelIcon}>
+                <FiPhone />
+              </div>
+              <div className={styles.channelInfo}>
+                <h3>Телефон</h3>
+                <p>+7 (495) 000-00-00</p>
+              </div>
+              <a href="tel:+74950000000" className={styles.channelLink}>
+                Позвонить
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* База знаний */}
+        <div className={styles.knowledgeBase}>
+          <h2 className={styles.sectionTitle}>База знаний</h2>
+          
+          <div className={styles.knowledgeSections}>
+            {helpSections.map(section => (
+              <div key={section.id} className={styles.knowledgeSection}>
+                <button
+                  className={styles.knowledgeHeader}
+                  onClick={() => toggleSection(section.id)}
+                >
+                  <div className={styles.knowledgeTitle}>
+                    <section.icon className={styles.knowledgeIcon} />
+                    <span>{section.title}</span>
+                  </div>
+                  <FiChevronRight 
+                    className={`${styles.chevron} ${expandedSection === section.id ? styles.chevronExpanded : ''}`} 
+                  />
+                </button>
+                
+                {expandedSection === section.id && (
+                  <div className={styles.knowledgeContent}>
+                    {section.items.map((item, index) => (
+                      <div key={index} className={styles.knowledgeItem}>
+                        <h4>{item.title}</h4>
+                        <p>{item.content}</p>
+                        {item.link && (
+                          <a href={item.link} className={styles.knowledgeLink}>
+                            Подробнее
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

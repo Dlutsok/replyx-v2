@@ -1,0 +1,127 @@
+# ReplyX MVP 13 Code Owners
+# Автоматическое назначение ревьюеров для изменений в коде
+# Синхронизировано с реорганизованной структурой от 2025-08-27
+
+# ===== ГЛОБАЛЬНЫЕ ПРАВИЛА =====
+# По умолчанию все изменения требуют ревью от TeamLead
+* @teamlead
+
+# ===== BACKEND (Python/FastAPI) =====
+backend/                           @backend-team @teamlead
+backend/main.py                     @backend-team @teamlead
+backend/requirements.txt            @backend-team @devops
+
+# API эндпоинты
+backend/api/                        @backend-team @api-contract-agent
+backend/api/*.py                    @backend-team @api-contract-agent
+
+# Основные сервисы
+backend/services/                   @backend-team 
+backend/core/                       @backend-team @security-team
+backend/database/                   @backend-team @db-migrations-agent
+backend/ai/                         @backend-team @ai-optimization-agent
+
+# Безопасность и валидация  
+backend/security/                   @security-team @teamlead
+backend/validators/                 @backend-team @security-team
+backend/core/auth.py                @security-team @teamlead
+backend/core/csrf_protection.py     @security-team @teamlead
+
+# ===== WORKERS (Node.js) =====
+# Новая структура workers после реорганизации
+backend/workers/                    @worker-manager-agent @backend-team
+backend/workers/master/             @worker-manager-agent @backend-team  
+backend/workers/telegram/           @worker-manager-agent @backend-team
+backend/workers/package.json        @worker-manager-agent @devops
+backend/workers/config/             @worker-manager-agent @backend-team
+
+# ===== DATABASE =====
+backend/alembic/                    @db-migrations-agent @backend-team
+backend/alembic/versions/           @db-migrations-agent @backend-team
+backend/database/models.py          @db-migrations-agent @backend-team
+backend/database/schemas.py         @api-contract-agent @backend-team
+backend/alembic.ini                 @db-migrations-agent @devops
+
+# ===== SCRIPTS & TOOLS =====
+scripts/                           @devops @teamlead
+scripts/agent-lint.sh              @rad-agent @devops  
+scripts/gen_openapi.sh             @api-contract-agent @devops
+scripts/admin/                     @devops @security-team
+backend/scripts/                   @devops @backend-team
+
+# ===== FRONTEND (Next.js/React) =====
+frontend/                          @frontend-uiux-agent @frontend-team
+frontend/package.json              @frontend-team @devops
+frontend/pages/                    @frontend-uiux-agent @ui-designer-agent
+frontend/components/               @frontend-uiux-agent @ui-designer-agent  
+frontend/styles/                   @ui-designer-agent @frontend-team
+
+# Admin панель
+frontend/pages/admin*              @frontend-uiux-agent @security-team
+frontend/components/admin/         @frontend-uiux-agent @security-team
+
+# UI компоненты и дизайн
+frontend/components/ui/            @ui-designer-agent @frontend-team
+frontend/styles/design-tokens.css  @ui-designer-agent @frontend-team
+frontend/constants/designSystem.js @ui-designer-agent @frontend-team
+
+# ===== ДОКУМЕНТАЦИЯ =====
+docs/                              @rad-agent @teamlead
+docs/architecture/                 @rad-agent @teamlead  
+docs/api/                          @api-contract-agent @rad-agent
+docs/db/                           @db-migrations-agent @rad-agent
+docs/realtime/                     @rad-agent @backend-team
+docs/runbooks/                     @rad-agent @devops
+
+# Критические архитектурные документы
+docs/architecture/overview.md      @rad-agent @teamlead
+docs/architecture/service-catalog.md @rad-agent @teamlead
+docs/adr/                          @rad-agent @teamlead
+
+# UI/UX документация
+docs/ui/                           @ui-designer-agent @rad-agent
+docs/frontend/                     @frontend-uiux-agent @rad-agent
+
+# ===== CI/CD & DEVOPS =====
+.github/                           @devops @teamlead
+.github/workflows/                 @devops @rad-agent
+.github/workflows/agent-lint.yml   @rad-agent @devops
+.gitignore                         @devops
+.env*                              @devops @security-team
+
+# ===== КОНФИГУРАЦИЯ =====
+backend/core/app_config.py         @devops @backend-team
+frontend/config/                   @devops @frontend-team
+backend/monitoring/                @devops @backend-team
+
+# ===== ОСОБЫЕ СЛУЧАИ =====
+# Критические изменения требуют дополнительных ревьюеров
+backend/main.py                    @teamlead @backend-team @devops
+backend/database/models.py         @teamlead @db-migrations-agent @backend-team  
+docs/architecture/overview.md      @teamlead @rad-agent
+
+# Файлы безопасности
+backend/core/auth.py               @security-team @teamlead @backend-team
+backend/security/                  @security-team @teamlead
+frontend/components/security/      @security-team @frontend-team
+
+# OpenAPI схема (автогенерируется)
+docs/api/openapi.json             @api-contract-agent @rad-agent
+
+# ===== КОМАНДЫ И АГЕНТЫ =====
+# Mapping команд на GitHub teams:
+# @teamlead              - Team Lead (все критические решения)  
+# @backend-team          - Backend разработчики
+# @frontend-team         - Frontend разработчики
+# @devops                - DevOps/Infrastructure
+# @security-team         - Security специалисты
+
+# Агенты (назначаются для автоматических проверок):
+# @api-contract-agent    - API контракты и схемы
+# @db-migrations-agent   - База данных и миграции  
+# @frontend-uiux-agent   - Frontend и пользовательский опыт
+# @ui-designer-agent     - UI компоненты и дизайн
+# @worker-manager-agent  - Node.js воркеры и боты
+# @ai-optimization-agent - AI интеграции и оптимизация
+# @rad-agent            - Документация и архитектура
+# @qa-tester-agent      - Тестирование и качество

@@ -53,12 +53,6 @@ const DialogHeader = ({ dialog, onClose }) => {
         </div>
         <div className={styles.details}>
           <h2 className={styles.userName}>{getDisplayName()}</h2>
-          {dialog.email && (
-            <div className={styles.userEmail}>
-              <FiMail />
-              <span>{dialog.email}</span>
-            </div>
-          )}
           <div className={styles.sourceInfo}>
             {sourceInfo.icon}
             <span>{sourceInfo.text}</span>
@@ -66,10 +60,6 @@ const DialogHeader = ({ dialog, onClose }) => {
           </div>
         </div>
       </div>
-      
-      <button className={styles.closeButton} onClick={onClose}>
-        <FiX />
-      </button>
     </div>
   );
 };

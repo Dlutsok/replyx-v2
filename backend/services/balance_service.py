@@ -5,6 +5,7 @@ from database.schemas import BalanceTransactionRead, ServicePriceRead
 from typing import List, Optional
 from datetime import datetime
 import logging
+from integrations.email_service import email_service
 
 logger = logging.getLogger(__name__)
 
@@ -110,6 +111,10 @@ class BalanceService:
         self.db.refresh(balance)
         
         logger.info(f"Списано {amount} руб. с баланса пользователя {user_id} за {service_type}. Новый баланс: {balance_after}")
+        
+        # Проверяем нужно ли отправить уведомление о низком балансе
+        self._check_and_send_balance_warnings(user_id, balance_after)
+        
         return transaction
     
     def get_transactions(self, user_id: int, limit: int = 50) -> List[BalanceTransaction]:
@@ -190,13 +195,51 @@ class BalanceService:
             logger.error(f"Ошибка при начислении приветственного бонуса пользователю {user_id}: {e}")
             self.db.rollback()
             return None
+    
+    def _check_and_send_balance_warnings(self, user_id: int, current_balance: float):
+        """Проверяет баланс и отправляет предупреждения при необходимости"""
+        try:
+            # Получаем пользователя для отправки email
+            user = self.db.query(User).filter(User.id == user_id).first()
+            if not user or not user.email:
+                return
+            
+            # Получаем цену одного сообщения для правильного расчета
+            service_price = self.db.query(ServicePrice).filter(
+                ServicePrice.service_type == "ai_message",
+                ServicePrice.is_active == True
+            ).first()
+            
+            if not service_price:
+                logger.warning(f"Service price for ai_message not found, using default 5.0")
+                price_per_message = 5.0
+            else:
+                price_per_message = service_price.price
+            
+            # Конвертируем баланс в количество сообщений (баланс / цена_за_сообщение)
+            messages_remaining = int(current_balance / price_per_message)
+            
+            # Отправляем только 2 важных уведомления БЕЗ ДУБЛИРОВАНИЯ
+            if messages_remaining == 0:
+                # Баланс закончился - критический алерт (отправляем только один раз)
+                email_service.send_balance_depleted_email(user.email)
+                logger.info(f"Balance depleted email sent to {user.email}")
+            elif messages_remaining == 50:
+                # Осталось ровно 50 сообщений - предупреждающий алерт (отправляем только один раз)
+                email_service.send_low_balance_warning_email(user.email, messages_remaining)
+                logger.info(f"Low balance warning email sent to {user.email} (remaining: {messages_remaining})")
+                
+        except Exception as e:
+            logger.error(f"Failed to send balance warning email for user {user_id}: {e}")
+            # Не прерываем основной процесс если email не отправился
 
 def init_default_prices(db: Session):
     """Инициализация цен по умолчанию"""
     default_prices = [
-        {"service_type": "ai_message", "price": 3.0, "description": "AI сообщение"},
-        {"service_type": "document_upload", "price": 3.0, "description": "Загрузка документа"},
-        {"service_type": "bot_message", "price": 3.0, "description": "Сообщение бота"},
+        {"service_type": "ai_message", "price": 5.0, "description": "AI сообщение"},
+        {"service_type": "widget_message", "price": 5.0, "description": "AI сообщение виджета"},
+        {"service_type": "document_upload", "price": 5.0, "description": "Загрузка документа"},
+        {"service_type": "bot_message", "price": 5.0, "description": "Сообщение бота"},
     ]
     
     for price_data in default_prices:
@@ -207,6 +250,12 @@ def init_default_prices(db: Session):
         if not existing:
             service_price = ServicePrice(**price_data)
             db.add(service_price)
+        else:
+            # Обновляем существующую цену на актуальную
+            existing.price = price_data["price"]
+            existing.description = price_data["description"]
+            existing.updated_at = datetime.utcnow()
+            db.add(existing)
     
     db.commit()
-    logger.info("Инициализированы цены по умолчанию")
+    logger.info("Инициализированы и обновлены цены по умолчанию на 5.0 руб")

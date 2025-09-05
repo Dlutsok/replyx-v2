@@ -20,13 +20,36 @@
   border-radius: 0.75rem;
   max-width: 600px;
   width: 100%;
-  max-height: 85vh;
+  max-height: min(85vh, calc(100vh - 140px)); /* Учитываем адресную строку браузера */
   overflow: hidden;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   border: 1px solid #f3f4f6;
   display: flex;
   flex-direction: column;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Large screens optimization */
+@media (min-width: 1024px) {
+  .wizard {
+    max-width: 700px;
+  }
+
+  .content {
+    padding: 32px 40px;
+  }
+
+  .header {
+    padding: 32px 40px;
+  }
+
+  .progressContainer {
+    padding: 16px 40px;
+  }
+
+  .footer {
+    padding: 20px 40px;
+  }
 }
 
 /* === HEADER === */
@@ -87,7 +110,7 @@
   align-items: center;
   gap: 6px;
   color: #6b7280;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .spinning {
@@ -102,49 +125,68 @@
 /* === PROGRESS BAR === */
 .progressContainer {
   border-bottom: 1px solid #f3f4f6;
-  padding: 16px 32px;
+  padding: 12px 32px 14px 32px;
 }
 
-.progressBar {
-  height: 2px;
-  background: #f3f4f6;
-  border-radius: 0.75rem;
-  margin-bottom: 16px;
-}
-
-.progressFill {
-  height: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  transition: width 0.3s ease;
-  border-radius: 0.75rem;
-}
-
-.progressSteps {
+.tabs {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  background: #f8fafc;
+  border: 1px solid #eef2f7;
+  border-radius: 10px;
+  padding: 2px;
 }
+.tabItem {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+  border: none;
+  padding: 8px 6px;
+  font-size: 13px;
+  color: #374151;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.tabItem:hover { color: #7c3aed; }
+.tabItem.active { color: #7c3aed; font-weight: 600; }
+.tabIndicator {
+  position: absolute;
+  top: 2px;
+  height: calc(100% - 4px);
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+  border-radius: 8px;
+  transition: left 220ms ease;
+}
+
+.progressSteps { display: none; }
 
 .progressStep {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
-  padding: 4px;
-  border-radius: 0.75rem;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background: transparent;
 }
 
 .progressStep:hover {
-  background: #f8fafc;
+  background: #f9fafb;
+  border-color: #e5e7eb;
 }
 
 .progressStep.active {
-  background: #f0f9ff;
+  background: #f5f3ff; /* violet-50 */
+  border-color: #ddd6fe; /* violet-200 */
 }
 
-.progressStep.completed {
-  opacity: 0.6;
+.progressStep.completed .stepTitle {
+  color: #6b7280;
 }
 
 .stepIcon {
@@ -156,7 +198,7 @@
   justify-content: center;
   background: #f3f4f6;
   color: #9ca3af;
-  font-size: 12px;
+  font-size: 14px;
   flex-shrink: 0;
 }
 
@@ -166,7 +208,7 @@
 }
 
 .progressStep.completed .stepIcon {
-  background: #10b981;
+  background: #7C3AED;
   color: white;
 }
 
@@ -175,10 +217,10 @@
 }
 
 .stepTitle {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   color: #374151;
-  margin-bottom: 1px;
+  margin: 0;
   line-height: 1.2;
 }
 
@@ -190,7 +232,7 @@
 }
 
 .progressStep.active .stepTitle {
-  color: #667eea;
+  color: #7c3aed; /* violet-600 */
   font-weight: 600;
 }
 
@@ -199,7 +241,8 @@
   flex: 1;
   padding: 24px 32px;
   overflow-y: auto;
-  min-height: 300px;
+  min-height: 250px;
+  max-height: calc(100vh - 200px); /* Ограничиваем максимальную высоту контента */
 }
 
 .stepContent {
@@ -215,14 +258,14 @@
   font-size: 18px;
   font-weight: 600;
   color: #0f172a;
-  margin: 0 0 4px 0;
+  margin: 0 0 6px 0;
 }
 
 .stepHeader p {
   font-size: 14px;
   color: #64748b;
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .skipButtonHeader {
@@ -234,7 +277,7 @@
   border-radius: 0.75rem;
   color: #6b7280;
   padding: 6px 12px;
-  font-size: 12px;
+  font-size: 14px;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -295,8 +338,8 @@
 
 .input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.16);
 }
 
 .input::placeholder {
@@ -319,8 +362,8 @@
 
 .textarea:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.16);
 }
 
 .inputHint {
@@ -349,8 +392,8 @@
 
 .templateCard {
   border: 1px solid #e5e7eb;
-  border-radius: 0.75rem;
-  padding: 16px;
+  border-radius: 12px;
+  padding: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
   background: #ffffff;
@@ -362,24 +405,82 @@
 }
 
 .templateCard.selected {
-  border-color: #667eea;
-  background: #f7fafc;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #ddd6fe; /* violet-200 */
+  background: #f5f3ff;  /* violet-50 */
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
 }
 
-.templateCard h4 {
-  font-size: 14px;
+.templateTitle {
+  font-size: 13px;
   font-weight: 600;
   color: #1f2937;
-  margin: 0 0 4px 0;
-  line-height: 1.3;
+  margin: 0;
 }
 
-.templateCard p {
-  font-size: 13px;
+.templateDesc {
+  font-size: 14px;
   color: #6b7280;
-  margin: 0;
-  line-height: 1.4;
+  margin: 6px 0 0 20px; /* отступ под иконкой */
+  line-height: 1.45;
+}
+
+.templateHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.templateIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  color: #7c3aed;
+}
+
+.infoWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.infoIcon {
+  width: 16px;
+  height: 16px;
+  color: #94a3b8;
+}
+
+.infoWrap:hover .infoIcon {
+  color: #4f46e5;
+}
+
+.tooltip {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0; /* якорим к правому краю карточки, чтобы не вылезать за экран */
+  left: auto;
+  transform: none;
+  min-width: 220px;
+  max-width: min(320px, calc(100vw - 48px));
+  background: #111827;
+  color: #ffffff;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 10px 12px;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 20;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.infoWrap:hover .tooltip {
+  opacity: 1;
 }
 
 /* === UPLOAD ZONE === */
@@ -484,16 +585,16 @@
 /* === INTEGRATION GRID === */
 .integrationGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
   margin-bottom: 20px;
 }
 
 .integrationCard {
   border: 1px solid #e5e7eb;
   border-radius: 0.75rem;
-  padding: 12px 8px;
-  text-align: center;
+  padding: 12px;
+  text-align: left;
   cursor: pointer;
   transition: all 0.2s ease;
   background: #ffffff;
@@ -505,35 +606,41 @@
 }
 
 .integrationCard.selected {
-  border-color: #667eea;
-  background: #f7fafc;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #ddd6fe;
+  background: #f5f3ff;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
 }
 
-.integrationCard svg {
-  color: #6b7280;
+.integrationHeader {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
   margin-bottom: 6px;
-  width: 20px;
-  height: 20px;
+}
+
+.integrationIcon {
+  color: #7c3aed;
+  display: inline-flex;
+  align-items: center;
 }
 
 .integrationCard.selected svg {
-  color: #667eea;
+  color: #7c3aed;
 }
 
-.integrationCard h4 {
+.integrationTitle {
   font-size: 13px;
   font-weight: 600;
   color: #1f2937;
-  margin: 0 0 2px 0;
-  line-height: 1.2;
+  margin: 0;
 }
 
-.integrationCard p {
-  font-size: 11px;
+.integrationDesc {
+  font-size: 14px;
   color: #6b7280;
   margin: 0;
-  line-height: 1.3;
+  line-height: 1.4;
 }
 
 .integrationCard.selected h4 {
@@ -555,7 +662,7 @@
 }
 
 .successIcon {
-  color: #667eea;
+  color: #22c55e;
   margin-bottom: 16px;
 }
 
@@ -610,7 +717,7 @@
 .resultLink span {
   flex: 1;
   font-family: 'Monaco', 'Consolas', monospace;
-  font-size: 12px;
+  font-size: 14px;
   color: #1e293b;
   min-width: 0;
   overflow: hidden;
@@ -618,54 +725,29 @@
   white-space: nowrap;
 }
 
-.codeBlock {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.75rem;
-  padding: 16px 40px 16px 16px;
-  position: relative;
-  overflow: hidden;
-  max-height: 100px;
-}
 
-.codeBlock code {
-  font-family: 'Monaco', 'Consolas', monospace;
-  font-size: 12px;
-  color: #475569;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  word-break: break-all;
-  display: block;
-}
+.codeContainer { border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
+.codeHeader { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 8px 12px; }
+.codeLang { font-size: 14px; color: #6b7280; }
+.codeHeader .copyButton { background: #7c3aed; border: none; border-radius: 8px; color: #fff; height: 28px; display: inline-flex; align-items: center; gap: 6px; padding: 0 10px; cursor: pointer; transition: all 0.2s ease; font-size: 14px; }
+.codeHeader .copyButton:hover { background: #6d28d9; }
+.codeBlock { background: #f8fafc; color: #0f172a; padding: 12px; max-height: 160px; overflow: auto; }
 
-.codeBlock .copyButton {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: #667eea;
-  border: none;
-  border-radius: 0.75rem;
-  color: white;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 12px;
-}
+.codeBlock code { font-family: 'Monaco', 'Consolas', monospace; font-size: 14px; color: #0f172a; line-height: 1.6; white-space: pre-wrap; word-break: break-word; display: block; }
 
-.codeBlock .copyButton:hover {
-  background: #5a67d8;
-  transform: scale(1.05);
+/* копка перенесена в шапку codeHeader */
+
+.embedHint {
+  font-size: 14px;
+  color: #6b7280;
+  margin-top: 8px;
 }
 
 .iconButton {
-  background: #e0f2fe;
-  border: 1px solid #bae6fd;
+  background: #ede9fe; /* violet-50 */
+  border: 1px solid #ddd6fe; /* violet-200 */
   border-radius: 0.75rem;
-  color: #0369a1;
+  color: #5b21b6; /* violet-800 */
   width: 32px;
   height: 32px;
   display: flex;
@@ -677,8 +759,8 @@
 }
 
 .iconButton:hover {
-  background: #bae6fd;
-  border-color: #7dd3fc;
+  background: #ddd6fe;
+  border-color: #c4b5fd;
 }
 
 /* === FOOTER === */
@@ -686,6 +768,24 @@
   background: #f9fafb;
   border-top: 1px solid #f3f4f6;
   padding: 16px 32px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom)); /* Учитываем безопасную область iOS */
+  flex-shrink: 0; /* Предотвращаем сжатие футера */
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+}
+
+/* Специальные правила для Safari и мобильных браузеров */
+@supports (-webkit-touch-callout: none) {
+  .wizard {
+    max-height: min(80vh, calc(100vh - 160px));
+  }
+
+  .footer {
+    background: rgba(249, 250, 251, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
 }
 
 .footerButtons {
@@ -700,7 +800,7 @@
   border: 1px solid #d1d5db;
   border-radius: 0.75rem;
   color: #6b7280;
-  padding: 8px 16px;
+  padding: 10px 16px;
   font-size: 14px;
   font-weight: 500;
   display: flex;
@@ -708,6 +808,7 @@
   gap: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-height: 44px;
 }
 
 .backButton:hover {
@@ -728,11 +829,11 @@
 }
 
 .nextButton {
-  background: #667eea;
+  background: #7c3aed;
   border: none;
   border-radius: 0.75rem;
   color: white;
-  padding: 8px 16px;
+  padding: 10px 20px;
   font-size: 14px;
   font-weight: 500;
   display: flex;
@@ -740,23 +841,24 @@
   gap: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-height: 44px;
 }
 
 .nextButton:hover {
-  background: #5a67d8;
+  background: #6d28d9;
 }
 
 .nextButton:disabled {
   opacity: 0.7;
   cursor: not-allowed;
-  background: #667eea;
+  background: #7c3aed;
 }
 
 .finalButtons {
   display: flex;
   gap: 8px;
-  width: 100%;
-  justify-content: center;
+  margin-left: auto; /* прижать к правому краю */
+  justify-content: flex-end;
 }
 
 .settingsButton {
@@ -781,8 +883,8 @@
 }
 
 .testButton {
-  background: #667eea;
-  border: 1px solid #667eea;
+  background: #7c3aed;
+  border: 1px solid #7c3aed;
   border-radius: 0.75rem;
   color: white;
   padding: 8px 14px;
@@ -796,13 +898,13 @@
 }
 
 .testButton:hover {
-  background: #5a67d8;
-  border-color: #5a67d8;
+  background: #6d28d9;
+  border-color: #6d28d9;
   transform: translateY(-1px);
 }
 
 .completeButton {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #7c3aed 0%, #9333ea 100%);
   border: none;
   border-radius: 0.75rem;
   color: white;
@@ -822,67 +924,408 @@
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
+/* Inline notices */
+.inlineNoticeError {
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+  color: #991b1b;
+  border-radius: 0.75rem;
+  padding: 10px 12px;
+  font-size: 13px;
+  margin: 12px 0 16px 0;
+}
+
+.linkButton {
+  background: transparent;
+  border: none;
+  color: #4f46e5;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0;
+}
+
 /* === RESPONSIVE === */
 @media (max-width: 768px) {
   .overlay {
-    padding: 16px;
+    padding: 12px;
+    align-items: flex-start;
+    padding-top: 20px;
   }
 
   .wizard {
-    max-height: 95vh;
+    max-width: 100vw;
+    width: 100vw;
+    height: 100vh; /* Фиксированная высота на всю высоту экрана */
+    max-height: 100vh;
+    border-radius: 12px;
   }
 
   .header {
-    padding: 24px 20px;
+    padding: 20px 20px;
   }
 
   .title {
-    font-size: 24px;
+    font-size: 20px;
   }
 
   .subtitle {
-    font-size: 15px;
+    font-size: 14px;
   }
 
   .content {
-    padding: 24px 20px;
+    padding: 20px 20px;
   }
 
-  .progressSteps {
-    grid-template-columns: 1fr;
-    gap: 8px;
-    padding: 16px 20px;
+  .progressContainer {
+    padding: 12px 20px;
+  }
+
+  .tabs {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+  }
+
+  .tabItem {
+    font-size: 12px;
+    padding: 6px 4px;
   }
 
   .templateGrid {
     grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .templateCard {
+    padding: 12px;
+  }
+
+  .templateTitle {
+    font-size: 14px;
+  }
+
+  .templateDesc {
+    font-size: 13px;
+    margin: 4px 0 0 20px;
   }
 
   .integrationGrid {
     grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .integrationCard {
+    padding: 12px;
+  }
+
+  .integrationTitle {
+    font-size: 14px;
+  }
+
+  .integrationDesc {
+    font-size: 13px;
+  }
+
+  .footer {
+    padding: 16px 20px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
   }
 
   .footerButtons {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
   }
 
-  .finalButtons {
-    flex-direction: column;
+  .backButton {
+    flex: 0 0 auto;
+    min-width: 80px;
+    padding: 8px 12px;
+    font-size: 14px;
   }
 
   .nextButtons {
+    flex: 1;
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  .nextButton {
+    flex: 0 0 auto;
+    min-width: 90px;
+    padding: 8px 16px;
+    font-size: 14px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
     justify-content: center;
+  }
+
+  .skipButton {
+    flex: 0 0 auto;
+    min-width: 90px;
+    padding: 8px 12px;
+    font-size: 14px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .finalButtons {
+    flex-direction: row;
+    gap: 6px;
+    margin-left: 0;
     width: 100%;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: nowrap;
+  }
+
+  .settingsButton,
+  .testButton,
+  .completeButton {
+    flex: 0 0 auto;
+    min-width: 110px;
+    padding: 8px 14px;
+    font-size: 14px;
   }
 
   .stepHeader {
     text-align: left;
   }
 
+  .stepHeader h3 {
+    font-size: 16px;
+  }
+
+  .stepHeader p {
+    font-size: 14px;
+  }
+
   .skipButton {
-    position: static;
-    align-self: flex-start;
-    margin-top: 12px;
+    flex: 0 0 auto;
+    min-width: 90px;
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  .uploadLabel {
+    padding: 32px 16px;
+  }
+
+  .uploadLabel h4 {
+    font-size: 14px;
+  }
+
+  .uploadLabel p {
+    font-size: 13px;
+  }
+
+  .fileList {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .overlay {
+    padding: 8px;
+    padding-top: 16px;
+  }
+
+  .wizard {
+    max-height: min(95vh, calc(100vh - 100px)); /* Максимально используем доступное пространство */
+    border-radius: 8px;
+  }
+
+  .header {
+    padding: 16px 16px;
+  }
+
+  .title {
+    font-size: 18px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+  }
+
+  .content {
+    padding: 16px 16px;
+  }
+
+  .progressContainer {
+    padding: 8px 16px;
+  }
+
+  .tabs {
+    padding: 1px;
+  }
+
+  .tabItem {
+    font-size: 11px;
+    padding: 5px 2px;
+  }
+
+  .templateCard {
+    padding: 10px;
+  }
+
+  .templateTitle {
+    font-size: 13px;
+  }
+
+  .templateDesc {
+    font-size: 12px;
+    margin: 3px 0 0 16px;
+  }
+
+  .integrationCard {
+    padding: 10px;
+  }
+
+  .integrationTitle {
+    font-size: 13px;
+  }
+
+  .integrationDesc {
+    font-size: 12px;
+  }
+
+  .footer {
+    padding: 12px 16px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+  }
+
+  .footerButtons {
+    gap: 8px;
+    justify-content: space-between;
+  }
+
+  .backButton {
+    flex: 0 0 auto;
+    min-width: 70px;
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .nextButtons {
+    flex: 1;
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+
+  .nextButton {
+    flex: 0 0 auto;
+    min-width: 80px;
+    padding: 8px 12px;
+    font-size: 13px;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .skipButton {
+    flex: 0 0 auto;
+    min-width: 75px;
+    padding: 8px 10px;
+    font-size: 13px;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .finalButtons {
+    gap: 4px;
+    justify-content: center;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+
+  .settingsButton,
+  .testButton,
+  .completeButton {
+    flex: 0 0 auto;
+    min-width: 95px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .stepHeader h3 {
+    font-size: 15px;
+  }
+
+  .stepHeader p {
+    font-size: 13px;
+  }
+
+  .formGroup {
+    margin-bottom: 16px;
+  }
+
+  .input, .textarea {
+    font-size: 16px; /* Предотвращает зум на iOS */
+  }
+
+  .uploadLabel {
+    padding: 24px 12px;
+  }
+
+  .uploadLabel h4 {
+    font-size: 13px;
+  }
+
+  .uploadLabel p {
+    font-size: 12px;
+  }
+
+  /* Для очень маленьких экранов - оптимизированная компоновка */
+  @media (max-width: 360px) {
+    .footerButtons {
+      gap: 6px;
+    }
+
+    .backButton {
+      min-width: 65px;
+      padding: 8px 8px;
+      font-size: 12px;
+    }
+
+    .nextButton {
+      min-width: 70px;
+      padding: 8px 10px;
+      font-size: 12px;
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .skipButton {
+      min-width: 70px;
+      padding: 8px 8px;
+      font-size: 12px;
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .finalButtons {
+      gap: 4px;
+    }
+
+    .settingsButton,
+    .testButton,
+    .completeButton {
+      min-width: 85px;
+      padding: 8px 10px;
+      font-size: 12px;
+    }
   }
 }

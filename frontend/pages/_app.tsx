@@ -3,28 +3,45 @@ import { useEffect } from 'react';
 import { Montserrat } from 'next/font/google';
 import { useRouter } from 'next/router';
 import Script from 'next/script';
-import DashboardLayout from '../components/layout/DashboardLayout';
-import { AuthProvider, useAuth } from '../hooks/useAuth';
-import { ThemeProvider } from '../components/ui/ThemeProvider';
+import { DashboardLayout } from '@/components/layout';
+import { AuthProvider, useAuth, GlobalLoadingProvider } from '@/hooks';
+import { ThemeProvider } from '@/components/ui';
+import { CookieConsent } from '@/components/common';
+import { NotificationProvider } from '../contexts/NotificationContext';
 import '../styles/globals.css';
+
+// Import global styles for specific pages
+import '../styles/pages/AssistantPage.global.css';
 
 const montserrat = Montserrat({ subsets: ['latin', 'cyrillic'] });
 
 // Публичные маршруты (не показываем Layout)
 const PUBLIC_ROUTES = [
   '/',
-  '/landing',
   '/login',
-  '/register', 
+  '/register',
   '/forgot-password',
   '/reset-password',
-  '/verify-email',
-  '/oauth-redirect'
+  '/verify-email'
+];
+
+// Правовые и контент-маркетинговые страницы (доступны всем, включая авторизованных пользователей)
+const LEGAL_ROUTES = [
+  '/privacy',
+  '/terms',
+  '/offer',
+  '/blog'
 ];
 
 // Админские маршруты (имеют свой собственный layout)
 const ADMIN_ROUTES = [
-  '/admin'
+  '/admin',
+  '/admin-users',
+  '/admin-analytics',
+  '/admin-bots-monitoring',
+  '/admin-ai-tokens',
+  '/admin-system',
+  '/admin-settings'
 ];
 
 function AppContent({ Component, pageProps }: AppProps) {
@@ -32,41 +49,38 @@ function AppContent({ Component, pageProps }: AppProps) {
   const { isAuthenticated, isLoading } = useAuth();
   
   const isPublicRoute = PUBLIC_ROUTES.includes(router.pathname);
+  const isLegalRoute = LEGAL_ROUTES.includes(router.pathname);
   const isAdminRoute = ADMIN_ROUTES.includes(router.pathname);
   const isChatIframe = router.pathname === '/chat-iframe';
-  const shouldShowLayout = isAuthenticated && !isPublicRoute && !isAdminRoute;
+  const shouldShowLayout = isAuthenticated && !isPublicRoute && !isLegalRoute && !isAdminRoute;
 
   // Принудительное перенаправление неавторизованных пользователей
   useEffect(() => {
-    if (!isLoading && !isAuthenticated && !isPublicRoute) {
-      console.warn('Unauthorized user on protected route, forcing redirect to landing');
+    if (!isLoading && !isAuthenticated && !isPublicRoute && !isLegalRoute && !isChatIframe) {
+      console.warn('Unauthorized user on protected route, forcing redirect to home');
       // Используем window.location.replace для мгновенного перенаправления
-      window.location.replace('/landing');
+      window.location.replace('/');
     }
-  }, [isAuthenticated, isLoading, isPublicRoute, router]);
+  }, [isAuthenticated, isLoading, isPublicRoute, isLegalRoute, isChatIframe, router]);
 
   // Дополнительная проверка - блокируем показ контента неавторизованным пользователям
-  const shouldBlockContent = !isAuthenticated && !isPublicRoute && !isLoading;
+  const shouldBlockContent = !isAuthenticated && !isPublicRoute && !isLegalRoute && !isChatIframe && !isLoading;
 
   // Если загружается авторизация - показываем loading
   if (isLoading) {
     return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        fontSize: '18px',
-        color: '#6366f1',
-        fontFamily: montserrat.style.fontFamily
-      }}>
-        Загрузка...
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg text-purple-600 font-medium">Загрузка приложения...</p>
+          <p className="text-sm text-gray-500 mt-2">Пожалуйста, подождите</p>
+        </div>
       </div>
     );
   }
 
-  // Для авторизованных пользователей на публичных страницах - немедленный редирект без показа сообщения
-  if (isPublicRoute && isAuthenticated && router.pathname !== '/oauth-redirect') {
+  // Для авторизованных пользователей на публичных страницах (кроме правовых) - немедленный редирект
+  if (isPublicRoute && isAuthenticated && !isLegalRoute) {
     router.replace('/dashboard');
     return null; // Просто возвращаем null без показа сообщения
   }
@@ -76,8 +90,8 @@ function AppContent({ Component, pageProps }: AppProps) {
     return <Component {...pageProps} />;
   }
 
-  // Для публичных маршрутов показываем компонент без Layout
-  if (isPublicRoute) {
+  // Для публичных и правовых маршрутов показываем компонент без Layout
+  if (isPublicRoute || isLegalRoute) {
     return <Component {...pageProps} />;
   }
 
@@ -99,19 +113,15 @@ function AppContent({ Component, pageProps }: AppProps) {
   if (shouldBlockContent) {
     console.warn('BLOCKING unauthorized access to protected content');
     // Мгновенное перенаправление без ожидания
-    window.location.replace('/landing');
+    window.location.replace('/');
     
     return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        fontSize: '18px',
-        color: '#ef4444',
-        backgroundColor: '#fff'
-      }}>
-        Доступ запрещен. Перенаправляем...
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg text-purple-600 font-medium">Перенаправление...</p>
+          <p className="text-sm text-gray-500 mt-2">Пожалуйста, подождите</p>
+        </div>
       </div>
     );
   }
@@ -140,9 +150,14 @@ export default function App(props: AppProps) {
       />
       <main className={montserrat.className}>
         <ThemeProvider>
-          <AuthProvider>
-            <AppContent {...props} />
-          </AuthProvider>
+          <GlobalLoadingProvider>
+            <AuthProvider>
+              <NotificationProvider>
+                <AppContent {...props} />
+                <CookieConsent />
+              </NotificationProvider>
+            </AuthProvider>
+          </GlobalLoadingProvider>
         </ThemeProvider>
       </main>
     </>

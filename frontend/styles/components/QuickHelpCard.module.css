@@ -7,10 +7,86 @@
   margin: 20px 0;
 }
 
-[data-theme="dark"] .quickHelpCard {
-  background: #374151;
-  border-color: #4b5563;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+/* Отключаем темную тему на мобильных устройствах */
+@media (max-width: 768px) {
+  [data-theme="dark"] .quickHelpCard {
+    background: #ffffff !important;
+    border-color: #e5e7eb !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  [data-theme="dark"] .title {
+    color: #1f2937 !important;
+  }
+
+  [data-theme="dark"] .subtitle {
+    color: #6b7280 !important;
+  }
+
+  [data-theme="dark"] .progress {
+    background: #e5e7eb !important;
+  }
+
+  [data-theme="dark"] .tip:hover {
+    background: #f8fafc !important;
+  }
+
+  [data-theme="dark"] .tip.completed {
+    background: #dcfce7 !important;
+  }
+
+  [data-theme="dark"] .tipText {
+    color: #374151 !important;
+  }
+
+  [data-theme="dark"] .tip.completed .tipText {
+    color: #166534 !important;
+  }
+
+  [data-theme="dark"] .fullHelpLink {
+    color: #7c3aed !important;
+  }
+}
+
+/* Темная тема только для десктопных устройств */
+@media (min-width: 769px) {
+  [data-theme="dark"] .quickHelpCard {
+    background: #374151;
+    border-color: #4b5563;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  [data-theme="dark"] .title {
+    color: #f9fafb;
+  }
+
+  [data-theme="dark"] .subtitle {
+    color: #9ca3af;
+  }
+
+  [data-theme="dark"] .progress {
+    background: #4b5563;
+  }
+
+  [data-theme="dark"] .tip:hover {
+    background: #4b5563;
+  }
+
+  [data-theme="dark"] .tip.completed {
+    background: #064e3b;
+  }
+
+  [data-theme="dark"] .tipText {
+    color: #d1d5db;
+  }
+
+  [data-theme="dark"] .tip.completed .tipText {
+    color: #6ee7b7;
+  }
+
+  [data-theme="dark"] .fullHelpLink {
+    color: #a78bfa;
+  }
 }
 
 .header {
@@ -23,7 +99,7 @@
 .icon {
   width: 24px;
   height: 24px;
-  color: #7C4DFF;
+  color: #7C3AED;
   flex-shrink: 0;
 }
 
@@ -67,7 +143,7 @@
 
 .progressBar {
   height: 100%;
-  background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(90deg, #7C3AED 0%, #8B5CF6 100%);
   border-radius: 0.75rem;
   transition: width 0.5s ease;
 }
@@ -106,19 +182,19 @@
 }
 
 [data-theme="dark"] .tip.completed {
-  background: #065f46;
-  border-color: #059669;
+  background: #5B21B6;
+  border-color: #6D28D9;
 }
 
 .tipIcon {
   width: 16px;
   height: 16px;
-  color: #7C4DFF;
+  color: #7C3AED;
   flex-shrink: 0;
 }
 
 .tip.completed .tipIcon {
-  color: #10b981;
+  color: #7C3AED;
 }
 
 .tipText {
@@ -133,7 +209,7 @@
 }
 
 .tip.completed .tipText {
-  color: #065f46;
+  color: #5B21B6;
 }
 
 [data-theme="dark"] .tip.completed .tipText {
@@ -143,7 +219,7 @@
 .checkmark {
   width: 16px;
   height: 16px;
-  background: #10b981;
+  background: #7C3AED;
   color: white;
   border-radius: 50%;
   display: flex;
@@ -164,7 +240,7 @@
 
 .tip:hover .arrow {
   transform: translateX(2px);
-  color: #7C4DFF;
+  color: #7C3AED;
 }
 
 .fullHelpLink {
@@ -177,16 +253,16 @@
   border: 1px solid #e2e8f0;
   border-radius: 0.75rem;
   text-decoration: none;
-  color: #7C4DFF;
+  color: #7C3AED;
   font-size: 14px;
   font-weight: 500;
   transition: all 0.2s ease;
 }
 
 .fullHelpLink:hover {
-  background: #7C4DFF;
+  background: #7C3AED;
   color: white;
-  border-color: #7C4DFF;
+  border-color: #7C3AED;
 }
 
 [data-theme="dark"] .fullHelpLink {
@@ -196,9 +272,9 @@
 }
 
 [data-theme="dark"] .fullHelpLink:hover {
-  background: #7C4DFF;
+  background: #7C3AED;
   color: white;
-  border-color: #7C4DFF;
+  border-color: #7C3AED;
 }
 
 /* Адаптивность */
@@ -217,7 +293,7 @@
   }
   
   .subtitle {
-    font-size: 12px;
+    font-size: 14px;
   }
   
   .tip {

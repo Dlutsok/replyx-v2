@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { FiMessageCircle, FiUser, FiClock, FiEye } from 'react-icons/fi';
+import { useEffect, useState } from 'react';
 import styles from './ChatWidgetCard.module.css';
 import { 
   getUserDisplayName, 
@@ -10,6 +11,8 @@ import {
 } from '../../utils/dialogHelpers';
 
 const ChatWidgetCard = ({ dialog, bots, onOpen, index }) => {
+  const [messagesPreview, setMessagesPreview] = useState(null);
+  const [loadingPreview, setLoadingPreview] = useState(false);
   const getAssistantName = () => {
     const bot = bots.find(b => b.assistant_id === dialog.assistant_id);
     return bot ? bot.assistant_name : 'AI Ассистент';
@@ -23,6 +26,51 @@ const ChatWidgetCard = ({ dialog, bots, onOpen, index }) => {
 
   const isActive = dialog.is_taken_over !== 1 && dialog.auto_response;
   const isTakenOver = dialog.is_taken_over === 1;
+
+  // Подтягиваем последние 2 сообщения (лениво)
+  useEffect(() => {
+    let cancelled = false;
+    const fetchPreview = async () => {
+      try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        if (!token || !dialog?.id) return;
+        setLoadingPreview(true);
+        const url = `/api/dialogs/${dialog.id}/messages`;
+        const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+        if (!res.ok) throw new Error('failed');
+        const data = await res.json();
+        if (cancelled) return;
+        const arr = Array.isArray(data) ? data : [];
+        const lastTwo = arr.slice(-2);
+        setMessagesPreview(lastTwo);
+      } catch (e) {
+        // ignore, используем fallback
+      } finally {
+        if (!cancelled) setLoadingPreview(false);
+      }
+    };
+    fetchPreview();
+    return () => { cancelled = true; };
+  }, [dialog?.id]);
+
+  const renderBubble = (msg, key) => {
+    const isUser = msg?.sender === 'user';
+    const isAssistant = msg?.sender === 'assistant' || msg?.sender === 'manager';
+    const text = (msg?.text || '').trim();
+    if (!text) return null;
+    return (
+      <div key={key} className={styles.messageGroup}>
+        <div className={isUser ? styles.userMessage : styles.assistantMessage}>
+          <div className={styles.messageAvatar + ' ' + (isAssistant ? styles.assistantAvatar : '')}>
+            {isAssistant ? '🤖' : getInitials(dialog)}
+          </div>
+          <div className={`${styles.messageBubble} ${isUser ? styles.userBubble : styles.assistantBubble} ${styles.clamp}`}>
+            {text}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <motion.div
@@ -63,42 +111,18 @@ const ChatWidgetCard = ({ dialog, bots, onOpen, index }) => {
       <div className={styles.chatArea}>
         {/* Сообщения */}
         <div className={styles.messagesContainer}>
-          {/* Сообщение от пользователя */}
-          <div className={styles.messageGroup}>
-            <div className={styles.userMessage}>
-              <div className={styles.messageAvatar}>
-                {getInitials(dialog)}
-              </div>
-              <div className={styles.messageBubble + ' ' + styles.userBubble}>
-                {getLastMessage().slice(0, 50)}{getLastMessage().length > 50 ? '...' : ''}
-              </div>
-            </div>
-          </div>
-
-          {/* Сообщение от ассистента */}
-          <div className={styles.messageGroup}>
-            <div className={styles.assistantMessage}>
-              <div className={styles.messageAvatar + ' ' + styles.assistantAvatar}>
-                🤖
-              </div>
-              <div className={styles.messageBubble + ' ' + styles.assistantBubble}>
-                {isTakenOver ? 'Диалог перехвачен менеджером' : 
-                 isActive ? 'Отлично! Чем могу помочь?' : 
-                 'Диалог завершён'}
-              </div>
-            </div>
-          </div>
+          {Array.isArray(messagesPreview) && messagesPreview.length > 0 ? (
+            messagesPreview.map((m, i) => renderBubble(m, i))
+          ) : (
+            <>
+              {/* Fallback: последнее сообщение + автоответ */}
+              {renderBubble({ sender: 'user', text: getLastMessage() }, 'fb-user')}
+              {renderBubble({ sender: 'assistant', text: isTakenOver ? 'Диалог перехвачен менеджером' : (isActive ? 'Отлично! Чем могу помочь?' : 'Диалог завершён') }, 'fb-assistant')}
+            </>
+          )}
         </div>
 
-        {/* Поле ввода (декоративное) */}
-        <div className={styles.inputArea}>
-          <div className={styles.inputField}>
-            <span className={styles.inputPlaceholder}>Напишите сообщение...</span>
-          </div>
-          <div className={styles.sendButton}>
-            <FiMessageCircle />
-          </div>
-        </div>
+        {/* Поле ввода убрано по запросу */}
       </div>
 
       {/* Информация о пользователе */}

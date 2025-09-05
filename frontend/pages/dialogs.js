@@ -1,27 +1,27 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FiRefreshCw } from 'react-icons/fi';
+import { FiRefreshCw, FiMessageSquare, FiStar, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
 // Layout and UI Components
 // DashboardLayout уже подключается на уровне приложения
 import DialogModal from '../components/dialogs/DialogModal';
 
 // Dialog Components
-import DialogStats from '../components/dialogs/DialogStats';
 import DialogControls from '../components/dialogs/DialogControls';
 import ChatWidgetGrid from '../components/dialogs/ChatWidgetGrid';
 import FiltersPanel from '../components/dialogs/FiltersPanel';
+import HandoffQueue from '../components/dashboard/HandoffQueue';
 
 // Hooks
 import { useDialogSync } from '../hooks/useDialogSync';
-import { useDialogsFilterSort } from '../hooks/useDialogsFilterSort';
 import { useDialogMemoization } from '../hooks/useDialogMemoization';
 
 // Constants
-import { STATUS_ALL, TIME_ALL, VIEW_TABLE } from '../constants/dialogStatus';
+import { STATUS_ALL, TIME_ALL, STATUS_HANDOFF_REQUESTED, STATUS_HANDOFF_ACTIVE } from '../constants/dialogStatus';
 
 // Styles
 import styles from '../styles/pages/Dialogs.module.css';
+import dashStyles from '../styles/pages/Dashboard.module.css';
 
 export default function Dialogs() {
   // UI State
@@ -35,11 +35,33 @@ export default function Dialogs() {
   const [selectedChannel, setSelectedChannel] = useState(null);
   const [selectedBot, setSelectedBot] = useState(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [viewMode, setViewMode] = useState(VIEW_TABLE);
+
+  // Создаем объект фильтров
+  const filters = useMemo(() => ({
+    search: searchQuery || '',
+    status: statusFilter || 'all',
+    channel: selectedChannel || null,
+    assistant_id: selectedBot || null,
+    time_filter: timeFilter || 'all'
+  }), [searchQuery, statusFilter, selectedChannel, selectedBot, timeFilter]);
+  
+  // Отладочный лог для фильтров (только при изменении)
+  useEffect(() => {
+    console.log('🔍 [Dialogs] Filters changed:', {
+      searchQuery,
+      statusFilter,
+      selectedChannel,
+      selectedBot,
+      timeFilter,
+      finalFilters: filters
+    });
+  }, [filters, searchQuery, statusFilter, selectedChannel, selectedBot, timeFilter]);
 
   // Data sync hook
   const {
     dialogs,
+    allDialogs, // Все диалоги без фильтров (для HandoffQueue)
+    handoffDialogs, // Диалоги в очереди handoff (независимо от фильтров)
     bots,
     channels,
     loading,
@@ -47,9 +69,20 @@ export default function Dialogs() {
     wsConnected,
     lastUpdate,
     loadData,
+    loadMoreDialogs,
+    loadMoreLoading,
+    goToPage,
+    resetPagination,
     takeoverDialog,
-    releaseDialog
-  } = useDialogSync({ enabled: true, interval: 30000 });
+    releaseDialog,
+    cancelHandoff,
+    currentPage,
+    totalDialogs,
+    pageSize,
+    totalPages,
+    hasNextPage,
+    hasPrevPage
+  } = useDialogSync({ enabled: true, interval: 300000, filters }); // Увеличен интервал до 5 минут
 
   // Memoization hook for performance
   const {
@@ -59,27 +92,11 @@ export default function Dialogs() {
     dialogStatusCounts
   } = useDialogMemoization(dialogs, bots);
 
-  // Filter and sort hook
-  const { filteredAndSortedDialogs, stats } = useDialogsFilterSort({
-    dialogs,
-    bots,
-    searchQuery,
-    selectedChannel,
-    selectedBot,
-    timeFilter,
-    statusFilter,
-    sortBy,
-    sortOrder
-  });
+  // Диалоги уже отфильтрованы и отсортированы на сервере, используем их как есть
+  const filteredAndSortedDialogs = dialogs;
 
   // Event handlers
-  const handleStatClick = useCallback((statType) => {
-    if (statType === 'all') {
-      setStatusFilter(STATUS_ALL);
-    } else {
-      setStatusFilter(statType);
-    }
-  }, []);
+  // Статистический блок удалён
 
   const handleFiltersToggle = useCallback(() => {
     setFiltersOpen(!filtersOpen);
@@ -90,13 +107,20 @@ export default function Dialogs() {
     setModalOpen(true);
   }, []);
 
-  const handleTakeover = useCallback(async (dialog) => {
+  const handleTakeover = useCallback(async (dialogOrId) => {
     try {
-      await takeoverDialog(dialog.id);
+      const dialogId = typeof dialogOrId === 'object' ? dialogOrId.id : dialogOrId;
+      await takeoverDialog(dialogId);
+      
+      // Автоматически открываем диалог после успешного takeover
+      const dialog = dialogs.find(d => d.id === dialogId);
+      if (dialog) {
+        openDialogModal(dialog);
+      }
     } catch (err) {
       console.error('Error taking over dialog:', err);
     }
-  }, [takeoverDialog]);
+  }, [takeoverDialog, dialogs, openDialogModal]);
 
   const handleRelease = useCallback(async (dialog) => {
     try {
@@ -105,6 +129,14 @@ export default function Dialogs() {
       console.error('Error releasing dialog:', err);
     }
   }, [releaseDialog]);
+
+  const handleCancel = useCallback(async (dialogId) => {
+    try {
+      await cancelHandoff(dialogId);
+    } catch (err) {
+      console.error('Error cancelling handoff:', err);
+    }
+  }, [cancelHandoff]);
 
   const handleClearFilters = useCallback(() => {
     setSearchQuery('');
@@ -116,17 +148,35 @@ export default function Dialogs() {
   }, []);
 
   return (
-    <>
+    <div className="bg-white px-4 sm:px-6 xl:px-8 pt-4 sm:pt-6 xl:pt-8 pb-4 sm:pb-6 xl:pb-8">
+      {/* Заголовок раздела - унифицированный стиль dashboard */}
+      <div className={dashStyles.welcomeSection}>
+        <div className={dashStyles.welcomeContent}>
+          <div className={dashStyles.avatarSection}>
+            <div className={dashStyles.avatar}>
+              <FiMessageSquare size={28} />
+            </div>
+            <div className={dashStyles.userInfo}>
+              <h1 className={dashStyles.welcomeTitle}>Диалоги</h1>
+              <p className={dashStyles.welcomeSubtitle}>
+                Управление диалогами и чатами
+              </p>
+            </div>
+          </div>
+          
+          <div className={dashStyles.badge}>
+            <FiStar size={16} />
+            <span>{totalDialogs > 0 ? totalDialogs : filteredAndSortedDialogs.length} диалогов</span>
+          </div>
+        </div>
+      </div>
+
       {/* Loading state */}
       {loading && (
         <div className={styles.loadingContainer}>
-          <motion.div 
-            className={styles.loadingSpinner}
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          >
+          <div className={styles.loadingSpinner}>
             <FiRefreshCw />
-          </motion.div>
+          </div>
           <p>Загрузка диалогов...</p>
         </div>
       )}
@@ -144,13 +194,33 @@ export default function Dialogs() {
       {/* Main content */}
       {!loading && !error && (
         <>
-          {/* Stats Panel */}
-          <DialogStats 
-            stats={stats}
-            onStatClick={handleStatClick}
-          />
+          {/* Handoff Queue - показываем если есть диалоги, ожидающие оператора */}
+          {(() => {
+            // Используем handoffDialogs - специально загруженные диалоги в очереди, независимо от фильтров поиска
+            console.log('🔍 [Dialogs] HandoffQueue check:', {
+              totalDialogs: dialogs.length,
+              handoffDialogs: handoffDialogs.length,
+              searchActive: !!searchQuery || statusFilter !== STATUS_ALL,
+              handoffStatuses: handoffDialogs.map(d => ({ 
+                id: d.id, 
+                handoff_status: d.handoff_status,
+                is_taken_over: d.is_taken_over,
+                handoff_requested_at: d.handoff_requested_at
+              }))
+            });
+            
+            return handoffDialogs.length > 0 ? (
+              <div style={{ marginBottom: '24px' }}>
+                <HandoffQueue
+                  dialogs={handoffDialogs}
+                  onTakeDialog={handleTakeover}
+                  onCancel={handleCancel}
+                  isLoading={loading}
+                />
+              </div>
+            ) : null;
+          })()}
 
-          {/* Control Panel */}
           <DialogControls 
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
@@ -159,25 +229,24 @@ export default function Dialogs() {
             onStatusFilterChange={setStatusFilter}
             timeFilter={timeFilter}
             onTimeFilterChange={setTimeFilter}
-            resultsCount={filteredAndSortedDialogs.length}
+
             filtersOpen={filtersOpen}
           />
 
-          {/* Filters Panel */}
           <FiltersPanel 
             isOpen={filtersOpen}
             onClose={() => setFiltersOpen(false)}
             channels={channels}
             selectedChannel={selectedChannel}
-            onChannelChange={(channel) => {
-              setSelectedChannel(channel);
-              if (channel) setSelectedBot(null);
+            onChannelChange={(channelType) => {
+              setSelectedChannel(channelType);
+              if (channelType) setSelectedBot(null);
             }}
             bots={bots}
             selectedBot={selectedBot}
-            onBotChange={(bot) => {
-              setSelectedBot(bot);
-              if (bot) setSelectedChannel(null);
+            onBotChange={(assistantId) => {
+              setSelectedBot(assistantId);
+              if (assistantId) setSelectedChannel(null);
             }}
             dialogs={dialogs}
             statusFilter={statusFilter}
@@ -185,31 +254,51 @@ export default function Dialogs() {
             onClearFilters={handleClearFilters}
           />
 
-          {/* Dialogs Content */}
-          <motion.div 
-            className={styles.contentContainer}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
+          <div className={styles.contentContainer}>
             <ChatWidgetGrid
               dialogs={filteredAndSortedDialogs}
               bots={bots}
               onDialogOpen={openDialogModal}
-              viewMode={viewMode}
-              onViewModeChange={setViewMode}
             />
-          </motion.div>
+            
+            {/* Load More button */}
+            {hasNextPage && (
+              <div className={styles.loadMoreContainer}>
+                <div className={styles.loadMoreInfo}>
+                  Показано {dialogs.length} из {totalDialogs} диалогов
+                </div>
+                
+                <button
+                  className={`${styles.loadMoreBtn} ${loadMoreLoading ? styles.loading : ''}`}
+                  onClick={loadMoreDialogs}
+                  disabled={loadMoreLoading}
+                >
+                  {loadMoreLoading ? (
+                    <>
+                      <div className={styles.loadingSpinner}>
+                        <FiRefreshCw />
+                      </div>
+                      Загрузка...
+                    </>
+                  ) : (
+                    <>
+                      <FiChevronRight />
+                      Загрузить ещё диалоги
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
         </>
       )}
 
-      {/* Dialog Modal */}
       <DialogModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         dialogId={selectedDialog?.id}
         initialDialog={selectedDialog}
       />
-    </>
+    </div>
   );
 }

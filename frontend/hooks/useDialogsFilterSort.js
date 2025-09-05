@@ -4,6 +4,8 @@ import {
   STATUS_ACTIVE, 
   STATUS_TAKEN_OVER, 
   STATUS_ALL,
+  STATUS_HANDOFF_REQUESTED,
+  STATUS_HANDOFF_ACTIVE,
   TIME_ALL,
   TIME_TODAY,
   TIME_YESTERDAY,
@@ -64,6 +66,10 @@ export const useDialogsFilterSort = ({
           return dialog.is_taken_over !== 1 && dialog.auto_response;
         case STATUS_TAKEN_OVER:
           return dialog.is_taken_over === 1;
+        case STATUS_HANDOFF_REQUESTED:
+          return dialog.handoff_status === 'requested';
+        case STATUS_HANDOFF_ACTIVE:
+          return dialog.handoff_status === 'active';
         default:
           return true;
       }
@@ -124,10 +130,7 @@ export const useDialogsFilterSort = ({
     
     // Фильтр по боту
     if (selectedBot) {
-      const selectedBotData = bots.find(bot => bot.id === selectedBot);
-      if (selectedBotData) {
-        filtered = filtered.filter(d => d.assistant_id === selectedBotData.assistant_id);
-      }
+      filtered = filtered.filter(d => d.assistant_id === selectedBot);
     }
     
     // Фильтр по времени

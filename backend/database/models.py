@@ -1,14 +1,21 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Float, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Float, Boolean, func, Index, NUMERIC, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects import postgresql
 from datetime import datetime
 from .connection import Base
+import importlib
+Vector = None
+try:
+    _pgv = importlib.import_module('pgvector.sqlalchemy')  # type: ignore
+    Vector = getattr(_pgv, 'Vector', None)
+except Exception:
+    Vector = None  # Тип будет задан в миграции; для рантайма без pgvector может использоваться Text
 
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True, index=True)
     yandex_id = Column(String, unique=True, nullable=True)
-    email = Column(String, unique=True, index=True, nullable=False)
+    email = Column(String, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     role = Column(String, default='user')
     status = Column(String, default='active')
@@ -20,6 +27,10 @@ class User(Base):
     
     # Поля для онбординга
     onboarding_completed = Column(Boolean, default=False)
+    
+    __table_args__ = (
+        UniqueConstraint('email', name='uq_users_email'),
+    )
     onboarding_step = Column(Integer, default=0)  # Текущий шаг онбординга (0-5)
     onboarding_started_at = Column(DateTime, nullable=True)
     onboarding_completed_at = Column(DateTime, nullable=True)
@@ -28,6 +39,10 @@ class User(Base):
     first_message_sent = Column(Boolean, default=False)
     tutorial_tips_shown = Column(Text, nullable=True)  # JSON массив показанных подсказок
     welcome_bonus_received = Column(Boolean, default=False)  # Получен ли приветственный бонус
+    
+    # Поля для сброса пароля
+    password_reset_token = Column(String, nullable=True)
+    password_reset_expires = Column(DateTime, nullable=True)
     
     tokens = relationship("IntegrationToken", back_populates="owner")
 
@@ -63,6 +78,7 @@ class Document(Base):
     filename = Column(String, nullable=False)
     size = Column(Integer, nullable=False)
     upload_date = Column(DateTime, default=datetime.utcnow)
+    doc_hash = Column(String(64), nullable=True)
     user = relationship("User", backref="documents")
 
 class UserKnowledge(Base):
@@ -90,19 +106,24 @@ class KnowledgeEmbedding(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     assistant_id = Column(Integer, ForeignKey('assistants.id'), nullable=True)
-    doc_id = Column(Integer, ForeignKey('documents.id'), nullable=False)
+    doc_id = Column(Integer, ForeignKey('documents.id'), nullable=True)  # nullable for Q&A embeddings
+    qa_id = Column(Integer, ForeignKey('qa_knowledge.id'), nullable=True)  # For Q&A knowledge embeddings
     chunk_index = Column(Integer, nullable=False)  # Порядковый номер чанка в документе
     chunk_text = Column(Text, nullable=False)  # Текст чанка
-    embedding = Column(Text, nullable=False)  # Вектор embedding как JSON строка
+    # Используем pgvector, если доступен; иначе fallback на ARRAY(Float)
+    embedding = Column(Vector(1536) if Vector else postgresql.ARRAY(Float), nullable=False)
     doc_type = Column(String, nullable=True)  # Тип документа
     importance = Column(Integer, default=10)  # Важность фрагмента
     token_count = Column(Integer, nullable=True)  # Количество токенов в чанке
+    chunk_hash = Column(String(64), nullable=True)  # Хэш чанка для инкрементальной индексации
+    source = Column(String, nullable=True)  # источник: 'document', 'confirmed_knowledge', 'website'
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     user = relationship('User', backref='embeddings')
     assistant = relationship('Assistant', backref='embeddings')
     document = relationship('Document', backref='embeddings')
+    qa_knowledge = relationship('QAKnowledge', backref='embeddings')
 
 
 class QueryEmbeddingCache(Base):
@@ -111,10 +132,35 @@ class QueryEmbeddingCache(Base):
     id = Column(Integer, primary_key=True, index=True)
     query_hash = Column(String(64), nullable=False, unique=True)  # MD5 хэш запроса
     query_text = Column(Text, nullable=False)  # Оригинальный текст запроса
-    embedding = Column(Text, nullable=False)  # Вектор embedding запроса как JSON строка
+    # Кэширующий вектор: pgvector при наличии, иначе ARRAY(Float)
+    embedding = Column(Vector(1536) if Vector else postgresql.ARRAY(Float), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     last_used = Column(DateTime, default=datetime.utcnow)
     usage_count = Column(Integer, default=1)  # Счетчик использований
+
+class StartPageEvent(Base):
+    """События пользователей на странице /start для аналитики онбординга"""
+    __tablename__ = 'start_page_events'
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=True)  # Может быть анонимным
+    session_id = Column(String(64), nullable=False)  # Уникальный ID сессии браузера
+    event_type = Column(String(50), nullable=False)  # page_view, step_click, step_complete, task_action
+    step_id = Column(Integer, nullable=True)  # ID шага (1-4) из интерфейса
+    action_type = Column(String(50), nullable=True)  # primary, secondary, skip
+    event_metadata = Column(Text, nullable=True)  # JSON с дополнительной информацией
+    user_agent = Column(String(512), nullable=True)  # User Agent браузера
+    ip_address = Column(String(45), nullable=True)  # IP адрес пользователя
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    
+    user = relationship('User', backref='start_page_events')
+    
+    # Индексы для быстрых запросов аналитики
+    __table_args__ = (
+        Index('idx_start_events_user_created', 'user_id', 'created_at'),
+        Index('idx_start_events_session_created', 'session_id', 'created_at'),
+        Index('idx_start_events_type_created', 'event_type', 'created_at'),
+        Index('idx_start_events_step_created', 'step_id', 'created_at'),
+    )
 
 class Dialog(Base):
     __tablename__ = 'dialogs'
@@ -133,8 +179,19 @@ class Dialog(Base):
     first_name = Column(String, nullable=True)  # Имя пользователя из Telegram
     last_name = Column(String, nullable=True)  # Фамилия пользователя из Telegram
     guest_id = Column(String, nullable=True, index=True)
-    user = relationship('User', backref='dialogs')
+    
+    # Handoff fields
+    handoff_status = Column(String, nullable=False, default='none')
+    handoff_requested_at = Column(DateTime, nullable=True)
+    handoff_started_at = Column(DateTime, nullable=True)
+    handoff_resolved_at = Column(DateTime, nullable=True)
+    handoff_reason = Column(String, nullable=True)
+    assigned_manager_id = Column(Integer, ForeignKey('users.id'), nullable=True)
+    request_id = Column(String(36), nullable=True)
+    
+    user = relationship('User', foreign_keys=[user_id], backref='dialogs')
     assistant = relationship('Assistant', backref='dialogs')
+    assigned_manager = relationship('User', foreign_keys=[assigned_manager_id], backref='managed_dialogs')
 
 class DialogMessage(Base):
     __tablename__ = 'dialog_messages'
@@ -144,6 +201,10 @@ class DialogMessage(Base):
     text = Column(Text, nullable=False)
     timestamp = Column(DateTime, default=datetime.utcnow)
     delivered = Column(Integer, default=0)  # 1 если отправлено в Telegram
+    
+    # Handoff message fields
+    message_kind = Column(String, nullable=False, default='user')  # 'user'|'assistant'|'operator'|'system'
+    system_type = Column(String, nullable=True)  # 'handoff_requested'|'handoff_started'|'handoff_released'
 
     dialog = relationship('Dialog', backref='messages')
 
@@ -155,12 +216,21 @@ class Assistant(Base):
     user_id = Column(Integer, ForeignKey('users.id'))
     name = Column(String, nullable=False, default='AI-ассистент')
     ai_model = Column(String, default='gpt-4o-mini')
-    system_prompt = Column(Text, default='Вы — корпоративный AI-ассистент. Предоставляю точную информацию по вопросам компании в деловом стиле. Отвечаю кратко, информативно, без использования смайликов и чрезмерной эмоциональности. ВАЖНО: Опираюсь ТОЛЬКО на данные из базы знаний компании. Если информации нет в предоставленных документах — сообщаю об этом прямо, не выдумываю и не использую общие знания.')
+    system_prompt = Column(Text, default='Привет! Я ваш AI-помощник. Готов ответить на вопросы и помочь с любыми задачами. Чем могу быть полезен?')
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow)
     is_active = Column(Boolean, default=True)
     website_integration_enabled = Column(Boolean, default=False)  # Включена ли интеграция с сайтом
+    allowed_domains = Column(Text, nullable=True)  # Разрешенные домены для виджета (через запятую)
     knowledge_version = Column(Integer, default=1)  # Версия знаний для lazy reload
+    
+    # Поля персонализации виджета
+    operator_name = Column(String(255), nullable=True, default='Поддержка')  # Имя оператора
+    business_name = Column(String(255), nullable=True, default='Наша компания')  # Название бизнеса
+    avatar_url = Column(Text, nullable=True)  # URL аватара оператора
+    widget_theme = Column(String(50), nullable=True, default='blue')  # Тема виджета
+    widget_settings = Column(postgresql.JSON, nullable=True, default={})  # Дополнительные настройки виджета
+    
     user = relationship('User', backref='assistants')
 
 class TrainingDataset(Base):
@@ -333,9 +403,9 @@ class UserBalance(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey('users.id'), unique=True, nullable=False)
-    balance = Column(Float, default=0.0)  # Баланс в рублях
-    total_spent = Column(Float, default=0.0)  # Всего потрачено
-    total_topped_up = Column(Float, default=0.0)  # Всего пополнено
+    balance = Column(NUMERIC(12, 2), default=0.00)  # Баланс в рублях
+    total_spent = Column(NUMERIC(12, 2), default=0.00)  # Всего потрачено
+    total_topped_up = Column(NUMERIC(12, 2), default=0.00)  # Всего пополнено
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -348,11 +418,11 @@ class BalanceTransaction(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    amount = Column(Float, nullable=False)  # Сумма (положительная для пополнения, отрицательная для списания)
+    amount = Column(NUMERIC(12, 2), nullable=False)  # Сумма (положительная для пополнения, отрицательная для списания)
     transaction_type = Column(String, nullable=False)  # 'topup', 'ai_message', 'document_upload', 'bot_message'
     description = Column(String, nullable=True)  # Описание операции
-    balance_before = Column(Float, nullable=False)  # Баланс до операции
-    balance_after = Column(Float, nullable=False)  # Баланс после операции
+    balance_before = Column(NUMERIC(12, 2), nullable=False)  # Баланс до операции
+    balance_after = Column(NUMERIC(12, 2), nullable=False)  # Баланс после операции
     related_id = Column(Integer, nullable=True)  # ID связанной сущности (сообщения, документа и т.д.)
     created_at = Column(DateTime, default=datetime.utcnow)
     
@@ -365,73 +435,119 @@ class ServicePrice(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     service_type = Column(String, nullable=False, unique=True)  # 'ai_message', 'document_upload', 'bot_message'
-    price = Column(Float, nullable=False)  # Цена в рублях
+    price = Column(NUMERIC(12, 2), nullable=False)  # Цена в рублях
     description = Column(String, nullable=True)  # Описание услуги
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-class PromoCode(Base):
-    """Промокоды"""
-    __tablename__ = 'promo_codes'
+class Payment(Base):
+    """Платежи через Т-Банк"""
+    __tablename__ = 'payments'
     
     id = Column(Integer, primary_key=True, index=True)
-    code = Column(String, nullable=False, unique=True, index=True)  # Код промокода
-    type = Column(String, nullable=False)  # 'percentage', 'fixed_amount'
-    value = Column(Float, nullable=False)  # Значение скидки (% или фиксированная сумма)
-    min_amount = Column(Float, default=0.0)  # Минимальная сумма для применения
-    max_uses = Column(Integer, nullable=True)  # Максимальное количество использований (None = неограничено)
-    used_count = Column(Integer, default=0)  # Количество использований
-    is_active = Column(Boolean, default=True)
-    expires_at = Column(DateTime, nullable=True)  # Дата истечения
-    created_at = Column(DateTime, default=datetime.utcnow)
-    created_by = Column(Integer, ForeignKey('users.id'), nullable=True)  # Кто создал промокод
-
-class PromoCodeUsage(Base):
-    """Использование промокодов"""
-    __tablename__ = 'promo_code_usage'
-    
-    id = Column(Integer, primary_key=True, index=True)
-    promo_code_id = Column(Integer, ForeignKey('promo_codes.id'), nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    amount_before = Column(Float, nullable=False)  # Сумма до применения промокода
-    discount_amount = Column(Float, nullable=False)  # Размер скидки
-    amount_after = Column(Float, nullable=False)  # Сумма после применения промокода
-    used_at = Column(DateTime, default=datetime.utcnow)
+    order_id = Column(String, unique=True, nullable=False)  # Уникальный номер заказа для Т-Банк
+    amount = Column(NUMERIC(12, 2), nullable=False)  # Сумма в рублях
+    currency = Column(String(3), nullable=False, default='RUB')  # Валюта платежа
+    status = Column(String, default='pending')  # 'pending', 'processing', 'success', 'failed', 'cancelled'
+    payment_method = Column(String, default='tinkoff')  # Метод оплаты
+    description = Column(String, nullable=True)  # Описание платежа
+    tinkoff_payment_id = Column(String, nullable=True)  # ID платежа от Т-Банк (если вернется)
+    success_url = Column(String, nullable=True)  # URL успешной оплаты
+    fail_url = Column(String, nullable=True)  # URL неудачной оплаты
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    completed_at = Column(DateTime, nullable=True)  # Время завершения платежа
     
     # Relationships
-    promo_code = relationship('PromoCode', backref='usages')
-    user = relationship('User', backref='promo_usages')
+    user = relationship('User', backref='payments')
 
-class ReferralCode(Base):
-    """Реферальные коды"""
-    __tablename__ = 'referral_codes'
+
+class OperatorPresence(Base):
+    """Operator presence and availability tracking."""
+    __tablename__ = 'operator_presence'
     
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False, unique=True)
-    code = Column(String, nullable=False, unique=True, index=True)  # Уникальный реферальный код
-    referrals_count = Column(Integer, default=0)  # Количество рефералов
-    total_earned = Column(Float, default=0.0)  # Общая сумма заработанного
-    created_at = Column(DateTime, default=datetime.utcnow)
+    status = Column(String, nullable=False, server_default='offline')
+    last_heartbeat = Column(DateTime, nullable=True)
+    max_active_chats_web = Column(Integer, nullable=False, server_default='3')
+    max_active_chats_telegram = Column(Integer, nullable=False, server_default='5')
+    active_chats = Column(Integer, nullable=False, server_default='0')
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+    updated_at = Column(DateTime, nullable=False, server_default=func.now())
     
     # Relationships
-    user = relationship('User', backref='referral_code')
+    user = relationship('User', backref='operator_presence')
 
-class Referral(Base):
-    """Рефералы"""
-    __tablename__ = 'referrals'
+
+class HandoffAudit(Base):
+    """Audit log for handoff state transitions."""
+    __tablename__ = 'handoff_audit'
+    
+    id = Column(Integer, primary_key=True)
+    dialog_id = Column(Integer, ForeignKey('dialogs.id'), nullable=False)
+    from_status = Column(String, nullable=True)
+    to_status = Column(String, nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=True)
+    reason = Column(String, nullable=True)
+    request_id = Column(String(36), nullable=True)
+    seq = Column(Integer, nullable=False)
+    extra_data = Column(postgresql.JSON, nullable=True)
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+    
+    # Relationships
+    dialog = relationship('Dialog', backref='handoff_audit')
+    user = relationship('User', backref='handoff_audit')
+
+
+class SystemSettings(Base):
+    """Системные настройки для админ панели."""
+    __tablename__ = 'system_settings'
+    
+    id = Column(Integer, primary_key=True)
+    category = Column(String(50), nullable=False)  # general, ai, email, security, limits, maintenance
+    key = Column(String(100), nullable=False)
+    value = Column(Text, nullable=True)
+    data_type = Column(String(20), default='string')  # string, boolean, integer, float, json
+    is_sensitive = Column(Boolean, default=False)  # для паролей/токенов
+    description = Column(Text, nullable=True)
+    default_value = Column(Text, nullable=True)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_by = Column(Integer, ForeignKey('users.id'), nullable=True)
+    
+    # Constraints
+    __table_args__ = (
+        # Уникальная связка category + key
+        UniqueConstraint('category', 'key', name='uq_system_settings_category_key'),
+        {'postgresql_with_oids': False}
+    )
+    
+    # Relationships
+    updated_by_user = relationship('User', backref='system_settings_updates')
+
+
+class QAKnowledge(Base):
+    """База знаний в формате вопрос-ответ для ассистентов"""
+    __tablename__ = 'qa_knowledge'
     
     id = Column(Integer, primary_key=True, index=True)
-    referrer_id = Column(Integer, ForeignKey('users.id'), nullable=False)  # Кто пригласил
-    referred_id = Column(Integer, ForeignKey('users.id'), nullable=False)  # Кого пригласили
-    referral_code_id = Column(Integer, ForeignKey('referral_codes.id'), nullable=False)
-    bonus_amount = Column(Float, default=0.0)  # Бонус реферера
-    referred_bonus = Column(Float, default=0.0)  # Бонус реферала
-    status = Column(String, default='pending')  # 'pending', 'confirmed', 'paid'
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    assistant_id = Column(Integer, ForeignKey('assistants.id'), nullable=True)
+    question = Column(Text, nullable=False)
+    answer = Column(Text, nullable=False)
+    category = Column(String, nullable=True)  # Категория для группировки
+    keywords = Column(String, nullable=True)  # Ключевые слова для поиска
+    importance = Column(Integer, default=10)  # Важность от 1 до 10
+    usage_count = Column(Integer, default=0)  # Сколько раз использовался
+    last_used = Column(DateTime, nullable=True)  # Когда последний раз использовался
+    is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
-    confirmed_at = Column(DateTime, nullable=True)  # Когда подтвержден
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    referrer = relationship('User', foreign_keys=[referrer_id], backref='referrals_made')
-    referred = relationship('User', foreign_keys=[referred_id], backref='referrals_received')
-    referral_code = relationship('ReferralCode', backref='referrals')
+    user = relationship('User', backref='qa_knowledge')
+    assistant = relationship('Assistant', backref='qa_knowledge')

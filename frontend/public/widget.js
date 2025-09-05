@@ -52,24 +52,60 @@
         // Используем default значение
       }
     }
+    // Фолбэк: используем localhost для разработки, иначе определяем из API URL
     return 'http://localhost:3000';
   };
 
+  const defaultHost = (() => {
+    // Пытаемся вычислить хост из источника скрипта
+    if (scriptSrc) {
+      try {
+        const u = new URL(scriptSrc);
+        return `${u.protocol}//${u.host}`;
+      } catch (e) {}
+    }
+    return 'http://localhost:3000';
+  })();
+
+  const defaultApiUrl = (() => {
+    // API URL для backend (порт 8000)
+    if (scriptSrc) {
+      try {
+        const u = new URL(scriptSrc);
+        // В продакшене API на том же хосте, но порт может отличаться
+        return `${u.protocol}//${u.hostname}`;
+      } catch (e) {}
+    }
+    return 'http://localhost';
+  })();
+
   const config = {
-    apiUrl: getParam(urlParams, 'api', 'http://localhost:8000'),
+    apiUrl: getParam(urlParams, 'api', defaultApiUrl),
     siteToken: getParam(urlParams, 'token', null),
     assistantId: getParam(urlParams, 'assistant_id', null),
     theme: getParam(urlParams, 'theme', 'blue'),
     type: getParam(urlParams, 'type', 'floating'),
-    host: getParam(urlParams, 'host', getHostFromScript()),
+    host: getParam(urlParams, 'host', defaultHost),
     position: getParam(urlParams, 'position', 'bottom-right'),
     buttonSize: parseInt(getParam(urlParams, 'buttonSize', '80')) || 80,
     borderRadius: 12,
-    welcomeMessage: getParam(urlParams, 'welcomeMessage', 'Привет! Как дела? Чем могу помочь?'),
+    welcomeMessage: getParam(urlParams, 'welcomeMessage', 'Здравствуйте! Я ваш персональный AI-ассистент. Готов предоставить информацию и оказать помощь по любым вопросам.'),
     buttonText: getParam(urlParams, 'buttonText', 'AI'),
     showAvatar: getParam(urlParams, 'showAvatar', 'true') !== 'false',
-    showOnlineStatus: getParam(urlParams, 'showOnlineStatus', 'true') !== 'false'
+    showOnlineStatus: getParam(urlParams, 'showOnlineStatus', 'true') !== 'false',
+    // Режим только для разработчика: инициализировать виджет только если localStorage содержит нужный ключ
+    devOnly: getParam(urlParams, 'devOnly', 'false'),
+    devKey: getParam(urlParams, 'devKey', null)
   };
+  
+  // Debug логирование конфигурации
+  console.log('[ReplyX Widget] Configuration:', {
+    host: config.host,
+    apiUrl: config.apiUrl,
+    scriptSrc: scriptSrc,
+    userAgent: navigator.userAgent,
+    isSafari: /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+  });
   
   // Цветовые темы
   const themes = {
@@ -95,15 +131,27 @@
     }
   };
   
-  const currentTheme = themes[config.theme] || themes.blue;
+  // Поддерживаем кастомные HEX цвета
+  let currentTheme;
+  if (config.theme && config.theme.startsWith('#')) {
+    // Кастомная тема с HEX цветом
+    currentTheme = {
+      primary: config.theme,
+      secondary: config.theme + '33', // добавляем прозрачность
+      accent: config.theme
+    };
+  } else {
+    // Предустановленная тема
+    currentTheme = themes[config.theme] || themes.blue;
+  }
   
   // Проверяем, что виджет еще не загружен
-  if (window.ChatAIWidget) {
+  if (window.ReplyXWidget) {
     return;
   }
   
   // Создаем namespace
-  window.ChatAIWidget = {
+  window.ReplyXWidget = {
     isMinimized: true,
     isLoaded: false,
     container: null,
@@ -114,25 +162,273 @@
     init: function() {
       if (this.isLoaded) return;
       
+      // Проверяем домен ПЕРЕД инициализацией виджета (с серверной проверкой)
+      this.validateDomainAndInit();
+    },
+    
+    // Построение URL для iframe с персональными настройками
+    buildIframeUrl: function(widgetConfig) {
+      let iframeSrc = `${config.host}/chat-iframe?theme=${encodeURIComponent(config.theme)}&api=${encodeURIComponent(config.apiUrl)}`;
+      
+      if (config.assistantId) {
+        iframeSrc += `&assistant_id=${config.assistantId}`;
+      }
+      if (config.siteToken) {
+        iframeSrc += `&site_token=${config.siteToken}`;
+      }
+      
+      // Добавляем персональные настройки виджета в URL
+      if (widgetConfig) {
+        if (widgetConfig.operator_name) {
+          iframeSrc += `&operator_name=${encodeURIComponent(widgetConfig.operator_name)}`;
+        }
+        if (widgetConfig.business_name) {
+          iframeSrc += `&business_name=${encodeURIComponent(widgetConfig.business_name)}`;
+        }
+        if (widgetConfig.avatar_url) {
+          iframeSrc += `&avatar_url=${encodeURIComponent(widgetConfig.avatar_url)}`;
+        }
+        if (widgetConfig.widget_theme) {
+          iframeSrc += `&widget_theme=${encodeURIComponent(widgetConfig.widget_theme)}`;
+        }
+      }
+      
+      return iframeSrc;
+    },
+    
+    // Получение настроек виджета с сервера
+    fetchWidgetConfig: async function() {
+      if (!this.config.siteToken) {
+        return null;
+      }
+      
+      try {
+        const response = await fetch(this.config.apiUrl + '/api/widget-config', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            token: this.config.siteToken
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          console.log('[ReplyX Widget] ✅ Настройки получены:', result.config);
+          return result.config;
+        } else {
+          console.warn('[ReplyX Widget] Не удалось получить настройки:', result.reason);
+          return null;
+        }
+        
+      } catch (error) {
+        console.warn('[ReplyX Widget] Ошибка получения настроек:', error);
+        return null;
+      }
+    },
+    
+    // Валидация домена и инициализация
+    validateDomainAndInit: async function() {
+      if (!this.config.siteToken) {
+        console.warn('[ReplyX Widget] Отсутствует токен сайта');
+        return;
+      }
+      
+      // Локальная проверка токена
+      let payload;
+      try {
+        const tokenParts = this.config.siteToken.split('.');
+        if (tokenParts.length !== 3) {
+          console.error('[ReplyX Widget] Неверный формат токена');
+          return;
+        }
+        
+        payload = JSON.parse(atob(tokenParts[1]));
+        
+        if (!payload.allowed_domains) {
+          console.warn('[ReplyX Widget] В токене отсутствуют разрешенные домены');
+          return;
+        }
+      } catch (error) {
+        console.error('[ReplyX Widget] Ошибка декодирования токена:', error);
+        return;
+      }
+      
+      // ОБЯЗАТЕЛЬНАЯ серверная проверка перед инициализацией
+      const currentDomain = window.location.hostname.toLowerCase().replace(/^www\./, '');
+      
+      try {
+        const response = await fetch(this.config.apiUrl + '/api/validate-widget-token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            token: this.config.siteToken,
+            domain: currentDomain
+          })
+        });
+        
+        const validation = await response.json();
+        
+        if (!validation.valid) {
+          console.warn('[ReplyX Widget] Серверная валидация не пройдена:', validation.reason);
+          if (validation.reason === 'Domain not allowed') {
+            console.warn('[ReplyX Widget] Домен не разрешен. Разрешенные домены:', validation.allowed_domains);
+          }
+          return;
+        }
+        
+        console.log('[ReplyX Widget] ✅ Серверная валидация пройдена');
+        
+      } catch (error) {
+        console.error('[ReplyX Widget] Ошибка серверной проверки, используем локальную:', error);
+        
+        // Fallback на локальную проверку при ошибке сети
+        const allowedDomains = payload.allowed_domains
+          .split(',')
+          .map(domain => domain.trim().toLowerCase())
+          .map(domain => domain.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, ''))
+          .filter(domain => domain.length > 0);
+        
+        const isLocallyAllowed = allowedDomains.some(allowedDomain => 
+          currentDomain === allowedDomain || currentDomain.endsWith('.' + allowedDomain)
+        );
+        
+        if (!isLocallyAllowed) {
+          console.error('[ReplyX Widget] Локальная проверка не пройдена');
+          return;
+        }
+      }
+      
+      // Гейтинг: если devOnly=true, инициализируем только при совпадении ключа в localStorage
+      try {
+        if (this.config.devOnly === 'true') {
+          const stored = window.localStorage ? window.localStorage.getItem('CHAT_AI_DEV_KEY') : null;
+          if (!this.config.devKey || !stored || String(stored) !== String(this.config.devKey)) {
+            return; // тихо выходим, виджет не инициализируем для других пользователей
+          }
+        }
+      } catch (e) { /* no-op */ }
+      
+      // Получаем настройки виджета перед инициализацией
+      const widgetConfig = await this.fetchWidgetConfig();
+      
+      // Инициализируем виджет только после успешной валидации
       this.createContainer();
       this.loadStyles();
       
       if (config.type === 'floating') {
-        this.createFloatingWidget();
+        this.createFloatingWidget(widgetConfig);
       } else if (config.type === 'embedded') {
-        this.createEmbeddedWidget();
+        this.createEmbeddedWidget(widgetConfig);
       } else if (config.type === 'fullscreen') {
-        this.createFullscreenWidget();
+        this.createFullscreenWidget(widgetConfig);
       }
       
       this.isLoaded = true;
+    },
+    
+    // Валидация домена с проверкой на сервере
+    validateDomain: function() {
+      if (!this.config.siteToken) {
+        console.warn('[ReplyX Widget] Отсутствует токен сайта');
+        return false;
+      }
+      
+      // Сначала локальная проверка
+      try {
+        const tokenParts = this.config.siteToken.split('.');
+        if (tokenParts.length !== 3) {
+          console.error('[ReplyX Widget] Неверный формат токена');
+          return false;
+        }
+        
+        const payload = JSON.parse(atob(tokenParts[1]));
+        
+        if (!payload.allowed_domains) {
+          console.warn('[ReplyX Widget] В токене отсутствуют разрешенные домены');
+          return false;
+        }
+        
+        const currentDomain = window.location.hostname.toLowerCase();
+        const allowedDomains = payload.allowed_domains
+          .split(',')
+          .map(domain => domain.trim().toLowerCase())
+          .map(domain => domain.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, ''))
+          .filter(domain => domain.length > 0);
+        
+        console.log('[ReplyX Widget] Локальная проверка - токен:', payload);
+        console.log('[ReplyX Widget] Локальная проверка - домены:', allowedDomains);
+        
+        const currentDomainClean = currentDomain.replace(/^www\./, '');
+        const isLocallyAllowed = allowedDomains.some(allowedDomain => 
+          currentDomainClean === allowedDomain || currentDomainClean.endsWith('.' + allowedDomain)
+        );
+        
+        if (!isLocallyAllowed) {
+          console.error('[ReplyX Widget] Локальная проверка не прошла');
+          return false;
+        }
+        
+        console.log('[ReplyX Widget] ✅ Локальная проверка пройдена');
+        
+        // Дополнительная проверка актуальности на сервере (асинхронно)
+        this.validateTokenOnServer(currentDomainClean);
+        
+        return true;
+        
+      } catch (error) {
+        console.error('[ReplyX Widget] Ошибка валидации домена:', error);
+        return false;
+      }
+    },
+    
+    // Проверка актуальности токена на сервере
+    validateTokenOnServer: function(currentDomain) {
+      fetch(this.config.apiUrl + '/api/validate-widget-token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          token: this.config.siteToken,
+          domain: currentDomain
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (!data.valid) {
+          console.warn('[ReplyX Widget] Серверная проверка: токен не актуален -', data.reason);
+          if (data.reason === 'Domains changed, token outdated' || data.reason === 'No domains configured') {
+            console.warn('[ReplyX Widget] Виджет отключен из-за изменения настроек доменов');
+            this.disableWidget('Настройки виджета изменились. Обновите embed-код.');
+          }
+        } else {
+          console.log('[ReplyX Widget] ✅ Серверная проверка пройдена');
+        }
+      })
+      .catch(error => {
+        console.warn('[ReplyX Widget] Ошибка серверной проверки:', error);
+        // Не блокируем виджет при ошибке сети
+      });
+    },
+    
+    // Отключение виджета
+    disableWidget: function(message) {
+      if (this.container) {
+        this.container.innerHTML = '';
+        console.warn('[ReplyX Widget] Виджет отключен:', message);
+      }
     },
     
     // Создаем основной контейнер (Safari-совместимо)
     createContainer: function() {
       try {
         this.container = document.createElement('div');
-        this.container.id = 'chatai-widget-container';
+        this.container.id = 'replyx-widget-container';
         
         // Safari-совместимое применение стилей
         const containerStyles = {
@@ -147,7 +443,9 @@
         };
         
         for (const [key, value] of Object.entries(containerStyles)) {
-          this.container.style[key] = value;
+          if (this.container && this.container.style) {
+            this.container.style[key] = value;
+          }
         }
         
         // Безопасное добавление к body
@@ -165,9 +463,7 @@
           addToBody();
         }
       } catch (error) {
-        if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development') {
-      }
-        }
+        // no-op
       }
     },
     
@@ -175,61 +471,33 @@
     loadStyles: function() {
       const style = document.createElement('style');
       style.textContent = `
-        @keyframes chatai-pulse {
-          0% { box-shadow: 0 12px 40px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.1); }
-          50% { box-shadow: 0 16px 50px rgba(0,0,0,0.3), 0 0 20px rgba(${this.hexToRgb(currentTheme.primary)}, 0.4); }
-          100% { box-shadow: 0 12px 40px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.1); }
-        }
         
-        @keyframes chatai-float1 {
-          0%, 100% { transform: translateY(0) translateX(0); }
-          25% { transform: translateY(-3px) translateX(2px); }
-          50% { transform: translateY(-6px) translateX(0); }
-          75% { transform: translateY(-3px) translateX(-2px); }
-        }
-        
-        @keyframes chatai-float2 {
-          0%, 100% { transform: translateY(0) translateX(0); }
-          33% { transform: translateY(3px) translateX(-2px); }
-          66% { transform: translateY(6px) translateX(2px); }
-        }
-        
-        @keyframes chatai-slide-up {
+        @keyframes replyx-slide-up {
           from { transform: translateY(100%); opacity: 0; }
           to { transform: translateY(0); opacity: 1; }
         }
         
-        .chatai-widget-button {
+        .replyx-widget-button {
           position: fixed;
           ${this.getPositionStyles()}
-          width: ${config.buttonSize}px;
-          height: ${config.buttonSize}px;
-          background: linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary});
-          border-radius: ${config.borderRadius}px;
+          width: 56px;
+          height: 56px;
+          background: ${currentTheme.primary};
+          border-radius: 50%;
           cursor: pointer;
-          box-shadow: 0 12px 40px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.1);
+          box-shadow: rgba(8, 15, 26, 0.08) 0px 2px 8px 0px, rgba(8, 15, 26, 0.12) 0px 2px 2px 0px;
           display: flex;
-          flex-direction: column;
           align-items: center;
           justify-content: center;
           color: white;
-          transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
           z-index: 1000000;
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255,255,255,0.1);
-          overflow: hidden;
-          animation: chatai-pulse 3s ease-in-out infinite;
           pointer-events: auto;
+          border: none;
         }
         
-        .chatai-widget-button:hover {
-          transform: scale(1.05) rotate(2deg);
-          box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 30px rgba(${this.hexToRgb(currentTheme.primary)}, 0.4);
-        }
-        
-        .chatai-chat-container {
+        .replyx-chat-container {
           position: fixed;
-          ${this.getPositionStyles()};
+          ${this.getChatPositionStyles()};
           width: 400px;
           height: 600px;
           background: #f8fafc;
@@ -237,12 +505,17 @@
           box-shadow: 0 20px 60px rgba(0,0,0,0.15);
           display: flex;
           flex-direction: column;
-          z-index: 1000000;
-          animation: chatai-slide-up 0.3s ease-out;
+          z-index: 999999;
+          animation: replyx-slide-up 0.3s ease-out;
           pointer-events: auto;
+          cursor: default;
+          user-select: none;
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
         }
         
-        .chatai-embedded-container {
+        .replyx-embedded-container {
           width: 100%;
           height: 600px;
           background: #f8fafc;
@@ -253,7 +526,7 @@
           pointer-events: auto;
         }
         
-        .chatai-fullscreen-container {
+        .replyx-fullscreen-container {
           position: fixed;
           top: 0;
           left: 0;
@@ -267,16 +540,16 @@
         }
         
         @media (max-width: 480px) {
-          .chatai-chat-container {
-            width: 100vw;
-            height: 100vh;
-            bottom: 0;
-            right: 0;
-            border-radius: 0;
+          .replyx-chat-container {
+            width: 89vw;
+            height: 79vh;
+            bottom: 84px;
+            right: 20px;
+            border-radius: 16px;
           }
         }
         
-        .chatai-notification-badge {
+        .replyx-notification-badge {
           position: absolute;
           top: -5px;
           right: -5px;
@@ -289,7 +562,7 @@
           min-width: 20px;
           text-align: center;
           border: 2px solid white;
-          animation: chatai-pulse 1s infinite;
+          animation: replyx-pulse 1s infinite;
         }
       `;
       document.head.appendChild(style);
@@ -320,35 +593,60 @@
       }
     },
     
+    // Позиционирование чат-контейнера (выше кнопки на 5px)
+    getChatPositionStyles: function() {
+      const buttonHeight = 56; // высота кнопки
+      const gap = 9; // отступ между кнопкой и чатом
+      const totalOffset = 20 + buttonHeight + gap; // 20px изначальный отступ + высота кнопки + зазор
+      
+      switch(config.position) {
+        case 'bottom-left':
+          return `bottom: ${totalOffset}px; left: 20px;`;
+        case 'bottom-center':
+          return `bottom: ${totalOffset}px; left: 50%; transform: translateX(-50%);`;
+        case 'bottom-right':
+        default:
+          return `bottom: ${totalOffset}px; right: 20px;`;
+      }
+    },
+    
     // Создаем плавающий виджет
-    createFloatingWidget: function() {
+    createFloatingWidget: function(widgetConfig) {
+      this.widgetConfig = widgetConfig; // Сохраняем настройки для использования в expand
+      
       const button = document.createElement('div');
-      button.className = 'chatai-widget-button';
-      button.innerHTML = this.getAIIcon();
+      button.className = 'replyx-widget-button';
+      button.innerHTML = this.getChatIcon();
       
       button.addEventListener('click', () => {
-        this.expand();
+        if (this.isMinimized) {
+          this.expand();
+        } else {
+          this.minimize();
+        }
       });
       
+      this.button = button; // Сохраняем ссылку для переключения иконок
       this.container.appendChild(button);
     },
     
+    // Обновляем иконку кнопки
+    updateButtonIcon: function() {
+      if (this.button) {
+        this.button.innerHTML = this.isMinimized ? this.getChatIcon() : this.getCloseIcon();
+      }
+    },
+    
     // Создаем встроенный виджет
-    createEmbeddedWidget: function() {
+    createEmbeddedWidget: function(widgetConfig) {
       // Ищем script тег для замены
-      const targetElement = script.parentNode;
+      const targetElement = script && script.parentNode ? script.parentNode : null;
       
       const container = document.createElement('div');
-      container.className = 'chatai-embedded-container';
+      container.className = 'replyx-embedded-container';
       
       const iframe = document.createElement('iframe');
-      let iframeSrc = `${config.host}/chat-iframe?theme=${config.theme}`;
-      if (config.assistantId) {
-        iframeSrc += `&assistant_id=${config.assistantId}`;
-      } else if (config.siteToken) {
-        iframeSrc += `&site_token=${config.siteToken}`;
-      }
-      iframe.src = iframeSrc;
+      iframe.src = this.buildIframeUrl(widgetConfig);
       iframe.style.cssText = `
         width: 100%;
         height: 100%;
@@ -357,22 +655,34 @@
       `;
       
       container.appendChild(iframe);
-      targetElement.replaceChild(container, script);
+      
+      // Если скрипт находится в <head> (или родителя нет) — добавляем контейнер в <body>,
+      // чтобы избежать проблем в Safari с невизуальными элементами в head
+      const isBodyParent = targetElement && String(targetElement.nodeName).toLowerCase() === 'body';
+      if (!isBodyParent) {
+        const appendToBody = () => {
+          if (document.body) {
+            document.body.appendChild(container);
+            if (script && script.parentNode) {
+              try { script.parentNode.removeChild(script); } catch (e) {}
+            }
+          } else {
+            setTimeout(appendToBody, 10);
+          }
+        };
+        appendToBody();
+      } else {
+        targetElement.replaceChild(container, script);
+      }
     },
     
     // Создаем полноэкранный виджет
-    createFullscreenWidget: function() {
+    createFullscreenWidget: function(widgetConfig) {
       const container = document.createElement('div');
-      container.className = 'chatai-fullscreen-container';
+      container.className = 'replyx-fullscreen-container';
       
       const iframe = document.createElement('iframe');
-      let iframeSrc = `${config.host}/chat-iframe?theme=${config.theme}`;
-      if (config.assistantId) {
-        iframeSrc += `&assistant_id=${config.assistantId}`;
-      } else if (config.siteToken) {
-        iframeSrc += `&site_token=${config.siteToken}`;
-      }
-      iframe.src = iframeSrc;
+      iframe.src = this.buildIframeUrl(widgetConfig);
       iframe.style.cssText = `
         width: 100%;
         height: 100%;
@@ -383,26 +693,23 @@
       this.container.appendChild(container);
     },
     
-    // AI иконка
-    getAIIcon: function() {
+    // Chat иконка (speech bubble)
+    getChatIcon: function() {
       return `
-        <div style="position: relative; display: flex; align-items: center; justify-content: center; margin-bottom: 4px;">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/>
-            <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/>
-            <circle cx="12" cy="12" r="2"/>
-            <path d="M12 7v5l3 3"/>
-          </svg>
-          
-          <div style="position: absolute; width: 4px; height: 4px; background: white; border-radius: 50%; top: 5px; right: 5px; animation: chatai-float1 2s ease-in-out infinite; opacity: 0.7;"></div>
-          <div style="position: absolute; width: 3px; height: 3px; background: white; border-radius: 50%; bottom: 5px; left: 5px; animation: chatai-float2 2.5s ease-in-out infinite; opacity: 0.5;"></div>
-        </div>
-        
-        <div style="font-size: 10px; font-weight: 600; letter-spacing: 1px; opacity: 0.9; text-transform: uppercase;">
-          ${config.buttonText}
-        </div>
-        
-        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 1px, transparent 1px), radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1) 1px, transparent 1px), radial-gradient(circle at 60% 40%, rgba(255,255,255,0.05) 1px, transparent 1px);"></div>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="#FFFFFF" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"></path>
+          <path d="M0 0h24v24H0z" fill="none"></path>
+        </svg>
+      `;
+    },
+    
+    // Close иконка (X)
+    getCloseIcon: function() {
+      return `
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="#FFFFFF" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M5.275 16L4 14.725L8.725 10L4 5.275L5.275 4L10 8.725L14.725 4L16 5.275L11.275 10L16 14.725L14.725 16L10 11.275L5.275 16Z"></path>
+          <path d="M0 0h24v24H0z" fill="none"></path>
+        </svg>
       `;
     },
     
@@ -412,40 +719,88 @@
         this.container.innerHTML = '';
         this.isMinimized = false;
         
+        // Создаем кнопку с крестиком
+        const button = document.createElement('div');
+        button.className = 'replyx-widget-button';
+        button.innerHTML = this.getCloseIcon();
+        
+        button.addEventListener('click', () => {
+          this.minimize();
+        });
+        
+        this.button = button;
+        
         const chatContainer = document.createElement('div');
-        chatContainer.className = 'chatai-chat-container';
+        chatContainer.className = 'replyx-chat-container';
         
         // Safari-совместимое создание iframe
         const iframe = document.createElement('iframe');
         
-        // Строим URL более безопасно для Safari
-        let iframeSrc = config.host + '/chat-iframe?theme=' + encodeURIComponent(config.theme);
-        if (config.assistantId) {
-          iframeSrc += '&assistant_id=' + encodeURIComponent(config.assistantId);
-        } else if (config.siteToken) {
-          iframeSrc += '&site_token=' + encodeURIComponent(config.siteToken);
-        }
+        // Используем функцию построения URL с персональными настройками
+        const iframeSrc = this.buildIframeUrl(this.widgetConfig);
         
         // Safari-совместимые атрибуты iframe
         iframe.setAttribute('src', iframeSrc);
         iframe.setAttribute('frameborder', '0');
         iframe.setAttribute('allowfullscreen', 'true');
         iframe.setAttribute('allow', 'camera; microphone; geolocation');
+        iframe.setAttribute('tabindex', '0');
+        iframe.setAttribute('scrolling', 'no');
+        iframe.setAttribute('sandbox', 'allow-same-origin allow-scripts allow-forms allow-popups allow-top-navigation-by-user-activation allow-modals');
+        iframe.setAttribute('loading', 'eager');
+        iframe.setAttribute('referrerpolicy', 'origin-when-cross-origin');
+        
+        // Safari-specific attributes
+        if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent)) {
+          iframe.setAttribute('style', iframe.getAttribute('style') + '; -webkit-appearance: none;');
+        }
         
         // Применяем стили через объект
         const iframeStyles = {
           width: '100%',
           height: '100%',
           border: 'none',
-          borderRadius: '0.75rem'
+          borderRadius: '0.75rem',
+          pointerEvents: 'auto',
+          display: 'block',
+          outline: 'none'
         };
         
         for (const [key, value] of Object.entries(iframeStyles)) {
           iframe.style[key] = value;
         }
         
+        // Safari-совместимая загрузка iframe
+        iframe.addEventListener('load', () => {
+          console.log('[ReplyX Widget] iframe loaded successfully');
+          setTimeout(() => {
+            try {
+              iframe.focus();
+            } catch (e) {
+              console.log('[ReplyX Widget] Focus failed (normal in some browsers)');
+            }
+          }, 100);
+        });
+        
+        iframe.addEventListener('error', (e) => {
+          console.error('[ReplyX Widget] iframe failed to load:', e);
+        });
+        
+        // Safari fallback: Force iframe to reload if not loaded after timeout
+        setTimeout(() => {
+          if (!iframe.contentWindow || !iframe.contentWindow.document) {
+            console.log('[ReplyX Widget] iframe not loaded, attempting reload...');
+            const currentSrc = iframe.src;
+            iframe.src = 'about:blank';
+            setTimeout(() => {
+              iframe.src = currentSrc;
+            }, 100);
+          }
+        }, 3000);
+        
         chatContainer.appendChild(iframe);
         this.container.appendChild(chatContainer);
+        this.container.appendChild(button); // Добавляем кнопку закрытия
         
         // Safari-совместимый обработчик сообщений
         const messageHandler = (event) => {
@@ -455,13 +810,12 @@
               return;
             }
             
-            if (event.data && event.data.type === 'chatAI_minimize') {
+            if (event.data && event.data.type === 'replyX_minimize') {
+              console.log('[DEBUG] Widget received replyX_minimize message');
               this.minimize();
             }
           } catch (error) {
-            if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development') {
-      }
-            }
+            // no-op
           }
         };
         
@@ -471,14 +825,13 @@
         this.messageHandler = messageHandler;
         
       } catch (error) {
-        if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development') {
-      }
-        }
+        // no-op
       }
     },
     
     // Сворачиваем чат
     minimize: function() {
+      console.log('[DEBUG] Widget minimize() called');
       this.container.innerHTML = '';
       this.isMinimized = true;
       this.createFloatingWidget();
@@ -494,13 +847,11 @@
   // Safari-совместимая инициализация
   const initWidget = () => {
     try {
-      if (window.ChatAIWidget && !window.ChatAIWidget.isLoaded) {
-        window.ChatAIWidget.init();
+      if (window.ReplyXWidget && !window.ReplyXWidget.isLoaded) {
+        window.ReplyXWidget.init();
       }
     } catch (error) {
-      if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'development') {
-      }
-      }
+      // no-op
     }
   };
   

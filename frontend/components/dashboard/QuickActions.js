@@ -1,50 +1,30 @@
-import { useState } from 'react';
-import { FiPlus, FiMessageSquare, FiUpload, FiSettings, FiBarChart, FiCopy, FiExternalLink, FiZap } from 'react-icons/fi';
+import React, { useState, useCallback, useMemo } from 'react';
+import { FiMessageSquare, FiUpload, FiSettings, FiBarChart, FiCopy, FiExternalLink, FiZap, FiChevronRight } from 'react-icons/fi';
+import { EmbedCodeModal } from '../ui';
+import { useNotifications } from '../../hooks/useNotifications';
 
-const QuickActions = ({ assistants, onRefresh }) => {
+const QuickActions = React.memo(({ assistants, onRefresh }) => {
   const [showEmbedModal, setShowEmbedModal] = useState(false);
   const [selectedAssistant, setSelectedAssistant] = useState(null);
   const [embedCode, setEmbedCode] = useState('');
   const [copySuccess, setCopySuccess] = useState(false);
+  const { showError } = useNotifications();
 
-  const quickActionItems = [
-    {
-      id: 'create-assistant',
-      title: 'Создать ассистента',
-      description: 'Новый AI-ассистент',
-      icon: FiMessageSquare,
-      color: 'bg-blue-500 hover:bg-blue-600',
-      action: () => window.location.href = '/ai-assistant'
-    },
-    {
-      id: 'upload-documents',
-      title: 'Загрузить документы',
-      description: 'Добавить знания',
-      icon: FiUpload,
-      color: 'bg-green-500 hover:bg-green-600',
-      action: () => window.location.href = '/ai-assistant'
-    },
-    {
-      id: 'view-analytics',
-      title: 'Аналитика',
-      description: 'Статистика',
-      icon: FiBarChart,
-      color: 'bg-purple-500 hover:bg-purple-600',
-      action: () => window.location.href = '/usage'
-    },
-    {
-      id: 'get-embed-code',
-      title: 'Код виджета',
-      description: 'Embed-код',
-      icon: FiZap,
-      color: 'bg-orange-500 hover:bg-orange-600',
-      action: () => handleGetEmbedCode()
-    }
-  ];
+  const handleCreateAssistant = useCallback(() => {
+    window.location.href = '/ai-assistant';
+  }, []);
 
-  const handleGetEmbedCode = async () => {
+  const handleUploadDocuments = useCallback(() => {
+    window.location.href = '/ai-assistant';
+  }, []);
+
+  const handleViewAnalytics = useCallback(() => {
+    window.location.href = '/usage';
+  }, []);
+
+  const handleGetEmbedCode = useCallback(async () => {
     if (assistants.length === 0) {
-      alert('Сначала создайте ассистента');
+      window.location.href = '/ai-assistant';
       return;
     }
 
@@ -54,15 +34,55 @@ const QuickActions = ({ assistants, onRefresh }) => {
       // Показать модальное окно выбора ассистента
       setShowEmbedModal(true);
     }
-  };
+  }, [assistants]);
 
-  const fetchEmbedCode = async (assistant) => {
+  // Мемоизация массива действий для предотвращения пересоздания при каждом рендере
+  const quickActionItems = useMemo(() => [
+    {
+      id: 'create-assistant',
+      title: 'Создать ассистента',
+      description: 'AI-помощник',
+      icon: FiMessageSquare,
+      iconBg: 'bg-purple-100',
+      iconColor: 'text-purple-700',
+      action: handleCreateAssistant
+    },
+    {
+      id: 'upload-documents',
+      title: 'Загрузить документы',
+      description: 'База знаний',
+      icon: FiUpload,
+      iconBg: 'bg-emerald-100',
+      iconColor: 'text-emerald-700',
+      action: handleUploadDocuments
+    },
+    {
+      id: 'view-analytics',
+      title: 'Аналитика',
+      description: 'Статистика',
+      icon: FiBarChart,
+      iconBg: 'bg-blue-100',
+      iconColor: 'text-blue-700',
+      action: handleViewAnalytics
+    },
+    {
+      id: 'get-embed-code',
+      title: 'Код для сайта',
+      description: 'Веб-виджет',
+      icon: FiZap,
+      iconBg: 'bg-amber-100',
+      iconColor: 'text-amber-700',
+      action: handleGetEmbedCode
+    }
+  ], [handleCreateAssistant, handleUploadDocuments, handleViewAnalytics, handleGetEmbedCode]);
+
+  const fetchEmbedCode = useCallback(async (assistant) => {
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`http://localhost:8000/api/assistants/${assistant.id}/embed-code`, {
+      const response = await fetch(`/api/assistants/${assistant.id}/embed-code`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setEmbedCode(data.embed_code);
@@ -71,198 +91,157 @@ const QuickActions = ({ assistants, onRefresh }) => {
       }
     } catch (error) {
       console.error('Error fetching embed code:', error);
-      alert('Ошибка получения кода виджета');
+      showError('Ошибка получения кода виджета', {
+        title: 'Ошибка'
+      });
     }
-  };
+  }, []);
 
-  const copyEmbedCode = () => {
-    navigator.clipboard.writeText(embedCode);
-    setCopySuccess(true);
-    setTimeout(() => setCopySuccess(false), 2000);
-  };
+  const handleAssistantSelect = useCallback(async (assistant) => {
+    await fetchEmbedCode(assistant);
+  }, [fetchEmbedCode]);
 
-  const closeEmbedModal = () => {
+  const handleCloseModal = useCallback(() => {
     setShowEmbedModal(false);
     setSelectedAssistant(null);
     setEmbedCode('');
-    setCopySuccess(false);
-  };
+  }, []);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-[400px] flex flex-col">
+    <div className="bg-white rounded-xl border border-gray-200 p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
       {/* Заголовок */}
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-          <FiZap className="mr-2 text-yellow-500" />
-          Быстрые действия
-        </h3>
-      </div>
-
-      {/* Сетка действий */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {quickActionItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={item.action}
-            className="group p-4 rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-200 text-left bg-white hover:bg-gray-50 h-[140px] flex flex-col"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <div className={`w-10 h-10 rounded-lg ${item.color} flex items-center justify-center transition-colors`}>
-                <item.icon className="w-5 h-5 text-white" />
-              </div>
-              <FiExternalLink className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
-            </div>
-            
-            <div className="flex-1">
-              <h4 className="font-medium text-gray-900 group-hover:text-gray-700 transition-colors mb-2 text-sm leading-tight">
-                {item.title}
-              </h4>
-              <p className="text-xs text-gray-500 group-hover:text-gray-600 transition-colors leading-relaxed">
-                {item.description}
-              </p>
-            </div>
-          </button>
-        ))}
-      </div>
-
-      {/* Дополнительные быстрые ссылки */}
-      <div className="mt-auto pt-6 border-t border-gray-200">
-        <div className="flex flex-wrap gap-3">
-          <button
-            onClick={() => window.location.href = '/dialogs'}
-            className="inline-flex items-center px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <FiExternalLink className="w-4 h-4 mr-2" />
-            Все диалоги
-          </button>
-          
-          <button
-            onClick={() => window.location.href = '/balance'}
-            className="inline-flex items-center px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <FiExternalLink className="w-4 h-4 mr-2" />
-            Пополнить баланс
-          </button>
-          
-          <button
-            onClick={() => window.location.href = '/profile'}
-            className="inline-flex items-center px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <FiSettings className="w-4 h-4 mr-2" />
-            Настройки
-          </button>
+      <div className="flex items-center gap-2 sm:gap-3 md:gap-3 lg:gap-3 xl:gap-4 mb-3 sm:mb-4 md:mb-4 lg:mb-5 xl:mb-6">
+        <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-7 md:h-7 lg:w-8 lg:h-8 xl:w-9 xl:h-9 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
+          <FiZap className="text-blue-600" size={12} />
         </div>
+        <h3 className="text-base sm:text-base md:text-lg lg:text-lg xl:text-xl font-semibold text-gray-900">Быстрые действия</h3>
       </div>
 
-      {/* Модальное окно embed-кода */}
-      {showEmbedModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  {embedCode ? 'Код веб-виджета' : 'Выберите ассистента'}
-                </h3>
-                <button
-                  onClick={closeEmbedModal}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              {!embedCode ? (
-                // Выбор ассистента
-                <div className="space-y-3">
-                  <p className="text-gray-600 mb-4">
-                    Выберите ассистента для получения кода веб-виджета:
-                  </p>
-                  {assistants.map((assistant) => (
-                    <button
-                      key={assistant.id}
-                      onClick={() => fetchEmbedCode(assistant)}
-                      className="w-full p-4 text-left border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-medium text-gray-900">{assistant.name}</h4>
-                          <p className="text-sm text-gray-500 mt-1">
-                            AI модель: {assistant.ai_model || 'gpt-4o-mini'}
-                          </p>
-                        </div>
-                        <FiExternalLink className="w-4 h-4 text-gray-400" />
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                // Показ embed-кода
-                <div>
-                  {selectedAssistant && (
-                    <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-                      <h4 className="font-medium text-gray-900 mb-1">
-                        Ассистент: {selectedAssistant.name}
-                      </h4>
-                      <p className="text-sm text-gray-600">
-                        Скопируйте код ниже и вставьте его на ваш сайт перед закрывающим тегом &lt;/body&gt;
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="relative">
-                    <textarea
-                      value={embedCode}
-                      readOnly
-                      className="w-full h-32 p-4 text-sm font-mono bg-gray-100 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <button
-                      onClick={copyEmbedCode}
-                      className={`absolute top-2 right-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                        copySuccess
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                      }`}
-                    >
-                      <FiCopy className="w-4 h-4 mr-1 inline" />
-                      {copySuccess ? 'Скопировано!' : 'Копировать'}
-                    </button>
-                  </div>
-
-                  <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h5 className="font-medium text-blue-900 mb-2">Настройка виджета</h5>
-                    <p className="text-sm text-blue-800 mb-3">
-                      Вы можете настроить внешний вид виджета в настройках ассистента.
-                    </p>
-                    <button
-                      onClick={() => {
-                        closeEmbedModal();
-                        window.location.href = `/ai-assistant?assistant_id=${selectedAssistant.id}`;
-                      }}
-                      className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      <FiSettings className="w-4 h-4 mr-2" />
-                      Настроить виджет
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex justify-end space-x-3 mt-6 pt-6 border-t border-gray-200">
-                <button
-                  onClick={closeEmbedModal}
-                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Закрыть
-                </button>
-              </div>
+      {/* Навигационные карточки */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-2 sm:gap-3 md:gap-3 lg:gap-4 xl:gap-5">
+        {/* Создать ассистента */}
+        <div
+          onClick={handleCreateAssistant}
+          className="bg-gray-50 rounded-xl p-2 sm:p-3 md:p-3 lg:p-4 xl:p-5 border border-gray-200 hover:border-purple-300 hover:bg-purple-50/50 transition-all duration-200 cursor-pointer group active:scale-[0.98] sm:active:scale-100"
+        >
+          <div className="flex items-center gap-2 sm:gap-2 md:gap-3 lg:gap-3 xl:gap-3 mb-1 sm:mb-1 md:mb-2 lg:mb-2 xl:mb-2">
+            <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-7 md:h-7 lg:w-8 lg:h-8 xl:w-9 xl:h-9 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors flex-shrink-0">
+              <FiMessageSquare className="text-purple-600" size={12} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-semibold text-gray-900 text-sm truncate">Создать ассистента</h3>
+              <p className="text-sm text-gray-500 leading-tight">Новый AI-помощник</p>
             </div>
           </div>
+          <div className="flex items-center text-sm text-purple-600 font-medium">
+            Начать <FiChevronRight className="ml-1" size={10} />
+          </div>
         </div>
-      )}
+
+        {/* Загрузить документы */}
+        <div
+          onClick={handleUploadDocuments}
+          className={`bg-gray-50 rounded-xl p-2 sm:p-3 md:p-3 lg:p-4 xl:p-5 border transition-all duration-200 cursor-pointer group active:scale-[0.98] sm:active:scale-100 ${
+            assistants.length > 0
+              ? 'border-gray-200 hover:border-emerald-300 hover:bg-emerald-50/50'
+              : 'border-gray-100 opacity-60'
+          }`}
+        >
+          <div className="flex items-center gap-2 sm:gap-2 md:gap-3 lg:gap-3 xl:gap-3 mb-1 sm:mb-1 md:mb-2 lg:mb-2 xl:mb-2">
+            <div className={`w-6 h-6 sm:w-7 sm:h-7 md:w-7 md:h-7 lg:w-8 lg:h-8 xl:w-9 xl:h-9 rounded-lg flex items-center justify-center transition-colors flex-shrink-0 ${
+              assistants.length > 0
+                ? 'bg-emerald-100 group-hover:bg-emerald-200 text-emerald-600'
+                : 'bg-gray-100 text-gray-400'
+            }`}>
+              <FiUpload size={12} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className={`font-semibold text-sm truncate ${
+                assistants.length > 0 ? 'text-gray-900' : 'text-gray-500'
+              }`}>
+                Загрузить документы
+              </h3>
+              <p className="text-sm text-gray-500 leading-tight">
+                {assistants.length > 0 ? 'База знаний' : 'Сначала создайте ассистента'}
+              </p>
+            </div>
+          </div>
+          <div className={`flex items-center text-sm font-medium ${
+            assistants.length > 0 ? 'text-emerald-600' : 'text-gray-400'
+          }`}>
+            {assistants.length > 0 ? 'Загрузить' : 'Недоступно'} <FiChevronRight className="ml-1" size={10} />
+          </div>
+        </div>
+
+        {/* Аналитика */}
+        <div
+          onClick={handleViewAnalytics}
+          className="bg-gray-50 rounded-xl p-2 sm:p-3 md:p-3 lg:p-4 xl:p-5 border border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 transition-all duration-200 cursor-pointer group active:scale-[0.98] sm:active:scale-100"
+        >
+          <div className="flex items-center gap-2 sm:gap-2 md:gap-3 lg:gap-3 xl:gap-3 mb-1 sm:mb-1 md:mb-2 lg:mb-2 xl:mb-2">
+            <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-7 md:h-7 lg:w-8 lg:h-8 xl:w-9 xl:h-9 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors flex-shrink-0">
+              <FiBarChart className="text-blue-600" size={12} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-semibold text-gray-900 text-sm truncate">Аналитика</h3>
+              <p className="text-sm text-gray-500 leading-tight">Статистика работы</p>
+            </div>
+          </div>
+          <div className="flex items-center text-sm text-blue-600 font-medium">
+            Посмотреть <FiChevronRight className="ml-1" size={10} />
+          </div>
+        </div>
+
+        {/* Код для сайта */}
+        <div
+          onClick={handleGetEmbedCode}
+          className={`bg-gray-50 rounded-xl p-2 sm:p-3 md:p-3 lg:p-4 xl:p-5 border transition-all duration-200 cursor-pointer group active:scale-[0.98] sm:active:scale-100 ${
+            assistants.length > 0
+              ? 'border-gray-200 hover:border-blue-300 hover:bg-blue-50/50'
+              : 'border-gray-100 opacity-60'
+          }`}
+        >
+          <div className="flex items-center gap-2 sm:gap-2 md:gap-3 lg:gap-3 xl:gap-3 mb-1 sm:mb-1 md:mb-2 lg:mb-2 xl:mb-2">
+            <div className={`w-6 h-6 sm:w-7 sm:h-7 md:w-7 md:h-7 lg:w-8 lg:h-8 xl:w-9 xl:h-9 rounded-lg flex items-center justify-center transition-colors flex-shrink-0 ${
+              assistants.length > 0
+                ? 'bg-blue-100 group-hover:bg-blue-200 text-blue-600'
+                : 'bg-gray-100 text-gray-400'
+            }`}>
+              <FiZap size={12} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className={`font-semibold text-sm truncate ${
+                assistants.length > 0 ? 'text-gray-900' : 'text-gray-500'
+              }`}>
+                Код для сайта
+              </h3>
+              <p className="text-sm text-gray-500 leading-tight">
+                {assistants.length > 0 ? 'Веб-виджет' : 'Сначала создайте ассистента'}
+              </p>
+            </div>
+          </div>
+          <div className={`flex items-center text-sm font-medium ${
+            assistants.length > 0 ? 'text-blue-600' : 'text-gray-400'
+          }`}>
+            {assistants.length > 0 ? 'Получить' : 'Недоступно'} <FiChevronRight className="ml-1" size={10} />
+          </div>
+        </div>
+      </div>
+
+      {/* Профессиональный модальный компонент для embed-кода */}
+      <EmbedCodeModal
+        isOpen={showEmbedModal}
+        onClose={handleCloseModal}
+        assistants={assistants}
+        onAssistantSelect={handleAssistantSelect}
+        selectedAssistant={selectedAssistant}
+        embedCode={embedCode}
+      />
     </div>
   );
-};
+});
+
+// Добавляем displayName для лучшей отладки
+QuickActions.displayName = 'QuickActions';
 
 export default QuickActions;

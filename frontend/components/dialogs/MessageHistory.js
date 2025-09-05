@@ -1,22 +1,55 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiRefreshCw } from 'react-icons/fi';
+import { FiRefreshCw, FiCheckCircle, FiXCircle, FiInfo, FiAlertCircle } from 'react-icons/fi';
 import styles from './MessageHistory.module.css';
 
 const MessageHistory = ({ messages, loading, error }) => {
   const messagesEndRef = useRef(null);
+  const containerRef = useRef(null);
   const [prevMessageCount, setPrevMessageCount] = useState(0);
+  const [visibleMessages, setVisibleMessages] = useState(50); // Начинаем с 50 сообщений
+  const [isAtBottom, setIsAtBottom] = useState(true);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Оптимизация: виртуализация сообщений для больших чатов
+  const displayedMessages = useMemo(() => {
+    if (messages.length <= visibleMessages) {
+      return messages;
+    }
+    return messages.slice(-visibleMessages); // Показываем последние N сообщений
+  }, [messages, visibleMessages]);
+
+  // Отслеживание позиции скрола
+  const handleScroll = () => {
+    if (!containerRef.current) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+    const atBottom = scrollTop + clientHeight >= scrollHeight - 100; // 100px от дна
+    setIsAtBottom(atBottom);
+
+    // Автоматическая загрузка большего количества сообщений при скроле вверх
+    if (scrollTop < 100 && messages.length > visibleMessages) {
+      setVisibleMessages(prev => Math.min(prev + 20, messages.length));
+    }
+  };
+
   useEffect(() => {
-    if (messages.length > prevMessageCount) {
-      scrollToBottom();
+    if (messages.length > prevMessageCount && isAtBottom) {
+      // Прокрутка вниз только если пользователь был внизу чата
+      setTimeout(scrollToBottom, 100);
       setPrevMessageCount(messages.length);
     }
-  }, [messages, prevMessageCount]);
+  }, [messages, prevMessageCount, isAtBottom]);
+
+  // Сброс счетчика видимых сообщений при новом диалоге
+  useEffect(() => {
+    setVisibleMessages(50);
+    setPrevMessageCount(0);
+    setIsAtBottom(true);
+  }, [messages.length > 0 && prevMessageCount === 0 ? messages[0]?.id : null]);
 
   const formatTime = (timestamp) => {
     if (!timestamp) return '';
@@ -32,8 +65,24 @@ const MessageHistory = ({ messages, loading, error }) => {
       case 'user': return 'Пользователь';
       case 'assistant': return 'Ассистент';
       case 'manager': return 'Менеджер';
-      default: return sender;
+      default: return sender || 'system';
     }
+  };
+
+  const getAvatarLetter = (sender) => {
+    const map = { user: 'U', assistant: 'A', manager: 'M' };
+    return map[sender] || 'S';
+  };
+
+  // Обрабатываем текст (оставляем эмодзи, но убираем лишние пробелы)
+  const sanitizeText = (text = '') => text.replace(/\s{2,}/g, ' ').trim();
+
+  const getSystemNoticeType = (text = '') => {
+    const t = sanitizeText(text).toLowerCase();
+    if (t.includes('подключил') || t.includes('оператор подключился') || t.includes('успешно')) return 'success';
+    if (t.includes('возвращен к ai-ассистенту') || t.includes('переключаем') || t.includes('ожидайте')) return 'warning';
+    if (t.includes('ошиб') || t.includes('не удалось') || t.includes('отмен')) return 'error';
+    return 'info';
   };
 
   if (loading) {
@@ -64,33 +113,69 @@ const MessageHistory = ({ messages, loading, error }) => {
 
   return (
     <div className={styles.messageHistory}>
-      <div className={styles.messagesContainer}>
+      {/* Индикатор виртуализации для больших чатов */}
+      {messages.length > visibleMessages && (
+        <div className={styles.virtualizationNotice}>
+          <small>Показаны последние {visibleMessages} из {messages.length} сообщений</small>
+          <button
+            className={styles.loadMoreBtn}
+            onClick={() => setVisibleMessages(prev => Math.min(prev + 50, messages.length))}
+          >
+            Загрузить ещё {Math.min(50, messages.length - visibleMessages)} сообщений
+          </button>
+        </div>
+      )}
+
+      <div
+        className={styles.messagesContainer}
+        ref={containerRef}
+        onScroll={handleScroll}
+      >
         <AnimatePresence>
-          {messages.map((message, index) => (
+          {displayedMessages.map((message, index) => {
+            const rowClass = message.sender === 'system'
+              ? `${styles.messageRow} ${styles.system}`
+              : `${styles.messageRow} ${styles[message.sender] || ''}`;
+            return (
             <motion.div
-              key={message.id || index}
-              className={`${styles.messageWrapper} ${styles[message.sender]}`}
-              initial={{ opacity: 0, y: 20 }}
+              key={message.id || `msg-${index}`}
+              className={rowClass}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
+              transition={{ duration: 0.2, delay: Math.min(index * 0.02, 0.2) }}
             >
-              {message.sender !== 'user' && (
-                <div className={styles.senderLabel}>
-                  {getSenderLabel(message.sender)}
-                </div>
-              )}
-              <div className={styles.messageBubble}>
-                <div className={styles.messageText}>
-                  {message.text}
-                </div>
-                {message.timestamp && (
-                  <div className={styles.messageTime}>
-                    {formatTime(message.timestamp)}
+              {message.sender !== 'system' ? (
+                <>
+                  <div className={styles.avatar}>{getAvatarLetter(message.sender)}</div>
+                  <div className={styles.msgBody}>
+                    <div className={styles.msgHeader}>
+                      <span className={styles.senderName}>{getSenderLabel(message.sender)}</span>
+                      {message.timestamp && (
+                        <span className={styles.msgTime}>{formatTime(message.timestamp)}</span>
+                      )}
+                    </div>
+                    <div className={styles.msgText}>{sanitizeText(message.text)}</div>
                   </div>
-                )}
-              </div>
+                </>
+              ) : (
+                (() => {
+                  const type = getSystemNoticeType(message.text);
+                  const Icon = type === 'success' ? FiCheckCircle : type === 'error' ? FiXCircle : type === 'warning' ? FiAlertCircle : FiInfo;
+                  return (
+                    <div className={`${styles.systemNotice} ${styles[type]}`}>
+                      <Icon className={styles.systemIcon} />
+                      <div className={styles.systemContent}>
+                        <div className={styles.systemText}>{sanitizeText(message.text)}</div>
+                        {message.timestamp && (
+                          <div className={styles.systemTime}>{formatTime(message.timestamp)}</div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()
+              )}
             </motion.div>
-          ))}
+          )})}
         </AnimatePresence>
         <div ref={messagesEndRef} />
       </div>

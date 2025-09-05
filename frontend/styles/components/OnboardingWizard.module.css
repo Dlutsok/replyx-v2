@@ -78,12 +78,12 @@
 }
 
 .progressStep.completed .stepNumber {
-  background: #10b981;
+  background: #7C3AED;
   color: white;
 }
 
 .progressStep.current .stepNumber {
-  background: #7C4DFF;
+  background: #7C3AED;
   color: white;
   box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
 }
@@ -96,7 +96,7 @@
 
 .progressBar {
   height: 4px;
-  background: linear-gradient(to right, #10b981, #7C4DFF);
+  background: linear-gradient(to right, #7C3AED, #7C3AED);
   border-radius: 0.75rem;
   transition: width 0.5s ease;
   position: relative;
@@ -156,7 +156,7 @@
 .welcomeIcon {
   width: 120px;
   height: 120px;
-  background: linear-gradient(135deg, #7C4DFF, #8b5cf6);
+  background: linear-gradient(135deg, #7C3AED, #8b5cf6);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -198,7 +198,7 @@
 }
 
 .benefit svg {
-  color: #10b981;
+  color: #7C3AED;
   flex-shrink: 0;
 }
 
@@ -254,7 +254,7 @@
 .input:focus,
 .select:focus {
   outline: none;
-  border-color: #7C4DFF;
+  border-color: #7C3AED;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
@@ -297,13 +297,13 @@
 }
 
 .templateCard:hover {
-  border-color: #7C4DFF;
+  border-color: #7C3AED;
   box-shadow: 0 8px 25px rgba(99, 102, 241, 0.15);
   transform: translateY(-2px);
 }
 
 .templateCard.selected {
-  border-color: #7C4DFF;
+  border-color: #7C3AED;
   background: #f8fafc;
   box-shadow: 0 8px 25px rgba(99, 102, 241, 0.2);
 }
@@ -316,7 +316,7 @@
   color: white;
   padding: 4px 12px;
   border-radius: 0.75rem;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -377,19 +377,19 @@
 }
 
 .personalityCard:hover {
-  border-color: #7C4DFF;
+  border-color: #7C3AED;
   box-shadow: 0 8px 25px rgba(99, 102, 241, 0.15);
   transform: translateY(-2px);
 }
 
 .personalityCard.selected {
-  border-color: #7C4DFF;
+  border-color: #7C3AED;
   background: #f8fafc;
   box-shadow: 0 8px 25px rgba(99, 102, 241, 0.2);
 }
 
 .personalityCard svg {
-  color: #7C4DFF;
+  color: #7C3AED;
   margin-bottom: 16px;
 }
 
@@ -416,7 +416,7 @@
 .successIcon {
   width: 120px;
   height: 120px;
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: linear-gradient(135deg, #7C3AED, #6D28D9);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -526,7 +526,7 @@
 }
 
 .nextButton {
-  background: linear-gradient(135deg, #7C4DFF, #8b5cf6);
+  background: linear-gradient(135deg, #7C3AED, #8b5cf6);
   border: none;
   color: white;
   padding: 12px 24px;

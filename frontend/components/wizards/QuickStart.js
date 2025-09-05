@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  FiX, FiRocket, FiMessageSquare, FiSettings, FiBook, 
+  FiX, FiZap, FiMessageSquare, FiSettings, FiBook, 
   FiChevronRight, FiCheckCircle 
 } from 'react-icons/fi';
 import styles from '../../styles/components/QuickStart.module.css';
@@ -57,13 +57,13 @@ const QuickStart = ({ user, onClose }) => {
     
     switch (stepIndex) {
       case 0:
-        return <FiRocket className={styles.icon} />;
+        return <FiZap className={styles.icon} />;
       case 1:
         return <FiMessageSquare className={styles.icon} />;
       case 2:
         return <FiSettings className={styles.icon} />;
       default:
-        return <FiRocket className={styles.icon} />;
+        return <FiZap className={styles.icon} />;
     }
   };
 

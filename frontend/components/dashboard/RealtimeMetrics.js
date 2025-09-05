@@ -47,7 +47,16 @@ const RealtimeMetrics = ({ metrics, loading, onRefresh }) => {
     }
   }, [realtimeData]);
 
-  const { connected, disabled, lastError } = useWebSocket('ws://localhost:8000/ws/realtime-metrics', handleWebSocketMessage, {
+  const realtimeWsUrl = (() => {
+    if (typeof window === 'undefined') return null;
+    // Используем переменную окружения для определения backend URL
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const url = new URL(backendUrl);
+    const wsProtocol = url.protocol === 'https:' ? 'wss' : 'ws';
+    return `${wsProtocol}://${url.host}/ws/realtime-metrics`;
+  })();
+
+  const { connected, disabled, lastError } = useWebSocket(realtimeWsUrl, handleWebSocketMessage, {
     maxReconnectAttempts: 3,
     reconnectInterval: 15000,
     autoReconnect: true

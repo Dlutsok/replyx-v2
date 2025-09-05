@@ -1,9 +1,12 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from '../../styles/components/ChangePasswordModal.module.css';
 import { FiLock, FiX, FiEye, FiEyeOff } from 'react-icons/fi';
+import { useProtectedAPI } from '../../hooks/useCSRFProtection';
 
 const ChangePasswordModal = ({ isOpen, onClose }) => {
+  const { apiCall, isCSRFLoading, csrfError } = useProtectedAPI();
   const [formData, setFormData] = useState({
     currentPassword: '',
     newPassword: '',
@@ -68,7 +71,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
       setError('');
 
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8000/api/auth/change-password', {
+      const response = await apiCall('/api/auth/change-password', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -123,7 +126,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
     }
   };
 
-  return (
+  const modalContent = (
     <AnimatePresence>
       {isOpen && (
         <motion.div
@@ -246,9 +249,9 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
               </div>
 
               {/* Ошибка */}
-              {error && (
+              {(error || csrfError) && (
                 <div className={styles.error}>
-                  {error}
+                  {error || `Ошибка безопасности: ${csrfError}`}
                 </div>
               )}
 
@@ -258,16 +261,16 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
                   type="button"
                   className={styles.cancelButton}
                   onClick={handleClose}
-                  disabled={loading}
+                  disabled={loading || isCSRFLoading}
                 >
                   Отмена
                 </button>
                 <button
                   type="submit"
                   className={styles.submitButton}
-                  disabled={loading}
+                  disabled={loading || isCSRFLoading}
                 >
-                  {loading ? (
+                  {(loading || isCSRFLoading) ? (
                     <>
                       <motion.div
                         animate={{ rotate: 360 }}
@@ -276,7 +279,7 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
                       >
                         ⟳
                       </motion.div>
-                      Сохранение...
+                      {isCSRFLoading ? 'Загрузка...' : 'Сохранение...'}
                     </>
                   ) : (
                     'Сохранить'
@@ -291,6 +294,10 @@ const ChangePasswordModal = ({ isOpen, onClose }) => {
       )}
     </AnimatePresence>
   );
+
+  return typeof document !== 'undefined' 
+    ? createPortal(modalContent, document.body)
+    : null;
 };
 
 export default ChangePasswordModal;

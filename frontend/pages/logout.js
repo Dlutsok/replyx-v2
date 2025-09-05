@@ -17,8 +17,8 @@ export default function Logout() {
           .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
       });
       
-      // Перенаправление на landing страницу
-      router.replace('/landing');
+      // Перенаправление на главную страницу
+      router.replace('/');
     }
   }, [router]);
 

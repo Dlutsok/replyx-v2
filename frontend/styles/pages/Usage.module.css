@@ -42,26 +42,26 @@
 
 .refreshButton:hover,
 .exportButton:hover {
-  border-color: #0066cc;
-  color: #0066cc;
+  border-color: #7C3AED;
+  color: #7C3AED;
   background: #f0f8ff;
 }
 
 .exportButton {
-  background: #0066cc;
+  background: #7C3AED;
   color: white;
-  border-color: #0066cc;
+  border-color: #7C3AED;
 }
 
 .exportButton:hover {
-  background: #0055aa;
+  background: #6B46C1;
   color: white;
 }
 
 /* Статистические карточки */
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 20px;
   margin-bottom: 24px;
 }
@@ -88,7 +88,7 @@
 .statCardIcon {
   width: 24px;
   height: 24px;
-  color: #0066cc;
+  color: #7C3AED;
 }
 
 .statCardTitle {
@@ -151,9 +151,9 @@
 
 .searchInput:focus {
   outline: none;
-  border-color: #0066cc;
+  border-color: #7C3AED;
   background: white;
-  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
 }
 
 .filterControls {
@@ -177,8 +177,8 @@
 
 .filterToggle:hover,
 .filterToggle.active {
-  border-color: #0066cc;
-  color: #0066cc;
+  border-color: #7C3AED;
+  color: #7C3AED;
   background: #f0f8ff;
 }
 
@@ -194,7 +194,7 @@
 
 .filterSelect:focus {
   outline: none;
-  border-color: #0066cc;
+  border-color: #7C3AED;
 }
 
 /* Расширенные фильтры */
@@ -232,8 +232,8 @@
 }
 
 .sortOrderButton:hover {
-  border-color: #0066cc;
-  color: #0066cc;
+  border-color: #7C3AED;
+  color: #7C3AED;
 }
 
 /* Секция транзакций */
@@ -319,7 +319,63 @@
   min-height: 60px;
 }
 
-/* Информация об операции */
+/* Современная карточка операции */
+.operationCard {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.operationCard:hover {
+  background: rgba(124, 58, 237, 0.04);
+  transform: translateX(2px);
+}
+
+.operationIconNew {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+}
+
+.operationIconNew svg {
+  width: 18px;
+  height: 18px;
+}
+
+.operationContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.operationTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 2px;
+  line-height: 1.3;
+}
+
+.operationSubtitle {
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Старые стили операции - оставляем для совместимости */
 .operationInfo {
   display: flex;
   align-items: center;
@@ -341,9 +397,41 @@
   height: 20px;
 }
 
+/* Цветовые схемы для новых иконок - профессиональные цвета */
+.operationIconNew.ai_message {
+  background: linear-gradient(135deg, #f0f4ff, #e1e8ff);
+  color: #3b5998;
+}
+
+.operationIconNew.widget_message {
+  background: linear-gradient(135deg, #f8fdf9, #eff8f0);
+  color: #2d5016;
+}
+
+.operationIconNew.document_upload {
+  background: linear-gradient(135deg, #fffaf6, #fff0e6);
+  color: #cc5500;
+}
+
+.operationIconNew.bot_message {
+  background: linear-gradient(135deg, #faf8ff, #f2eeff);
+  color: #5d4e75;
+}
+
+.operationIconNew.topup {
+  background: linear-gradient(135deg, #f7fcf8, #eef8f0);
+  color: #1b5e20;
+}
+
+/* Старые цветовые схемы */
 .operationIcon.ai_message {
   background: #e3f2fd;
   color: #1976d2;
+}
+
+.operationIcon.widget_message {
+  background: #f1f8e9;
+  color: #558b2f;
 }
 
 .operationIcon.document_upload {
@@ -393,7 +481,7 @@
   border-radius: 0.75rem;
   margin-bottom: 8px;
   font-style: italic;
-  border-left: 3px solid #7C4DFF;
+  border-left: 3px solid #7C3AED;
   max-width: 300px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -408,7 +496,7 @@
 }
 
 .channelBadge {
-  background: #0066cc;
+  background: #7C3AED;
   color: white;
   font-size: 11px;
   padding: 2px 6px;
@@ -425,7 +513,8 @@
 
 /* Дата */
 .dateInfo {
-  text-align: left;
+  text-align: center;
+  padding-left: 16px;
 }
 
 .dateMain {
@@ -438,7 +527,7 @@
 .amount {
   font-size: 15px;
   font-weight: 700;
-  text-align: right;
+  text-align: center;
 }
 
 .amount.positive {
@@ -454,7 +543,7 @@
   font-size: 14px;
   font-weight: 600;
   color: #333;
-  text-align: right;
+  text-align: center;
 }
 
 /* Пустое состояние */
@@ -469,6 +558,11 @@
   height: 48px;
   color: #ccc;
   margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .emptyState h3 {
@@ -480,6 +574,63 @@
 .emptyState p {
   margin: 0;
   font-size: 14px;
+}
+
+/* Пагинация */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-top: 1px solid #eee;
+  background: #fff;
+}
+
+.paginationInfo {
+  font-size: 14px;
+  color: #666;
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pageButton {
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 0.75rem;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pageButton:hover:not(:disabled) {
+  border-color: #7C3AED;
+  color: #7C3AED;
+  background: #f0f8ff;
+}
+
+.pageButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pageSize {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 0.75rem;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.pageSize:focus {
+  outline: none;
+  border-color: #7C3AED;
 }
 
 /* Загрузка */
@@ -513,7 +664,7 @@
   .tableHeader,
   .tableRow {
     grid-template-columns: 1fr 1fr 120px 80px 80px;
-    font-size: 12px;
+    font-size: 14px;
   }
   
   .messagePreview {
@@ -581,13 +732,31 @@
     margin-bottom: 0;
   }
   
-  .operationInfo {
+  .operationInfo,
+  .operationCard {
     margin-bottom: 12px;
+  }
+  
+  .operationCard:hover {
+    transform: none; /* Отключаем анимацию на мобильных */
+  }
+  
+  .operationIconNew {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .operationTitle {
+    font-size: 14px;
+  }
+  
+  .operationSubtitle {
+    font-size: 12px;
   }
   
   .amount,
   .balance {
-    text-align: left;
+    text-align: right;
     font-size: 16px;
   }
   

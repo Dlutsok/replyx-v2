@@ -192,6 +192,66 @@ class AITokenManager:
         finally:
             db.close()
     
+    def _make_embedding_request(self, text: str, model: str, user_id: int, assistant_id: int = None):
+        """Генерирует embedding для текста через OpenAI API"""
+        start_time = time.time()
+        
+        # Получаем лучший токен (embeddings работают только с OpenAI)
+        token = self.get_best_token("gpt-4o-mini", user_id)  # Используем любую модель для получения токена
+        if not token:
+            # fallback на переменную окружения
+            openai_token = os.getenv('OPENAI_API_KEY')
+            if not openai_token:
+                raise Exception("Нет доступных токенов для генерации embeddings")
+        
+        try:
+            client = openai.OpenAI(api_key=(token.token if token else openai_token))
+            
+            # Используем более дешевую модель для embeddings
+            embedding_model = model if model.startswith('text-embedding') else 'text-embedding-3-small'
+            
+            response = client.embeddings.create(
+                model=embedding_model,
+                input=text,
+                encoding_format="float"
+            )
+            
+            response_time = time.time() - start_time
+            
+            # Логируем использование embedding
+            self.log_usage(
+                token_id=(token.id if token else None),
+                user_id=user_id,
+                assistant_id=assistant_id,
+                model_used=embedding_model,
+                prompt_tokens=getattr(getattr(response, 'usage', None), 'prompt_tokens', 0),
+                completion_tokens=0,  # У embeddings нет completion tokens
+                response_time=response_time,
+                success=True,
+                provider_used="openai_embedding"
+            )
+            
+            return response
+            
+        except Exception as e:
+            response_time = time.time() - start_time
+            
+            # Логируем ошибку
+            self.log_usage(
+                token_id=(token.id if token else None),
+                user_id=user_id,
+                assistant_id=assistant_id,
+                model_used=model,
+                prompt_tokens=0,
+                completion_tokens=0,
+                response_time=response_time,
+                success=False,
+                provider_used="openai_embedding",
+                error_message=str(e)
+            )
+            
+            raise Exception(f"Ошибка генерации embedding: {e}")
+    
     def make_openai_request(self, messages: List[dict], model: str = "gpt-4", 
                            user_id: int = None, assistant_id: int = None,
                            temperature: float = 0.9, max_tokens: int = None,
@@ -252,17 +312,26 @@ class AITokenManager:
                 
                 response_time = time.time() - start_time
                 
+                # Проверяем корректность результата провайдера
+                if not result or not isinstance(result, dict):
+                    raise ValueError("Provider returned empty or invalid result")
+                
+                usage_dict = result.get('usage') or {}
+                model_used = result.get('model', model)
+                provider_used = result.get('provider_used', 'unknown')
+                content_value = result.get('content') or result.get('text') or ""
+                
                 # Логируем успешное использование (без token_id, так как провайдер может быть не OpenAI)
                 self.log_usage(
                     token_id=None,
                     user_id=user_id,
                     assistant_id=assistant_id,
-                    model_used=result.get('model', model),
-                    prompt_tokens=result.get('usage', {}).get('prompt_tokens', 0),
-                    completion_tokens=result.get('usage', {}).get('completion_tokens', 0),
+                    model_used=model_used,
+                    prompt_tokens=usage_dict.get('prompt_tokens', 0),
+                    completion_tokens=usage_dict.get('completion_tokens', 0),
                     response_time=response_time,
                     success=True,
-                    provider_used=result.get('provider_used', 'unknown')
+                    provider_used=provider_used
                 )
                 
                 # Создаем объект ответа в формате OpenAI для совместимости
@@ -282,15 +351,15 @@ class AITokenManager:
                         
                 class MockUsage:
                     def __init__(self, usage_dict):
-                        self.prompt_tokens = usage_dict.get('prompt_tokens', 0)
-                        self.completion_tokens = usage_dict.get('completion_tokens', 0)
-                        self.total_tokens = usage_dict.get('total_tokens', 
+                        self.prompt_tokens = (usage_dict or {}).get('prompt_tokens', 0)
+                        self.completion_tokens = (usage_dict or {}).get('completion_tokens', 0)
+                        self.total_tokens = (usage_dict or {}).get('total_tokens', 
                             self.prompt_tokens + self.completion_tokens)
                 
                 return MockResponse(
-                    content=result['content'],
-                    usage=result.get('usage', {}),
-                    model=result.get('model', model)
+                    content=content_value,
+                    usage=usage_dict,
+                    model=model_used
                 )
                 
             except Exception as e:
@@ -320,14 +389,16 @@ class AITokenManager:
             
             response_time = time.time() - start_time
             
-            # Логируем успешное использование
+            # Логируем успешное использование (с безопасным доступом к usage)
+            prompt_tokens = getattr(getattr(response, 'usage', None), 'prompt_tokens', 0)
+            completion_tokens = getattr(getattr(response, 'usage', None), 'completion_tokens', 0)
             self.log_usage(
                 token_id=token.id,
                 user_id=user_id,
                 assistant_id=assistant_id,
                 model_used=model,
-                prompt_tokens=response.usage.prompt_tokens,
-                completion_tokens=response.usage.completion_tokens,
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
                 response_time=response_time,
                 success=True,
                 provider_used='openai_legacy'
@@ -449,6 +520,35 @@ def get_available_token(db: Session, model: str = "gpt-4o-mini"):
         print(f"Ошибка получения AI токена: {e}")
         return None
 
+
+def count_tokens(text: str) -> int:
+    """
+    Простая функция для подсчета токенов в тексте
+    Приблизительный подсчет: 1 токен ≈ 4 символа для английского, 6 символов для русского
+    """
+    if not text or not isinstance(text, str):
+        return 0
+    
+    # Базовый подсчет: английские слова + русские слова + спецсимволы
+    import re
+    
+    # Разделяем на слова и символы
+    words = re.findall(r'\w+', text, re.UNICODE)
+    spaces_and_punctuation = len(re.findall(r'[^\w]', text, re.UNICODE))
+    
+    # Приблизительная оценка токенов
+    token_count = 0
+    for word in words:
+        if re.match(r'^[a-zA-Z]+$', word):  # Английские слова
+            token_count += max(1, len(word) // 4)
+        else:  # Русские и другие слова
+            token_count += max(1, len(word) // 3)
+    
+    # Добавляем токены для пунктуации и пробелов
+    token_count += max(1, spaces_and_punctuation // 2)
+    
+    return max(1, token_count)  # Минимум 1 токен
+
     def _make_embedding_request(self, text: str, model: str, user_id: int, assistant_id: int = None):
         """Генерирует embedding для текста через OpenAI API"""
         start_time = time.time()
@@ -456,10 +556,13 @@ def get_available_token(db: Session, model: str = "gpt-4o-mini"):
         # Получаем лучший токен (embeddings работают только с OpenAI)
         token = self.get_best_token("gpt-4o-mini", user_id)  # Используем любую модель для получения токена
         if not token:
-            raise Exception("Нет доступных токенов для генерации embeddings")
+            # fallback на переменную окружения
+            openai_token = os.getenv('OPENAI_API_KEY')
+            if not openai_token:
+                raise Exception("Нет доступных токенов для генерации embeddings")
         
         try:
-            client = openai.OpenAI(api_key=token.token)
+            client = openai.OpenAI(api_key=(token.token if token else openai_token))
             
             # Используем более дешевую модель для embeddings
             embedding_model = model if model.startswith('text-embedding') else 'text-embedding-3-small'
@@ -474,11 +577,11 @@ def get_available_token(db: Session, model: str = "gpt-4o-mini"):
             
             # Логируем использование embedding
             self.log_usage(
-                token_id=token.id,
+                token_id=(token.id if token else None),
                 user_id=user_id,
                 assistant_id=assistant_id,
                 model_used=embedding_model,
-                prompt_tokens=response.usage.prompt_tokens,
+                prompt_tokens=getattr(response, 'usage', None).prompt_tokens if getattr(response, 'usage', None) else 0,
                 completion_tokens=0,  # У embeddings нет completion tokens
                 response_time=response_time,
                 success=True,
@@ -492,7 +595,7 @@ def get_available_token(db: Session, model: str = "gpt-4o-mini"):
             
             # Логируем ошибку
             self.log_usage(
-                token_id=token.id if token else None,
+                token_id=(token.id if token else None),
                 user_id=user_id,
                 assistant_id=assistant_id,
                 model_used=model,

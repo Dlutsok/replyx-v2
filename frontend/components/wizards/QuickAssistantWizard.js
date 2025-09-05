@@ -1,19 +1,35 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FiCheck, FiX, FiArrowRight, FiArrowLeft, FiUpload, FiLink, 
   FiMessageSquare, FiSettings, FiExternalLink, FiRefreshCw,
   FiCheckCircle, FiAlertCircle, FiFile, FiSkipForward, FiCpu,
   FiSmartphone, FiMonitor, FiZap, FiBookOpen, FiSend,
+  FiHeadphones, FiShoppingBag, FiHelpCircle, FiGrid,
   FiEye, FiCopy, FiPlay
 } from 'react-icons/fi';
 import styles from '../../styles/components/QuickAssistantWizard.module.css';
+import InlineNotice from '../common/InlineNotice';
+import { useNotifications } from '../../hooks/useNotifications';
+
+const templateIconMap = {
+  support: FiHeadphones,
+  sales: FiShoppingBag,
+  faq: FiHelpCircle,
+  universal: FiGrid
+};
 
 const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [autoSaving, setAutoSaving] = useState(false);
+  const [ingestingWebsite, setIngestingWebsite] = useState(false);
   const autoSaveTimeoutRef = useRef(null);
+  const telegramValidateTimeoutRef = useRef(null);
+  const [telegramValidation, setTelegramValidation] = useState({ status: 'idle', botUsername: '' });
+  const [showBalanceInline, setShowBalanceInline] = useState(false);
+  const { showSuccess, showError, showWarning } = useNotifications();
 
   // Состояние данных ассистента
   const [wizardData, setWizardData] = useState({
@@ -27,42 +43,39 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
     assistantId: null,
     embedCode: '',
     botUrl: '',
+    websiteUrl: '',
     isComplete: false
   });
 
-  // Шаги мастера
+  // Шаги мастера (упрощенная последовательность из плана)
   const steps = [
     {
       id: 1,
-      title: "Основные настройки",
-      description: "Название и настройка вашего ассистента",
-      required: true,
-      icon: <FiSettings />
+      title: 'Основное',
+      description: 'Название и системное сообщение',
+      required: true
     },
     {
       id: 2,
-      title: "База знаний",
-      description: "Загрузите документы для обучения (необязательно)",
-      required: false,
-      icon: <FiBookOpen />
+      title: 'Каналы',
+      description: 'Выбор канала (Telegram / Сайт / Позже)',
+      required: true
     },
     {
       id: 3,
-      title: "Интеграция",
-      description: "Выберите, где будет работать ваш ассистент",
-      required: true,
-      icon: <FiZap />
+      title: 'Документы',
+      description: 'Необязательно: загрузите файлы',
+      required: false
     },
     {
       id: 4,
-      title: "Готово!",
-      description: "Ваш AI-ассистент создан и готов к работе",
-      required: true,
-      icon: <FiCheckCircle />
+      title: 'Готово',
+      description: 'Ассистент создан',
+      required: true
     }
   ];
 
-  // Шаблоны промптов
+  // Шаблоны системных инструкций
   const promptTemplates = [
     {
       id: 'support',
@@ -78,7 +91,7 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
     },
     {
       id: 'faq',
-      name: 'FAQ-помощник',
+      name: 'FAQ‑ассистент',
       description: 'Отвечает на часто задаваемые вопросы',
       prompt: 'Вы — FAQ-помощник. Отвечаете на часто задаваемые вопросы клиентов на основе базы знаний. Предоставляете четкие, структурированные ответы. При отсутствии информации в базе знаний честно сообщаете об этом.'
     },
@@ -116,7 +129,15 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
       updates.telegramToken = updates.telegramToken.trim();
     }
     setWizardData(prev => ({ ...prev, ...updates }));
-    triggerAutoSave();
+    // Триггерим автосохранение ТОЛЬКО при изменении полей ассистента
+    const shouldAutoSave = (
+      Object.prototype.hasOwnProperty.call(updates, 'name') ||
+      Object.prototype.hasOwnProperty.call(updates, 'aiModel') ||
+      Object.prototype.hasOwnProperty.call(updates, 'customPrompt')
+    );
+    if (shouldAutoSave) {
+      triggerAutoSave();
+    }
   };
 
   // API вызовы
@@ -147,18 +168,25 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
     if (!wizardData.assistantId) return;
 
     const template = promptTemplates.find(t => t.id === wizardData.template);
+    // Формируем payload только с валидными полями
+    const payload = {
+      ai_model: wizardData.aiModel,
+      system_prompt: wizardData.customPrompt || template?.prompt,
+      is_active: true
+    };
+    const trimmedName = (wizardData.name || '').trim();
+    const NAME_RE = /^[a-zA-Zа-яА-Я0-9\s\-_.]+$/;
+    if (trimmedName && NAME_RE.test(trimmedName)) {
+      payload.name = trimmedName;
+    }
+
     const response = await fetch(`/api/assistants/${wizardData.assistantId}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       },
-      body: JSON.stringify({
-        name: wizardData.name,
-        ai_model: wizardData.aiModel,
-        system_prompt: wizardData.customPrompt || template?.prompt,
-        is_active: true
-      })
+      body: JSON.stringify(payload)
     });
 
     if (!response.ok) {
@@ -184,11 +212,80 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
         body: formData
       });
 
+      if (response.status === 402) {
+        setShowBalanceInline(true);
+        return false;
+      }
+
       return response.ok;
     });
 
     const results = await Promise.all(uploadPromises);
     return results.every(result => result);
+  };
+
+  const importWebsite = async () => {
+    const url = (wizardData.websiteUrl || '').trim();
+    if (!url) return true;
+    try {
+      const response = await fetch(`/api/assistants/${wizardData.assistantId}/ingest-website`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          url
+        })
+      });
+      if (response.status === 402) {
+        setShowBalanceInline(true);
+        return false;
+      }
+      if (response.ok) {
+        const result = await response.json();
+        return result; // Возвращаем полный результат
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  const handleWebsiteIngest = async () => {
+    if (!wizardData.assistantId) {
+      showWarning('Сначала создайте ассистента на предыдущих шагах');
+      return;
+    }
+    const url = (wizardData.websiteUrl || '').trim();
+    if (!url) {
+      showWarning('Укажите URL страницы');
+      return;
+    }
+    try {
+      // Быстрая проверка URL
+      const u = new URL(url);
+      if (!['http:', 'https:'].includes(u.protocol)) throw new Error('Некорректный URL');
+    } catch {
+      showError('Некорректный URL');
+      return;
+    }
+    setIngestingWebsite(true);
+    try {
+      const result = await importWebsite();
+      if (result && result.ok) {
+        showSuccess(`Страница проиндексирована!\n\nДокумент: ${result.doc_id}\nСимволов: ${result.chars_indexed}`, {
+          title: 'Готово ✓'
+        });
+      } else if (result === true) {
+        // Случай когда URL пустой
+        return;
+      } else {
+        showError('Не удалось проиндексировать страницу');
+      }
+    } finally {
+      setIngestingWebsite(false);
+    }
   };
 
   const createBotInstance = async () => {
@@ -246,7 +343,7 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
     if (currentStep === 1) {
       // Создаем ассистента на первом шаге
       if (!wizardData.name.trim()) {
-        alert('Пожалуйста, введите название ассистента');
+        showWarning('Пожалуйста, введите название ассистента');
         return;
       }
 
@@ -255,7 +352,7 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
         const assistant = await createAssistant();
         updateWizardData({ assistantId: assistant.id });
       } catch (error) {
-        alert('Ошибка создания ассистента: ' + error.message);
+        showError('Ошибка создания ассистента: ' + error.message);
         setIsLoading(false);
         return;
       }
@@ -263,54 +360,48 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
     }
 
     if (currentStep === 2) {
-      // Загружаем документы
-      if (wizardData.documents.length > 0) {
-        setIsLoading(true);
-        try {
-          await uploadDocuments();
-        } catch (error) {
-          alert('Ошибка загрузки документов: ' + error.message);
-        }
-        setIsLoading(false);
-      }
-    }
-
-    if (currentStep === 3) {
-      // Настраиваем интеграцию
+      // Настраиваем канал работы ассистента
       setIsLoading(true);
       try {
         if (wizardData.integrationChannel === 'telegram') {
           if (!wizardData.telegramToken.trim()) {
-            alert('Введите токен Telegram бота');
+            showWarning('Введите токен Telegram бота');
             setIsLoading(false);
             return;
           }
-          
           const botInfo = await validateTelegramToken(wizardData.telegramToken);
           if (!botInfo) {
-            alert('Неверный токен Telegram бота');
+            showError('Неверный токен Telegram бота');
             setIsLoading(false);
             return;
           }
-
           await createBotInstance();
-          updateWizardData({ 
-            botUrl: `https://t.me/${botInfo.username}`,
-            isComplete: true
-          });
+          updateWizardData({ botUrl: `https://t.me/${botInfo.username}` });
         } else if (wizardData.integrationChannel === 'website') {
           const embedCode = await getEmbedCode();
-          updateWizardData({ 
-            embedCode,
-            isComplete: true
-          });
-        } else {
-          updateWizardData({ isComplete: true });
+          updateWizardData({ embedCode });
         }
       } catch (error) {
-        alert('Ошибка настройки интеграции: ' + error.message);
+        showError('Ошибка настройки интеграции: ' + error.message);
         setIsLoading(false);
         return;
+      }
+      setIsLoading(false);
+    }
+
+    if (currentStep === 3) {
+      // Импорт сайта (если указан) и загрузка документов
+      setIsLoading(true);
+      try {
+        if (wizardData.assistantId) {
+          await importWebsite();
+        }
+        if (wizardData.documents.length > 0) {
+          await uploadDocuments();
+        }
+        updateWizardData({ isComplete: true });
+      } catch (error) {
+        // inline notice уже показан при 402
       }
       setIsLoading(false);
     }
@@ -349,9 +440,9 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
 
   if (!isOpen) return null;
 
-  return (
+  const wizardContent = (
     <div className={styles.overlay}>
-      <motion.div 
+      <motion.div
         className={styles.wizard}
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -380,31 +471,25 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
           )}
         </div>
 
-        {/* Прогресс-бар */}
+        {/* Компактные табы с аккуратным индикатором */}
         <div className={styles.progressContainer}>
-          <div className={styles.progressBar}>
-            <div 
-              className={styles.progressFill}
-              style={{ width: `${(currentStep / 4) * 100}%` }}
+          <div className={styles.tabs}>
+            <div
+              className={styles.tabIndicator}
+              style={{
+                left: `calc(${currentStep - 1} * (100% / ${steps.length}))`,
+                width: `calc(100% / ${steps.length})`
+              }}
             />
-          </div>
-          <div className={styles.progressSteps}>
             {steps.map((step) => (
-              <div
+              <button
                 key={step.id}
-                className={`${styles.progressStep} ${
-                  currentStep >= step.id ? styles.completed : ''
-                } ${currentStep === step.id ? styles.active : ''}`}
+                type="button"
+                className={`${styles.tabItem} ${currentStep === step.id ? styles.active : ''}`}
                 onClick={() => goToStep(step.id)}
               >
-                <div className={styles.stepIcon}>
-                  {currentStep > step.id ? <FiCheck size={12} /> : step.icon}
-                </div>
-                <div className={styles.stepInfo}>
-                  <div className={styles.stepTitle}>{step.title}</div>
-                  <div className={styles.stepDescription}>{step.description}</div>
-                </div>
-              </div>
+                {step.title}
+              </button>
             ))}
           </div>
         </div>
@@ -412,7 +497,7 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
         {/* Контент шагов */}
         <div className={styles.content}>
           <AnimatePresence mode="wait">
-            {/* Шаг 1: Основные настройки */}
+            {/* Шаг 1: Основное */}
             {currentStep === 1 && (
               <motion.div
                 key="step1"
@@ -422,18 +507,16 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
                 className={styles.stepContent}
               >
                 <div className={styles.stepHeader}>
-                  <h3>Основные настройки</h3>
-                  <p>Дайте имя вашему ассистенту и выберите специализацию</p>
+                  <h3>Основное</h3>
+                  <p>Дайте название и при необходимости задайте системное сообщение. Можно изменить позже.</p>
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>
-                    Название ассистента *
-                  </label>
+                  <label className={styles.label}>Название *</label>
                   <input
                     type="text"
                     className={styles.input}
-                    placeholder="Например: Помощник по продажам"
+                    placeholder="Например: Клиентский ассистент"
                     value={wizardData.name}
                     onChange={(e) => updateWizardData({ name: e.target.value })}
                     autoFocus
@@ -441,9 +524,7 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>
-                    Специализация
-                  </label>
+                  <label className={styles.label}>Шаблоны инструкций</label>
                   <div className={styles.templateGrid}>
                     {promptTemplates.map((template) => (
                       <div
@@ -453,20 +534,23 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
                         }`}
                         onClick={() => updateWizardData({ template: template.id })}
                       >
-                        <h4>{template.name}</h4>
-                        <p>{template.description}</p>
+                        <div className={styles.templateHeader}>
+                          <span className={styles.templateIcon} aria-hidden>
+                            {(() => { const Icon = templateIconMap[template.id] || FiGrid; return <Icon size={14} />; })()}
+                          </span>
+                          <h4 className={styles.templateTitle}>{template.name}</h4>
+                        </div>
+                        <p className={styles.templateDesc}>{template.description}</p>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>
-                    Пользовательский промпт (необязательно)
-                  </label>
+                  <label className={styles.label}>Инструкция ассистенту (системное сообщение) — необязательно</label>
                   <textarea
                     className={styles.textarea}
-                    placeholder="Опишите, как должен вести себя ваш ассистент..."
+                    placeholder="Кратко опишите стиль и правила ответа. Можно оставить пустым."
                     value={wizardData.customPrompt}
                     onChange={(e) => updateWizardData({ customPrompt: e.target.value })}
                     rows={4}
@@ -475,7 +559,7 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
               </motion.div>
             )}
 
-            {/* Шаг 2: База знаний */}
+            {/* Шаг 2: Где будет работать */}
             {currentStep === 2 && (
               <motion.div
                 key="step2"
@@ -485,10 +569,150 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
                 className={styles.stepContent}
               >
                 <div className={styles.stepHeader}>
-                  <h3>База знаний</h3>
-                  <p>Загрузите документы для обучения ассистента (можно пропустить)</p>
+                  <h3>Каналы</h3>
+                  <p>Выберите, где пользователи будут общаться с ассистентом</p>
                 </div>
 
+                <div className={styles.integrationGrid}>
+                  <div
+                    className={`${styles.integrationCard} ${
+                      wizardData.integrationChannel === 'telegram' ? styles.selected : ''
+                    }`}
+                    onClick={() => updateWizardData({ integrationChannel: 'telegram' })}
+                  >
+                    <div className={styles.integrationHeader}>
+                      <span className={styles.integrationIcon}><FiSend size={16} /></span>
+                      <h4 className={styles.integrationTitle}>Telegram бот</h4>
+                    </div>
+                    <p className={styles.integrationDesc}>Чат в Telegram. Нужен токен бота из @BotFather.</p>
+                  </div>
+
+                  <div
+                    className={`${styles.integrationCard} ${
+                      wizardData.integrationChannel === 'website' ? styles.selected : ''
+                    }`}
+                    onClick={() => updateWizardData({ integrationChannel: 'website' })}
+                  >
+                    <div className={styles.integrationHeader}>
+                      <span className={styles.integrationIcon}><FiMonitor size={16} /></span>
+                      <h4 className={styles.integrationTitle}>Веб‑виджет</h4>
+                    </div>
+                    <p className={styles.integrationDesc}>Кнопка и окно чата на вашем сайте.</p>
+                  </div>
+
+                  <div
+                    className={`${styles.integrationCard} ${
+                      wizardData.integrationChannel === 'later' ? styles.selected : ''
+                    }`}
+                    onClick={() => updateWizardData({ integrationChannel: 'later' })}
+                  >
+                    <div className={styles.integrationHeader}>
+                      <span className={styles.integrationIcon}><FiSettings size={16} /></span>
+                      <h4 className={styles.integrationTitle}>Настрою позже</h4>
+                    </div>
+                    <p className={styles.integrationDesc}>Можно вернуться к настройке в любое время</p>
+                  </div>
+                </div>
+
+                {wizardData.integrationChannel === 'telegram' && (
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>Токен Telegram бота *</label>
+                    <input
+                      type="text"
+                      className={styles.input}
+                      placeholder="123456789:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
+                      value={wizardData.telegramToken}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        updateWizardData({ telegramToken: value });
+                        setTelegramValidation({ status: value.trim() ? 'checking' : 'idle', botUsername: '' });
+                        if (telegramValidateTimeoutRef.current) clearTimeout(telegramValidateTimeoutRef.current);
+                        if (value.trim()) {
+                          telegramValidateTimeoutRef.current = setTimeout(async () => {
+                            const result = await validateTelegramToken(value.trim());
+                            if (result && result.username) {
+                              setTelegramValidation({ status: 'valid', botUsername: result.username });
+                            } else {
+                              setTelegramValidation({ status: 'invalid', botUsername: '' });
+                            }
+                          }, 500);
+                        }
+                      }}
+                    />
+                    <p className={styles.inputHint}>
+                      Получить токен у <a href="https://t.me/botfather" target="_blank" rel="noopener noreferrer">@BotFather</a>
+                    </p>
+                    {telegramValidation.status === 'checking' && (
+                      <p className={styles.inputHint}>Проверяем токен…</p>
+                    )}
+                    {telegramValidation.status === 'valid' && (
+                      <p className={styles.successText}>Токен валиден. Бот: @
+                        <span style={{ fontWeight: 600 }}>{telegramValidation.botUsername}</span>
+                      </p>
+                    )}
+                    {telegramValidation.status === 'invalid' && (
+                      <p className={styles.errorText}>Токен недействителен. Проверьте и попробуйте снова.</p>
+                    )}
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* Шаг 3: Документы (необязательно) */}
+            {currentStep === 3 && (
+              <motion.div
+                key="step3"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className={styles.stepContent}
+              >
+                <div className={styles.stepHeader}>
+                  <h3>Документы <span style={{ fontSize: 12, color: '#6b7280', fontWeight: 500, marginLeft: 8 }}>(необязательно)</span></h3>
+                  <p>Загрузите файлы, которые будут использоваться ассистентом для ответов</p>
+                </div>
+
+                {showBalanceInline && (
+                  <div className={styles.inlineNoticeError} role="alert">
+                    Недостаточно средств на балансе.{' '}
+                    <button className={styles.linkButton} onClick={() => { window.location.href = '/balance'; }}>Перейти к балансу</button>
+                  </div>
+                )}
+
+                <div className={styles.formGroup}>
+                  <label className={styles.label}>URL страницы для добавления в знания (по желанию)</label>
+                  <input
+                    type="url"
+                    className={styles.input}
+                    placeholder="https://example.com/page"
+                    value={wizardData.websiteUrl}
+                    onChange={(e) => updateWizardData({ websiteUrl: e.target.value })}
+                  />
+                  <p style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>
+                    Мы проиндексируем только эту страницу и добавим её в базу знаний ассистента
+                  </p>
+                  <div style={{ marginTop: 12 }}>
+                    <button
+                      type="button"
+                      className={styles.nextButton}
+                      onClick={handleWebsiteIngest}
+                      disabled={ingestingWebsite || !wizardData.websiteUrl || !wizardData.assistantId}
+                      title={!wizardData.assistantId ? 'Сначала создайте ассистента' : ''}
+                    >
+                      {ingestingWebsite ? (
+                        <>
+                          <FiRefreshCw size={16} className={styles.spinning} />
+                          Индексируем страницу...
+                        </>
+                      ) : (
+                        <>
+                          <FiLink size={16} />
+                          Индексировать страницу
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
                 <div className={styles.uploadZone}>
                   <input
                     type="file"
@@ -510,7 +734,8 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
 
                 {wizardData.documents.length > 0 && (
                   <div className={styles.fileList}>
-                    <h4>Загруженные файлы ({wizardData.documents.length})</h4>
+                    <h4>Выбранные файлы ({wizardData.documents.length})</h4>
+                    <p className={styles.inputHint}>Файлы будут использоваться как база знаний этого ассистента.</p>
                     {wizardData.documents.map((file, index) => (
                       <div key={index} className={styles.fileItem}>
                         <FiFile size={16} />
@@ -526,75 +751,6 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
                         </button>
                       </div>
                     ))}
-                  </div>
-                )}
-              </motion.div>
-            )}
-
-            {/* Шаг 3: Интеграция */}
-            {currentStep === 3 && (
-              <motion.div
-                key="step3"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className={styles.stepContent}
-              >
-                <div className={styles.stepHeader}>
-                  <h3>Где будет работать ваш ассистент?</h3>
-                  <p>Выберите канал интеграции</p>
-                </div>
-
-                <div className={styles.integrationGrid}>
-                  <div
-                    className={`${styles.integrationCard} ${
-                      wizardData.integrationChannel === 'telegram' ? styles.selected : ''
-                    }`}
-                    onClick={() => updateWizardData({ integrationChannel: 'telegram' })}
-                  >
-                    <FiSend size={32} />
-                    <h4>Telegram бот</h4>
-                    <p>Ваш ассистент будет отвечать в Telegram</p>
-                  </div>
-
-                  <div
-                    className={`${styles.integrationCard} ${
-                      wizardData.integrationChannel === 'website' ? styles.selected : ''
-                    }`}
-                    onClick={() => updateWizardData({ integrationChannel: 'website' })}
-                  >
-                    <FiMonitor size={32} />
-                    <h4>Веб-виджет</h4>
-                    <p>Чат-виджет для вашего сайта</p>
-                  </div>
-
-                  <div
-                    className={`${styles.integrationCard} ${
-                      wizardData.integrationChannel === 'later' ? styles.selected : ''
-                    }`}
-                    onClick={() => updateWizardData({ integrationChannel: 'later' })}
-                  >
-                    <FiSettings size={32} />
-                    <h4>Настрою позже</h4>
-                    <p>Сначала создать, потом подключить</p>
-                  </div>
-                </div>
-
-                {wizardData.integrationChannel === 'telegram' && (
-                  <div className={styles.formGroup}>
-                    <label className={styles.label}>
-                      Токен Telegram бота *
-                    </label>
-                    <input
-                      type="text"
-                      className={styles.input}
-                      placeholder="123456789:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
-                      value={wizardData.telegramToken}
-                      onChange={(e) => updateWizardData({ telegramToken: e.target.value })}
-                    />
-                    <p className={styles.inputHint}>
-                      Получить токен можно у <a href="https://t.me/botfather" target="_blank" rel="noopener noreferrer">@BotFather</a>
-                    </p>
                   </div>
                 )}
               </motion.div>
@@ -642,16 +798,22 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
                   {wizardData.integrationChannel === 'website' && wizardData.embedCode && (
                     <div className={styles.resultCard}>
                       <h4>Код для сайта</h4>
-                      <div className={styles.codeBlock}>
-                        <code>{wizardData.embedCode}</code>
-                        <button 
-                          onClick={() => navigator.clipboard.writeText(wizardData.embedCode)}
-                          className={styles.copyButton}
-                          title="Скопировать код"
-                        >
-                          <FiCopy size={12} />
-                        </button>
+                      <div className={styles.codeContainer}>
+                        <div className={styles.codeHeader}>
+                          <span className={styles.codeLang}>HTML</span>
+                          <button
+                            onClick={() => navigator.clipboard.writeText(wizardData.embedCode)}
+                            className={styles.copyButton}
+                            title="Скопировать код"
+                            aria-label="Скопировать код для вставки на сайт"
+                          >
+                            <FiCopy size={12} />
+                            Скопировать
+                          </button>
+                        </div>
+                        <pre className={styles.codeBlock}><code>{wizardData.embedCode}</code></pre>
                       </div>
+                      <p className={styles.embedHint}>Разместите этот код перед тегом &lt;/body&gt; на вашем сайте.</p>
                     </div>
                   )}
 
@@ -718,27 +880,26 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
                 <button
                   className={styles.settingsButton}
                   onClick={() => {
-                    onOpenSettings?.(wizardData.assistantId);
-                    onClose();
+                    window.location.href = `/ai-assistant?assistant_id=${wizardData.assistantId}`;
                   }}
                 >
                   <FiSettings size={16} />
-                  Расширенные настройки
+                  Открыть ассистента
                 </button>
-                <button
-                  className={styles.testButton}
-                  onClick={() => {
-                    if (wizardData.botUrl) {
-                      window.open(wizardData.botUrl, '_blank');
-                    } else {
-                      // Открыть тестовое окно чата
-                      alert('Функция тестирования будет добавлена');
-                    }
-                  }}
-                >
-                  <FiPlay size={16} />
-                  Протестировать
-                </button>
+                {wizardData.integrationChannel === 'telegram' && (
+                  <button
+                    className={styles.testButton}
+                    onClick={() => {
+                      if (wizardData.botUrl) {
+                        window.open(wizardData.botUrl, '_blank');
+                      }
+                    }}
+                  >
+                    <FiPlay size={16} />
+                    Открыть в Telegram
+                  </button>
+                )}
+                {/* Убраны: кнопка "Скопировать код" и "Документы ассистента" из футера */}
                 <button
                   className={styles.completeButton}
                   onClick={() => {
@@ -753,9 +914,13 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
             )}
           </div>
         </div>
+
+        {/* Inline notice 402 добавлен в шаге Документы */}
       </motion.div>
     </div>
   );
+
+  return createPortal(wizardContent, document.body);
 };
 
 export default QuickAssistantWizard;

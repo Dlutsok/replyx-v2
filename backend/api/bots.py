@@ -10,7 +10,7 @@ from datetime import datetime
 from database import SessionLocal
 from database.connection import get_db
 from database import models, schemas, auth
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 from ai import prompt_variations
 from ai.ai_token_manager import ai_token_manager
 
@@ -27,7 +27,8 @@ class BotInstanceCreate(BaseModel):
     bot_token: str
     
     # Валидация токена - удаление лишних пробелов
-    @validator('bot_token')
+    @field_validator('bot_token')
+    @classmethod
     def validate_bot_token(cls, v):
         if v is None:
             raise ValueError('Токен бота не может быть пустым')
@@ -454,7 +455,7 @@ def update_dialog_user_info(dialog_id: int, data: dict, db: Session = Depends(ge
     }
 
 @router.post("/bot/dialogs/{dialog_id}/messages")
-def add_bot_dialog_message(dialog_id: int, data: dict, db: Session = Depends(get_db)):
+async def add_bot_dialog_message(dialog_id: int, data: dict, db: Session = Depends(get_db)):
     """Добавить сообщение в диалог бота (без авторизации пользователя)"""
     sender = data.get('sender')
     text = data.get('text')
@@ -472,6 +473,27 @@ def add_bot_dialog_message(dialog_id: int, data: dict, db: Session = Depends(get
     db.add(msg)
     db.commit()
     db.refresh(msg)
+    
+    # 🔥 ИНТЕГРАЦИЯ С WEBSOCKET СИСТЕМОЙ
+    # Отправляем сообщение в админ панель через WebSocket
+    try:
+        from services.websocket_manager import push_dialog_message
+        
+        message_data = {
+            "id": msg.id,
+            "sender": msg.sender,
+            "text": msg.text,
+            "timestamp": msg.timestamp.isoformat() + 'Z'
+        }
+        
+        # Отправляем в админ панель (всегда для всех Telegram сообщений)
+        await push_dialog_message(dialog_id, message_data)
+        
+        logger.info(f"✅ [TELEGRAM_BOT] Сообщение от Telegram бота отправлено в WebSocket админ панели: dialog_id={dialog_id}, sender={sender}")
+        
+    except Exception as ws_error:
+        # Не блокируем основную логику при ошибках WebSocket
+        logger.warning(f"⚠️ [TELEGRAM_BOT] Ошибка отправки WebSocket сообщения в админ панель: {ws_error}")
     
     return {
         "id": msg.id,
@@ -542,12 +564,15 @@ def get_bot_ai_response(data: dict, db: Session = Depends(get_db)):
             logger.info(f"🔍 QUERY TRACE: user_id={user_id}, assistant_id={assistant_id}, query='{message}'")
             
             # Ищем релевантные чанки для запроса пользователя
+            from core.app_config import RAG_TOP_K_BOT, RAG_MIN_SIMILARITY
             relevant_chunks = embeddings_service.search_relevant_chunks(
                 query=message,
                 user_id=user_id,
                 assistant_id=assistant_id,
-                top_k=5,  # Максимум 5 наиболее релевантных чанков
-                min_similarity=0.7,  # Минимальный порог схожести
+                top_k=RAG_TOP_K_BOT,
+                min_similarity=RAG_MIN_SIMILARITY,
+                include_qa=True,  # Включаем Q&A поиск
+                qa_limit=3,       # Максимум 3 Q&A результата
                 db=db
             )
             
@@ -582,32 +607,39 @@ def get_bot_ai_response(data: dict, db: Session = Depends(get_db)):
                     'token_count': len(entry.content) // 4
                 })
         
-        # Добавляем релевантные знания в промпт
+        # Добавляем релевантные знания в промпт или строгие ограничения
         if relevant_chunks:
             # Сортируем по важности и схожести
             relevant_chunks.sort(key=lambda x: (x['importance'], x['similarity']), reverse=True)
             
-            # Формируем контекст из релевантных чанков
-            context_parts = []
-            total_tokens = 0
-            max_context_tokens = 1500  # Ограничиваем контекст для экономии токенов
-            
-            for chunk in relevant_chunks:
-                chunk_tokens = chunk.get('token_count', len(chunk['text']) // 4)
-                if total_tokens + chunk_tokens > max_context_tokens:
-                    break
-                
-                context_parts.append(f"[{chunk['doc_type']}] {chunk['text']}")
-                total_tokens += chunk_tokens
+            # Единая упаковка контекста
+            from services.embeddings_service import embeddings_service
+            from core.app_config import RAG_MAX_CONTEXT_TOKENS_BOT
+            context_parts, total_tokens = embeddings_service.build_context_messages(relevant_chunks, max_context_tokens=RAG_MAX_CONTEXT_TOKENS_BOT)
             
             if context_parts:
-                context_text = '\n\n---\n\n'.join(context_parts)
+                # Добавляем тип в текст для информативности
+                typed_parts = []
+                for cp, ch in zip(context_parts, relevant_chunks):
+                    typed_parts.append(f"[{ch['doc_type']}] {cp}")
+                context_text = '\n\n---\n\n'.join(typed_parts)
                 prompt_messages.insert(0, {
                     "role": "system", 
-                    "content": f"Используй следующую релевантную информацию из базы знаний для ответа (схожесть с запросом: {relevant_chunks[0]['similarity']:.2f}):\n\n{context_text}\n\nОтвечай на основе этой информации, но естественным языком без ссылок на источники."
+                    "content": f"Используй ТОЛЬКО следующую информацию из базы знаний компании для ответа. ЗАПРЕЩЕНО использовать общие знания или придумывать информацию:\n\n{context_text}"
                 })
-                
                 logger.info(f"Added {len(context_parts)} relevant chunks to context ({total_tokens} tokens)")
+            else:
+                # Если нет полезного контента в чанках
+                prompt_messages.insert(0, {
+                    "role": "system",
+                    "content": "В базе знаний компании НЕТ информации для ответа на данный вопрос. Ты ДОЛЖЕН честно сказать: 'К сожалению, в моей базе знаний нет информации по данному вопросу. Рекомендую обратиться к менеджеру компании.' ЗАПРЕЩЕНО придумывать или использовать общие знания."
+                })
+        else:
+            # Если вообще нет релевантных чанков
+            prompt_messages.insert(0, {
+                "role": "system",
+                "content": "У этого ассистента НЕТ релевантной информации в базе знаний для данного вопроса. Ты ДОЛЖЕН честно сказать: 'К сожалению, в моей базе знаний нет информации по данному вопросу. Рекомендую обратиться к менеджеру компании.' КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО использовать общие знания, тренировочные данные или придумывать информацию о услугах, товарах или компании."
+            })
         
         # Добавляем системный промпт
         prompt_messages.insert(0, {"role": "system", "content": system_prompt})
@@ -649,6 +681,7 @@ def get_bot_ai_response(data: dict, db: Session = Depends(get_db)):
                 "message": "Ошибка списания средств"
             }
         
+        # Инвалидация кэша ответов при обновлении знаний/промпта обеспечивается через различные ключи и knowledge_version
         return {
             "response": response,
             "assistant_id": assistant_id,
@@ -673,3 +706,33 @@ def reload_bot_endpoint(data: ReloadBotRequest, background_tasks: BackgroundTask
     """Перезапускает Telegram бота для пользователя"""
     background_tasks.add_task(reload_bot_helper, data.user_id)
     return {"status": "ok"}
+
+@router.get("/bot-instances/by-assistant/{assistant_id}")
+def get_bot_instance_by_assistant(assistant_id: int, db: Session = Depends(get_db)):
+    """Получает bot instance по assistant_id для bot manager'а (ОПТИМИЗИРОВАНО)"""
+    try:
+        # Оптимизированный запрос с использованием составного индекса
+        bot_instance = db.query(
+            models.BotInstance.id,
+            models.BotInstance.assistant_id,
+            models.BotInstance.user_id,
+            models.BotInstance.platform,
+            models.BotInstance.is_active
+        ).filter(
+            models.BotInstance.assistant_id == assistant_id,
+            models.BotInstance.is_active == True
+        ).first()
+        
+        if not bot_instance:
+            raise HTTPException(status_code=404, detail="Bot instance not found")
+        
+        return {
+            "id": bot_instance.id,
+            "assistant_id": bot_instance.assistant_id,
+            "user_id": bot_instance.user_id,
+            "platform": bot_instance.platform,
+            "is_active": bot_instance.is_active
+        }
+    except Exception as e:
+        logger.error(f"Error getting bot instance by assistant_id {assistant_id}: {e}")
+        raise HTTPException(status_code=500, detail="Database error")

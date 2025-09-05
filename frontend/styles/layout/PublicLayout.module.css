@@ -82,7 +82,7 @@
   }
   
   .main {
-    padding: 24px 16px;
+    padding: 24px 10px;
   }
   
   .logo h1 {
@@ -98,7 +98,7 @@
 
 @media (max-width: 480px) {
   .main {
-    padding: 20px 16px;
+    padding: 20px 10px;
   }
   
   .logo h1 {

@@ -8,7 +8,11 @@ __pycache__/
 .next/
 dist/
 build/
+backend/deploy/build/
 *.egg-info/
+*.tsbuildinfo
+.turbo/
+.cache/
 
 # Environment variables
 .env
@@ -38,12 +42,19 @@ database.db
 .DS_Store
 Thumbs.db
 *.tmp
+._*
 
 # Temporary files
 tmp/
 temp/
 pids/
 *.pid
+
+# Uploads and data
+uploads/
+backend/uploads/
+backend/data/uploads/
+backend/data/backups/
 
 # Backups
 *.bak
@@ -64,3 +75,13 @@ debug_*.log
 *.key
 *.pem
 secrets/
+
+# Claude Code specific
+.claude/
+*.claude.md
+CLAUDE.md
+
+# Platform specific
+.vercel/
+.railway/
+.fly/

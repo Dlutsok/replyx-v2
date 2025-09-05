@@ -3,6 +3,8 @@ export const STATUS_ACTIVE = 'active';
 export const STATUS_TAKEN_OVER = 'taken_over';
 export const STATUS_ALL = 'all';
 export const STATUS_AUTO_RESPONSE = 'auto_response';
+export const STATUS_HANDOFF_REQUESTED = 'handoff_requested';
+export const STATUS_HANDOFF_ACTIVE = 'handoff_active';
 
 // Временные фильтры
 export const TIME_ALL = 'all';
@@ -23,7 +25,9 @@ export const VIEW_TABLE = 'table';
 // Опции быстрых фильтров статуса
 export const QUICK_STATUS_OPTIONS = [
   { key: STATUS_ACTIVE, label: 'Активные', icon: 'FiCheckCircle' },
-  { key: STATUS_TAKEN_OVER, label: 'Перехваченные', icon: 'FiUserCheck' }
+  { key: STATUS_TAKEN_OVER, label: 'Перехваченные', icon: 'FiUserCheck' },
+  { key: STATUS_HANDOFF_REQUESTED, label: 'Нужен оператор', icon: 'FiHeadphones' },
+  { key: STATUS_HANDOFF_ACTIVE, label: 'У оператора', icon: 'FiUser' }
 ];
 
 // Опции временных фильтров

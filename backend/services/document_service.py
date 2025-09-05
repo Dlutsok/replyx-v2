@@ -124,7 +124,7 @@ class DocumentService:
         """
         Удаление документа пользователя
         """
-        from scripts.transaction_manager import db_transaction
+        from database.utils.transaction_manager import db_transaction
         
         with db_transaction(db) as session:
             doc = session.query(models.Document).filter(

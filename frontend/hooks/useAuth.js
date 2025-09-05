@@ -8,16 +8,16 @@ const AuthContext = createContext();
 // Публичные маршруты (не требуют авторизации)
 const PUBLIC_ROUTES = [
   '/',
-  '/landing',
   '/login',
-  '/register', 
+  '/register',
   '/forgot-password',
   '/reset-password',
   '/verify-email',
-  '/oauth-redirect',
   '/accept-invitation',
   '/terms',
   '/privacy',
+  '/offer',
+  '/blog',  // Добавляем блог как публичный маршрут
   '/chat-iframe'  // Добавляем iframe чат как публичный маршрут
 ];
 
@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }) => {
       
       if (!isPublicRoute && !isAuthenticated && !isLoading) {
             console.warn('Route protection triggered, FORCING redirect:', currentPath);
-            window.location.replace('/landing');
+            window.location.replace('/');
           }
     };
 
@@ -71,7 +71,7 @@ export const AuthProvider = ({ children }) => {
       // Предварительная проверка при начале перехода
       if (!isPublicRoute && !isAuthenticated && !isLoading) {
             console.warn('Blocking navigation to protected route:', currentPath);
-            window.location.replace('/landing');
+            window.location.replace('/');
             throw 'Route change aborted - redirecting to landing'; // Прерываем навигацию
           }
     };
@@ -93,15 +93,15 @@ export const AuthProvider = ({ children }) => {
       
       // Если нет токена и мы на защищенной странице - мгновенный редирект
       if (!hasToken && !isPublicRoute) {
-        console.warn('No token found, FORCING redirect to landing from:', currentPath);
-        window.location.replace('/landing');
+        console.warn('No token found, FORCING redirect to home from:', currentPath);
+        window.location.replace('/');
         return;
       }
       
       // Если нет авторизации в состоянии, но есть на защищенной странице
       if (!isAuthenticated && !isPublicRoute && hasToken) {
         console.warn('Authentication state lost but token exists, FORCING redirect from:', currentPath);
-        window.location.replace('/landing');
+        window.location.replace('/');
       }
     }
   }, [isAuthenticated, isLoading, hasToken, router]);
@@ -167,17 +167,14 @@ export const AuthProvider = ({ children }) => {
     
     // Для публичных маршрутов - проверяем токен немедленно
     if (isPublicRoute && isAuthenticated) {
-      // Исключения: oauth-redirect должен завершить процесс авторизации
-      if (currentPath !== '/oauth-redirect') {
-        router.replace('/dashboard');
-        return;
-      }
+      router.replace('/dashboard');
+      return;
     }
     
     // Для приватных маршрутов - немедленно перенаправляем на landing
     if (!isPublicRoute && !isAuthenticated) {
       console.warn('Unauthorized access to private route:', currentPath);
-      router.replace('/landing');
+      router.replace('/');
     }
   };
 
@@ -323,7 +320,7 @@ export const AuthProvider = ({ children }) => {
     }
     
     // ПРИНУДИТЕЛЬНОЕ перенаправление - немедленно без задержек
-    window.location.replace('/landing');
+    window.location.replace('/');
   };
 
   // КРИТИЧНО: Мгновенная проверка на основе localStorage
@@ -359,7 +356,7 @@ export const withAuth = (WrappedComponent, options = {}) => {
       // Проверка авторизации
       if (!isLoading && !isAuthenticated) {
         console.warn('Unauthorized access attempt to:', router.pathname);
-        router.replace('/landing');
+        router.replace('/');
         return;
       }
 
@@ -390,15 +387,12 @@ export const withAuth = (WrappedComponent, options = {}) => {
     // Блокируем доступ неавторизованным
     if (!isAuthenticated) {
       return (
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh',
-          fontSize: '18px',
-          color: '#ef4444'
-        }}>
-          Доступ запрещен. Перенаправляем...
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-lg text-purple-600 font-medium">Перенаправление...</p>
+            <p className="text-sm text-gray-500 mt-2">Пожалуйста, подождите</p>
+          </div>
         </div>
       );
     }

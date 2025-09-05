@@ -25,7 +25,7 @@
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #7C4DFF 0%, #7C4DFF 100%);
+  background: linear-gradient(135deg, #7C3AED 0%, #7C3AED 100%);
   border: none;
   color: white;
   cursor: pointer;
@@ -65,10 +65,100 @@
   animation: slideUp 0.3s ease;
 }
 
-[data-theme="dark"] .helpPanel {
-  background: #1f2937;
-  border-color: #374151;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+/* Отключаем темную тему на мобильных устройствах */
+@media (max-width: 768px) {
+  [data-theme="dark"] .helpPanel {
+    background: #ffffff !important;
+    border-color: #e5e7eb !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  [data-theme="dark"] .helpHeader {
+    border-color: #e5e7eb !important;
+    background: linear-gradient(135deg, #f8fafc 0%, rgb(245, 247, 249) 100%) !important;
+  }
+
+  [data-theme="dark"] .helpTitle {
+    color: #1f2937 !important;
+  }
+
+  [data-theme="dark"] .closeButton {
+    color: #6b7280 !important;
+  }
+
+  [data-theme="dark"] .closeButton:hover {
+    background: #f3f4f6 !important;
+    color: #374151 !important;
+  }
+
+  [data-theme="dark"] .helpItem:hover {
+    background: #f8fafc !important;
+  }
+
+  [data-theme="dark"] .helpIcon {
+    color: #7c3aed !important;
+  }
+
+  [data-theme="dark"] .helpItemTitle {
+    color: #1f2937 !important;
+  }
+
+  [data-theme="dark"] .helpItemDesc {
+    color: #6b7280 !important;
+  }
+
+  [data-theme="dark"] .helpFooter {
+    border-color: #e5e7eb !important;
+    background: #f8fafc !important;
+  }
+}
+
+/* Темная тема только для десктопных устройств */
+@media (min-width: 769px) {
+  [data-theme="dark"] .helpPanel {
+    background: #1f2937;
+    border-color: #374151;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  }
+
+  [data-theme="dark"] .helpHeader {
+    border-color: #374151;
+    background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+  }
+
+  [data-theme="dark"] .helpTitle {
+    color: #f9fafb;
+  }
+
+  [data-theme="dark"] .closeButton {
+    color: #9ca3af;
+  }
+
+  [data-theme="dark"] .closeButton:hover {
+    background: #4b5563;
+    color: #d1d5db;
+  }
+
+  [data-theme="dark"] .helpItem:hover {
+    background: #374151;
+  }
+
+  [data-theme="dark"] .helpIcon {
+    color: #a78bfa;
+  }
+
+  [data-theme="dark"] .helpItemTitle {
+    color: #f9fafb;
+  }
+
+  [data-theme="dark"] .helpItemDesc {
+    color: #9ca3af;
+  }
+
+  [data-theme="dark"] .helpFooter {
+    border-color: #374151;
+    background: #374151;
+  }
 }
 
 @keyframes slideUp {
@@ -88,7 +178,7 @@
   align-items: center;
   padding: 20px 24px;
   border-bottom: 1px solid #e5e7eb;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: linear-gradient(135deg, #f8fafc 0%, rgb(245, 247, 249) 100%);
 }
 
 [data-theme="dark"] .helpHeader {
@@ -156,7 +246,7 @@
 .helpIcon {
   width: 32px;
   height: 32px;
-  color: #7C4DFF;
+  color: #7C3AED;
   background: #ede9fe;
   border-radius: 0.75rem;
   padding: 8px;
@@ -185,7 +275,7 @@
 }
 
 .helpItemDesc {
-  font-size: 12px;
+  font-size: 14px;
   color: #6b7280;
   margin: 0;
   line-height: 1.4;
@@ -216,7 +306,7 @@
 .fullHelpLink {
   display: block;
   text-align: center;
-  color: #7C4DFF;
+  color: #7C3AED;
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
@@ -226,7 +316,7 @@
 }
 
 .fullHelpLink:hover {
-  background: #7C4DFF;
+  background: #7C3AED;
   color: white;
 }
 

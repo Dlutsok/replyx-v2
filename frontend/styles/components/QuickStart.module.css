@@ -25,8 +25,18 @@
   z-index: 1;
 }
 
-[data-theme="dark"] .quickStart {
-  background: linear-gradient(135deg, #5a2fc2 0%, #3730a3 100%);
+/* Отключаем темную тему на мобильных устройствах */
+@media (max-width: 768px) {
+  [data-theme="dark"] .quickStart {
+    background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%) !important;
+  }
+}
+
+/* Темная тема только для десктопных устройств */
+@media (min-width: 769px) {
+  [data-theme="dark"] .quickStart {
+    background: linear-gradient(135deg, #5a2fc2 0%, #3730a3 100%);
+  }
 }
 
 .header {
@@ -92,7 +102,7 @@
 
 .progressFill {
   height: 100%;
-  background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(90deg, #7C3AED 0%, #8B5CF6 100%);
   border-radius: 0.75rem;
   transition: width 0.5s ease;
 }
@@ -154,7 +164,7 @@
 .completedIcon {
   width: 20px;
   height: 20px;
-  color: #10b981;
+  color: #7C3AED;
 }
 
 .stepContent {
@@ -244,7 +254,7 @@
 }
 
 .indicator.completed {
-  background: #10b981;
+  background: #7C3AED;
 }
 
 .footer {

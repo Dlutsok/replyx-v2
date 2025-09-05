@@ -20,6 +20,23 @@ module.exports = {
           800: '#075985',
           900: '#0c4a6e',
         }
+      },
+      maxWidth: {
+        '1200': '1200px',
+      },
+      lineHeight: {
+        'relaxed': '1.5',
+      },
+      gridTemplateRows: {
+        '4': 'repeat(4, minmax(0, 1fr))',
+        '6': 'repeat(6, minmax(0, 1fr))',
+      },
+      gridRow: {
+        'span-2': 'span 2 / span 2',
+        'span-3': 'span 3 / span 3',
+      },
+      gridColumn: {
+        'span-2': 'span 2 / span 2',
       }
     },
   },

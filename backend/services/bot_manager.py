@@ -2,9 +2,11 @@
 Сервис для управления ботами и их перезагрузки
 """
 import requests
+from core.app_config import BOT_SERVICE_URL
 from sqlalchemy.orm import Session
 from database import SessionLocal, models
 import logging
+import asyncio
 
 logger = logging.getLogger(__name__)
 
@@ -24,9 +26,9 @@ def reload_assistant_bots(assistant_id: int, db: Session):
         # Отправляем сигнал multi bot manager для перезагрузки ботов
         bot_ids = [bot.id for bot in bot_instances]
         response = requests.post(
-            "http://localhost:3001/reload-bots", 
+            f"{BOT_SERVICE_URL}/reload-bots", 
             json={"bot_ids": bot_ids, "assistant_id": assistant_id}, 
-            timeout=5
+            timeout=1
         )
         
         if response.status_code == 200:
@@ -66,9 +68,9 @@ def hot_reload_assistant_bots(assistant_id: int, db: Session):
         try:
             # Очищаем кэш bot manager для этих ботов
             clear_response = requests.post(
-                "http://localhost:3001/clear-bot-cache", 
+                f"{BOT_SERVICE_URL}/clear-bot-cache", 
                 json={"bot_ids": bot_ids, "assistant_id": assistant_id}, 
-                timeout=5
+                timeout=1
             )
             
             if clear_response.status_code == 200:
@@ -82,9 +84,9 @@ def hot_reload_assistant_bots(assistant_id: int, db: Session):
         
         # Отправляем сигнал scalable bot manager для горячей перезагрузки
         response = requests.post(
-            "http://localhost:3001/hot-reload-bots", 
+            f"{BOT_SERVICE_URL}/hot-reload-bots", 
             json={"bot_ids": bot_ids, "assistant_id": assistant_id, "force_reload": True}, 
-            timeout=5
+            timeout=1
         )
         
         if response.status_code == 200:
@@ -98,9 +100,9 @@ def hot_reload_assistant_bots(assistant_id: int, db: Session):
             for bot_id in bot_ids:
                 try:
                     force_response = requests.post(
-                        "http://localhost:3001/force-restart-bot", 
+                        f"{BOT_SERVICE_URL}/force-restart-bot", 
                         json={"bot_id": bot_id, "reason": "knowledge_update"}, 
-                        timeout=10
+                        timeout=2
                     )
                     
                     if force_response.status_code == 200:
@@ -132,9 +134,9 @@ def reload_specific_bot(bot_id: int, db: Session):
         
         # Отправляем сигнал multi bot manager для перезагрузки конкретного бота
         response = requests.post(
-            "http://localhost:3001/reload-bots", 
+            f"{BOT_SERVICE_URL}/reload-bots", 
             json={"bot_ids": [bot_id]}, 
-            timeout=5
+            timeout=1
         )
         
         if response.status_code == 200:
@@ -144,6 +146,58 @@ def reload_specific_bot(bot_id: int, db: Session):
             
     except Exception as e:
         print(f"[RELOAD_SPECIFIC_BOT] Ошибка перезагрузки бота {bot_id}: {e}")
+
+
+async def send_operator_message_to_telegram(telegram_chat_id: str, text: str, operator_name: str):
+    """Отправляет сообщение от оператора в Telegram чат через bot manager"""
+    try:
+        logger.info(f"🔄 [BOT_MANAGER] Начинаем отправку сообщения в Telegram. Chat ID: {telegram_chat_id}, Оператор: {operator_name}")
+        logger.info(f"🔄 [BOT_MANAGER] BOT_SERVICE_URL: {BOT_SERVICE_URL}")
+        logger.info(f"🔄 [BOT_MANAGER] Текст сообщения (первые 100 символов): {text[:100]}...")
+        
+        # Форматируем сообщение с именем оператора
+        formatted_message = f"👤 {operator_name}: {text}"
+        logger.info(f"🔄 [BOT_MANAGER] Форматированное сообщение: {formatted_message[:100]}...")
+        
+        # Отправляем команду bot manager'у для отправки сообщения
+        logger.info(f"🔄 [BOT_MANAGER] Отправляем POST запрос на {BOT_SERVICE_URL}/send-operator-message")
+        response = requests.post(
+            f"{BOT_SERVICE_URL}/send-operator-message",
+            json={
+                "telegram_chat_id": telegram_chat_id,
+                "text": formatted_message,
+                "operator_name": operator_name
+            },
+            timeout=5  # Быстрый таймаут - если bot service не отвечает быстро, продолжаем работу
+        )
+        
+        logger.info(f"🔄 [BOT_MANAGER] Получен ответ от bot service: HTTP {response.status_code}")
+        
+        if response.status_code == 200:
+            logger.info(f"✅ [BOT_MANAGER] Сообщение оператора {operator_name} успешно отправлено в Telegram чат {telegram_chat_id}")
+            try:
+                response_data = response.json()
+                logger.info(f"✅ [BOT_MANAGER] Ответ от bot service: {response_data}")
+            except:
+                logger.info(f"✅ [BOT_MANAGER] Ответ от bot service (текст): {response.text}")
+        else:
+            logger.error(f"❌ [BOT_MANAGER] Ошибка отправки сообщения оператора в Telegram: HTTP {response.status_code}")
+            logger.error(f"❌ [BOT_MANAGER] Тело ответа: {response.text}")
+            # Пробрасываем ошибку дальше для обработки в dialogs.py
+            raise Exception(f"HTTP {response.status_code}: {response.text}")
+            
+    except requests.exceptions.Timeout:
+        error_msg = f"Таймаут при отправке сообщения оператора в Telegram чат {telegram_chat_id} (превышено 5 секунд)"
+        logger.warning(f"⚠️ [BOT_MANAGER] {error_msg} - сообщение сохранено в БД, доставка отложена")
+        # НЕ raise Exception - сообщение уже сохранено в базе, handoff работает
+    except requests.exceptions.ConnectionError:
+        error_msg = f"Ошибка соединения с bot service ({BOT_SERVICE_URL})"
+        logger.warning(f"⚠️ [BOT_MANAGER] {error_msg} - сообщение сохранено в БД, bot service недоступен")
+        # НЕ raise Exception - сообщение сохранено, handoff работает без Telegram доставки
+    except Exception as e:
+        logger.error(f"❌ [BOT_MANAGER] Исключение при отправке сообщения оператора в Telegram: {e}")
+        logger.exception("❌ [BOT_MANAGER] Детали исключения:")
+        raise  # Пробрасываем исключение для обработки в dialogs.py
 
 def reload_user_assistant_bots(user_id: int, assistant_id: int, db: Session):
     """Перезагружает боты конкретного пользователя для конкретного ассистента"""
@@ -162,9 +216,9 @@ def reload_user_assistant_bots(user_id: int, assistant_id: int, db: Session):
         # Отправляем сигнал multi bot manager для перезагрузки конкретных ботов
         bot_ids = [bot.id for bot in bot_instances]
         response = requests.post(
-            "http://localhost:3001/reload-bots", 
+            f"{BOT_SERVICE_URL}/reload-bots", 
             json={"bot_ids": bot_ids, "user_id": user_id, "assistant_id": assistant_id}, 
-            timeout=5
+            timeout=1
         )
         
         if response.status_code == 200:
@@ -196,12 +250,32 @@ def stop_user_bots(user_id: int):
                 # Отправляем сигнал multi bot manager для остановки ботов
                 bot_ids = [bot.id for bot in bot_instances]
                 response = requests.post(
-                    "http://localhost:3001/stop-bots", 
+                    f"{BOT_SERVICE_URL}/stop-bots", 
                     json={"bot_ids": bot_ids, "reason": "trial_expired"}, 
-                    timeout=5
+                    timeout=2
                 )
                 
                 print(f"[STOP_USER_BOTS] Остановлены боты {bot_ids} для пользователя {user_id} (пробный период завершен)")
                 
     except Exception as e:
         print(f"[STOP_USER_BOTS] Ошибка остановки ботов для пользователя {user_id}: {e}")
+
+async def send_system_message_to_bot(message_data):
+    """Отправляет системное сообщение в Telegram бота"""
+    try:
+        logger.info(f"Sending system message to Telegram: {message_data}")
+        
+        # Отправляем запрос в multi bot manager
+        response = requests.post(
+            f"{BOT_SERVICE_URL}/send-system-message", 
+            json=message_data, 
+            timeout=5
+        )
+        
+        if response.status_code == 200:
+            logger.info(f"System message sent successfully to Telegram for dialog {message_data.get('dialog_id')}")
+        else:
+            logger.error(f"Failed to send system message: HTTP {response.status_code}")
+            
+    except Exception as e:
+        logger.error(f"Error sending system message to bot manager: {e}")

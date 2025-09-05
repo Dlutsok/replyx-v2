@@ -260,9 +260,10 @@ const MetricsChart = ({ metrics, loading, onRefresh, period, onPeriodChange }) =
             onClick={() => onPeriodChange(p.id)}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               period === p.id
-                ? 'bg-blue-600 text-white'
+                ? 'text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
+            style={period === p.id ? { backgroundColor: '#7C3AED' } : {}}
           >
             {p.label}
           </button>

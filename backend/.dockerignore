@@ -1,0 +1,50 @@
+# Python cache
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.coverage
+.pytest_cache
+
+# Environment files
+.env*
+!.env.example
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+README.md
+
+# Upload directories (will be mounted as volumes)
+uploads/*
+!uploads/.gitkeep
+
+# Logs (will be mounted as volumes)
+data/logs/*
+!data/logs/.gitkeep
+
+# Backups (will be mounted as volumes)
+data/backups/*
+!data/backups/.gitkeep
+
+# Testing
+tests/
+.tox/
+
+# Documentation
+docs/
+
+# Alembic temp files
+alembic.ini.bak

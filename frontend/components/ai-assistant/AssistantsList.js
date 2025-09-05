@@ -1,148 +1,73 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/router';
 import { 
   FiCpu, 
-  FiActivity, 
-  FiMessageSquare, 
   FiEdit, 
   FiTrash2, 
-  FiUsers, 
   FiPlus,
-  FiSettings,
-  FiMoreVertical
+  FiMoreVertical,
+  FiBarChart2
 } from 'react-icons/fi';
-import dashStyles from '../../styles/pages/Dashboard.module.css';
 import styles from '../../styles/pages/AISettings.module.css';
 
 const DropdownMenu = ({ assistant, onEdit, onDelete }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div style={{ position: 'relative' }}>
-      <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
-        style={{
-          background: 'none',
-          border: 'none',
-          padding: '4px',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          color: '#64748b',
-          transition: 'all 0.2s',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
+    <div className="relative">
+      <button
         onClick={(e) => {
           e.stopPropagation();
           setIsOpen(!isOpen);
         }}
+        className="w-6 h-6 rounded-lg border border-gray-200/50 bg-white hover:bg-gray-50 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-all duration-150"
         title="Дополнительно"
       >
-        <FiMoreVertical size={16} />
-      </motion.button>
-      
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -10 }}
-            transition={{ duration: 0.1 }}
-            style={{
-              position: 'absolute',
-              top: '100%',
-              right: '0',
-              backgroundColor: '#ffffff',
-              border: '1px solid #f3f4f6',
-              borderRadius: '8px',
-              boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)',
-              zIndex: 9999,
-              minWidth: '140px',
-              padding: '8px 0'
-            }}
-          >
+        <FiMoreVertical size={12} />
+      </button>
+
+      {isOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setIsOpen(false)}
+          />
+          <div className="absolute bottom-full right-0 mb-2 w-44 bg-white rounded-xl shadow-lg border border-gray-200/50 py-2 z-20">
             <button
-              style={{
-                width: '100%',
-                padding: '8px 12px',
-                border: 'none',
-                background: 'none',
-                textAlign: 'left',
-                cursor: 'pointer',
-                fontSize: '14px',
-                color: '#374151',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                transition: 'all 0.2s'
-              }}
               onClick={(e) => {
                 e.stopPropagation();
                 onEdit(assistant);
                 setIsOpen(false);
               }}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = '#f9fafb';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = 'transparent';
-              }}
+              className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors duration-150"
             >
-              <FiEdit size={14} />
+              <FiEdit size={14} className="text-gray-400" />
               Редактировать
             </button>
             <button
-              style={{
-                width: '100%',
-                padding: '8px 12px',
-                border: 'none',
-                background: 'none',
-                textAlign: 'left',
-                cursor: 'pointer',
-                fontSize: '14px',
-                color: '#dc2626',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                transition: 'all 0.2s'
+              onClick={(e) => {
+                e.stopPropagation();
+                // TODO: Добавить функцию аналитики
+                setIsOpen(false);
               }}
+              className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors duration-150"
+            >
+              <FiBarChart2 size={14} className="text-gray-400" />
+              Аналитика
+            </button>
+            <button
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete(assistant);
                 setIsOpen(false);
               }}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = '#fef2f2';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = 'transparent';
-              }}
+              className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors duration-150"
             >
-              <FiTrash2 size={14} />
+              <FiTrash2 size={14} className="text-red-500" />
               Удалить
             </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      
-      {/* Overlay to close dropdown when clicking outside */}
-      {isOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 9998
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsOpen(false);
-          }}
-        />
+          </div>
+        </>
       )}
     </div>
   );
@@ -150,222 +75,93 @@ const DropdownMenu = ({ assistant, onEdit, onDelete }) => {
 
 
 
-const AssistantCard = ({ assistant, onSelect, onEdit, onDelete }) => (
-  <motion.div 
-    whileHover={{ 
-      scale: 1.02,
-      boxShadow: "0 8px 25px rgba(0, 0, 0, 0.12)"
-    }}
-    transition={{ duration: 0.2 }}
-    onClick={() => onSelect(assistant)}
-    style={{ 
-      cursor: 'pointer',
-      backgroundColor: '#ffffff',
-      borderRadius: '12px',
-      padding: '0',
-      border: '1px solid #f1f5f9',
-      overflow: 'visible',
-      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-      position: 'relative',
-      zIndex: 1
-    }}
-  >
-    {/* Header with gradient background */}
-    <div style={{
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      padding: '24px',
-      position: 'relative',
-      borderRadius: '0.75rem 0.75rem 0 0'
-    }}>
-      {/* Chat interface mockup */}
-      <div style={{
-        backgroundColor: '#ffffff',
-        borderRadius: '8px',
-        padding: '12px',
-        marginBottom: '16px',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-      }}>
-        <div style={{
-          fontSize: '10px',
-          color: '#64748b',
-          marginBottom: '8px',
-          fontWeight: '500'
-        }}>
-          {assistant.name}
+const AssistantCard = ({ assistant, onSelect, onEdit, onDelete }) => {
+  const router = useRouter();
+  
+  const handleCardClick = () => {
+    router.push(`/assistant/${assistant.id}`);
+  };
+
+  return (
+    <div
+      onClick={handleCardClick}
+      className="bg-white rounded-xl border border-gray-200/50 p-3 sm:p-4 cursor-pointer hover:border-gray-300/70 transition-all duration-150 active:scale-95"
+    >
+    {/* Заголовок с иконкой и меню */}
+    <div className="flex items-start justify-between mb-2 sm:mb-3">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+        <div className="w-6 h-6 sm:w-7 sm:h-7 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+          <FiCpu className="text-purple-600" size={14} />
         </div>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '6px'
-        }}>
-          <div style={{
-            backgroundColor: '#f1f5f9',
-            padding: '8px 12px',
-            borderRadius: '12px',
-            fontSize: '10px',
-            color: '#64748b',
-            alignSelf: 'flex-start',
-            maxWidth: '80%'
-          }}>
-            Привет! Как дела?
-          </div>
-          <div style={{
-            backgroundColor: '#4f46e5',
-            color: 'white',
-            padding: '8px 12px',
-            borderRadius: '12px',
-            fontSize: '10px',
-            alignSelf: 'flex-end',
-            maxWidth: '80%'
-          }}>
-            Отлично! Чем могу помочь?
-          </div>
+        <div className="min-w-0 flex-1">
+          <h4 className="text-sm sm:text-base font-semibold text-gray-900 leading-tight truncate">
+            {assistant.name}
+          </h4>
+          <p className="text-xs text-gray-500 mt-0.5 hidden sm:block">
+            AI-ассистент
+          </p>
         </div>
       </div>
-      
+
+      <DropdownMenu
+        assistant={assistant}
+        onEdit={onEdit}
+        onDelete={onDelete}
+      />
     </div>
-    
-    {/* Content section */}
-    <div style={{ padding: '20px' }}>
-      <div style={{ marginBottom: '12px' }}>
-        <h3 style={{ 
-          fontSize: '16px', 
-          fontWeight: '600', 
-          color: '#0f172a', 
-          margin: '0 0 4px 0' 
-        }}>
-          {assistant.name}
-        </h3>
-        <p style={{
-          fontSize: '12px',
-          color: '#64748b',
-          margin: '0',
-          lineHeight: '1.4'
-        }}>
-          Создан {new Date(assistant.created_at).toLocaleDateString('ru-RU')}
-        </p>
-      </div>
-      
-      {/* Status and stats */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between'
-      }}>
-        <span className={`${dashStyles.badge}`} style={{
-          backgroundColor: assistant.is_active ? '#dcfce7' : '#fef2f2',
-          borderColor: assistant.is_active ? '#bbf7d0' : '#fecaca',
-          color: assistant.is_active ? '#166534' : '#991b1b',
-          fontSize: '10px',
-          padding: '4px 8px',
-          borderRadius: '4px'
-        }}>
-          {assistant.is_active ? 'Активен' : 'Неактивен'}
-        </span>
-        
-        <DropdownMenu 
-          assistant={assistant}
-          onEdit={onEdit}
-          onDelete={onDelete}
-        />
-      </div>
+
+    {/* Статус */}
+    <div className="mb-2 sm:mb-3">
+      <span className={`inline-flex items-center px-1.5 sm:px-2 py-1 rounded-full text-xs font-medium ${
+        assistant.is_active
+          ? 'bg-green-100 text-green-600'
+          : 'bg-gray-100 text-gray-600'
+      }`}>
+        <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+          assistant.is_active ? 'bg-green-500' : 'bg-gray-400'
+        }`} />
+        {assistant.is_active ? 'Активен' : 'Неактивен'}
+      </span>
     </div>
-  </motion.div>
-);
+
+    {/* Техническая информация */}
+    <div className="text-xs text-gray-400">
+      <span className="hidden sm:inline">Модель: </span>
+      <span className="text-gray-500">{assistant.ai_model || 'gpt-4o-mini'}</span>
+    </div>
+    </div>
+  );
+};
 
 const CreateAssistantCard = ({ onCreate, creating, onQuickCreate }) => (
-  <motion.div 
-    className={dashStyles.metricCard}
-    whileHover={{ 
-      scale: 1.02,
-      boxShadow: "0 8px 25px rgba(0, 0, 0, 0.12)"
-    }}
-    transition={{ duration: 0.2 }}
-    style={{
-      borderStyle: 'dashed',
-      borderColor: '#d1d5db',
-      cursor: 'pointer',
-      textAlign: 'center',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '160px'
-    }}
+  <div
     onClick={onQuickCreate}
+    className="bg-white rounded-xl border border-dashed border-gray-200/50 p-3 sm:p-4 cursor-pointer hover:border-gray-300/70 hover:bg-gray-50 transition-all duration-150 flex flex-col items-center justify-center text-center min-h-[100px] sm:min-h-[120px] active:scale-95"
   >
-    <div style={{
-      width: '48px',
-      height: '48px',
-      borderRadius: '0.75rem',
-      backgroundColor: '#f8fafc',
-      border: '1px solid #f1f5f9',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      color: '#10b981',
-      marginBottom: '16px'
-    }}>
-      <FiPlus size={24} />
+    {/* Иконка */}
+    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-100 rounded-lg flex items-center justify-center mb-2 sm:mb-3">
+      <FiPlus className="text-gray-500" size={16} />
     </div>
-    
-    <h3 style={{
-      fontSize: '16px',
-      fontWeight: '600',
-      color: '#0f172a',
-      margin: '0 0 8px 0'
-    }}>
-      Создать ассистента
-    </h3>
-    
-    <p style={{
-      fontSize: '13px',
-      color: '#64748b',
-      margin: '0 0 20px 0',
-      lineHeight: '1.5'
-    }}>
-      Добавьте нового AI-ассистента
+
+    {/* Заголовок */}
+    <h4 className="text-sm sm:text-base font-semibold text-gray-900 leading-tight mb-1">
+      {creating ? 'Создание…' : 'Новый ассистент'}
+    </h4>
+
+    {/* Описание */}
+    <p className="text-xs text-gray-500 mb-2 sm:mb-3 hidden sm:block">
+      Нажмите, чтобы добавить
     </p>
-    
-    <div style={{ 
-      display: 'flex', 
-      gap: '8px',
-      flexWrap: 'wrap',
-      justifyContent: 'center'
-    }}>
-      <button
-        style={{
-          background: '#000000',
-          color: 'white',
-          border: 'none',
-          padding: '8px 16px',
-          borderRadius: '0.75rem',
-          fontSize: '12px',
-          fontWeight: '500',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-          transition: 'background-color 0.2s'
-        }}
-        onClick={(e) => {
-          e.stopPropagation();
-          onQuickCreate();
-        }}
-        disabled={creating}
-        onMouseEnter={(e) => {
-          if (!creating) e.target.style.backgroundColor = '#1f2937';
-        }}
-        onMouseLeave={(e) => {
-          if (!creating) e.target.style.backgroundColor = '#000000';
-        }}
-      >
-        <FiPlus size={14} />
-        {creating ? 'Создание...' : 'Новый агент'}
-      </button>
-      
-    </div>
-  </motion.div>
+
+    {/* Индикатор загрузки */}
+    {creating && (
+      <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
+        <div className="w-3 h-3 border border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+        <span className="hidden sm:inline">Создание...</span>
+        <span className="sm:hidden">...</span>
+      </div>
+    )}
+  </div>
 );
 
 
@@ -379,55 +175,37 @@ export default function AssistantsList({
   creating,
   totalDialogs
 }) {
+  // Toolbar with search/new button removed to avoid duplicate functionality
+
   return (
     <div>
-      {/* Header */}
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        marginBottom: '32px' 
-      }}>
-        <h2 style={{
-          fontSize: '24px',
-          fontWeight: '600',
-          color: '#0f172a',
-          margin: '0'
-        }}>
+      {/* Заголовок секции */}
+      <div className="mb-4 sm:mb-6">
+        <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-1">
           Ваши ассистенты
         </h2>
-        <span style={{
-          fontSize: '14px',
-          color: '#64748b',
-          fontWeight: '500',
-          backgroundColor: '#f8fafc',
-          padding: '8px 16px',
-          borderRadius: '0.75rem',
-          border: '1px solid #f1f5f9'
-        }}>
-          {assistants.length} {assistants.length === 1 ? 'ассистент' : 'ассистентов'}
-        </span>
+        <p className="text-xs sm:text-sm text-gray-500">
+          Всего: {assistants.length}
+        </p>
       </div>
-      
-      {/* Assistants Grid */}
-      <div className={dashStyles.metricsGrid}>
-        <CreateAssistantCard 
+
+      {/* Сетка ассистентов */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+        <CreateAssistantCard
           onCreate={onCreateAssistant}
           creating={creating}
           onQuickCreate={onQuickCreateAssistant}
         />
-        
-        <AnimatePresence>
-          {assistants.map(assistant => (
-            <AssistantCard
-              key={assistant.id}
-              assistant={assistant}
-              onSelect={onSelectAssistant}
-              onEdit={onEditAssistant}
-              onDelete={onDeleteAssistant}
-            />
-          ))}
-        </AnimatePresence>
+
+        {assistants.map(assistant => (
+          <AssistantCard
+            key={assistant.id}
+            assistant={assistant}
+            onSelect={onSelectAssistant}
+            onEdit={onEditAssistant}
+            onDelete={onDeleteAssistant}
+          />
+        ))}
       </div>
     </div>
   );

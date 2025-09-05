@@ -1,60 +1,59 @@
-/* Dashboard - Unified Landing Style - Cleaned Version */
-/* Содержит только используемые стили (26 из 197 классов) */
+/* Dashboard - Minimal Design System */
+/* Обновлено под новый минималистичный дизайн */
 
 /* ОСНОВНАЯ СТРУКТУРА */
 .dashboardContainer {
   width: 100%;
-  min-height: 100vh;
   background: #ffffff;
-  padding: 32px;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI', system-ui, sans-serif;
+  padding: 0;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
 
-/* HEADER SECTION */
+/* HEADER SECTION - Минималистичный стиль */
 .welcomeSection {
   background: #ffffff;
-  border: 1px solid rgba(147, 51, 234, 0.08);
-  border-radius: 0.75rem;
-  padding: 32px;
-  margin-bottom: 32px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(229, 231, 235, 0.6);
+  border-radius: 13px;
+  padding: 24px;
+  margin-bottom: 24px;
+  transition: all 150ms ease;
+  position: relative;
 }
 
 .welcomeSection:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-  transform: translateY(-1px);
+  border-color: rgba(209, 213, 219, 0.7);
 }
 
 .welcomeContent {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 20px;
+  gap: 24px;
 }
 
 .avatarSection {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 0.75rem;
-  background: linear-gradient(135deg, rgba(147, 51, 234, 0.1) 0%, rgba(147, 51, 234, 0.05) 100%);
-  border: 1px solid rgba(147, 51, 234, 0.2);
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  background: #f3f4f6;
+  border: 1px solid rgba(229, 231, 235, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgb(147 51 234);
-  transition: all 0.3s ease;
+  color: #7C3AED;
+  transition: all 150ms ease;
 }
 
 .avatar:hover {
-  background: linear-gradient(135deg, rgba(147, 51, 234, 0.15) 0%, rgba(147, 51, 234, 0.08) 100%);
-  transform: scale(1.05);
+  background: #f9fafb;
+  border-color: rgba(209, 213, 219, 0.7);
 }
 
 .userInfo {
@@ -64,7 +63,7 @@
 }
 
 .welcomeTitle {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 600;
   margin: 0;
   color: #1a1a1a;
@@ -73,7 +72,7 @@
 }
 
 .welcomeSubtitle {
-  font-size: 14px;
+  font-size: 13px;
   color: #6b7280;
   margin: 0;
   font-weight: 400;
@@ -83,20 +82,20 @@
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  background: rgba(147, 51, 234, 0.08);
-  border: 1px solid rgba(147, 51, 234, 0.2);
-  padding: 8px 16px;
-  border-radius: 0.75rem;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid rgba(229, 231, 235, 0.6);
+  padding: 6px 12px;
+  border-radius: 13px;
   font-weight: 500;
-  font-size: 13px;
-  color: rgb(147 51 234);
-  transition: all 0.3s ease;
+  font-size: 12px;
+  color: #7C3AED;
+  transition: all 150ms ease;
 }
 
 .badge:hover {
-  background: rgba(147, 51, 234, 0.12);
-  transform: translateY(-1px);
+  border-color: rgba(209, 213, 219, 0.7);
+  background: #f9fafb;
 }
 
 /* MAIN CONTENT */
@@ -128,52 +127,90 @@
 .periodButtons {
   display: flex;
   background-color: #ffffff;
-  border: 1px solid #e6e8ea;
-  border-radius: 0.75rem;
+  border: 1px solid rgba(229, 231, 235, 0.6);
+  border-radius: 13px;
   padding: 2px;
 }
 
 .dateInput {
   padding: 8px 12px;
-  border: 1px solid #e6e8ea;
-  border-radius: 0.75rem;
+  border: 1px solid rgba(229, 231, 235, 0.6);
+  border-radius: 13px;
   font-size: 14px;
-  color: #1f2328;
+  color: #111827;
   background-color: #ffffff;
   min-width: 140px;
-  transition: all 0.15s ease;
+  transition: all 150ms ease;
 }
 
 .dateInput:focus {
   outline: none;
-  border-color: rgb(147 51 234);
-  box-shadow: 0 0 0 2px rgba(147, 51, 234, 0.1);
+  border-color: #7C3AED;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
 }
 
 .periodButton {
   padding: 8px 12px;
   border: none;
   background: transparent;
-  border-radius: 0.75rem;
-  font-weight: 400;
+  border-radius: 13px;
+  font-weight: 500;
   font-size: 14px;
-  color: #656c76;
+  color: #6b7280;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 150ms ease;
   white-space: nowrap;
 }
 
 .periodButton.active {
-  background-color: rgb(147 51 234);
+  background-color: #7C3AED;
   color: #ffffff;
 }
 
 .periodButton:hover:not(.active) {
-  background-color: #f0f2f3;
-  color: #1f2328;
+  background-color: #f9fafb;
+  color: #111827;
 }
 
-/* METRICS GRID */
+/* DASHBOARD LAYOUT - Простая и красивая сетка */
+.topRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.fullWidth {
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+/* Анимации появления */
+.topRow > * {
+  animation: slideInUp 0.6s ease-out;
+}
+
+.topRow > *:nth-child(1) { animation-delay: 0.1s; }
+.topRow > *:nth-child(2) { animation-delay: 0.2s; }
+.topRow > *:nth-child(3) { animation-delay: 0.3s; }
+
+.fullWidth {
+  animation: slideInUp 0.6s ease-out;
+  animation-delay: 0.4s;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* METRICS GRID - оставляем для совместимости */
 .metricsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -183,49 +220,45 @@
 
 .metricCard {
   background-color: #ffffff;
-  border: 1px solid #f3f4f6;
-  border-radius: 0.75rem;
-  padding: 28px 24px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(229, 231, 235, 0.6);
+  border-radius: 13px;
+  padding: 20px;
+  transition: all 150ms ease;
   position: relative;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .metricCard:hover {
-  border-color: #e5e7eb;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  transform: translateY(-0.5px);
+  border-color: rgba(209, 213, 219, 0.7);
 }
 
 .metricHeader {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 .metricIcon {
-  width: 48px;
-  height: 48px;
-  border-radius: 0.75rem;
-  background-color: #f8fafc;
-  border: 1px solid #f1f5f9;
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  background-color: #f3f4f6;
+  border: 1px solid rgba(229, 231, 235, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: #64748b;
-  transition: all 0.2s ease;
+  color: #7C3AED;
+  transition: all 150ms ease;
 }
 
 .metricCard:hover .metricIcon {
-  background-color: #f1f5f9;
-  border-color: #e2e8f0;
-  color: #475569;
+  background-color: #f9fafb;
+  border-color: rgba(209, 213, 219, 0.7);
 }
 
 .metricTitle {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 500;
   color: #64748b;
   margin: 0;
@@ -233,16 +266,26 @@
   letter-spacing: 0.075em;
 }
 
+.metricSubtitle {
+  font-size: 12px;
+  font-weight: 400;
+  color: #94a3b8;
+  margin: 0;
+  margin-top: 8px;
+  line-height: 1.2;
+  text-align: left;
+}
+
 .metricValue {
-  font-size: 32px;
-  font-weight: 700;
-  color: #0f172a;
-  margin-bottom: 12px;
+  font-size: 24px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 6px;
   line-height: 1;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.01em;
 }
 
 /* LOADING & ERROR STATES */
@@ -259,7 +302,7 @@
   width: 32px;
   height: 32px;
   border: 2px solid #e6e8ea;
-  border-top: 2px solid rgb(147 51 234);
+  border-top: 2px solid #7C3AED;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -273,11 +316,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
+  background-color: #ffffff;
+  border: 1px solid #f87171;
   color: #dc2626;
   padding: 16px 20px;
-  border-radius: 0.75rem;
+  border-radius: 13px;
   margin-bottom: 20px;
   font-weight: 500;
 }
@@ -296,12 +339,66 @@
   justify-content: center;
 }
 
-/* RESPONSIVE */
+/* RESPONSIVE - Адаптивная сетка */
+@media (max-width: 1200px) {
+  .topRow {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+  }
+
+  .metricCard {
+    padding: 18px;
+  }
+
+  .metricValue {
+    font-size: 22px;
+  }
+
+  /* Адаптация метрик для планшетов */
+  .metricHeader {
+    margin-bottom: 6px;
+  }
+
+  .metricIcon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .metricTitle {
+    font-size: 10px;
+  }
+
+  /* Адаптация welcome секции для планшетов */
+  .welcomeSection {
+    padding: 20px;
+  }
+
+  .welcomeTitle {
+    font-size: 18px;
+  }
+
+  .welcomeSubtitle {
+    font-size: 12px;
+  }
+
+  /* Адаптация виджетов */
+  .topRow {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+}
+
 @media (max-width: 1024px) {
   .welcomeContent {
     flex-direction: column;
     align-items: flex-start;
     gap: 24px;
+  }
+
+  .topRow {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 18px;
   }
 
   .metricsGrid {
@@ -314,6 +411,29 @@
 }
 
 @media (max-width: 768px) {
+  .topRow {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* Адаптивные высоты виджетов */
+@media (max-width: 768px) {
+  /* На мобильных устройствах уменьшаем высоту */
+  .topRow > * {
+    height: 280px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* На очень маленьких экранах еще больше уменьшаем */
+  .topRow > * {
+    height: 250px !important;
+  }
+}
+
+/* Мобильные устройства */
+@media (max-width: 480px) {
   .dashboardContainer {
     padding: 20px;
   }
@@ -339,6 +459,18 @@
     height: 40px;
   }
 
+  .dashboardGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .gridCard[data-size="small"],
+  .gridCard[data-size="medium"],
+  .gridCard[data-size="large"] {
+    grid-column: span 1;
+    min-height: 250px;
+  }
+
   .metricsGrid {
     grid-template-columns: 1fr;
   }
@@ -355,4 +487,108 @@
     font-size: 13px;
     padding: 6px 10px;
   }
+}
+
+/* Дополнительная оптимизация для очень больших экранов */
+@media (min-width: 1600px) {
+  .topRow {
+    max-width: 1400px;
+    margin: 0 auto 24px auto;
+  }
+
+  .fullWidth {
+    max-width: 1400px;
+    margin: 0 auto 24px auto;
+  }
+}
+
+/* Специфические правила для экранов 992px - 1200px */
+@media (max-width: 1200px) and (min-width: 993px) {
+  .dashboardContainer {
+    padding: 16px;
+  }
+
+  .welcomeSection {
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .welcomeTitle {
+    font-size: 18px;
+    line-height: 1.2;
+  }
+
+  .welcomeSubtitle {
+    font-size: 12px;
+  }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .periodControls {
+    gap: 12px;
+  }
+
+  .periodButton {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+}
+
+/* Специфические правила для экранов 768px - 992px */
+@media (max-width: 992px) and (min-width: 769px) {
+  .dashboardContainer {
+    padding: 16px;
+  }
+
+  .welcomeSection {
+    padding: 18px;
+    margin-bottom: 18px;
+  }
+
+  .welcomeTitle {
+    font-size: 17px;
+    line-height: 1.2;
+  }
+
+  .welcomeSubtitle {
+    font-size: 12px;
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .metricCard {
+    padding: 16px;
+  }
+
+  .metricValue {
+    font-size: 20px;
+  }
+
+  .metricTitle {
+    font-size: 9px;
+  }
+
+  .periodControls {
+    gap: 12px;
+  }
+
+  .periodButton {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  .topRow {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+  }
+}
+
+/* Дополнительная оптимизация для очень больших экранов */
+@media (min-width: 1600px) {
 }

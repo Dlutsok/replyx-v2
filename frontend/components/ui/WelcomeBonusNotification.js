@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useNotifications } from '../../hooks/useNotifications';
 import styles from '../../styles/components/WelcomeBonusNotification.module.css';
 
 export default function WelcomeBonusNotification() {
+  const { showSuccess, showError } = useNotifications();
   const [show, setShow] = useState(false);
   const [bonusInfo, setBonusInfo] = useState(null);
   const [claiming, setClaiming] = useState(false);
@@ -15,7 +17,8 @@ export default function WelcomeBonusNotification() {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch('http://localhost:8000/api/balance/welcome-bonus-status', {
+      const base = typeof window !== 'undefined' ? `${window.location.origin}` : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000');
+      const response = await fetch(`${base}/api/balance/welcome-bonus-status`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -39,7 +42,8 @@ export default function WelcomeBonusNotification() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8000/api/balance/claim-welcome-bonus', {
+      const base = typeof window !== 'undefined' ? `${window.location.origin}` : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000');
+      const response = await fetch(`${base}/api/balance/claim-welcome-bonus`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -59,17 +63,12 @@ export default function WelcomeBonusNotification() {
         // Закрываем уведомление
         setShow(false);
         
-        // Показываем успешное сообщение
-        const successEvent = new CustomEvent('showNotification', {
-          detail: {
-            type: 'success',
-            message: data.message
-          }
-        });
-        window.dispatchEvent(successEvent);
+        // Показываем успешное сообщение через новую систему
+        showSuccess(data.message);
       }
     } catch (error) {
         console.error('Ошибка получения приветственного бонуса:', error);
+        showError('Ошибка при получении бонуса. Попробуйте позже.');
       } finally {
       setClaiming(false);
     }
@@ -91,7 +90,7 @@ export default function WelcomeBonusNotification() {
               <path d="M2 12l10 5 10-5"/>
             </svg>
           </div>
-          <h2 className={styles.title}>Добро пожаловать в ChatAI!</h2>
+          <h2 className={styles.title}>Добро пожаловать в ReplyX!</h2>
           <p className={styles.subtitle}>Ваш AI-ассистент готов к работе</p>
         </div>
         

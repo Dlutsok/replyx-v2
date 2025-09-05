@@ -1,0 +1,502 @@
+/* AI Tokens Table Component Styles - Yandex Console Design */
+
+.tableContainer {
+  width: 100%;
+  background: #FFFFFF;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+  border-radius: 8px 8px 0 0;
+}
+
+.tokensTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  background: #FFFFFF;
+}
+
+/* Table Headers */
+.tableHeader {
+  background: #F8F9FA;
+  color: #333333;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 16px 12px;
+  text-align: left;
+  border-bottom: 2px solid #E5E5E5;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+  position: relative;
+}
+
+.tableHeader:hover {
+  background: #F0F1F3;
+}
+
+.tableHeader.sorted {
+  background: #E6F3FF;
+  color: #0066CC;
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sortIcons {
+  display: flex;
+  flex-direction: column;
+  margin-left: 4px;
+}
+
+.sortIcon {
+  color: #CCCCCC;
+  width: 12px;
+  height: 6px;
+  transition: color 0.2s ease;
+}
+
+.sortIcon.active {
+  color: #0066CC;
+}
+
+/* Table Rows */
+.tableRow {
+  border-bottom: 1px solid #E5E5E5;
+  transition: background-color 0.2s ease;
+}
+
+.tableRow:hover {
+  background: #F8F9FA;
+}
+
+.tableRow:last-child {
+  border-bottom: none;
+}
+
+.tableCell {
+  padding: 16px 12px;
+  vertical-align: top;
+  line-height: 1.4;
+}
+
+/* Token ID */
+.tokenId {
+  font-family: monospace;
+  font-weight: 600;
+  color: #0066CC;
+  background: #F0F8FF;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* Token Name */
+.tokenName {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nameText {
+  font-weight: 500;
+  color: #333333;
+}
+
+.noteIndicator {
+  font-size: 16px;
+  cursor: help;
+  opacity: 0.7;
+}
+
+/* Token Field */
+.tokenField {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tokenValue {
+  font-family: monospace;
+  background: #F5F5F5;
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #666666;
+  border: 1px solid #E5E5E5;
+}
+
+.toggleTokenBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  color: #666666;
+  transition: all 0.2s ease;
+}
+
+.toggleTokenBtn:hover {
+  background: #F0F0F0;
+  color: #333333;
+}
+
+/* Models */
+.modelsCell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: 200px;
+}
+
+.modelTag {
+  background: #E6F3FF;
+  color: #0066CC;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Limit Info */
+.limitInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.limitNumber {
+  font-weight: 600;
+  color: #333333;
+  font-size: 14px;
+}
+
+.usageInfo {
+  font-size: 14px;
+  color: #666666;
+}
+
+/* Priority Badge */
+.priorityBadge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 2px solid;
+}
+
+.priorityDots {
+  display: flex;
+  gap: 2px;
+}
+
+.priorityDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #E5E5E5;
+  transition: background-color 0.2s ease;
+}
+
+.priorityDot.active {
+  background: currentColor;
+}
+
+.priorityNumber {
+  font-weight: 600;
+  min-width: 12px;
+  text-align: center;
+}
+
+/* Priority Colors */
+.priorityHigh {
+  background: #fff5f5;
+  color: #dc3545;
+  border-color: #dc3545;
+}
+
+.priorityMedium {
+  background: #fff8e1;
+  color: #ff8f00;
+  border-color: #ff8f00;
+}
+
+.priorityLow {
+  background: #f1f8e9;
+  color: #388e3c;
+  border-color: #388e3c;
+}
+
+/* Status Badge */
+.statusBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.statusActive {
+  background: #e8f5e8;
+  color: #388e3c;
+}
+
+.statusInactive {
+  background: #f5f5f5;
+  color: #6c757d;
+}
+
+/* Usage Column */
+.usageColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 120px;
+}
+
+.usageBar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.usageBarLabel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: #666666;
+}
+
+.usageBarTrack {
+  height: 6px;
+  background: #F0F0F0;
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.usageBarFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+/* Usage Colors */
+.usageNormal {
+  background: #28a745;
+}
+
+.usageWarning {
+  background: #ffc107;
+}
+
+.usageCritical {
+  background: #dc3545;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.actionBtn {
+  padding: 8px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: transparent;
+}
+
+.actionBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.editBtn {
+  color: #0066CC;
+}
+
+.editBtn:hover {
+  background: #E6F3FF;
+}
+
+.statsBtn {
+  color: #00CC66;
+}
+
+.statsBtn:hover {
+  background: #F0FFF4;
+}
+
+.deleteBtn {
+  color: #FF3366;
+}
+
+.deleteBtn:hover {
+  background: #FFF5F5;
+}
+
+/* Table Footer */
+.tableFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #F8F9FA;
+  border-top: 1px solid #E5E5E5;
+  font-size: 14px;
+}
+
+.recordsInfo {
+  color: #666666;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #666666;
+}
+
+.legendColor {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+/* Loading State */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  color: #666666;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #E5E5E5;
+  border-top: 3px solid #0066CC;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Empty State */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.emptyIcon {
+  color: #6c757d;
+  margin-bottom: 16px;
+  opacity: 0.7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.emptyState h3 {
+  color: #333333;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.emptyState p {
+  color: #666666;
+  font-size: 14px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .usageColumn {
+    min-width: 100px;
+  }
+  
+  .modelsCell {
+    max-width: 150px;
+  }
+  
+  .tableFooter {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .legend {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 768px) {
+  .tableContainer {
+    border-radius: 4px;
+  }
+  
+  .tableHeader,
+  .tableCell {
+    padding: 12px 8px;
+  }
+  
+  .tokensTable {
+    font-size: 13px;
+  }
+  
+  .usageColumn {
+    min-width: 80px;
+  }
+  
+  .actions {
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .actionBtn {
+    padding: 6px;
+  }
+  
+  .tableFooter {
+    padding: 12px 16px;
+  }
+}

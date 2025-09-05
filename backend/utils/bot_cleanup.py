@@ -6,6 +6,7 @@ from database import models
 from sqlalchemy.orm import Session
 import requests
 import logging
+from core.app_config import BOT_SERVICE_URL
 
 logger = logging.getLogger(__name__)
 
@@ -77,24 +78,21 @@ def full_bot_cleanup(user_id: int, assistant_id: int = None, db: Session = None)
             bot_ids = [bot.id for bot in bot_instances]
             
             try:
-                # Очищаем кэш bot manager
-                response = requests.post(
-                    'http://localhost:3001/clear-cache',
+                # Очищаем кэш bot manager (не блокируем долго)
+                requests.post(
+                    f"{BOT_SERVICE_URL}/clear-cache",
                     json={'bot_ids': bot_ids},
-                    timeout=10
+                    timeout=1
                 )
-                
-                # Перезагружаем ботов
-                response = requests.post(
-                    'http://localhost:3001/hot-reload-bots',
+                # Перезагружаем ботов (короткий таймаут)
+                requests.post(
+                    f"{BOT_SERVICE_URL}/hot-reload-bots",
                     json={'bot_ids': bot_ids},
-                    timeout=30
+                    timeout=1
                 )
-                
-                logger.info(f"✅ Перезагружено {len(bot_ids)} ботов")
-                
+                logger.info(f"✅ Перезагружено {len(bot_ids)} ботов (async, короткий таймаут)")
             except Exception as e:
-                logger.warning(f"⚠️  Ошибка перезагрузки ботов: {e}")
+                logger.warning(f"⚠️  Ошибка перезагрузки ботов (пропущено): {e}")
         
         logger.info("✅ Полная очистка завершена")
         
@@ -150,11 +148,34 @@ def enhanced_document_deletion(doc_id: int, user_id: int, db: Session):
         for assistant in assistants:
             embeddings_service.increment_knowledge_version(assistant.id, db)
         
-        # 7. Очищаем все связанные кэши
+        # 7. АГРЕССИВНАЯ очистка всех связанных кэшей
         chatai_cache.invalidate_user_cache(user_id)
         for assistant in assistants:
             chatai_cache.invalidate_assistant_cache(assistant.id)
             chatai_cache.invalidate_knowledge_cache(user_id, assistant.id)
+            
+            # Дополнительная очистка всех возможных кэшей ассистента
+            try:
+                # Принудительно сбрасываем версию знаний для инвалидации всех кэшей
+                assistant.knowledge_version = (assistant.knowledge_version or 0) + 10
+                db.commit()
+                
+                # Очищаем все возможные кэши
+                chatai_cache.clear_pattern(f"assistant:{assistant.id}:*")
+                chatai_cache.clear_pattern(f"knowledge:{user_id}:{assistant.id}:*")
+                chatai_cache.clear_pattern(f"embeddings:{assistant.id}:*")
+                
+                logger.info(f"Очищены все кэши для ассистента {assistant.id}")
+            except Exception as e:
+                logger.warning(f"Дополнительная очистка кэша ассистента {assistant.id} не удалась: {e}")
+        
+        # Очищаем глобальные кэши пользователя
+        try:
+            chatai_cache.clear_pattern(f"user:{user_id}:*")
+            chatai_cache.clear_pattern(f"documents:{user_id}:*")
+            logger.info(f"Очищены глобальные кэши пользователя {user_id}")
+        except Exception as e:
+            logger.warning(f"Очистка глобальных кэшей пользователя {user_id} не удалась: {e}")
         
         # 8. Принудительно перезагружаем всех ботов пользователя
         bot_instances = db.query(models.BotInstance).filter(
@@ -166,28 +187,28 @@ def enhanced_document_deletion(doc_id: int, user_id: int, db: Session):
             bot_ids = [bot.id for bot in bot_instances]
             
             try:
-                # Очищаем кэш bot manager
                 requests.post(
-                    'http://localhost:3001/clear-cache',
+                    f"{BOT_SERVICE_URL}/clear-cache",
                     json={'bot_ids': bot_ids},
-                    timeout=10
+                    timeout=1
                 )
-                
-                # Горячая перезагрузка ботов
                 requests.post(
-                    'http://localhost:3001/hot-reload-bots',
+                    f"{BOT_SERVICE_URL}/hot-reload-bots",
                     json={'bot_ids': bot_ids},
-                    timeout=30
+                    timeout=1
                 )
-                
-                logger.info(f"Перезагружено {len(bot_ids)} ботов")
-                
+                logger.info(f"Перезагружено {len(bot_ids)} ботов (async, короткий таймаут)")
             except Exception as e:
-                logger.warning(f"Ошибка перезагрузки ботов: {e}")
+                logger.warning(f"Ошибка перезагрузки ботов (пропущено): {e}")
         
-        # 9. Удаляем файл с диска
+        # 9. Удаляем файл с диска (используем PROJECT_ROOT/uploads)
         import os
-        file_path = os.path.join("uploads", str(user_id), doc.filename)
+        try:
+            from core.app_config import PROJECT_ROOT  # type: ignore
+            base_dir = os.path.join(str(PROJECT_ROOT), "uploads")
+        except Exception:
+            base_dir = "uploads"
+        file_path = os.path.join(base_dir, str(user_id), doc.filename)
         if os.path.exists(file_path):
             try:
                 os.remove(file_path)
@@ -203,6 +224,40 @@ def enhanced_document_deletion(doc_id: int, user_id: int, db: Session):
         logger.error(f"Ошибка расширенного удаления документа: {e}")
         db.rollback()
         return False
+
+def delete_assistant_files(user_id: int, assistant_id: int, db: Session) -> int:
+    """Удаляет физические файлы документов, которые были привязаны к ассистенту."""
+    import os
+    try:
+        from core.app_config import PROJECT_ROOT  # type: ignore
+        base_dir = os.path.join(str(PROJECT_ROOT), "uploads")
+    except Exception:
+        base_dir = "uploads"
+    
+    deleted = 0
+    doc_ids = [row[0] for row in db.query(models.UserKnowledge.doc_id).filter(
+        models.UserKnowledge.user_id == user_id,
+        models.UserKnowledge.assistant_id == assistant_id
+    ).distinct().all()]
+    
+    if not doc_ids:
+        return 0
+    
+    docs = db.query(models.Document).filter(
+        models.Document.user_id == user_id,
+        models.Document.id.in_(doc_ids)
+    ).all()
+    
+    for d in docs:
+        path = os.path.join(base_dir, str(user_id), d.filename)
+        if os.path.exists(path):
+            try:
+                os.remove(path)
+                deleted += 1
+                logger.info(f"Удален файл ассистента {assistant_id}: {path}")
+            except Exception as e:
+                logger.warning(f"Не удалось удалить файл {path}: {e}")
+    return deleted
 
 def enhanced_knowledge_deletion(knowledge_id: int, user_id: int, db: Session):
     """
@@ -275,13 +330,13 @@ def enhanced_knowledge_deletion(knowledge_id: int, user_id: int, db: Session):
             
             try:
                 requests.post(
-                    'http://localhost:3001/hot-reload-bots',
+                    f"{BOT_SERVICE_URL}/hot-reload-bots",
                     json={'bot_ids': bot_ids},
-                    timeout=30
+                    timeout=1
                 )
-                logger.info(f"Перезагружено {len(bot_ids)} ботов")
+                logger.info(f"Перезагружено {len(bot_ids)} ботов (async, короткий таймаут)")
             except Exception as e:
-                logger.warning(f"Ошибка перезагрузки ботов: {e}")
+                logger.warning(f"Ошибка перезагрузки ботов (пропущено): {e}")
         
         db.commit()
         logger.info("✅ Знание полностью удалено")

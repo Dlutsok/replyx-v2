@@ -78,4 +78,4 @@ def send_message_to_admins(data: dict, db: Session = Depends(get_db)):
         
     except Exception as e:
         logger.error(f"Ошибка при обработке сообщения от виджета: {e}")
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Произошла ошибка при обработке запроса. Попробуйте позже.")

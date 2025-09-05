@@ -14,6 +14,52 @@ from enum import Enum
 
 logger = logging.getLogger(__name__)
 
+class CircuitBreakerState(Enum):
+    CLOSED = "closed"
+    OPEN = "open"
+    HALF_OPEN = "half_open"
+
+
+class CircuitBreaker:
+    """Простой circuit breaker per-provider."""
+
+    def __init__(
+        self,
+        failure_threshold: int = 3,
+        reset_timeout_seconds: int = 60,
+    ) -> None:
+        self.failure_threshold = failure_threshold
+        self.reset_timeout_seconds = reset_timeout_seconds
+        self.state: CircuitBreakerState = CircuitBreakerState.CLOSED
+        self.failure_count: int = 0
+        self.opened_at: Optional[datetime] = None
+
+    def allow_request(self) -> bool:
+        if self.state == CircuitBreakerState.CLOSED:
+            return True
+        if self.state == CircuitBreakerState.OPEN:
+            if self.opened_at and (datetime.now() - self.opened_at).total_seconds() >= self.reset_timeout_seconds:
+                # Переходим в полууоткрытое состояние — разрешаем одну пробу
+                self.state = CircuitBreakerState.HALF_OPEN
+                return True
+            return False
+        if self.state == CircuitBreakerState.HALF_OPEN:
+            # Разрешаем одну попытку
+            return True
+        return True
+
+    def on_success(self) -> None:
+        # Любой успешный ответ закрывает breaker
+        self.state = CircuitBreakerState.CLOSED
+        self.failure_count = 0
+        self.opened_at = None
+
+    def on_failure(self) -> None:
+        self.failure_count += 1
+        if self.state == CircuitBreakerState.HALF_OPEN or self.failure_count >= self.failure_threshold:
+            self.state = CircuitBreakerState.OPEN
+            self.opened_at = datetime.now()
+
 class AIProvider(Enum):
     OPENAI = "openai"
     YANDEX = "yandex"  
@@ -24,28 +70,22 @@ class AIProvider(Enum):
 class AIProvidersManager:
     def __init__(self):
         self.providers = {}
-        self.proxy_config = None
+        self.breakers: Dict[AIProvider, CircuitBreaker] = {}
         self.initialize_providers()
     
     def initialize_providers(self):
-        """Инициализация только OpenAI провайдера через прокси"""
+        """Инициализация доступных AI провайдеров (опционально через HTTP-прокси)"""
         
-        # 🌐 Настройка прокси для OpenAI
-        proxy_url = os.getenv('AI_PROXY_URL')  # http://username:password@proxy:port
-        if proxy_url:
-            self.proxy_config = {
-                "http://": proxy_url,
-                "https://": proxy_url
-            }
-            logger.info(f"🌐 Настроен прокси для OpenAI: {proxy_url}")
-        else:
-            logger.warning("⚠️ AI_PROXY_URL не настроен, OpenAI может не работать из РФ")
-        
-        # OpenAI (обязательно через прокси из РФ)
+        # OpenAI через зарубежный прокси (для обхода блокировок РФ)
         openai_key = os.getenv('OPENAI_API_KEY')
+        openai_proxy_url = os.getenv('OPENAI_PROXY_URL')  # Только из переменных окружения
         if openai_key:
-            self.providers[AIProvider.OPENAI] = OpenAIProvider(openai_key, self.proxy_config)
-            logger.info("✅ OpenAI провайдер инициализирован")
+            self.providers[AIProvider.OPENAI] = OpenAIProvider(openai_key, proxy_url=openai_proxy_url)
+            if openai_proxy_url:
+                masked_proxy = openai_proxy_url.split('@')[1] if '@' in openai_proxy_url else openai_proxy_url
+                logger.info(f"✅ OpenAI провайдер инициализирован с прокси: {masked_proxy}")
+            else:
+                logger.info("✅ OpenAI провайдер инициализирован (без прокси)")
         else:
             logger.error("❌ OPENAI_API_KEY не настроен!")
         
@@ -63,10 +103,10 @@ class AIProvidersManager:
         #     self.providers[AIProvider.GIGACHAT] = GigaChatProvider(gigachat_client_id, gigachat_secret)
         #     logger.info("✅ GigaChat провайдер инициализирован")
         
-        # Claude (опционально, тоже через прокси)
+        # Claude (опционально)
         claude_key = os.getenv('CLAUDE_API_KEY')
         if claude_key:
-            self.providers[AIProvider.CLAUDE] = ClaudeProvider(claude_key, self.proxy_config)
+            self.providers[AIProvider.CLAUDE] = ClaudeProvider(claude_key)
             logger.info("✅ Claude провайдер инициализирован как fallback")
         
         # Локальная модель (если настроена)
@@ -74,17 +114,26 @@ class AIProvidersManager:
         if local_url:
             self.providers[AIProvider.LOCAL_LLM] = LocalLLMProvider(local_url)
             logger.info("✅ Локальная LLM инициализирована как fallback")
+
+        # Инициализируем circuit breakers
+        failure_threshold = int(os.getenv('AI_CB_FAILURE_THRESHOLD', '3'))
+        reset_timeout_seconds = int(os.getenv('AI_CB_RESET_TIMEOUT', '60'))
+        for provider_type in self.providers.keys():
+            self.breakers[provider_type] = CircuitBreaker(
+                failure_threshold=failure_threshold,
+                reset_timeout_seconds=reset_timeout_seconds,
+            )
     
     async def get_completion(self, messages: List[Dict], model: str = None, **kwargs) -> Dict:
         """
         Получение ответа с автоматическим fallback между провайдерами
-        Приоритет: OpenAI (через прокси) -> Claude -> Local
+        Приоритет: OpenAI -> Claude -> Local
         """
         
         # Определяем приоритет провайдеров (OpenAI первым)
         priority_order = [
-            AIProvider.OPENAI,    # Приоритет 1: OpenAI (через прокси)
-            AIProvider.CLAUDE,    # Приоритет 2: Claude (через прокси, fallback)
+            AIProvider.OPENAI,    # Приоритет 1: OpenAI
+            AIProvider.CLAUDE,    # Приоритет 2: Claude (fallback)
             AIProvider.LOCAL_LLM  # Приоритет 3: Локальная модель (fallback)
         ]
         
@@ -95,6 +144,12 @@ class AIProvidersManager:
                 continue
                 
             provider = self.providers[provider_type]
+            breaker = self.breakers.get(provider_type)
+
+            # Circuit breaker
+            if breaker and not breaker.allow_request():
+                logger.warning(f"⛔ Circuit open для {provider_type.value}, пропускаем провайдера")
+                continue
             
             try:
                 logger.info(f"🔄 Попытка использовать {provider_type.value}")
@@ -102,15 +157,33 @@ class AIProvidersManager:
                 # Адаптируем модель под провайдера  
                 adapted_model = self._adapt_model_for_provider(model, provider_type)
                 
-                result = await provider.get_completion(
-                    messages=messages,
-                    model=adapted_model,
-                    **kwargs
-                )
-                
-                logger.info(f"✅ Успешный ответ от {provider_type.value}")
-                result['provider_used'] = provider_type.value
-                return result
+                # Ретраи с экспоненциальным бэкоффом и джиттером
+                max_retries = int(os.getenv('AI_RETRY_MAX_ATTEMPTS', '3'))
+                base_delay = float(os.getenv('AI_RETRY_BASE_DELAY', '0.5'))
+                import random
+                for attempt in range(max_retries):
+                    try:
+                        result = await provider.get_completion(
+                            messages=messages,
+                            model=adapted_model,
+                            **kwargs
+                        )
+                        if breaker:
+                            breaker.on_success()
+                        logger.info(f"✅ Успешный ответ от {provider_type.value} (попытка {attempt+1}/{max_retries})")
+                        result['provider_used'] = provider_type.value
+                        return result
+                    except Exception as e:
+                        last_error = e
+                        if breaker:
+                            breaker.on_failure()
+                        if attempt < max_retries - 1:
+                            delay = base_delay * (2 ** attempt) + random.uniform(0, 0.2)
+                            logger.warning(f"⚠️ Ошибка {provider_type.value} на попытке {attempt+1}/{max_retries}: {str(e)}; повтор через {delay:.2f}s")
+                            await asyncio.sleep(delay)
+                        else:
+                            logger.warning(f"❌ Провайдер {provider_type.value} не дал ответ после {max_retries} попыток")
+                continue
                 
             except Exception as e:
                 last_error = e
@@ -156,13 +229,26 @@ class BaseAIProvider:
 
 
 class OpenAIProvider(BaseAIProvider):
-    """OpenAI провайдер с поддержкой прокси"""
+    """OpenAI провайдер (с поддержкой прокси для обхода блокировок)"""
     
-    def __init__(self, api_key: str, proxy_config: Optional[Dict] = None):
+    def __init__(self, api_key: str, proxy_url: Optional[str] = None):
         super().__init__("OpenAI")
         self.api_key = api_key
-        self.proxy_config = proxy_config
+        self.proxy_url = proxy_url
         self.base_url = "https://api.openai.com/v1"
+        
+        # Логирование настройки прокси (без вывода пароля)
+        if self.proxy_url:
+            masked_proxy = self.proxy_url
+            if '@' in masked_proxy:
+                # Маскируем пароль в логах
+                parts = masked_proxy.split('@')
+                if ':' in parts[0]:
+                    auth_part = parts[0].split(':')
+                    auth_part[-1] = '***'
+                    parts[0] = ':'.join(auth_part)
+                masked_proxy = '@'.join(parts)
+            logger.info(f"🔗 OpenAI настроен с прокси: {masked_proxy}")
     
     async def get_completion(self, messages: List[Dict], model: str = "gpt-4o-mini", **kwargs) -> Dict:
         headers = {
@@ -177,12 +263,11 @@ class OpenAIProvider(BaseAIProvider):
             "max_tokens": kwargs.get('max_tokens', 1000)
         }
         
-        # Настройка клиента с прокси
-        client_kwargs = {}
-        if self.proxy_config:
-            client_kwargs['proxies'] = self.proxy_config
-            client_kwargs['timeout'] = 60.0
-        
+        client_kwargs: Dict[str, Any] = {"timeout": 60.0}
+        if self.proxy_url:
+            # httpx использует параметр 'proxy' для всех версий
+            client_kwargs['proxy'] = self.proxy_url
+            logger.info(f"🔗 Используется прокси: {self.proxy_url.split('@')[1] if '@' in self.proxy_url else self.proxy_url}")
         async with httpx.AsyncClient(**client_kwargs) as client:
             response = await client.post(
                 f"{self.base_url}/chat/completions",
@@ -331,12 +416,11 @@ class GigaChatProvider(BaseAIProvider):
 
 
 class ClaudeProvider(BaseAIProvider):
-    """Claude провайдер (через прокси)"""
+    """Claude провайдер"""
     
-    def __init__(self, api_key: str, proxy_config: Optional[Dict] = None):
+    def __init__(self, api_key: str):
         super().__init__("Claude")
         self.api_key = api_key
-        self.proxy_config = proxy_config
         self.base_url = "https://api.anthropic.com/v1"
     
     async def get_completion(self, messages: List[Dict], model: str = "claude-3-haiku-20240307", **kwargs) -> Dict:
@@ -365,12 +449,7 @@ class ClaudeProvider(BaseAIProvider):
         if system_prompt:
             payload["system"] = system_prompt.strip()
         
-        client_kwargs = {}
-        if self.proxy_config:
-            client_kwargs['proxies'] = self.proxy_config
-            client_kwargs['timeout'] = 60.0
-        
-        async with httpx.AsyncClient(**client_kwargs) as client:
+        async with httpx.AsyncClient(timeout=60.0) as client:
             response = await client.post(
                 f"{self.base_url}/messages",
                 headers=headers,

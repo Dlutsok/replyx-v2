@@ -3,22 +3,20 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import RedirectResponse, JSONResponse
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-import requests
 import logging
 import os
 
 from database import get_db, models, schemas, auth
 from validators.rate_limiter import rate_limit_api
+from integrations.email_service import email_service
+import secrets
+from datetime import datetime, timedelta
 
 # Настройка логгера
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-# Yandex OAuth настройки
-YANDEX_CLIENT_ID = os.getenv("YANDEX_CLIENT_ID")
-YANDEX_CLIENT_SECRET = os.getenv("YANDEX_CLIENT_SECRET") 
-YANDEX_REDIRECT_URI = os.getenv("YANDEX_REDIRECT_URI", "http://localhost:3000/oauth-redirect")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 def generate_confirmation_code():
@@ -29,90 +27,19 @@ def generate_confirmation_code():
 
 def send_confirmation_email(email: str, code: str):
     """Отправляет email с кодом подтверждения"""
-    # Заглушка для отправки email
-    logger.info(f"Sending confirmation email to {email} with code {code}")
-    # TODO: Реализовать реальную отправку email
+    from api.email import send_confirmation_email as send_email
+    try:
+        send_email(email, code)
+        logger.info(f"Confirmation email sent to {email}")
+    except Exception as e:
+        logger.error(f"Failed to send confirmation email to {email}: {e}")
+        raise
 
-@router.get("/auth/yandex/login")
-def yandex_login():
-    return RedirectResponse(
-        f"https://oauth.yandex.ru/authorize?response_type=code&client_id={YANDEX_CLIENT_ID}&redirect_uri={YANDEX_REDIRECT_URI}&scope=login:info login:email"
-    )
-
-@router.get("/auth/yandex/callback")
-def yandex_callback(code: str, db: Session = Depends(get_db)):
-    # Получаем access_token
-    token_resp = requests.post(
-        "https://oauth.yandex.ru/token",
-        data={
-            "grant_type": "authorization_code",
-            "code": code,
-            "client_id": YANDEX_CLIENT_ID,
-            "client_secret": YANDEX_CLIENT_SECRET,
-        },
-    )
-    token_data = token_resp.json()
-    access_token = token_data.get("access_token")
-    if not access_token:
-        return JSONResponse({"error": "Отсутствует токен доступа", "details": token_data}, status_code=400)
-    
-    # Получаем данные пользователя
-    user_resp = requests.get(
-        "https://login.yandex.ru/info",
-        headers={"Authorization": f"OAuth {access_token}"},
-    )
-    user_data = user_resp.json()
-    yandex_id = user_data.get("id")
-    email = user_data.get("default_email") or f"yandex_{yandex_id}@noemail.yandex"
-    
-    if not yandex_id:
-        return JSONResponse({"error": "Отсутствует yandex_id в данных пользователя", "details": user_data}, status_code=400)
-    
-    # 1. Ищем пользователя по yandex_id
-    user = db.query(models.User).filter(models.User.yandex_id == yandex_id).first()
-    if not user:
-        # 2. Если не найден — ищем по email
-        user = db.query(models.User).filter(models.User.email == email).first()
-        if user:
-            # Привязываем yandex_id к существующему пользователю
-            if not user.yandex_id:
-                user.yandex_id = yandex_id
-                db.commit()
-        else:
-            # 3. Если не найден и по email — создаём нового пользователя
-            user = models.User(
-                yandex_id=yandex_id,
-                email=email,
-                hashed_password="oauth_yandex",
-                role="user",
-                status="active",
-        
-            )
-            db.add(user)
-            db.commit()
-            db.refresh(user)
-            
-            # Начисляем приветственный бонус новому пользователю
-            from services.balance_service import BalanceService
-            balance_service = BalanceService(db)
-            welcome_transaction = balance_service.give_welcome_bonus(user.id)
-            
-            # Отправляем только письмо с кодом подтверждения
-            code = generate_confirmation_code()
-            user.email_confirmation_code = code
-            db.commit()
-            send_confirmation_email(user.email, code)
-    
-    # Генерируем JWT-токен
-    jwt_token = auth.create_access_token(data={"sub": str(user.id), "email": user.email})
-    
-    # Перенаправляем на фронтенд с токеном
-    return RedirectResponse(f"{FRONTEND_URL}/oauth-redirect?token={jwt_token}")
 
 @router.post("/register", response_model=schemas.UserRead)
 @rate_limit_api(limit=50, window=3600)  # 50 регистраций в час для тестирования
 def register(user: schemas.UserCreate, request: Request, db: Session = Depends(get_db)):
-    from scripts.transaction_manager import db_transaction
+    from database.utils.transaction_manager import db_transaction
     from monitoring.audit_logger import audit_log
     
     # Логируем попытку регистрации
@@ -149,10 +76,10 @@ def register(user: schemas.UserCreate, request: Request, db: Session = Depends(g
         session.add(db_user)
         session.flush()  # Получаем ID до коммита
         
-        # Начисляем приветственный бонус новому пользователю
-        from services.balance_service import BalanceService
-        balance_service = BalanceService(session)
-        welcome_transaction = balance_service.give_welcome_bonus(db_user.id)
+        # Приветственный бонус будет начислен позже через уведомление
+        # from services.balance_service import BalanceService
+        # balance_service = BalanceService(session)
+        # welcome_transaction = balance_service.give_welcome_bonus(db_user.id)
         
         # Отправка email вне транзакции для избежания долгих блокировок
         try:
@@ -190,7 +117,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), request: Request = N
     ip_address = request.client.host if request and request.client else None
     user_agent = request.headers.get('user-agent') if request else None
     
-    user = db.query(models.User).filter(models.User.email == form_data.username).first()
+    user = db.query(models.User).filter(models.User.email == form_data.username.lower()).first()
     if not user:
         logger.warning(f"User not found: {form_data.username}")
         # Логируем неудачную попытку
@@ -355,3 +282,81 @@ def logout(
     logger.info(f"User logout: {current_user.email}")
     
     return {"message": "Успешный выход из системы"}
+
+
+@router.post("/forgot-password")
+@rate_limit_api(100, 60)  # 100 попыток в минуту (тестовый режим)
+def forgot_password(request_data: schemas.PasswordResetRequest, request: Request, db: Session = Depends(get_db)):
+    """Отправка ссылки для сброса пароля"""
+    user = db.query(models.User).filter(models.User.email == request_data.email.lower()).first()
+    
+    if not user:
+        # Возвращаем успешный ответ даже если пользователь не найден (безопасность)
+        return {"message": "Если аккаунт с таким email существует, на него будет отправлена ссылка для сброса пароля"}
+    
+    # Генерируем токен для сброса пароля
+    reset_token = secrets.token_urlsafe(32)
+    reset_expires = datetime.utcnow() + timedelta(hours=24)
+    
+    # Обновляем пользователя
+    user.password_reset_token = reset_token
+    user.password_reset_expires = reset_expires
+    db.commit()
+    
+    # Отправляем email
+    reset_link = f"{FRONTEND_URL}/reset-password?token={reset_token}"
+    try:
+        email_service.send_password_reset_email(user.email, reset_link, user.first_name or "Пользователь")
+        logger.info(f"Password reset email sent to {user.email}")
+    except Exception as e:
+        logger.error(f"Failed to send password reset email: {e}")
+        # Не показываем ошибку пользователю для безопасности
+    
+    return {"message": "Если аккаунт с таким email существует, на него будет отправлена ссылка для сброса пароля"}
+
+
+@router.post("/reset-password")
+@rate_limit_api(100, 60)  # 100 попыток в минуту (тестовый режим)
+def reset_password(request_data: schemas.PasswordResetConfirm, request: Request, db: Session = Depends(get_db)):
+    """Сброс пароля по токену"""
+    user = db.query(models.User).filter(
+        models.User.password_reset_token == request_data.token,
+        models.User.password_reset_expires > datetime.utcnow()
+    ).first()
+    
+    if not user:
+        raise HTTPException(status_code=400, detail="Недействительный или истёкший токен")
+    
+    # Валидация нового пароля
+    if len(request_data.new_password) < 6:
+        raise HTTPException(status_code=400, detail="Пароль должен содержать минимум 6 символов")
+    
+    # Обновляем пароль
+    user.hashed_password = auth.get_password_hash(request_data.new_password)
+    user.password_reset_token = None
+    user.password_reset_expires = None
+    db.commit()
+    
+    logger.info(f"Password reset successful for user: {user.email}")
+    
+    return {"message": "Пароль успешно изменён"}
+
+
+@router.post("/validate-reset-token")
+@rate_limit_api(100, 60)  # 100 попыток в минуту (тестовый режим)
+def validate_reset_token(request: schemas.TokenValidationRequest, db: Session = Depends(get_db)):
+    """Проверяет действительность токена сброса пароля"""
+    token = request.token
+    
+    if not token:
+        raise HTTPException(status_code=400, detail="Токен не предоставлен")
+    
+    user = db.query(models.User).filter(
+        models.User.password_reset_token == token,
+        models.User.password_reset_expires > datetime.utcnow()
+    ).first()
+    
+    if not user:
+        raise HTTPException(status_code=400, detail="Недействительный или истёкший токен")
+    
+    return {"message": "Токен действителен", "valid": True}

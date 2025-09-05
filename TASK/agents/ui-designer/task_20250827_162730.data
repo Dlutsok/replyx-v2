@@ -1,0 +1,69 @@
+ДАТА: 2025-08-27 16:27:30
+СТАТУС: Завершено
+ЗАДАЧА: Создана концепция единого стиля для пользовательских страниц личного кабинета ChatAI MVP 11
+
+ПРОАНАЛИЗИРОВАННЫЕ КОМПОНЕНТЫ/СТРАНИЦЫ:
+- dashboard.js: dashStyles.welcomeSection с аватаром, смешанные подходы к виджетам, градиентные элементы
+- ai-assistant.js: inline стили для loading, dashStyles.welcomeSection частично, toast уведомления
+- dialogs.js: styles.pageHeader, собственная система карточек dialogCard, минималистичный подход
+- balance.js: SimplePageHeader(), кастомные компоненты BalanceCard/QuickTopupGrid, частичное использование dashStyles
+- usage.js: styles.pageControls, собственные statCard и transactionsTable, отличный от других подход
+
+СОЗДАННЫЕ КОНЦЕПЦИИ И WIREFRAMES:
+- Универсальный PageHeader: Заголовок с аватаром, actions, contextBar для всех страниц
+- Стандартизованный MetricCard: Иконка, градиентное значение, trend индикаторы
+- Адаптивная Grid система: responsive сетка для desktop/mobile
+- Layout patterns: Dashboard, Single Column, Cards Grid паттерны
+
+ДИЗАЙН РЕШЕНИЯ:
+- Цветовая схема: Фиолетовый акцент #8B5CF6, #7C3AED с белым фоном #FFFFFF
+- Типографика: H1 text-2xl sm:text-3xl font-bold, градиентные значения метрик
+- Spacing и Layout: rounded-xl для карточек, p-6 для padding, gap-6 для сеток
+- Компоненты UI: PageHeader, MetricCard, StandardCard, LoadingCard, EmptyState
+
+СОВРЕМЕННЫЕ ТРЕНДЫ И РЕФЕРЕНСЫ:
+- Источники вдохновения: Linear.app (чистый минимализм), Vercel (элегантные карточки), Stripe (профессиональная функциональность)
+- Адаптированные паттерны: мягкие тени shadow-sm/shadow-md, последовательные отступы, единая типографическая иерархия
+- UX лучшие практики: Mobile-first подход, предсказуемые интерактивные состояния, accessibility compliance
+
+ТЕХНИЧЕСКОЕ ЗАДАНИЕ ДЛЯ FRONTEND-UIUX:
+- HTML/JSX структура: PageHeader с flex items-center justify-between, MetricCard с bg-white rounded-xl
+- Tailwind классы: max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 для контейнеров, grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 для сеток
+- Responsive стратегия: Mobile (320-767px) single column, Desktop (1024px+) multi-column grids
+- Интерактивные состояния: hover:shadow-md hover:-translate-y-0.5, focus:ring-2 focus:ring-purple-500
+- Анимации Framer Motion: pageVariants с opacity/y анимациями, staggerChildren для карточек
+- Файлы для изменения: frontend/components/layout/PageHeader.js, frontend/components/common/MetricCard.js, frontend/constants/designSystem.js
+
+СЛЕДОВАНИЕ ДИЗАЙН-СИСТЕМЕ CHATAI MVP 11:
+- Светлая тема: Белый фон #FFFFFF с мягкими серыми тонами #F8FAFC для читаемости
+- Фиолетовый акцент: #8B5CF6 primary, #7C3AED hover, градиенты from-purple-600 to-purple-700
+- Закругления: rounded-xl для карточек, rounded-lg для кнопок/inputs, rounded-full для бейджей
+- Тени: Мягкие shadow-sm по умолчанию, shadow-md при hover для глубины
+- Типографика: text-2xl до text-3xl для заголовков, font-bold/semibold для иерархии
+
+ACCESSIBILITY И UX:
+- Навигация с клавиатуры: focus:ring-2 focus:ring-purple-500, role/aria атрибуты
+- Читаемость: Контрасты 4.5:1 для основного текста, 3:1 для крупного
+- Responsive design: Mobile-first с breakpoints sm:/md:/lg:/xl:
+- User scenarios: Dashboard overview, AI management, Dialog monitoring, Balance tracking, Usage analysis
+
+ФАЙЛЫ ДИЗАЙН ДОКУМЕНТАЦИИ:
+- docs/ui/UnifiedDashboardDesignSystem.md: Полная дизайн-система с компонентами, цветами, типографикой
+- Включает wireframes, Tailwind классы, responsive стратегию, accessibility guidelines
+
+ЗАВИСИМОСТИ И ИНТЕГРАЦИЯ:
+- API зависимости: Динамические метрики, пользовательские данные для персонализации
+- Состояние приложения: Loading skeletons, empty states, error boundaries
+- WebSocket интеграция: Real-time обновления метрик и статусов
+- Интеграция с backend: Данные метрик, пользовательские настройки, состояния диалогов
+
+РИСКИ И ОГРАНИЧЕНИЯ:
+- Технические ограничения: Framer Motion bundle size, сложные hover эффекты на мобильных
+- Performance соображения: Большое количество анимаций может влиять на производительность
+- Browser compatibility: CSS Grid и современные Tailwind классы требуют современных браузеров
+
+КРИТЕРИИ УСПЕХА ДЛЯ FRONTEND-UIUX:
+- Визуальная консистентность: Все страницы используют единый PageHeader и MetricCard
+- UX консистентность: Предсказуемые взаимодействия, единые loading/error состояния
+- Техническое качество: Переиспользуемые компоненты, чистый код, хорошая производительность
+- Метрики UX: Снижение cognitive load, улучшение navigation flow, повышение user satisfaction

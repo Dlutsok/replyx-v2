@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import DashboardLayout from '../components/layout/DashboardLayout';
+import { useNotifications } from '../hooks/useNotifications';
 
 export default function AITokensPage() {
     const router = useRouter();
+    const { showSuccess, showError, showWarning, showInfo } = useNotifications();
     const [tokens, setTokens] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -31,7 +33,7 @@ export default function AITokensPage() {
         }
 
         try {
-            const response = await fetch('http://localhost:8000/api/me', {
+            const response = await fetch('/api/me', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             
@@ -53,7 +55,7 @@ export default function AITokensPage() {
     const loadTokens = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:8000/api/admin/ai-tokens', {
+            const response = await fetch('/api/admin/ai-tokens', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -74,8 +76,8 @@ export default function AITokensPage() {
         
         try {
             const url = editingToken 
-                ? `http://localhost:8000/api/admin/ai-tokens/${editingToken.id}`
-                : 'http://localhost:8000/api/admin/ai-tokens';
+                ? `/api/admin/ai-tokens/${editingToken.id}`
+                : '/api/admin/ai-tokens';
             
             const method = editingToken ? 'PUT' : 'POST';
             
@@ -102,11 +104,11 @@ export default function AITokensPage() {
                 });
                 loadTokens();
             } else {
-                alert('Ошибка при сохранении токена');
+                showError('Ошибка при сохранении токена', { title: 'Ошибка' });
             }
         } catch (error) {
             console.error('Ошибка:', error);
-            alert('Ошибка при сохранении токена');
+            showError('Ошибка при сохранении токена', { title: 'Ошибка' });
         }
     };
 
@@ -129,7 +131,7 @@ export default function AITokensPage() {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:8000/api/admin/ai-tokens/${tokenId}`, {
+            const response = await fetch(`/api/admin/ai-tokens/${tokenId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -137,18 +139,18 @@ export default function AITokensPage() {
             if (response.ok) {
                 loadTokens();
             } else {
-                alert('Ошибка при удалении токена');
+                showError('Ошибка при удалении токена', { title: 'Ошибка' });
             }
         } catch (error) {
             console.error('Ошибка:', error);
-            alert('Ошибка при удалении токена');
+            showError('Ошибка при удалении токена', { title: 'Ошибка' });
         }
     };
 
     const handleToggleActive = async (tokenId, isActive) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:8000/api/admin/ai-tokens/${tokenId}`, {
+            const response = await fetch(`/api/admin/ai-tokens/${tokenId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -160,32 +162,32 @@ export default function AITokensPage() {
             if (response.ok) {
                 loadTokens();
             } else {
-                alert('Ошибка при изменении статуса токена');
+                showError('Ошибка при изменении статуса токена', { title: 'Ошибка' });
             }
         } catch (error) {
             console.error('Ошибка:', error);
-            alert('Ошибка при изменении статуса токена');
+            showError('Ошибка при изменении статуса токена', { title: 'Ошибка' });
         }
     };
 
     const setupTestTokens = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:8000/api/admin/ai-tokens/test-setup', {
+            const response = await fetch('/api/admin/ai-tokens/test-setup', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
             if (response.ok) {
                 const data = await response.json();
-                alert(data.message);
+                showSuccess(data.message);
                 loadTokens();
             } else {
-                alert('Ошибка при создании тестовых токенов');
+                showError('Ошибка при создании тестовых токенов', { title: 'Ошибка' });
             }
         } catch (error) {
             console.error('Ошибка:', error);
-            alert('Ошибка при создании тестовых токенов');
+            showError('Ошибка при создании тестовых токенов', { title: 'Ошибка' });
         }
     };
 

@@ -12,11 +12,11 @@ export default function BalanceDropdown({ balance, onClose }) {
   };
 
   // Расчет количества дней использования
-  const daysLeft = Math.floor(balance / 3 / 20); // 3₽ за запрос, ~20 запросов в день
+  const daysLeft = Math.floor(balance / 5 / 20); // 5₽ за запрос, ~20 запросов в день
   
   // Определение статуса баланса
   const getBalanceStatus = () => {
-    if (balance < 60) return 'low'; // Меньше чем на 1 день
+    if (balance < 100) return 'low'; // Меньше чем на 1 день
     if (balance < 300) return 'medium'; // Меньше чем на 5 дней
     return 'good'; // Больше 5 дней
   };

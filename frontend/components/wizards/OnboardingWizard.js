@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import styles from '../../styles/components/OnboardingWizard.module.css';
+import { useNotifications } from '../../hooks/useNotifications';
 import { 
   FiCheck, FiArrowRight, FiArrowLeft, FiX, FiUser, FiMessageSquare, 
   FiCpu, FiZap, FiTarget, FiPlay, FiStar, FiHeart, FiCoffee 
@@ -9,7 +10,7 @@ import {
 const ONBOARDING_STEPS = [
   {
     id: 1,
-    title: "Добро пожаловать в ChatAI! 🎉",
+    title: "Добро пожаловать в ReplyX! 🎉",
     description: "Мы поможем вам создать вашего первого AI-ассистента за 3 минуты",
     icon: FiPlay,
     content: "welcome"
@@ -85,6 +86,7 @@ const ASSISTANT_TEMPLATES = [
 ];
 
 export default function OnboardingWizard({ user, onComplete, onSkip }) {
+  const { showSuccess, showError, showWarning, showInfo } = useNotifications();
   const [currentStep, setCurrentStep] = useState(1);
   const [isAnimating, setIsAnimating] = useState(false);
   const [formData, setFormData] = useState({
@@ -126,8 +128,8 @@ export default function OnboardingWizard({ user, onComplete, onSkip }) {
   const createAssistant = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('access_token');
-      const response = await fetch('http://localhost:8000/api/assistants/', {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/assistants/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -142,7 +144,7 @@ export default function OnboardingWizard({ user, onComplete, onSkip }) {
 
       if (response.ok) {
         // Отмечаем онбординг как завершенный
-        await fetch('http://localhost:8000/api/users/onboarding/complete', {
+         await fetch('/api/users/onboarding/complete', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -156,7 +158,7 @@ export default function OnboardingWizard({ user, onComplete, onSkip }) {
       }
     } catch (error) {
       console.error('Error creating assistant:', error);
-      alert('Произошла ошибка при создании ассистента');
+      showError('Произошла ошибка при создании ассистента', { title: 'Ошибка' });
     } finally {
       setIsLoading(false);
     }
@@ -180,7 +182,7 @@ export default function OnboardingWizard({ user, onComplete, onSkip }) {
             <div className={styles.welcomeIcon}>
                               <FiPlay size={64} />
             </div>
-            <h2>Добро пожаловать в ChatAI!</h2>
+            <h2>Добро пожаловать в ReplyX!</h2>
             <p>Мы создадим вашего первого AI-ассистента всего за несколько шагов.</p>
             <div className={styles.benefitsList}>
               <div className={styles.benefit}>

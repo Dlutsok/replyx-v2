@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiX, FiTrash2, FiAlertTriangle, FiSend, FiMessageSquare, FiMonitor } from 'react-icons/fi';
 import WebsiteSetupWizard from '../wizards/WebsiteSetupWizard';
@@ -6,100 +7,106 @@ import WidgetSettingsModal from '../ui/WidgetSettingsModal';
 import QuickAssistantWizard from '../wizards/QuickAssistantWizard';
 import styles from '../../styles/pages/AISettings.module.css';
 
-const Modal = ({ isOpen, onClose, title, children, size = 'medium' }) => (
-  <AnimatePresence>
-    {isOpen && (
-      <>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            zIndex: 1000,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-          onClick={onClose}
-        />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: -20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: -20 }}
-          style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            backgroundColor: '#ffffff',
-            border: '1px solid #f3f4f6',
-            borderRadius: '0.75rem',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-            zIndex: 1001,
-            minWidth: size === 'small' ? '400px' : size === 'large' ? '800px' : '600px',
-            maxWidth: '90vw',
-            maxHeight: '90vh',
-            overflow: 'auto'
-          }}
-        >
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '24px 32px',
-            borderBottom: '1px solid #f3f4f6'
-          }}>
-            <h3 style={{
-              fontSize: '18px',
-              fontWeight: '600',
-              color: '#0f172a',
-              margin: '0'
+const Modal = ({ isOpen, onClose, title, children, size = 'medium' }) => {
+  if (!isOpen) return null;
+
+  const modalContent = (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 1000,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            onClick={onClose}
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -20 }}
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              backgroundColor: '#ffffff',
+              border: '1px solid #f3f4f6',
+              borderRadius: '0.75rem',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+              zIndex: 1001,
+              minWidth: size === 'small' ? '400px' : size === 'large' ? '800px' : '600px',
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              overflow: 'auto'
+            }}
+          >
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '24px 32px',
+              borderBottom: '1px solid #f3f4f6'
             }}>
-              {title}
-            </h3>
-            
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: '8px',
-                borderRadius: '0.75rem',
-                cursor: 'pointer',
-                color: '#64748b',
-                transition: 'all 0.2s'
-              }}
-              onClick={onClose}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = '#f1f5f9';
-                e.target.style.color = '#475569';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = 'transparent';
-                e.target.style.color = '#64748b';
-              }}
-            >
-              <FiX size={18} />
-            </motion.button>
-          </div>
-          
-          <div style={{
-            padding: '32px'
-          }}>
-            {children}
-          </div>
-        </motion.div>
-      </>
-    )}
-  </AnimatePresence>
-);
+              <h3 style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                color: '#0f172a',
+                margin: '0'
+              }}>
+                {title}
+              </h3>
+
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: '8px',
+                  borderRadius: '0.75rem',
+                  cursor: 'pointer',
+                  color: '#64748b',
+                  transition: 'all 0.2s'
+                }}
+                onClick={onClose}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#f1f5f9';
+                  e.target.style.color = '#475569';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.color = '#64748b';
+                }}
+              >
+                <FiX size={18} />
+              </motion.button>
+            </div>
+
+            <div style={{
+              padding: '32px'
+            }}>
+              {children}
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+
+  return createPortal(modalContent, document.body);
+};
 
 const ConfirmDeleteModal = ({ isOpen, onClose, onConfirm, title, description, itemName }) => {
   const [confirmationText, setConfirmationText] = React.useState('');
@@ -123,84 +130,82 @@ const ConfirmDeleteModal = ({ isOpen, onClose, onConfirm, title, description, it
     }
   };
 
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className={styles.modalOverlay}
-          onClick={onClose}
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -20 }}
-            className={styles.modalContent}
-            onClick={(e) => e.stopPropagation()}
+  if (!isOpen) return null;
+
+  const modalContent = (
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" style={{ zIndex: 1003 }} onClick={onClose}>
+                  <div
+        className="bg-white rounded-xl border border-gray-200/50 w-full max-w-xl shadow-xl"
+        style={{ zIndex: 1004 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Заголовок */}
+        <div className="flex items-center gap-3 p-6 border-b border-gray-200/50">
+          <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+            <FiAlertTriangle className="text-red-600" size={20} />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">
+              Удалить {itemName}?
+            </h3>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Подтверждение действия
+            </p>
+          </div>
+        </div>
+
+        {/* Содержимое */}
+        <div className="p-6 space-y-4">
+          <p className="text-gray-700 leading-relaxed">
+            Вы уверены, что хотите удалить своего ассистента?<br />
+            Это действие невозможно отменить.
+          </p>
+
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-gray-700">
+              Подтверждение
+            </label>
+            <input
+              type="text"
+              value={confirmationText}
+              onChange={(e) => setConfirmationText(e.target.value)}
+              placeholder="Я понимаю"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              autoComplete="off"
+            />
+            <p className="text-xs text-gray-500">
+              Пожалуйста, введите <span className="font-medium">Я понимаю</span>, чтобы подтвердить
+            </p>
+          </div>
+        </div>
+
+        {/* Действия */}
+        <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200/50">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-150"
           >
-            <div className={styles.modalHeader}>
-              <h3>
-                <FiAlertTriangle size={16} className={styles.alertIcon} />
-                Удалить {itemName}?
-              </h3>
-            </div>
-            
-            <div className={styles.modalBody}>
-              <div className={styles.confirmDeleteContent}>
-                <div className={styles.confirmText}>
-                  <p className={styles.confirmDescription}>
-                    Вы уверены, что хотите удалить своего агента?<br />
-                    Это действие невозможно отменить.
-                  </p>
-                  
-                  <div className={styles.confirmationSection}>
-                    <label className={styles.confirmationLabel}>
-                      Подтверждение
-                    </label>
-                    <input
-                      type="text"
-                      value={confirmationText}
-                      onChange={(e) => setConfirmationText(e.target.value)}
-                      placeholder="Я понимаю"
-                      className={styles.confirmationInput}
-                      autoComplete="off"
-                    />
-                    <p className={styles.confirmationHint}>
-                      Пожалуйста, введите <strong>Я понимаю</strong>, чтобы подтвердить
-                    </p>
-                  </div>
-                </div>
-                
-                <div className={styles.confirmActions}>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={styles.cancelButton}
-                    onClick={onClose}
-                  >
-                    Отмена
-                  </motion.button>
-                  
-                  <motion.button
-                    whileHover={isConfirmationValid ? { scale: 1.02 } : {}}
-                    whileTap={isConfirmationValid ? { scale: 0.98 } : {}}
-                    className={`${styles.deleteButton} ${!isConfirmationValid ? styles.deleteButtonDisabled : ''}`}
-                    onClick={handleConfirm}
-                    disabled={!isConfirmationValid}
-                  >
-                    <FiTrash2 size={14} />
-                    Удалить
-                  </motion.button>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+            Отмена
+          </button>
+
+          <button
+            onClick={handleConfirm}
+            disabled={!isConfirmationValid}
+            className={`px-4 py-2 text-sm font-medium text-white rounded-lg transition-all duration-150 flex items-center gap-2 ${
+              isConfirmationValid
+                ? 'bg-red-600 hover:bg-red-700 hover:shadow-md'
+                : 'bg-gray-400 cursor-not-allowed'
+            }`}
+          >
+            <FiTrash2 size={14} />
+            Удалить
+          </button>
+        </div>
+      </div>
+    </div>
   );
+
+  return createPortal(modalContent, document.body);
 };
 
 export default function ModalManager({
@@ -251,6 +256,7 @@ export default function ModalManager({
         isOpen={modals.showWebsiteSetupWizard}
         onClose={() => onCloseModal('showWebsiteSetupWizard')}
         onComplete={onCreateAssistant}
+        selectedAssistant={selectedAssistant}
       />
 
       {/* Quick Assistant Wizard */}
@@ -264,7 +270,7 @@ export default function ModalManager({
       <WidgetSettingsModal
         isOpen={modals.showWidgetSettings}
         onClose={() => onCloseModal('showWidgetSettings')}
-        assistant={selectedAssistant}
+        selectedAssistant={selectedAssistant}
         settings={widgetSettings}
         onChange={onWidgetSettingsChange}
         onSave={onSaveWidgetSettings}

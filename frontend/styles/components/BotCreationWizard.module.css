@@ -25,9 +25,88 @@
   position: relative;
 }
 
-[data-theme="dark"] .modal {
-  background: #1f2937;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+/* Отключаем темную тему на мобильных устройствах */
+@media (max-width: 768px) {
+  [data-theme="dark"] .modal {
+    background: #ffffff !important;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  [data-theme="dark"] .header {
+    border-bottom-color: #e5e7eb !important;
+  }
+
+  [data-theme="dark"] .title {
+    color: #1f2937 !important;
+  }
+
+  [data-theme="dark"] .subtitle {
+    color: #6b7280 !important;
+  }
+
+  [data-theme="dark"] .closeButton:hover {
+    background: #f3f4f6 !important;
+  }
+
+  [data-theme="dark"] .progressBar {
+    background: #f3f4f6 !important;
+  }
+
+  [data-theme="dark"] .stepNumber {
+    background: #f3f4f6 !important;
+    border-color: #e5e7eb !important;
+    color: #6b7280 !important;
+  }
+
+  [data-theme="dark"] .stepLabel {
+    color: #6b7280 !important;
+  }
+
+  [data-theme="dark"] .progressStep.active .stepLabel {
+    color: #7c3aed !important;
+  }
+}
+
+/* Темная тема только для десктопных устройств */
+@media (min-width: 769px) {
+  [data-theme="dark"] .modal {
+    background: #1f2937;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+  }
+
+  [data-theme="dark"] .header {
+    border-bottom-color: #374151;
+  }
+
+  [data-theme="dark"] .title {
+    color: #f9fafb;
+  }
+
+  [data-theme="dark"] .subtitle {
+    color: #9ca3af;
+  }
+
+  [data-theme="dark"] .closeButton:hover {
+    background: #4b5563;
+  }
+
+  [data-theme="dark"] .progressBar {
+    background: #374151;
+  }
+
+  [data-theme="dark"] .stepNumber {
+    background: #4b5563;
+    border-color: #6b7280;
+    color: #d1d5db;
+  }
+
+  [data-theme="dark"] .stepLabel {
+    color: #9ca3af;
+  }
+
+  [data-theme="dark"] .progressStep.active .stepLabel {
+    color: #a78bfa;
+  }
 }
 
 .header {
@@ -167,7 +246,7 @@
 }
 
 [data-theme="dark"] .progressStep.completed .stepLabel {
-  color: #34d399;
+  color: #8B5CF6;
 }
 
 .content {
@@ -485,8 +564,8 @@
 }
 
 [data-theme="dark"] .personalityCard.selected {
-  border-color: #10b981;
-  background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+  border-color: #7C3AED;
+  background: linear-gradient(135deg, #5B21B6 0%, #6D28D9 100%);
 }
 
 .personalityIcon {
@@ -529,8 +608,8 @@
 }
 
 [data-theme="dark"] .personalityExample {
-  color: #34d399;
-  background: #065f46;
+  color: #8B5CF6;
+  background: #5B21B6;
 }
 
 /* Tone Grid */
@@ -1028,8 +1107,8 @@
 }
 
 [data-theme="dark"] .difficultyBadge.легко {
-  background: #065f46;
-  color: #34d399;
+  background: #5B21B6;
+  color: #8B5CF6;
 }
 
 [data-theme="dark"] .difficultyBadge.средне {

@@ -5,27 +5,47 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Определяем путь к корню проекта (на уровень выше backend)
-PROJECT_ROOT = Path(__file__).parent.parent.parent
-ENV_PATH = PROJECT_ROOT / '.env'
+# Определяем пути к .env файлам (приоритет: backend/.env, затем корень проекта)
+BACKEND_ROOT = Path(__file__).parent.parent
+PROJECT_ROOT = BACKEND_ROOT.parent
+BACKEND_ENV_PATH = BACKEND_ROOT / '.env'
+PROJECT_ENV_PATH = PROJECT_ROOT / '.env'
 
-# Загружаем переменные окружения из корневого .env файла
-load_dotenv(dotenv_path=ENV_PATH, override=True)
+# Загружаем переменные окружения только из корня проекта
+load_dotenv(dotenv_path=PROJECT_ENV_PATH)
 
 # Основные настройки приложения
-SECRET_KEY = os.getenv('SECRET_KEY', 'your-secret-key')
+SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY must be set in environment variables")
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 # Настройки базы данных
 DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///./test.db')
 
-# Настройки CORS
-CORS_ORIGINS = os.getenv('CORS_ORIGINS', 'http://localhost:3000,http://localhost:3001').split(',')
+# Настройки CORS  
+CORS_ORIGINS = [
+    origin.strip() for origin in 
+    os.getenv('CORS_ORIGINS', 'https://replyx.ru,https://www.replyx.ru,http://localhost:3000,http://localhost:3001').split(',')
+    if origin.strip() != "*"
+]
 
 # Настройки email
 YANDEX_SMTP_USER = os.getenv('YANDEX_SMTP_USER')
 YANDEX_SMTP_PASS = os.getenv('YANDEX_SMTP_PASS')
+
+# Дополнительные SMTP настройки
+SMTP_SERVER = os.getenv('SMTP_SERVER', 'smtp.yandex.ru')
+SMTP_PORT = int(os.getenv('SMTP_PORT', '465'))
+SMTP_USERNAME = os.getenv('SMTP_USERNAME', YANDEX_SMTP_USER or '')
+SMTP_PASSWORD = os.getenv('SMTP_PASSWORD', YANDEX_SMTP_PASS or '')
+FROM_EMAIL = os.getenv('FROM_EMAIL', YANDEX_SMTP_USER or SMTP_USERNAME)
+FROM_NAME = os.getenv('FROM_NAME', 'ReplyX')
+
+# URL для фронтенда (используется в email ссылках)
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://replyx.ru')
 
 # Настройки site/widget
 SITE_SECRET = os.getenv('SITE_SECRET', 'site_secret_key')
@@ -42,14 +62,56 @@ TRIAL_DURATION_DAYS = int(os.getenv('TRIAL_DURATION_DAYS', '7'))
 TRIAL_MESSAGE_LIMIT = int(os.getenv('TRIAL_MESSAGE_LIMIT', '50'))
 
 # Настройки внешних сервисов
-BOT_SERVICE_URL = os.getenv('BOT_SERVICE_URL', 'http://localhost:3001')
+BOT_SERVICE_URL = os.getenv('BOT_SERVICE_URL', 'http://localhost:3002')
 
 # Настройки URL для виджетов и iframe
-FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
-BACKEND_URL = os.getenv('BACKEND_URL', 'http://localhost:8000')
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://replyx.ru')
+BACKEND_URL = os.getenv('BACKEND_URL', 'https://replyx.ru')
 
-# Настройки Yandex OAuth2
-YANDEX_CLIENT_ID = os.getenv("YANDEX_CLIENT_ID")
-YANDEX_CLIENT_SECRET = os.getenv("YANDEX_CLIENT_SECRET")
-YANDEX_REDIRECT_URI = os.getenv("YANDEX_REDIRECT_URI", "http://localhost:8000/api/auth/yandex/callback")
-FRONTEND_REDIRECT_URL = os.getenv("FRONTEND_REDIRECT_URL", "http://localhost:3000/oauth-redirect")
+
+# RAG / embeddings settings
+RAG_MAX_CONTEXT_TOKENS_BOT = int(os.getenv('RAG_MAX_CONTEXT_TOKENS_BOT', '1500'))
+RAG_MAX_CONTEXT_TOKENS_WIDGET = int(os.getenv('RAG_MAX_CONTEXT_TOKENS_WIDGET', '1200'))
+RAG_MIN_SIMILARITY = float(os.getenv('RAG_MIN_SIMILARITY', '0.5'))  # Понижено для Q&A
+RAG_TOP_K_BOT = int(os.getenv('RAG_TOP_K_BOT', '5'))
+RAG_TOP_K_WIDGET = int(os.getenv('RAG_TOP_K_WIDGET', '4'))
+
+# Handoff (Human Operator) settings
+HANDOFF_ENABLED = os.getenv('HANDOFF_ENABLED', 'true').lower() in ('true', '1', 'yes')
+HANDOFF_RECIPIENTS = os.getenv('HANDOFF_RECIPIENTS')  # Список email через запятую, если None - ищем админов в БД
+
+# Ключевые слова для автоматического запроса handoff
+HANDOFF_KEYWORDS_RU = [
+    keyword.strip() for keyword in os.getenv('HANDOFF_KEYWORDS_RU', 
+    'оператор,человек,менеджер,поддержка,помощь,жалоба,проблема,живой,специалист,консультант').split(',')
+]
+HANDOFF_KEYWORDS_EN = [
+    keyword.strip() for keyword in os.getenv('HANDOFF_KEYWORDS_EN',
+    'operator,human,manager,support,help,complaint,problem,live,specialist,consultant').split(',')
+]
+
+# Пороги для автоматического handoff
+HANDOFF_MAX_FALLBACKS = int(os.getenv('HANDOFF_MAX_FALLBACKS', '2'))  # Максимум fallback ответов подряд
+HANDOFF_MAX_RETRIES = int(os.getenv('HANDOFF_MAX_RETRIES', '2'))  # Максимум коротких ответов подряд
+
+# SLA по каналам (в минутах)
+HANDOFF_SLA_WEB_MINUTES = int(os.getenv('HANDOFF_SLA_WEB_MINUTES', '5'))
+HANDOFF_SLA_TELEGRAM_MINUTES = int(os.getenv('HANDOFF_SLA_TELEGRAM_MINUTES', '3'))
+
+# Троттлинг и лимиты
+HANDOFF_REQUEST_TTL_MINUTES = int(os.getenv('HANDOFF_REQUEST_TTL_MINUTES', '10'))  # TTL для повторных запросов
+HANDOFF_EMAIL_COOLDOWN_MINUTES = int(os.getenv('HANDOFF_EMAIL_COOLDOWN_MINUTES', '10'))  # Не чаще 1 письма в N минут на диалог
+
+# Система присутствия операторов
+OPERATOR_OFFLINE_THRESHOLD_SECONDS = int(os.getenv('OPERATOR_OFFLINE_THRESHOLD_SECONDS', '90'))  # Авто-офлайн если нет heartbeat
+OPERATOR_HEARTBEAT_INTERVAL_SECONDS = int(os.getenv('OPERATOR_HEARTBEAT_INTERVAL_SECONDS', '30'))  # Интервал heartbeat
+
+# Вместимость операторов по умолчанию
+OPERATOR_DEFAULT_MAX_CHATS_WEB = int(os.getenv('OPERATOR_DEFAULT_MAX_CHATS_WEB', '3'))
+OPERATOR_DEFAULT_MAX_CHATS_TELEGRAM = int(os.getenv('OPERATOR_DEFAULT_MAX_CHATS_TELEGRAM', '5'))
+
+# Фразы для детекции fallback
+HANDOFF_FALLBACK_PATTERNS = [
+    pattern.strip() for pattern in os.getenv('HANDOFF_FALLBACK_PATTERNS',
+    'не могу ответить,не нашёл информации,обратитесь в поддержку,не знаю,затрудняюсь ответить,недостаточно информации,не понимаю,не уверен').split(',')
+]

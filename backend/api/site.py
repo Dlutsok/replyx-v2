@@ -12,7 +12,9 @@ from datetime import datetime, timedelta
 from database import models, schemas, auth, get_db
 from ai import prompt_variations
 from ai.ai_token_manager import ai_token_manager
-from services.websocket_manager import push_site_dialog_message as ws_push_site_dialog_message
+from services.websocket_manager import push_site_dialog_message as ws_push_site_dialog_message, push_dialog_message
+from services.handoff_service import HandoffService
+from services.balance_service import BalanceService
 
 # Настройка логгера
 logger = logging.getLogger(__name__)
@@ -164,6 +166,15 @@ async def site_add_dialog_message(
     if not dialog:
         raise HTTPException(status_code=404, detail="Dialog not found")
     
+    # CHECK IF DIALOG IS TAKEN OVER - блокируем AI при запросе И взятии оператором (как в телеграме)
+    is_taken_over = getattr(dialog, 'handoff_status', 'none') in ['requested', 'active']
+    
+    # If dialog is taken over, only allow manager messages, no AI responses
+    if is_taken_over and data.get('sender') == 'user':
+        logger.info(f"Dialog {dialog_id} is taken over, blocking AI response")
+        # Don't generate AI response for taken over dialogs
+        pass
+    
     sender = data.get('sender')
     text = data.get('text')
     if not text:
@@ -202,29 +213,170 @@ async def site_add_dialog_message(
     db.commit()
     db.refresh(msg)
     
-    # НЕ отправляем сообщения пользователя через WebSocket - они уже есть в frontend
-    # Отправляем только сообщения ассистента через WebSocket
+    # Для сообщений пользователя отправляем только в админ панель
+    # НЕ отправляем в виджет, так как виджет уже добавляет оптимистично
+    if msg.sender == 'user':
+        user_message_data = {
+            "id": msg.id,
+            "sender": msg.sender,
+            "text": msg.text,
+            "timestamp": msg.timestamp.isoformat() + 'Z'
+        }
+        await push_dialog_message(dialog_id, user_message_data)
+    else:
+        # Для сообщений НЕ от пользователя (менеджер, система) отправляем в оба канала
+        message_data = {
+            "id": msg.id,
+            "sender": msg.sender,
+            "text": msg.text,
+            "timestamp": msg.timestamp.isoformat() + 'Z'
+        }
+        await push_dialog_message(dialog_id, message_data)
+        await ws_push_site_dialog_message(dialog_id, message_data)
     
     response_msg = None
-    if sender == 'user':
-        # Отправляем typing_start перед генерацией ответа
+    if sender == 'user' and not is_taken_over:
+        # АВТОТРИГГЕР: Проверяем триггерные фразы ПЕРЕД генерацией ответа
+        handoff_service = HandoffService(db)
+        trigger_keywords = ['оператор', 'человек', 'менеджер', 'поддержка', 'помощь', 'жалоба', 'проблема']
+        user_text = text.lower() if text else ''
+        
+        # Проверяем не был ли недавно освобожден диалог (избегаем ложных срабатываний)
+        recent_release = db.query(models.HandoffAudit).filter(
+            models.HandoffAudit.dialog_id == dialog_id,
+            models.HandoffAudit.to_status == 'released',
+            models.HandoffAudit.created_at > datetime.now() - timedelta(minutes=5)
+        ).first()
+        
+        should_trigger_handoff = (
+            any(keyword in user_text for keyword in trigger_keywords) and
+            not recent_release and
+            dialog.handoff_status != 'requested' and
+            dialog.handoff_status != 'active'
+        )
+        
+        if should_trigger_handoff:
+            try:
+                from uuid import uuid4
+                new_request_id = str(uuid4())
+                logger.info(f"Auto-triggering handoff for dialog {dialog_id} due to keywords: {user_text[:100]}")
+                handoff_result = handoff_service.request_handoff(
+                    dialog_id=dialog_id,
+                    reason="auto_trigger",
+                    request_id=new_request_id,
+                    last_user_text=text[:200] if text else None
+                )
+                
+                # Отправляем уведомление о запросе оператора
+                await ws_push_site_dialog_message(dialog_id, {
+                    "type": "handoff_requested",
+                    "message": "Ваш запрос передан оператору. Пожалуйста, подождите..."
+                })
+                
+                # Останавливаем генерацию AI ответа
+                await ws_push_site_dialog_message(dialog_id, {"type": "typing_stop"})
+                
+                return {
+                    "user_message": {
+                        "id": msg.id,
+                        "sender": msg.sender,
+                        "text": msg.text,
+                        "timestamp": msg.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+                    },
+                    "handoff_triggered": True,
+                    "handoff_status": handoff_result.status
+                }
+                
+            except Exception as e:
+                logger.error(f"Failed to auto-trigger handoff: {e}")
+                # НЕ продолжаем с AI ответом даже при ошибке handoff
+                return {
+                    "user_message": {
+                        "id": msg.id,
+                        "sender": msg.sender,
+                        "text": msg.text,
+                        "timestamp": msg.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+                    },
+                    "handoff_triggered": True,
+                    "handoff_error": str(e)
+                }
+        
+        # Отправляем typing_start только если handoff НЕ сработал
         await ws_push_site_dialog_message(dialog_id, {"type": "typing_start"})
         
-        # Генерируем AI ответ
+        # Списываем средства за AI сообщение ПЕРЕД генерацией ответа
+        balance_service = BalanceService(db)
+        try:
+            transaction = balance_service.charge_for_service(
+                current_user.id,
+                'widget_message',
+                f"AI сообщение в виджете (диалог #{dialog_id})",
+                msg.id  # related_id - ID пользовательского сообщения
+            )
+            logger.info(f"Списано {abs(transaction.amount)} руб. за AI сообщение в виджете пользователя {current_user.id}")
+        except ValueError as e:
+            logger.error(f"Ошибка списания средств за AI сообщение в виджете: {e}")
+            await ws_push_site_dialog_message(dialog_id, {"type": "typing_stop"})
+            raise HTTPException(
+                status_code=402,
+                detail={
+                    "error": "insufficient_funds",
+                    "message": "Недостаточно средств для отправки AI сообщения",
+                    "needsTopUp": True
+                }
+            )
+        except Exception as e:
+            logger.error(f"Ошибка списания средств за AI сообщение в виджете: {e}")
+            await ws_push_site_dialog_message(dialog_id, {"type": "typing_stop"})
+            raise HTTPException(
+                status_code=402,
+                detail={
+                    "error": "payment_failed",
+                    "message": "Ошибка списания средств. Попробуйте позже.",
+                    "needsTopUp": True
+                }
+            )
+        
+        # Генерируем AI ответ только если диалог не перехвачен
         response_msg = await generate_ai_response(dialog_id, current_user, db)
+        
+        # 🔥 ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА HANDOFF ПЕРЕД ОТПРАВКОЙ ОТВЕТА (как в телеграме)
+        dialog_after_ai = db.query(models.Dialog).filter(models.Dialog.id == dialog_id).first()
+        if dialog_after_ai and getattr(dialog_after_ai, 'handoff_status', 'none') in ['requested', 'active']:
+            logger.info(f"🛑 Диалог {dialog_id} перехвачен во время обработки AI ответа, не отправляем ответ")
+            await ws_push_site_dialog_message(dialog_id, {"type": "typing_stop"})
+            return {
+                "user_message": {
+                    "id": msg.id,
+                    "sender": msg.sender,
+                    "text": msg.text,
+                    "timestamp": msg.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+                },
+                "ai_blocked": True,
+                "reason": "dialog_taken_over_during_processing"
+            }
         
         # Отправляем typing_stop и ответ
         await ws_push_site_dialog_message(dialog_id, {"type": "typing_stop"})
         
         if response_msg:
+            # Отправляем AI ответ в оба канала (админ и виджет)
+            ai_response_data = {
+                "id": response_msg.id,
+                "sender": response_msg.sender,
+                "text": response_msg.text,
+                "timestamp": response_msg.timestamp.isoformat() + 'Z'
+            }
+            await push_dialog_message(dialog_id, ai_response_data)
             await ws_push_site_dialog_message(dialog_id, {
-                "message": {
-                    "id": response_msg.id,
-                    "sender": response_msg.sender,
-                    "text": response_msg.text,
-                    "timestamp": response_msg.timestamp.strftime('%Y-%m-%d %H:%M:%S')
-                }
+                "message": ai_response_data
             })
+    elif sender == 'user' and is_taken_over:
+        # Диалог перехвачен - только уведомляем о получении сообщения
+        await ws_push_site_dialog_message(dialog_id, {
+            "type": "message_received",
+            "message": "Ваше сообщение получено. Оператор ответит в ближайшее время."
+        })
     
     return {
         "user_message": {
@@ -247,7 +399,19 @@ def site_create_dialog(
     db: Session = Depends(get_db), 
     current_user: models.User = Depends(get_current_site_user)
 ):
-    """Создает новый site диалог"""
+    """Создает новый site диалог (идемпотентно)"""
+    # Проверяем, есть ли уже активный диалог для этого guest_id и пользователя
+    existing_dialog = db.query(models.Dialog).filter(
+        models.Dialog.guest_id == guest_id,
+        models.Dialog.user_id == current_user.id,
+        models.Dialog.ended_at.is_(None)  # только активные диалоги
+    ).order_by(models.Dialog.started_at.desc()).first()
+    
+    if existing_dialog:
+        logger.info(f"Returning existing dialog {existing_dialog.id} for guest_id={guest_id}, user_id={current_user.id}")
+        return {"id": existing_dialog.id}
+    
+    # Создаем новый диалог только если активного нет
     dialog = models.Dialog(
         user_id=current_user.id, 
         guest_id=guest_id, 
@@ -259,6 +423,7 @@ def site_create_dialog(
     db.add(dialog)
     db.commit()
     db.refresh(dialog)
+    logger.info(f"Created new dialog {dialog.id} for guest_id={guest_id}, user_id={current_user.id}")
     return {"id": dialog.id}
 
 # Widget endpoints (без авторизации)
@@ -303,12 +468,24 @@ def widget_create_dialog(
     guest_id: str = Query(...), 
     db: Session = Depends(get_db)
 ):
-    """Создает новый widget диалог"""
+    """Создает новый widget диалог (идемпотентно)"""
     # Получаем ассистента и его пользователя
     assistant = db.query(models.Assistant).filter(models.Assistant.id == assistant_id).first()
     if not assistant:
         raise HTTPException(status_code=404, detail="Assistant not found")
     
+    # Проверяем, есть ли уже активный диалог для этого guest_id и ассистента
+    existing_dialog = db.query(models.Dialog).filter(
+        models.Dialog.guest_id == guest_id,
+        models.Dialog.user_id == assistant.user_id,
+        models.Dialog.ended_at.is_(None)  # только активные диалоги
+    ).order_by(models.Dialog.started_at.desc()).first()
+    
+    if existing_dialog:
+        logger.info(f"Returning existing widget dialog {existing_dialog.id} for guest_id={guest_id}, assistant_id={assistant_id}")
+        return {"id": existing_dialog.id}
+    
+    # Создаем новый диалог только если активного нет
     dialog = models.Dialog(
         user_id=assistant.user_id, 
         guest_id=guest_id, 
@@ -320,6 +497,7 @@ def widget_create_dialog(
     db.add(dialog)
     db.commit()
     db.refresh(dialog)
+    logger.info(f"Created new widget dialog {dialog.id} for guest_id={guest_id}, assistant_id={assistant_id}")
     return {"id": dialog.id}
 
 @router.get('/widget/dialogs/{dialog_id}/messages')
@@ -379,6 +557,13 @@ async def widget_add_dialog_message(
     if not dialog:
         raise HTTPException(status_code=404, detail="Dialog not found")
     
+    # CHECK IF WIDGET DIALOG IS TAKEN OVER - блокируем AI при запросе И взятии оператором (как в телеграме)
+    is_taken_over = getattr(dialog, 'handoff_status', 'none') in ['requested', 'active']
+    
+    # If dialog is taken over, only allow manager messages, no AI responses
+    if is_taken_over and data.get('sender') == 'user':
+        logger.info(f"Widget dialog {dialog_id} is taken over, blocking AI response")
+    
     sender = data.get('sender')
     text = data.get('text')
     if not text:
@@ -390,31 +575,177 @@ async def widget_add_dialog_message(
     db.commit()
     db.refresh(msg)
     
-    # НЕ отправляем сообщения пользователя через WebSocket - они уже есть в frontend
+    # Для сообщений пользователя отправляем только в админ панель
+    # НЕ отправляем в виджет, так как виджет уже добавляет оптимистично
+    if msg.sender == 'user':
+        user_message_data = {
+            "id": msg.id,
+            "sender": msg.sender,
+            "text": msg.text,
+            "timestamp": msg.timestamp.isoformat() + 'Z'
+        }
+        await push_dialog_message(dialog_id, user_message_data)
+    else:
+        # Для сообщений НЕ от пользователя (менеджер, система) отправляем в оба канала
+        message_data = {
+            "id": msg.id,
+            "sender": msg.sender,
+            "text": msg.text,
+            "timestamp": msg.timestamp.isoformat() + 'Z'
+        }
+        await push_dialog_message(dialog_id, message_data)
+        await ws_push_site_dialog_message(dialog_id, message_data)
     
     response_msg = None
-    if sender == 'user':
-        # Отправляем typing_start перед генерацией ответа
+    if sender == 'user' and not is_taken_over:
+        # АВТОТРИГГЕР для widget: Проверяем триггерные фразы ПЕРЕД генерацией ответа
+        handoff_service = HandoffService(db)
+        trigger_keywords = ['оператор', 'человек', 'менеджер', 'поддержка', 'помощь', 'жалоба', 'проблема']
+        user_text = text.lower() if text else ''
+        
+        # Проверяем не был ли недавно освобожден диалог (избегаем ложных срабатываний)
+        recent_release = db.query(models.HandoffAudit).filter(
+            models.HandoffAudit.dialog_id == dialog_id,
+            models.HandoffAudit.to_status == 'released',
+            models.HandoffAudit.created_at > datetime.now() - timedelta(minutes=5)
+        ).first()
+        
+        should_trigger_handoff = (
+            any(keyword in user_text for keyword in trigger_keywords) and
+            not recent_release and
+            dialog.handoff_status != 'requested' and
+            dialog.handoff_status != 'active'
+        )
+        
+        if should_trigger_handoff:
+            try:
+                from uuid import uuid4
+                new_request_id = str(uuid4())
+                logger.info(f"Auto-triggering handoff for widget dialog {dialog_id} due to keywords: {user_text[:100]}")
+                handoff_result = handoff_service.request_handoff(
+                    dialog_id=dialog_id,
+                    reason="auto_trigger",
+                    request_id=new_request_id,
+                    last_user_text=text[:200] if text else None
+                )
+                
+                # Отправляем уведомление о запросе оператора
+                await ws_push_site_dialog_message(dialog_id, {
+                    "type": "handoff_requested",
+                    "message": "Ваш запрос передан оператору. Пожалуйста, подождите..."
+                })
+                
+                # Останавливаем генерацию AI ответа
+                await ws_push_site_dialog_message(dialog_id, {"type": "typing_stop"})
+                
+                return {
+                    "user_message": {
+                        "id": msg.id,
+                        "sender": msg.sender,
+                        "text": msg.text,
+                        "timestamp": msg.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+                    },
+                    "handoff_triggered": True,
+                    "handoff_status": handoff_result.status
+                }
+                
+            except Exception as e:
+                logger.error(f"Failed to auto-trigger handoff: {e}")
+                # НЕ продолжаем с AI ответом даже при ошибке handoff
+                return {
+                    "user_message": {
+                        "id": msg.id,
+                        "sender": msg.sender,
+                        "text": msg.text,
+                        "timestamp": msg.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+                    },
+                    "handoff_triggered": True,
+                    "handoff_error": str(e)
+                }
+        
+        # Отправляем typing_start только если handoff НЕ сработал
         await ws_push_site_dialog_message(dialog_id, {"type": "typing_start"})
         
-        # Генерируем AI ответ для widget
+        # Списываем средства за AI сообщение ПЕРЕД генерацией ответа (widget)
         user = db.query(models.User).filter(models.User.id == assistant.user_id).first()
+        if not user:
+            logger.error(f"User not found for assistant {assistant_id}")
+            await ws_push_site_dialog_message(dialog_id, {"type": "typing_stop"})
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        balance_service = BalanceService(db)
+        try:
+            transaction = balance_service.charge_for_service(
+                user.id,
+                'widget_message',
+                f"AI сообщение в виджете (диалог #{dialog_id})",
+                msg.id  # related_id - ID пользовательского сообщения
+            )
+            logger.info(f"Списано {abs(transaction.amount)} руб. за AI сообщение в виджете пользователя {user.id}")
+        except ValueError as e:
+            logger.error(f"Ошибка списания средств за AI сообщение в виджете: {e}")
+            await ws_push_site_dialog_message(dialog_id, {"type": "typing_stop"})
+            raise HTTPException(
+                status_code=402,
+                detail={
+                    "error": "insufficient_funds",
+                    "message": "Недостаточно средств для отправки AI сообщения",
+                    "needsTopUp": True
+                }
+            )
+        except Exception as e:
+            logger.error(f"Ошибка списания средств за AI сообщение в виджете: {e}")
+            await ws_push_site_dialog_message(dialog_id, {"type": "typing_stop"})
+            raise HTTPException(
+                status_code=402,
+                detail={
+                    "error": "payment_failed",
+                    "message": "Ошибка списания средств. Попробуйте позже.",
+                    "needsTopUp": True
+                }
+            )
+        
+        # Генерируем AI ответ для widget только если диалог не перехвачен
         user.widget_assistant_id = assistant_id
         response_msg = await generate_ai_response(dialog_id, user, db)
+        
+        # 🔥 ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА HANDOFF ПЕРЕД ОТПРАВКОЙ ОТВЕТА (как в телеграме)
+        dialog_after_ai = db.query(models.Dialog).filter(models.Dialog.id == dialog_id).first()
+        if dialog_after_ai and getattr(dialog_after_ai, 'handoff_status', 'none') in ['requested', 'active']:
+            logger.info(f"🛑 Widget диалог {dialog_id} перехвачен во время обработки AI ответа, не отправляем ответ")
+            await ws_push_site_dialog_message(dialog_id, {"type": "typing_stop"})
+            return {
+                "user_message": {
+                    "id": msg.id,
+                    "sender": msg.sender,
+                    "text": msg.text,
+                    "timestamp": msg.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+                },
+                "ai_blocked": True,
+                "reason": "dialog_taken_over_during_processing"
+            }
         
         # Отправляем typing_stop и ответ
         await ws_push_site_dialog_message(dialog_id, {"type": "typing_stop"})
         
-        # Отправляем ответ бота через WebSocket
+        # Отправляем ответ бота через WebSocket в оба канала (админ и виджет)
         if response_msg:
+            ai_response_data = {
+                "id": response_msg.id,
+                "sender": response_msg.sender,
+                "text": response_msg.text,
+                "timestamp": response_msg.timestamp.isoformat() + 'Z'
+            }
+            await push_dialog_message(dialog_id, ai_response_data)
             await ws_push_site_dialog_message(dialog_id, {
-                "message": {
-                    "id": response_msg.id,
-                    "sender": response_msg.sender,
-                    "text": response_msg.text,
-                    "timestamp": response_msg.timestamp.strftime('%Y-%m-%d %H:%M:%S')
-                }
+                "message": ai_response_data
             })
+    elif sender == 'user' and is_taken_over:
+        # Widget диалог перехвачен - только уведомляем о получении сообщения
+        await ws_push_site_dialog_message(dialog_id, {
+            "type": "message_received",
+            "message": "Ваше сообщение получено. Оператор ответит в ближайшее время."
+        })
     
     return {
         "user_message": {
@@ -527,12 +858,15 @@ async def generate_ai_response(dialog_id: int, current_user: models.User, db: Se
                 from services.embeddings_service import embeddings_service
                 
                 # Ищем релевантные чанки для запроса
+                from core.app_config import RAG_TOP_K_WIDGET
                 relevant_chunks = embeddings_service.search_relevant_chunks(
                     query=user_message,
                     user_id=current_user.id,
                     assistant_id=target_assistant.id if target_assistant else None,
-                    top_k=4,  # Меньше чанков для веб-виджета
-                    min_similarity=0.75,  # Более строгий порог
+                    top_k=RAG_TOP_K_WIDGET,
+                    min_similarity=0.5,   # Понижен порог для Q&A
+                    include_qa=True,  # Включаем Q&A поиск
+                    qa_limit=2,       # Максимум 2 Q&A результата для виджета
                     db=db
                 )
                 
@@ -570,17 +904,9 @@ async def generate_ai_response(dialog_id: int, current_user: models.User, db: Se
         
         # Добавляем релевантный контекст в промпт
         if relevant_chunks:
-            context_parts = []
-            total_tokens = 0
-            max_context_tokens = 1200  # Меньше для веб-виджета
-            
-            for chunk in relevant_chunks:
-                chunk_tokens = chunk.get('token_count', len(chunk['text']) // 4)
-                if total_tokens + chunk_tokens > max_context_tokens:
-                    break
-                
-                context_parts.append(chunk['text'])
-                total_tokens += chunk_tokens
+            from core.app_config import RAG_MAX_CONTEXT_TOKENS_WIDGET
+            from services.embeddings_service import embeddings_service
+            context_parts, total_tokens = embeddings_service.build_context_messages(relevant_chunks, max_context_tokens=RAG_MAX_CONTEXT_TOKENS_WIDGET)
             
             if context_parts:
                 docs_text = '\n---\n'.join(context_parts)
@@ -588,7 +914,6 @@ async def generate_ai_response(dialog_id: int, current_user: models.User, db: Se
                     "role": "system", 
                     "content": f"Используй следующую релевантную информацию из базы знаний для ответа. Отвечай естественно, основываясь на этих данных, но не ссылайся на источники или файлы:\n\n{docs_text}"
                 })
-                
                 logger.info(f"Added {len(context_parts)} chunks to web widget context ({total_tokens} tokens)")
         
         completion = ai_token_manager.make_openai_request(
@@ -613,6 +938,28 @@ async def generate_ai_response(dialog_id: int, current_user: models.User, db: Se
         db.commit()
         db.refresh(response_msg)
         
+        # Рассчитываем время ответа (если это первый ответ ассистента в диалоге)
+        dialog = db.query(models.Dialog).filter(models.Dialog.id == dialog_id).first()
+        if dialog and not dialog.first_response_time:
+            # Ищем первое сообщение пользователя в этом диалоге
+            first_user_msg = db.query(models.DialogMessage).filter(
+                models.DialogMessage.dialog_id == dialog_id,
+                models.DialogMessage.sender == 'user'
+            ).order_by(models.DialogMessage.timestamp).first()
+            
+            if first_user_msg:
+                response_time = (response_msg.timestamp - first_user_msg.timestamp).total_seconds()
+                dialog.first_response_time = response_time
+                db.commit()
+        
+        # Инвалидируем кэш метрик пользователя после успешного ответа ИИ
+        try:
+            from cache.redis_cache import chatai_cache
+            chatai_cache.invalidate_user_cache(current_user.id)
+            logger.info(f"Invalidated metrics cache for user {current_user.id}")
+        except Exception as e:
+            logger.warning(f"Failed to invalidate user cache: {e}")
+        
         return response_msg
     
     except Exception as e:
@@ -626,6 +973,33 @@ async def generate_ai_response(dialog_id: int, current_user: models.User, db: Se
         db.add(error_msg)
         db.commit()
         db.refresh(error_msg)
+        
+        # Рассчитываем время ответа даже для ошибок (если это первый ответ ассистента в диалоге)
+        try:
+            dialog = db.query(models.Dialog).filter(models.Dialog.id == dialog_id).first()
+            if dialog and not dialog.first_response_time:
+                # Ищем первое сообщение пользователя в этом диалоге
+                first_user_msg = db.query(models.DialogMessage).filter(
+                    models.DialogMessage.dialog_id == dialog_id,
+                    models.DialogMessage.sender == 'user'
+                ).order_by(models.DialogMessage.timestamp).first()
+                
+                if first_user_msg:
+                    response_time = (error_msg.timestamp - first_user_msg.timestamp).total_seconds()
+                    dialog.first_response_time = response_time
+                    db.commit()
+        except Exception:
+            # Игнорируем ошибки при расчёте времени ответа в блоке ошибок
+            pass
+        
+        # Инвалидируем кэш метрик пользователя после ответа ИИ (даже при ошибке)
+        try:
+            from cache.redis_cache import chatai_cache
+            chatai_cache.invalidate_user_cache(current_user.id)
+            logger.info(f"Invalidated metrics cache for user {current_user.id}")
+        except Exception as e:
+            logger.warning(f"Failed to invalidate user cache: {e}")
+        
         return error_msg
 
 # === EMBED CODE ENDPOINTS ===
