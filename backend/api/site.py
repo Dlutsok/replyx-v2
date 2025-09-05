@@ -22,7 +22,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 # WebSocket connections импортируем из websocket_manager
-from services.websocket_manager import ws_site_connections
 
 # JWT settings for site tokens
 from core.app_config import SITE_SECRET
@@ -762,44 +761,7 @@ async def widget_add_dialog_message(
         }
     }
 
-# WebSocket endpoints
-@router.websocket("/ws/site/dialogs/{dialog_id}")
-async def site_dialog_ws(
-    websocket: WebSocket, 
-    dialog_id: int, 
-    site_token: str = Query(None), 
-    db: Session = Depends(get_db)
-):
-    """WebSocket для site диалогов"""
-    print(f"🔌 WebSocket connection attempt for dialog {dialog_id}")
-    user = None
-    try:
-        user = get_current_site_user_simple(site_token, db)
-        print(f"✅ User authenticated: {user.id if user else 'None'}")
-    except Exception as e:
-        print(f"❌ WebSocket auth failed: {e}")
-        await websocket.close(code=4001)
-        return
-    
-    await websocket.accept()
-    print(f"✅ WebSocket accepted for dialog {dialog_id}")
-    
-    if dialog_id not in ws_site_connections:
-        ws_site_connections[dialog_id] = []
-    ws_site_connections[dialog_id].append(websocket)
-    print(f"📊 Total connections for dialog {dialog_id}: {len(ws_site_connections[dialog_id])}")
-    
-    try:
-        while True:
-            await websocket.receive_text()  # ping-pong, не используем входящие
-            await asyncio.sleep(0.1)
-    except WebSocketDisconnect:
-        print(f"🔌 WebSocket disconnected for dialog {dialog_id}")
-        if dialog_id in ws_site_connections:
-            ws_site_connections[dialog_id].remove(websocket)
-            print(f"📊 Remaining connections for dialog {dialog_id}: {len(ws_site_connections[dialog_id])}")
-
-# Helper functions - используем функцию из websocket_manager
+# Helper functions - используем функции из websocket_manager
 async def push_site_dialog_message(dialog_id: int, message: dict):
     """Отправляет сообщение всем подключенным WebSocket клиентам"""
     print(f"🔄 Delegating to websocket_manager.push_site_dialog_message")

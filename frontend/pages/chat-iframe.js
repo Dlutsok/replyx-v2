@@ -739,7 +739,7 @@ export default function ChatIframe() {
   }, []);
 
   useEffect(() => {
-    if (dialogId && (siteToken || assistantId) && guestId) {
+    if (dialogId && (siteToken || assistantId) && guestId && dialogLoaded) {
       setDebugInfo(`Подключаю WebSocket для диалога ${dialogId}...`);
       let wsUrl;
       const wsApiUrl = API_URL.replace('http://', 'ws://').replace('https://', 'wss://');
@@ -1041,7 +1041,7 @@ export default function ChatIframe() {
       setWs(socket);
       return () => socket.close();
     }
-  }, [dialogId, siteToken, assistantId, guestId, wsReconnectNonce]);
+  }, [dialogId, siteToken, assistantId, guestId, wsReconnectNonce, dialogLoaded]);
 
   // Запрос разрешения на уведомления (с защитой для Safari/iOS)
   useEffect(() => {
