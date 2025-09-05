@@ -12,6 +12,12 @@ const resolveBaseUrl = () => {
     const protocol = window.location.protocol;
     return `${protocol}//${host}`;
   }
+  
+  // В тестовой среде используем localhost
+  if (process.env.NODE_ENV === 'test') {
+    return 'http://localhost:8000';
+  }
+  
   return process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru';
 };
 
