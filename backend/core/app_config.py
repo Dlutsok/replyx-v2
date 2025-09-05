@@ -17,20 +17,37 @@ PROJECT_ROOT = BACKEND_ROOT.parent
 BACKEND_ENV_PATH = BACKEND_ROOT / '.env'
 PROJECT_ENV_PATH = PROJECT_ROOT / '.env'
 
-# Загружаем переменные окружения только из корня проекта
-load_dotenv(dotenv_path=PROJECT_ENV_PATH)
+# Автоопределение среды по наличию .env файла (аналогично database/connection.py)
+is_development = PROJECT_ENV_PATH.exists()
+environment_name = "development" if is_development else "production"
+
+# Загружаем переменные окружения только из корня проекта (если файл существует)
+if is_development:
+    load_dotenv(dotenv_path=PROJECT_ENV_PATH)
 
 # Основные настройки приложения (БЕЗОПАСНОЕ ЧТЕНИЕ СЕКРЕТОВ)
 SECRET_KEY = get_secret_key()  # Читает из SECRET_KEY или SECRET_KEY_FILE
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-# Настройки базы данных (с поддержкой файловых секретов)
+# Настройки базы данных (с автоопределением дефолтов)
 DB_PASSWORD = get_db_password()  # Читает из DB_PASSWORD или DB_PASSWORD_FILE
-DB_HOST = os.getenv('DB_HOST', 'localhost')
+
+if is_development:
+    # Development defaults (с .env файлом)
+    DEFAULT_DB_HOST = 'localhost'
+    DEFAULT_DB_NAME = 'chat_ai'
+    DEFAULT_DB_USER = 'dan'
+else:
+    # Production defaults (без .env файла)
+    DEFAULT_DB_HOST = '192.168.0.4'
+    DEFAULT_DB_NAME = 'replyx_production'
+    DEFAULT_DB_USER = 'gen_user'
+
+DB_HOST = os.getenv('DB_HOST', DEFAULT_DB_HOST)
 DB_PORT = os.getenv('DB_PORT', '5432') 
-DB_NAME = os.getenv('DB_NAME', 'replyx_prod')
-DB_USER = os.getenv('DB_USER', 'replyx_user')
+DB_NAME = os.getenv('DB_NAME', DEFAULT_DB_NAME)
+DB_USER = os.getenv('DB_USER', DEFAULT_DB_USER)
 
 # Формируем DATABASE_URL с учетом файловых секретов
 if DB_PASSWORD:

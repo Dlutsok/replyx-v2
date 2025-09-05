@@ -6,17 +6,40 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# 🔧 КОНФИГУРАЦИЯ БД ИЗ ПЕРЕМЕННЫХ ОКРУЖЕНИЯ
-# Для production рекомендуется:
-# - DB_HOST: адрес приватной сети БД
-# - DB_SSL_MODE: require
-# - DB_USER: отдельные роли (app_user для runtime, owner_user для миграций)
-DB_HOST = os.getenv('DB_HOST', 'localhost')
+# 🔧 АВТООПРЕДЕЛЕНИЕ СРЕДЫ И КОНФИГУРАЦИИ БД
+# Проверяем наличие .env файла в корне проекта для определения среды
+current_dir = os.path.dirname(os.path.abspath(__file__))  # /path/to/backend/database
+backend_dir = os.path.dirname(current_dir)                # /path/to/backend  
+project_root = os.path.dirname(backend_dir)               # /path/to/project
+env_file_path = os.path.join(project_root, '.env')
+
+# Определяем среду по наличию .env файла
+is_development = os.path.exists(env_file_path)
+environment_name = "development" if is_development else "production"
+
+logger.info(f"🔍 Detected environment: {environment_name}")
+logger.info(f"🔍 Looking for .env at: {env_file_path} (exists: {is_development})")
+
+# 🔧 КОНФИГУРАЦИЯ БД С АВТООПРЕДЕЛЕНИЕМ ДЕФОЛТОВ
+if is_development:
+    # Development defaults (локальная разработка с .env файлом)
+    DEFAULT_DB_HOST = 'localhost'
+    DEFAULT_DB_NAME = 'chat_ai' 
+    DEFAULT_DB_USER = 'dan'  # Твой локальный пользователь
+    DEFAULT_SSL_MODE = 'prefer'
+else:
+    # Production defaults (без .env файла, используем production настройки)
+    DEFAULT_DB_HOST = '192.168.0.4'  # Из .env.production
+    DEFAULT_DB_NAME = 'replyx_production'
+    DEFAULT_DB_USER = 'gen_user'
+    DEFAULT_SSL_MODE = 'require'
+
+DB_HOST = os.getenv('DB_HOST', DEFAULT_DB_HOST)
 DB_PORT = os.getenv('DB_PORT', '5432')
-DB_NAME = os.getenv('DB_NAME', 'chat_ai')
-DB_USER = os.getenv('DB_USER', 'dan')
+DB_NAME = os.getenv('DB_NAME', DEFAULT_DB_NAME)
+DB_USER = os.getenv('DB_USER', DEFAULT_DB_USER)
 DB_PASSWORD = os.getenv('DB_PASSWORD', '')  # Пустой пароль по умолчанию для разработки
-DB_SSL_MODE = os.getenv('DB_SSL_MODE', 'prefer')  # prefer для разработки, require для продакшена
+DB_SSL_MODE = os.getenv('DB_SSL_MODE', DEFAULT_SSL_MODE)
 
 # 🔧 НАСТРОЙКИ ПУЛА СОЕДИНЕНИЙ ДЛЯ ПРОДАКШЕНА
 POOL_SIZE = int(os.getenv('DB_POOL_SIZE', '15'))  # Оптимизировано для одного инстанса
@@ -31,8 +54,9 @@ if DB_PASSWORD:
 else:
     SQLALCHEMY_DATABASE_URL = f"postgresql+psycopg2://{DB_USER}@{DB_HOST}:{DB_PORT}/{DB_NAME}?sslmode={DB_SSL_MODE}"
 
-logger.info(f"Подключение к БД: {DB_HOST}:{DB_PORT}/{DB_NAME} (пул: {POOL_SIZE}, overflow: {MAX_OVERFLOW})")
-logger.info(f"SSL режим: {DB_SSL_MODE}, timeout: {POOL_TIMEOUT}s, recycle: {POOL_RECYCLE}s")
+logger.info(f"🔗 Подключение к БД [{environment_name}]: {DB_USER}@{DB_HOST}:{DB_PORT}/{DB_NAME}")
+logger.info(f"🔗 Параметры: SSL={DB_SSL_MODE}, пул={POOL_SIZE}, overflow={MAX_OVERFLOW}")
+logger.info(f"🔗 Таймауты: connection={POOL_TIMEOUT}s, recycle={POOL_RECYCLE}s")
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
