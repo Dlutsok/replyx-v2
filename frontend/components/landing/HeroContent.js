@@ -160,7 +160,7 @@ const HeroContent = () => {
         className={DESIGN_TOKENS.typography.sectionSubtitle + ' max-w-3xl text-left'}
         {...DESIGN_TOKENS.animation.withDelay(0.2)}
       >
-      Виджет на сайт за 5 минут без программистов
+      Виджет на сайт за 5 минут без программистов • ReplyX v2.0
       </motion.p>
 
       {/* Бейджи с ключевыми метриками */}
