@@ -29,11 +29,13 @@ backend/core/csrf_protection.py     @security-team @teamlead
 
 # ===== WORKERS (Node.js) =====
 # Новая структура workers после реорганизации
-backend/workers/                    @worker-manager-agent @backend-team
-backend/workers/master/             @worker-manager-agent @backend-team  
-backend/workers/telegram/           @worker-manager-agent @backend-team
-backend/workers/package.json        @worker-manager-agent @devops
-backend/workers/config/             @worker-manager-agent @backend-team
+workers/                            @worker-manager-agent @backend-team
+workers/master/                     @worker-manager-agent @backend-team  
+workers/telegram/                   @worker-manager-agent @backend-team
+workers/package.json                @worker-manager-agent @devops
+workers/config/                     @worker-manager-agent @backend-team
+workers/services/                   @worker-manager-agent @backend-team
+workers/scripts/                    @worker-manager-agent @devops
 
 # ===== DATABASE =====
 backend/alembic/                    @db-migrations-agent @backend-team
@@ -41,6 +43,9 @@ backend/alembic/versions/           @db-migrations-agent @backend-team
 backend/database/models.py          @db-migrations-agent @backend-team
 backend/database/schemas.py         @api-contract-agent @backend-team
 backend/alembic.ini                 @db-migrations-agent @devops
+
+# Новая миграция widget_version
+backend/alembic/versions/a1b2c3d4e5f6_add_widget_version_to_assistants.py @db-migrations-agent @backend-team @teamlead
 
 # ===== SCRIPTS & TOOLS =====
 scripts/                           @devops @teamlead
@@ -55,6 +60,11 @@ frontend/package.json              @frontend-team @devops
 frontend/pages/                    @frontend-uiux-agent @ui-designer-agent
 frontend/components/               @frontend-uiux-agent @ui-designer-agent  
 frontend/styles/                   @ui-designer-agent @frontend-team
+
+# WebSocket и Real-time компоненты
+frontend/pages/chat-iframe.js      @frontend-uiux-agent @rad-agent @backend-team
+frontend/public/widget.js          @frontend-uiux-agent @rad-agent @backend-team
+frontend/config/api.js             @frontend-uiux-agent @devops @backend-team
 
 # Admin панель
 frontend/pages/admin*              @frontend-uiux-agent @security-team
@@ -77,6 +87,10 @@ docs/runbooks/                     @rad-agent @devops
 docs/architecture/overview.md      @rad-agent @teamlead
 docs/architecture/service-catalog.md @rad-agent @teamlead
 docs/adr/                          @rad-agent @teamlead
+
+# Новые ADR после анализа кода
+docs/adr/ADR-0024-websocket-reconnection-strategy.md @rad-agent @frontend-uiux-agent @teamlead
+docs/adr/ADR-0025-api-url-configuration-strategy.md  @rad-agent @devops @teamlead
 
 # UI/UX документация
 docs/ui/                           @ui-designer-agent @rad-agent

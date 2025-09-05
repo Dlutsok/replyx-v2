@@ -127,16 +127,21 @@ async def dialog_websocket_endpoint(websocket: WebSocket, dialog_id: int, token:
 
 async def site_dialog_websocket_endpoint(websocket: WebSocket, dialog_id: int, site_token: str = Query(None), db: Session = None):
     """WebSocket endpoint для site диалогов"""
+    print(f"🔌 [Site] WebSocket connection attempt for dialog {dialog_id}")
     user = None
     try:
         user = get_current_site_user_simple(site_token, db)
     except Exception:
+        print(f"❌ [Site] Auth failed for dialog {dialog_id}")
         await websocket.close(code=4001)
         return
     await websocket.accept()
+    print(f"✅ [Site] WebSocket accepted for dialog {dialog_id}")
     ok = await _register_connection(ws_site_connections, ws_site_meta, dialog_id, websocket)
     if not ok:
         return
+    print(f"🔌 [Site] WebSocket подключён к диалогу {dialog_id}")
+    print(f"📊 [Site] Total connections for dialog {dialog_id}: {len(ws_site_connections[dialog_id])}")
     receive_task = asyncio.create_task(_receive_loop(dialog_id, websocket, ws_site_meta))
     heartbeat_task = asyncio.create_task(_heartbeat_loop(dialog_id, websocket, ws_site_meta))
     try:
@@ -144,7 +149,9 @@ async def site_dialog_websocket_endpoint(websocket: WebSocket, dialog_id: int, s
     finally:
         receive_task.cancel()
         heartbeat_task.cancel()
+        print(f"🔌 [Site] WebSocket отключён от диалога {dialog_id}")
         await _unregister_connection(ws_site_connections, ws_site_meta, dialog_id, websocket)
+        print(f"📊 [Site] Remaining connections for dialog {dialog_id}: {len(ws_site_connections.get(dialog_id, []))}")
 
 async def widget_dialog_websocket_endpoint(websocket: WebSocket, dialog_id: int, assistant_id: int, db: Session = None):
     """WebSocket endpoint для widget диалогов"""

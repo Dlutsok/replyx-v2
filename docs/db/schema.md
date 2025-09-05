@@ -90,6 +90,7 @@ erDiagram
 | is_active | BOOLEAN | DEFAULT TRUE | Статус активности ассистента |
 | website_integration_enabled | BOOLEAN | DEFAULT FALSE | Флаг интеграции с сайтом |
 | knowledge_version | INTEGER | DEFAULT 1 | Версия знаний для ленивой перезагрузки |
+| widget_version | INTEGER | DEFAULT 1, NOT NULL | Версия виджета для инкрементальных обновлений |
 | created_at | DATETIME | DEFAULT NOW() | Время создания |
 | updated_at | DATETIME | DEFAULT NOW() | Время последнего обновления |
 
@@ -541,8 +542,8 @@ CREATE EXTENSION IF NOT EXISTS vector;
 
 Database schema changes are managed through **Alembic migrations** located in `/backend/alembic/versions/`. 
 
-**Current Migration Status**: 7 production-ready migrations implemented
-**Current head**: `fb3228f45466` (pgvector performance indexes)
+**Current Migration Status**: 8 production-ready migrations implemented
+**Current head**: `a1b2c3d4e5f6` (widget version field)
 
 **Production-Ready Migration Chain**:
 1. `66ea5c9e3d91` - Initial baseline schema from current models
@@ -551,8 +552,9 @@ Database schema changes are managed through **Alembic migrations** located in `/
 4. `c4132f66258f` - Complete unique constraints fix (remaining tables)
 5. `23081a5beb71` - Add users email index (final constraint fixes)
 6. `fb3228f45466` - **pgvector performance indexes (CONCURRENTLY, production-safe)**
+7. `a1b2c3d4e5f6` - **Add widget_version to assistants (WebSocket reconnection support)**
 
-**Additional Production Migrations**: All 7 migrations use production-safe practices including CONCURRENT index creation to ensure zero-downtime deployments.
+**Additional Production Migrations**: All 8 migrations use production-safe practices including CONCURRENT index creation to ensure zero-downtime deployments.
 
 **Production Status**: ✅ **READY FOR DEPLOYMENT**
 - Perfect autogenerate noop achieved
