@@ -151,7 +151,7 @@ jobs:
       - name: Run AI/ML tests
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_TEST }}
-          AI_TESTS_DIR_HAS_FILES: ${{ hashFiles('tests/backend/ai/**') }}
+          AI_TESTS_DIR_HAS_FILES: ${{ hashFiles('tests/backend/ai/**') != '' }}
           DATABASE_URL: postgresql://replyx_test:test_password@localhost:5432/replyx_test
         if: env.AI_TESTS_DIR_HAS_FILES != '' && env.OPENAI_API_KEY != ''
         run: |
@@ -181,7 +181,7 @@ jobs:
   frontend-tests:
     name: Frontend Tests
     needs: setup
-    if: (needs.setup.outputs.frontend-changed == 'true' || needs.setup.outputs.tests-changed == 'true') && hashFiles('tests/frontend/package.json') != ''
+    if: ${{ needs.setup.outputs.frontend-changed == 'true' || needs.setup.outputs.tests-changed == 'true' }}
     runs-on: ubuntu-latest
     
     steps:
