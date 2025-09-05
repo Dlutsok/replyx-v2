@@ -260,52 +260,27 @@
         return;
       }
       
-      // ОБЯЗАТЕЛЬНАЯ серверная проверка перед инициализацией
+      // Сначала локальная проверка, потом серверная (как дополнительная)
       const currentDomain = window.location.hostname.toLowerCase().replace(/^www\./, '');
+      const allowedDomains = payload.allowed_domains
+        .split(',')
+        .map(domain => domain.trim().toLowerCase())
+        .map(domain => domain.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, ''))
+        .filter(domain => domain.length > 0);
       
-      try {
-        const response = await fetch(this.config.apiUrl + '/api/validate-widget-token', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            token: this.config.siteToken,
-            domain: currentDomain
-          })
-        });
-        
-        const validation = await response.json();
-        
-        if (!validation.valid) {
-          console.warn('[ReplyX Widget] Серверная валидация не пройдена:', validation.reason);
-          if (validation.reason === 'Domain not allowed') {
-            console.warn('[ReplyX Widget] Домен не разрешен. Разрешенные домены:', validation.allowed_domains);
-          }
-          return;
-        }
-        
-        console.log('[ReplyX Widget] ✅ Серверная валидация пройдена');
-        
-      } catch (error) {
-        console.error('[ReplyX Widget] Ошибка серверной проверки, используем локальную:', error);
-        
-        // Fallback на локальную проверку при ошибке сети
-        const allowedDomains = payload.allowed_domains
-          .split(',')
-          .map(domain => domain.trim().toLowerCase())
-          .map(domain => domain.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, ''))
-          .filter(domain => domain.length > 0);
-        
-        const isLocallyAllowed = allowedDomains.some(allowedDomain => 
-          currentDomain === allowedDomain || currentDomain.endsWith('.' + allowedDomain)
-        );
-        
-        if (!isLocallyAllowed) {
-          console.error('[ReplyX Widget] Локальная проверка не пройдена');
-          return;
-        }
+      const isLocallyAllowed = allowedDomains.some(allowedDomain => 
+        currentDomain === allowedDomain || currentDomain.endsWith('.' + allowedDomain)
+      );
+      
+      if (!isLocallyAllowed) {
+        console.error('[ReplyX Widget] Локальная проверка не пройдена');
+        return;
       }
+      
+      console.log('[ReplyX Widget] ✅ Локальная валидация пройдена');
+      
+      // Дополнительная серверная проверка (асинхронно, не блокирует инициализацию)
+      this.validateTokenOnServer(currentDomain);
       
       // Гейтинг: если devOnly=true, инициализируем только при совпадении ключа в localStorage
       try {
@@ -317,8 +292,14 @@
         }
       } catch (e) { /* no-op */ }
       
-      // Получаем настройки виджета перед инициализацией
-      const widgetConfig = await this.fetchWidgetConfig();
+      // Получаем настройки виджета перед инициализацией (с fallback)
+      let widgetConfig = null;
+      try {
+        widgetConfig = await this.fetchWidgetConfig();
+      } catch (error) {
+        console.warn('[ReplyX Widget] Используем настройки по умолчанию из-за ошибки:', error);
+        // Продолжаем с настройками по умолчанию
+      }
       
       // Инициализируем виджет только после успешной валидации
       this.createContainer();

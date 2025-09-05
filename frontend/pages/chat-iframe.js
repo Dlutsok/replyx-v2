@@ -386,6 +386,8 @@ export default function ChatIframe() {
   const [creatingDialog, setCreatingDialog] = useState(false);
   const reconnectAttempts = useRef(0);
   const maxReconnectAttempts = 5;
+  // Используем state-нонс для безопасного переподключения без перезагрузки iframe
+  const [wsReconnectNonce, setWsReconnectNonce] = useState(0);
 
   // HANDOFF FUNCTION - Запрос оператора
   const requestHandoff = async () => {
@@ -1027,9 +1029,9 @@ export default function ChatIframe() {
           
           setDebugInfo(`🔄 Переподключение через ${Math.round(delay/1000)}с (попытка ${reconnectAttempts.current}/${maxReconnectAttempts})`);
           
+          // Триггерим повторное подключение без перезагрузки iframe
           setTimeout(() => {
-            // Принудительно перезапускаем WebSocket
-            location.reload();
+            setWsReconnectNonce((n) => n + 1);
           }, delay);
         } else if (reconnectAttempts.current >= maxReconnectAttempts) {
           setDebugInfo(`❌ Максимум попыток переподключения достигнут`);
@@ -1039,7 +1041,7 @@ export default function ChatIframe() {
       setWs(socket);
       return () => socket.close();
     }
-  }, [dialogId, siteToken, assistantId, guestId]);
+  }, [dialogId, siteToken, assistantId, guestId, wsReconnectNonce]);
 
   // Запрос разрешения на уведомления (с защитой для Safari/iOS)
   useEffect(() => {
