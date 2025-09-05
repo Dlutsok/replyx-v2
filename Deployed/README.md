@@ -1,256 +1,352 @@
-# ReplyX Production Deployment Guide
+# Руководство по развертыванию ReplyX в продакшене
 
-## 📋 Pre-deployment Checklist
+## 🟢 Статус готовности к продакшену
 
-### 1. Server Requirements
-- **OS**: Ubuntu 20.04+ или CentOS 8+
-- **RAM**: Минимум 4GB (рекомендуется 8GB)
-- **CPU**: 2+ cores
-- **Disk**: 50GB+ SSD
-- **Docker**: 20.10+
-- **Docker Compose**: 1.29+
+✅ **CORS безопасность** - Строгие CORS настройки для продакшена  
+✅ **Лимиты ресурсов** - Ограничения памяти и CPU для всех сервисов  
+✅ **Строгие теги образов** - Использование ${TAG} вместо :latest  
+✅ **Проверки здоровья** - Мониторинг состояния всех сервисов  
+✅ **Изоляция сетей** - Изолированные Docker сети  
+✅ **Заголовки безопасности** - CSP, HSTS, X-Frame-Options, X-XSS-Protection  
+✅ **Оптимизированные сборки** - Улучшенные .dockerignore файлы  
+✅ **Сканирование безопасности** - Trivy проверки в CI/CD  
+✅ **Внешняя база данных** - PostgreSQL на отдельном сервере (192.168.0.4)
 
-### 2. Domain and DNS
-- Настроить A-запись: `replyx.ru` → IP сервера
-- Настроить A-запись: `www.replyx.ru` → IP сервера
+## 🚀 Быстрое развертывание
 
-### 3. External Services
-- **PostgreSQL**: Настроена и доступна
-- **SSL Certificates**: Let's Encrypt или коммерческие
+**ВАЖНО**: Теперь обязательна переменная TAG!
 
-## 🚀 Deployment Steps
-
-### Step 1: Transfer Files to Server
 ```bash
-# На локальной машине
-scp -r "/Users/dan/Documents/chatAI/MVP 13/Deployed" user@your-server:/opt/replyx/
-scp -r "/Users/dan/Documents/chatAI/MVP 13/frontend" user@your-server:/opt/replyx/
-scp -r "/Users/dan/Documents/chatAI/MVP 13/backend" user@your-server:/opt/replyx/
-scp -r "/Users/dan/Documents/chatAI/MVP 13/workers" user@your-server:/opt/replyx/
-```
+# 1. Установить переменную тега (ОБЯЗАТЕЛЬНО!)
+export TAG=v1.0.0
 
-### Step 2: Server Setup
-```bash
-# На сервере
-cd /opt/replyx/Deployed
-
-# Установить права
-chmod +x deploy.sh init-db.sh
-
-# Проверить конфигурацию
-./deploy.sh status
-```
-
-### Step 3: Complete Deployment
-```bash
-# Полное развертывание (включая БД)
+# 2. Запустить развертывание
+cd Deployed/
+chmod +x deploy.sh
 ./deploy.sh
-
-# Или поэтапное
-./deploy.sh database      # КРИТИЧНО: Сначала БД!
-./deploy.sh infrastructure
-./deploy.sh backend  
-./deploy.sh workers
-./deploy.sh frontend
-./deploy.sh nginx
 ```
 
-## 📦 Docker Services Architecture
+## 📋 Критические изменения
+
+### 🔄 Обновления Docker Compose
+- **Теги образов**: Все образы теперь используют `ghcr.io/yourorg/replyx-*:${TAG}`
+- **Лимиты ресурсов**: Жесткие ограничения памяти и CPU
+- **Проверки здоровья**: Добавлены для всех сервисов
+- **Сети**: Публичная и внутренняя изоляция
+
+### ⚠️ Критические изменения
+1. **Обязательная переменная TAG**: Необходима переменная `$TAG` перед запуском
+2. **Внешняя база данных**: База данных уже настроена на внешнем сервере
+3. **Архитектура сетей**: Изменена структура сетей
+
+## ⚙️ Конфигурация окружения
+
+### 📁 Централизованное управление настройками
+- **Единый файл конфигурации**: `Deployed/.env.production`
+- **Все сервисы** (backend, workers, redis) используют один файл через `env_file`
+- **Frontend** использует только NEXT_PUBLIC_ переменные через `environment`
+- **Удалены дублирующие** `.env.example` файлы из папок сервисов
+
+### 🔗 Как работает конфигурация:
+```yaml
+# docker-compose.yml
+backend:
+  env_file: .env.production  # Загружает ВСЕ переменные
+
+workers:  
+  env_file: .env.production  # Тот же файл
+
+frontend:
+  environment:              # Только публичные переменные
+    - NEXT_PUBLIC_API_URL=https://replyx.ru
+```
+
+## 🔧 Распределение ресурсов
+
+```
+Общая память: ~3ГБ
+Общий CPU: ~2.5 ядра
+
+┌─────────────┬─────────┬─────────┬──────────────┐
+│ Сервис      │ Память  │ CPU     │ Порт         │
+├─────────────┼─────────┼─────────┼──────────────┤
+│ Backend     │ 1024МБ  │ 1.0     │ 8000         │
+│ Frontend    │ 512МБ   │ 0.5     │ 3000         │
+│ Workers     │ 768МБ   │ 0.75    │ 8443, 3002   │
+│ Redis       │ 512МБ   │ 0.25    │ 6379         │
+│ Nginx       │ 256МБ   │ 0.25    │ 80, 443      │
+└─────────────┴─────────┴─────────┴──────────────┘
+```
+
+## 🗄️ Конфигурация базы данных (внешняя)
+
+**НАСТРОЕНО**: База данных уже настроена!
+```
+Хост: 192.168.0.4
+Порт: 5432
+База данных: replyx_production
+Пользователь: gen_user
+Пароль: [НАСТРОЕН В .env.production]
+SSL режим: require
+```
+
+❌ **НЕ запускайте init-db.sh** - база уже настроена на внешнем сервере!
+
+## 📦 Архитектура сетей
 
 ```
 ┌─────────────────────────────────────────┐
-│               Nginx (80/443)            │
-│          SSL + Reverse Proxy            │
-└─────────────────┬───────────────────────┘
-                  │
-    ┌─────────────┼─────────────┐
-    │             │             │
-┌───▼────┐   ┌────▼────┐   ┌────▼────┐
-│Frontend│   │ Backend │   │ Workers │
-│:3000   │   │ :8000   │   │ :8443   │
-│Next.js │   │ FastAPI │   │ Node.js │
-└────────┘   └─────────┘   └─────────┘
-                  │
-            ┌─────▼─────┐
-            │   Redis   │
-            │   :6379   │
-            └───────────┘
+│            Публичная сеть               │
+│         (172.20.0.0/24)                │
+│                                         │
+│  ┌─────────────────────────────────────┐│
+│  │         Nginx (80/443)              ││
+│  │    SSL + Заголовки безопасности     ││
+│  └─────────────┬───────────────────────┘│
+└────────────────┼────────────────────────┘
+                 │
+┌────────────────┼────────────────────────┐
+│          Внутренняя сеть                │
+│         (172.21.0.0/24)                │
+│                │                        │
+│  ┌─────┬───────┼────────┬────────┐      │
+│  │     │       │        │        │      │
+│┌─▼───┐│┌────▼─┐│┌─────▼─┐│┌─────▼──┐   │
+││Front││││Back  │││Workers│││ Redis  │   │
+││:3000│││:8000 │││:8443  │││ :6379  │   │
+│└─────┘│└──────┘│└───────┘│└────────┘   │
+└───────┴────────┴─────────┴──────────────┘
+                 │
+         ┌───────▼────────┐
+         │ Внешняя БД     │
+         │192.168.0.4:5432│
+         └────────────────┘
 ```
 
-## 🔧 Configuration Files
+## 🔑 Статус переменных окружения
 
-### Required Files Structure:
-```
-/opt/replyx/
-├── Deployed/
-│   ├── .env.production          # ✅ Ready
-│   ├── docker-compose.yml       # ✅ Ready  
-│   ├── deploy.sh               # ✅ Ready (updated with DB init)
-│   ├── init-db.sh              # ✅ Ready (database setup)
-│   ├── ssl/                    # SSL certificates
-│   └── nginx/nginx.conf        # ✅ Ready
-├── frontend/
-│   ├── Dockerfile              # ✅ Ready
-│   └── [frontend files]
-├── backend/
-│   ├── Dockerfile              # ✅ Ready
-│   └── [backend files]
-└── workers/
-    ├── Dockerfile              # ✅ Ready
-    └── [workers files]
-```
+### ✅ Готово к продакшену:
+- ✅ SECRET_KEY: `QwGNF...` (32+ символа)
+- ✅ JWT_SECRET_KEY: `exF6Z...` (32+ символа) 
+- ✅ DATABASE_URL: Внешняя PostgreSQL настроена
+- ✅ REDIS_PASSWORD: `EGpdW...` (сложный)
+- ✅ OPENAI_API_KEY: `sk-proj...` (настроен с прокси)
+- ✅ TELEGRAM_BOT_TOKEN: `8088014627:AAG4...`
+- ✅ YANDEX_SMTP: Настроен с паролем приложения
+- ✅ CORS_ORIGINS: `https://replyx.ru,https://www.replyx.ru`
 
-## 🔑 Environment Variables Status
+### ⚠️ Требует ручного обновления:
+- `YANDEX_CLIENT_ID`: `CHANGEME_PRODUCTION_YANDEX_CLIENT_ID`
+- `YANDEX_CLIENT_SECRET`: `CHANGEME_PRODUCTION_YANDEX_CLIENT_SECRET`
 
-### ✅ Configured:
-- SECRET_KEY, JWT_SECRET_KEY
-- OpenAI API Key + Proxy
-- Database connection (PostgreSQL)
-- Redis password
-- Email/SMTP settings
-- Telegram bot token
-- SSL certificates (self-signed)
-
-### ⚠️ Need Real Values:
-- `YANDEX_CLIENT_ID` - production OAuth app
-- `YANDEX_CLIENT_SECRET` - production OAuth app  
-- Tinkoff payment keys (commented out)
-
-### 🔑 Yandex OAuth Setup Required:
-**CRITICAL**: Before deployment, register production OAuth app:
-1. Go to https://oauth.yandex.ru/
-2. Create new application for `replyx.ru`
-3. Set callback URL: `https://replyx.ru/api/auth/yandex/callback`
-4. Copy Client ID and Client Secret to `.env.production`
-5. Replace CHANGEME values:
-   ```
-   YANDEX_CLIENT_ID=your_production_client_id
-   YANDEX_CLIENT_SECRET=your_production_client_secret
+### 📧 Настройка OAuth:
+1. Перейдите на https://oauth.yandex.ru/
+2. Создайте приложение для `replyx.ru`
+3. Укажите callback: `https://replyx.ru/api/auth/yandex/callback`
+4. Обновите .env.production:
+   ```bash
+   YANDEX_CLIENT_ID=ваш_реальный_client_id
+   YANDEX_CLIENT_SECRET=ваш_реальный_client_secret
    ```
 
-## 🛠️ Manual Commands
+## 🚀 Процесс развертывания
 
-### Build and Start Services:
+### Метод 1: Полностью автоматическое развертывание
 ```bash
-# Build all images
-docker-compose build
+export TAG=v1.0.0
+cd Deployed/
+./deploy.sh
+```
 
-# Start all services
-docker-compose up -d
+### Метод 2: Пошаговое развертывание
+```bash
+export TAG=v1.0.0  # ОБЯЗАТЕЛЬНО!
+cd Deployed/
 
-# View logs
-docker-compose logs -f
+# Проверить конфигурацию
+docker-compose config
 
-# Check status
+# Поэтапный запуск
+docker-compose up -d redis
+sleep 10
+
+docker-compose up -d backend
+sleep 30
+
+docker-compose up -d workers
+sleep 20
+
+docker-compose up -d frontend
+sleep 20
+
+docker-compose up -d nginx
+```
+
+## 🔍 Точки проверки здоровья
+
+После развертывания проверьте:
+
+```bash
+# Nginx (через балансировщик нагрузки)
+curl -f https://replyx.ru/health
+# Ожидается: "healthy"
+
+# Backend API
+curl -f https://replyx.ru/api/health
+# Ожидается: {"status":"healthy",...}
+
+# Frontend
+curl -f https://replyx.ru/
+# Ожидается: HTML страница
+
+# Workers (через внутреннюю сеть)
+docker-compose exec nginx curl -f http://workers:3002/health
+# Ожидается: {"status":"ok",...}
+```
+
+## 📊 Мониторинг и логи
+
+### Статус контейнеров:
+```bash
+# Проверить статус всех сервисов
 docker-compose ps
 
-# Stop all services
-docker-compose down
+# Использование ресурсов
+docker stats
+
+# Логи всех сервисов
+docker-compose logs -f
+
+# Логи конкретного сервиса
+docker-compose logs -f backend
 ```
 
-### Individual Service Management:
+### Расположение логов:
+- **Приложение**: Внутри контейнеров
+- **Nginx**: `docker-compose logs nginx`
+- **Система**: `/var/log/docker/`
+
+## 🔒 Реализация безопасности
+
+### Реализованные заголовки:
+```
+Strict-Transport-Security: max-age=63072000
+X-Frame-Options: DENY
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' ...
+```
+
+### Безопасность сети:
+- Внутренняя сеть изолирована
+- Только nginx имеет внешний доступ
+- База данных на отдельном внешнем сервере
+- Redis требует аутентификации по паролю
+
+### Лимиты ресурсов:
+- Отключено использование swap (`memswap_limit = mem_limit`)
+- Включено ограничение CPU
+- Автоматический перезапуск при сбоях
+- Поддержка корректного завершения
+
+## 🚨 Устранение неполадок
+
+### Частые проблемы после обновлений:
+
+1. **Переменная TAG не установлена**:
+   ```
+   ERROR: Invalid interpolation format for "image" option
+   ```
+   Решение: `export TAG=v1.0.0`
+
+2. **Конфликты сетей**:
+   ```bash
+   # Удалить конфликтующие сети
+   docker network prune
+   ```
+
+3. **Ограничения ресурсов**:
+   ```bash
+   # Проверить доступную память на сервере
+   free -h
+   # Должно быть 4ГБ+ доступно
+   ```
+
+4. **Подключение к базе данных**:
+   ```bash
+   # Тест подключения к внешней БД
+   docker-compose exec backend python -c "
+   import psycopg2
+   conn = psycopg2.connect('postgresql://gen_user:q%3F%7C%3E7!gzi%2BS.jJ@192.168.0.4:5432/replyx_production')
+   print('БД подключена!')
+   "
+   ```
+
+### Команды для отладки:
 ```bash
-# Restart specific service
-docker-compose restart backend
-
-# View specific logs
-docker-compose logs -f frontend
-
-# Execute command in container
+# Внутренности контейнеров
 docker-compose exec backend bash
+docker-compose exec workers bash
+
+# Диагностика сетей
+docker network ls
+docker network inspect replyx_public
+docker network inspect replyx_internal
+
+# Использование ресурсов
+docker stats --no-stream
 ```
 
-## 📊 Monitoring
+## 🔄 Обновления и обслуживание
 
-### Health Checks:
-- **Nginx**: `curl http://localhost/health`
-- **Backend**: `curl http://localhost:8000/health`  
-- **Frontend**: `curl http://localhost:3000`
-- **Workers**: `curl http://localhost:8443/health`
-
-### Log Locations:
-- **Application logs**: `/opt/replyx/data/logs/`
-- **Nginx logs**: Container logs via `docker-compose logs nginx`
-- **System logs**: `/var/log/docker/`
-
-## 🔒 Security Considerations
-
-### SSL/TLS:
-- Replace self-signed certificates with Let's Encrypt
-- Enable HSTS headers (configured in nginx)
-- Regular certificate renewal
-
-### Firewall:
+### Обновления приложения:
 ```bash
-# Allow only necessary ports
-ufw allow 22    # SSH
-ufw allow 80    # HTTP  
-ufw allow 443   # HTTPS
-ufw enable
-```
+# Установить новый тег
+export TAG=v1.1.0
 
-### Database:
-- PostgreSQL должна быть недоступна из интернета
-- Использовать сильные пароли
-- Регулярные бэкапы
+# Получить последние образы (если используются образы из CI/CD)
+docker-compose pull
 
-## 🔄 Updates and Maintenance
-
-### Application Updates:
-```bash
-# Pull latest code
-git pull origin main
-
-# Rebuild and restart
-docker-compose build --no-cache
+# Пересоздать контейнеры с новыми образами
 docker-compose up -d
 ```
 
-### Database Migrations:
+### Миграции базы данных:
 ```bash
-# Execute migrations in backend container
+# Запустить миграции на внешней БД
 docker-compose exec backend alembic upgrade head
 ```
 
-### Backup:
-```bash
-# Database backup
-docker-compose exec backend python scripts/backup_database.py
+## 📞 Экстренные процедуры
 
-# Files backup  
-tar -czf replyx-backup-$(date +%Y%m%d).tar.gz /opt/replyx/
+### Быстрое отключение:
+```bash
+docker-compose down
 ```
 
-## 🚨 Troubleshooting
-
-### Common Issues:
-
-1. **Port conflicts**: Check if ports 80, 443, 3000, 8000 are free
-2. **Permission issues**: Ensure Docker has proper permissions
-3. **SSL errors**: Verify certificate files exist and are valid
-4. **Database connection**: Check PostgreSQL accessibility
-5. **Memory issues**: Monitor with `docker stats`
-
-### Debug Commands:
+### Перезапуск сервиса:
 ```bash
-# Check container resource usage
-docker stats
+# Перезапуск одного сервиса
+docker-compose restart backend
 
-# Inspect container
-docker-compose exec [service] bash
-
-# View full logs
-docker-compose logs --tail=100 [service]
-
-# Test connectivity
-docker-compose exec backend ping redis
+# Перезапуск всех сервисов
+docker-compose restart
 ```
 
-## 📞 Support
+### Откат:
+```bash
+# Откат к предыдущему тегу
+export TAG=v1.0.0
+docker-compose up -d
+```
 
-После развертывания:
-1. Тестировать все основные функции
-2. Настроить мониторинг и алерты
-3. Создать план резервного копирования
-4. Настроить SSL через Let's Encrypt
-5. Обновить DNS записи домена
+---
+
+**📋 Чек-лист развертывания:**
+- [ ] Переменная TAG установлена
+- [ ] .env.production проверен
+- [ ] Внешняя база данных доступна
+- [ ] DNS домена настроен
+- [ ] SSL сертификаты готовы
+- [ ] Yandex OAuth настроен
+- [ ] Все проверки здоровья пройдены

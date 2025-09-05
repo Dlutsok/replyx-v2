@@ -48,3 +48,25 @@ docs/
 
 # Alembic temp files
 alembic.ini.bak
+
+# Дополнительная оптимизация сборки
+*.md
+.mypy_cache/
+.nox/
+htmlcov/
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# Системные файлы
+*~
+
+# Security scanning artifacts
+.security/
+.trivy/
+
+# Deployment files
+Deployed/
+docker-compose*.yml
+!Dockerfile

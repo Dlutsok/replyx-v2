@@ -32,32 +32,16 @@ const nextConfig = {
     },
   }),
   
-  // CORS и безопасность
+  // Заголовки безопасности (БЕЗ CORS - используем DynamicCORSMiddleware в бэкенде)
   async headers() {
     return [
       {
-        // Для iframe страниц - разрешаем загрузку из любого источника
+        // Для iframe страниц - только базовые заголовки безопасности
         source: '/chat-iframe',
         headers: [
           {
-            key: 'Access-Control-Allow-Origin',
-            value: '*',
-          },
-          {
-            key: 'Access-Control-Allow-Methods',
-            value: 'GET, POST, PUT, DELETE, OPTIONS',
-          },
-          {
-            key: 'Access-Control-Allow-Headers',
-            value: 'Content-Type, Authorization, X-Requested-With',
-          },
-          {
-            key: 'Access-Control-Allow-Credentials',
-            value: 'true',
-          },
-          {
             key: 'Content-Security-Policy',
-            value: "frame-ancestors *; default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: *;",
+            value: "frame-ancestors 'self' https://replyx.ru https://www.replyx.ru; default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:",
           },
           {
             key: 'X-Content-Type-Options',
@@ -70,6 +54,7 @@ const nextConfig = {
         ],
       },
       {
+        // Для всех остальных страниц - стандартные заголовки безопасности
         source: '/((?!chat-iframe).*)',
         headers: [
           {
@@ -83,6 +68,10 @@ const nextConfig = {
           {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: "frame-ancestors 'self';",
           },
         ],
       },

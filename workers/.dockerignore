@@ -46,3 +46,27 @@ pids
 
 # Yarn Integrity file
 .yarn-integrity
+
+# Дополнительная оптимизация сборки
+*.md
+.eslintcache
+.nyc_output
+node_modules/.cache/
+.pnp
+.pnp.js
+
+# TypeScript
+*.tsbuildinfo
+
+# Системные файлы
+*~
+.npmrc
+
+# Security scanning artifacts
+.security/
+.trivy/
+
+# Deployment files
+Deployed/
+docker-compose*.yml
+!Dockerfile

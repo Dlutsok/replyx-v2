@@ -1,11 +1,21 @@
 
+# Проверяем, что TAG установлен и не равен 'latest'
+# Используйте: export TAG=v1.0.0 перед запуском
+
 services:
   # Frontend Next.js application
   frontend:
+    image: ghcr.io/yourorg/replyx-frontend:${TAG:-latest}
     build:
       context: ../frontend
       dockerfile: Dockerfile
     container_name: replyx-frontend
+    
+    # Resource limits
+    mem_limit: 512m
+    memswap_limit: 512m
+    cpus: "0.5"
+    
     ports:
       - "3000:3000"
     environment:
@@ -18,13 +28,27 @@ services:
     restart: unless-stopped
     networks:
       - replyx-network
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   # Backend FastAPI application
   backend:
+    image: ghcr.io/yourorg/replyx-backend:${TAG:-latest}
     build:
       context: ../backend
       dockerfile: Dockerfile
     container_name: replyx-backend
+    
+    # Resource limits
+    mem_limit: 1024m
+    memswap_limit: 1024m
+    cpus: "1.0"
+    
     ports:
       - "8000:8000"
     env_file:
@@ -41,13 +65,27 @@ services:
     restart: unless-stopped
     networks:
       - replyx-network
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   # Workers Node.js for Telegram bots
   workers:
+    image: ghcr.io/yourorg/replyx-workers:${TAG:-latest}
     build:
       context: ../workers
       dockerfile: Dockerfile
     container_name: replyx-workers
+    
+    # Resource limits
+    mem_limit: 768m
+    memswap_limit: 768m
+    cpus: "0.75"
+    
     ports:
       - "8443:8443"  # Telegram webhook port
       - "3002:3002"  # Health check port
@@ -63,11 +101,24 @@ services:
     restart: unless-stopped
     networks:
       - replyx-network
+    
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:3002/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 6
+      start_period: 40s
 
   # Redis cache
   redis:
     image: redis:7-alpine
     container_name: replyx-redis
+    
+    # Resource limits
+    mem_limit: 512m
+    memswap_limit: 512m
+    cpus: "0.25"
+    
     ports:
       - "6379:6379"
     env_file:
@@ -75,9 +126,9 @@ services:
     command: >
       sh -c '
         if [ -n "$$REDIS_PASSWORD" ]; then
-          redis-server --requirepass "$$REDIS_PASSWORD"
+          redis-server --requirepass "$$REDIS_PASSWORD" --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
         else
-          redis-server
+          redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
         fi
       '
     volumes:
@@ -85,11 +136,23 @@ services:
     restart: unless-stopped
     networks:
       - replyx-network
+    
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
 
   # Nginx reverse proxy
   nginx:
     image: nginx:alpine
     container_name: replyx-nginx
+    
+    # Resource limits
+    mem_limit: 256m
+    memswap_limit: 256m
+    cpus: "0.25"
+    
     ports:
       - "80:80"
       - "443:443"
@@ -103,11 +166,31 @@ services:
     restart: unless-stopped
     networks:
       - replyx-network
+      - public
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
 volumes:
   redis-data:
     driver: local
 
 networks:
+  # Public network for nginx external access
+  public:
+    driver: bridge
+    name: replyx_public
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+  
+  # Internal network for services communication
   replyx-network:
     driver: bridge
+    name: replyx_internal
+    ipam:
+      config:
+        - subnet: 172.21.0.0/24

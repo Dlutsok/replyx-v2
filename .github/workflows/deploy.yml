@@ -1,0 +1,160 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/replyx
+
+jobs:
+  # =============================================================================
+  # BUILD AND PUSH IMAGES
+  # =============================================================================
+  build:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    strategy:
+      matrix:
+        service: [backend, frontend, workers]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_PREFIX }}-${{ matrix.service }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./${{ matrix.service }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # =============================================================================
+  # SECURITY SCAN BEFORE DEPLOY
+  # =============================================================================
+  security-scan:
+    name: Security Scan Before Deploy
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner on Deployed config
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: 'config'
+          scan-ref: 'Deployed/'
+          format: 'sarif'
+          output: 'trivy-deploy-config.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0'
+
+      - name: Upload security scan results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-deploy-config.sarif'
+
+  # =============================================================================
+  # DEPLOYMENT
+  # =============================================================================
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build, security-scan]
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set deployment tag
+        run: |
+          echo "TAG=main-${{ github.sha }}" >> $GITHUB_ENV
+      
+      - name: Validate Deployed structure
+        run: |
+          echo "🔍 Validating Deployed/ structure..."
+          ls -la Deployed/
+          
+          if [ ! -f "Deployed/docker-compose.yml" ]; then
+            echo "❌ docker-compose.yml not found in Deployed/"
+            exit 1
+          fi
+          
+          if [ ! -f "Deployed/.env.production" ]; then
+            echo "❌ .env.production not found in Deployed/"
+            exit 1
+          fi
+          
+          if [ ! -f "Deployed/deploy.sh" ]; then
+            echo "❌ deploy.sh not found in Deployed/"
+            exit 1
+          fi
+          
+          echo "✅ Deployed structure validation passed!"
+      
+      - name: Test docker-compose syntax
+        run: |
+          cd Deployed/
+          docker-compose -f docker-compose.yml config --quiet
+          echo "✅ Docker compose syntax is valid!"
+      
+      - name: Deploy info
+        run: |
+          echo "🚀 Deploying ReplyX to production..."
+          echo "Tag: ${{ env.TAG }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo ""
+          echo "📋 Services to deploy:"
+          echo "  - Backend (ghcr.io/${{ github.repository_owner }}/replyx-backend:${{ env.TAG }})"
+          echo "  - Frontend (ghcr.io/${{ github.repository_owner }}/replyx-frontend:${{ env.TAG }})"  
+          echo "  - Workers (ghcr.io/${{ github.repository_owner }}/replyx-workers:${{ env.TAG }})"
+          echo ""
+          echo "📁 Deployment structure: Deployed/"

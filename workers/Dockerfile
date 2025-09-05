@@ -40,9 +40,9 @@ RUN mkdir -p /app/logs /app/data && chown -R nodejs:nodejs /app
 # Switch to non-root user
 USER nodejs
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8443/health || exit 1
+# Health check (исправлен порт на 3002)
+HEALTHCHECK --interval=15s --timeout=3s --start-period=60s --retries=6 \
+    CMD curl -fsS http://localhost:3002/health || exit 1
 
 # Expose ports
 EXPOSE 8443 3002 9090

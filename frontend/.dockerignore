@@ -34,3 +34,30 @@ README.md
 # Misc
 *.log
 .nyc_output
+
+# Дополнительная оптимизация сборки
+*.md
+.eslintcache
+.swc/
+.turbo/
+.vercel
+.next/cache/
+node_modules/.cache/
+.pnp
+.pnp.js
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Системные файлы
+*~
+
+# Security scanning artifacts
+.security/
+.trivy/
+
+# Deployment files
+Deployed/
+docker-compose*.yml
+!Dockerfile

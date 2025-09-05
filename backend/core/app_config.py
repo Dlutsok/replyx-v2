@@ -1,9 +1,15 @@
 """
 Модуль конфигурации для централизованного управления переменными окружения
+Поддерживает безопасное чтение секретов из файлов
 """
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from .secrets import (
+    get_secret_key, get_site_secret, get_db_password, 
+    get_openai_api_key, get_yandex_smtp_credentials, 
+    get_secret, validate_secrets
+)
 
 # Определяем пути к .env файлам (приоритет: backend/.env, затем корень проекта)
 BACKEND_ROOT = Path(__file__).parent.parent
@@ -14,16 +20,23 @@ PROJECT_ENV_PATH = PROJECT_ROOT / '.env'
 # Загружаем переменные окружения только из корня проекта
 load_dotenv(dotenv_path=PROJECT_ENV_PATH)
 
-# Основные настройки приложения
-SECRET_KEY = os.getenv('SECRET_KEY')
-if not SECRET_KEY:
-    raise ValueError("SECRET_KEY must be set in environment variables")
-
+# Основные настройки приложения (БЕЗОПАСНОЕ ЧТЕНИЕ СЕКРЕТОВ)
+SECRET_KEY = get_secret_key()  # Читает из SECRET_KEY или SECRET_KEY_FILE
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-# Настройки базы данных
-DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///./test.db')
+# Настройки базы данных (с поддержкой файловых секретов)
+DB_PASSWORD = get_db_password()  # Читает из DB_PASSWORD или DB_PASSWORD_FILE
+DB_HOST = os.getenv('DB_HOST', 'localhost')
+DB_PORT = os.getenv('DB_PORT', '5432') 
+DB_NAME = os.getenv('DB_NAME', 'replyx_prod')
+DB_USER = os.getenv('DB_USER', 'replyx_user')
+
+# Формируем DATABASE_URL с учетом файловых секретов
+if DB_PASSWORD:
+    DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?sslmode=disable"
+else:
+    DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///./test.db')
 
 # Настройки CORS  
 CORS_ORIGINS = [
@@ -32,9 +45,8 @@ CORS_ORIGINS = [
     if origin.strip() != "*"
 ]
 
-# Настройки email
-YANDEX_SMTP_USER = os.getenv('YANDEX_SMTP_USER')
-YANDEX_SMTP_PASS = os.getenv('YANDEX_SMTP_PASS')
+# Настройки email (с поддержкой файловых секретов)
+YANDEX_SMTP_USER, YANDEX_SMTP_PASS = get_yandex_smtp_credentials()
 
 # Дополнительные SMTP настройки
 SMTP_SERVER = os.getenv('SMTP_SERVER', 'smtp.yandex.ru')
@@ -47,8 +59,11 @@ FROM_NAME = os.getenv('FROM_NAME', 'ReplyX')
 # URL для фронтенда (используется в email ссылках)
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://replyx.ru')
 
-# Настройки site/widget
-SITE_SECRET = os.getenv('SITE_SECRET', 'site_secret_key')
+# Настройки site/widget (БЕЗОПАСНОЕ ЧТЕНИЕ)
+SITE_SECRET = get_site_secret()  # Читает из SITE_SECRET или SITE_SECRET_FILE
+
+# OpenAI API Key (с поддержкой файловых секретов)
+OPENAI_API_KEY = get_openai_api_key()  # Читает из OPENAI_API_KEY или OPENAI_API_KEY_FILE
 
 # Настройки AI токенов
 AI_TOKEN_POOL_SIZE = int(os.getenv('AI_TOKEN_POOL_SIZE', '10'))
