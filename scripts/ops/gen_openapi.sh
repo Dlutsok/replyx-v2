@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -e
 
-echo "🔧 Генерация OpenAPI спецификации для ChatAI..."
+echo "🔧 Генерация OpenAPI спецификации для ChatAI MVP 13..."
 
 # Переходим в директорию backend
-pushd "$(dirname "$0")/../backend" >/dev/null
+pushd "$(dirname "$0")/../../backend" >/dev/null
 
 # Генерируем OpenAPI JSON из FastAPI приложения
 python - <<'EOF'
@@ -24,7 +24,7 @@ try:
     
     # Получаем OpenAPI схему
     spec = get_openapi(
-        title="ChatAI MVP 9 API",
+        title="ChatAI MVP 13 API",
         version="1.0.0",
         description="Comprehensive API for ChatAI platform with AI assistants, document management, and real-time analytics",
         routes=app.routes,

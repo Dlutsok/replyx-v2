@@ -1,11 +1,11 @@
 #!/bin/bash
 # RAD Agent Documentation Linter
-# Проверяет синхронизацию кода и документации для ChatAI MVP 11
+# Проверяет синхронизацию кода и документации для ChatAI MVP 13
 
 set -e
 
 # Конфигурация
-PROJECT_ROOT="/Users/dan/Documents/chatAI/MVP 11"
+PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 FAIL_MODE="${FAIL_MODE:-warn}"  # warn/fail
 VERBOSE="${VERBOSE:-false}"
 
@@ -70,14 +70,14 @@ check_file_paths() {
     
     # Проверяем корректность новых путей
     check_counter
-    if [ -f "$PROJECT_ROOT/backend/workers/master/scalable_bot_manager.js" ]; then
+    if [ -f "$PROJECT_ROOT/workers/master/scalable_bot_manager.js" ]; then
         success "Файл workers/master/scalable_bot_manager.js существует"
     else
         error "Файл workers/master/scalable_bot_manager.js не найден"
     fi
     
     check_counter
-    if [ -f "$PROJECT_ROOT/backend/workers/telegram/bot_worker.js" ]; then
+    if [ -f "$PROJECT_ROOT/workers/telegram/bot_worker.js" ]; then
         success "Файл workers/telegram/bot_worker.js существует"
     else
         error "Файл workers/telegram/bot_worker.js не найден"
@@ -169,10 +169,10 @@ check_codeowners() {
     
     check_counter
     if [ -f "$PROJECT_ROOT/CODEOWNERS" ]; then
-        if grep -q "backend/workers" "$PROJECT_ROOT/CODEOWNERS"; then
-            success "CODEOWNERS покрывает backend/workers"
+        if grep -q "workers/" "$PROJECT_ROOT/CODEOWNERS"; then
+            success "CODEOWNERS покрывает workers/"
         else
-            warn "CODEOWNERS не покрывает новую структуру workers"
+            warn "CODEOWNERS не покрывает структуру workers"
         fi
     else
         warn "Файл CODEOWNERS отсутствует"
@@ -182,7 +182,7 @@ check_codeowners() {
 # Главная функция
 main() {
     echo "🤖 RAD Agent Documentation Linter v1.0"
-    echo "📁 Проект: ChatAI MVP 11"
+    echo "📁 Проект: ChatAI MVP 13"
     echo "🔧 Режим: $FAIL_MODE"
     echo ""
     
