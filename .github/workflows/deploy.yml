@@ -95,9 +95,17 @@ jobs:
 
       - name: Upload security scan results
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: always() && hashFiles('trivy-deploy-config.sarif') != ''
+        continue-on-error: true
         with:
           sarif_file: 'trivy-deploy-config.sarif'
+
+      - name: Upload SARIF as artifact (deploy config)
+        uses: actions/upload-artifact@v4
+        if: always() && hashFiles('trivy-deploy-config.sarif') != ''
+        with:
+          name: trivy-deploy-config-sarif
+          path: trivy-deploy-config.sarif
 
   # =============================================================================
   # DEPLOYMENT
