@@ -145,14 +145,15 @@ jobs:
           REDIS_URL: redis://localhost:6379/1
           
       - name: Run AI/ML tests
-        if: hashFiles('tests/backend/ai/**') != '' && secrets.OPENAI_API_KEY_TEST != ''
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_TEST }}
+          AI_TESTS_DIR_HAS_FILES: ${{ hashFiles('tests/backend/ai/**') }}
+          DATABASE_URL: postgresql://replyx_test:test_password@localhost:5432/replyx_test
+        if: env.AI_TESTS_DIR_HAS_FILES != '' && env.OPENAI_API_KEY != ''
         run: |
           cd backend
           pytest ../tests/backend/ai/ -v --tb=short \
             --junit-xml=../tests/reports/backend/junit-ai.xml || true
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY_TEST }}
-          DATABASE_URL: postgresql://replyx_test:test_password@localhost:5432/replyx_test
           
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -193,6 +194,7 @@ jobs:
           mkdir -p tests/reports/backend tests/reports/frontend tests/reports/security tests/reports/performance tests/reports/e2e
         
       - name: Set up Node.js
+        if: steps.fecheck.outputs.exists == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -200,11 +202,13 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
           
       - name: Install frontend dependencies
+        if: steps.fecheck.outputs.exists == 'true'
         run: |
           cd frontend
           npm ci
           
       - name: Install test dependencies
+        if: steps.fecheck.outputs.exists == 'true'
         run: |
           cd tests/frontend
           npm ci
@@ -212,11 +216,13 @@ jobs:
           mkdir -p ../reports/frontend && touch ../reports/frontend/.keep
           
       - name: Run linting
+        if: steps.fecheck.outputs.exists == 'true'
         run: |
           cd frontend
           npm run lint
           
       - name: Run unit tests
+        if: steps.fecheck.outputs.exists == 'true'
         run: |
           cd tests/frontend
           npm test -- --coverage --watchAll=false --ci
@@ -225,6 +231,7 @@ jobs:
           NODE_ENV: test
           
       - name: Run component tests
+        if: steps.fecheck.outputs.exists == 'true'
         run: |
           cd tests/frontend
           npm run test:components -- --watchAll=false --ci
@@ -232,6 +239,7 @@ jobs:
           CI: true
           
       - name: Upload coverage to Codecov
+        if: steps.fecheck.outputs.exists == 'true'
         uses: codecov/codecov-action@v4
         with:
           file: ./tests/reports/frontend/coverage/lcov.info
@@ -239,8 +247,8 @@ jobs:
           name: frontend-coverage
           
       - name: Upload test results
+        if: always() && steps.fecheck.outputs.exists == 'true'
         uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: frontend-test-results
           path: |

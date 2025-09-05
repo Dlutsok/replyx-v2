@@ -90,7 +90,7 @@ jobs:
           path: |
             docs/api/openapi.json
             scripts/ops/check_docs_currency.py
-         if-no-files-found: warn
+          if-no-files-found: warn
             
   future-hard-gate:
     runs-on: ubuntu-latest
