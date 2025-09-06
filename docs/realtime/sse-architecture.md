@@ -1,7 +1,8 @@
 # SSE Real-time Communication 
 
-**Last Updated:** 2025-01-14  
+**Last Updated:** 6 сентября 2025  
 **Status:** ✅ Active (Migrated from WebSocket)  
+**Язык:** Русский (обновлено)  
 
 Guide to Server-Sent Events (SSE) based real-time communication system in ReplyX for live chat, operator handoffs, and system notifications.
 

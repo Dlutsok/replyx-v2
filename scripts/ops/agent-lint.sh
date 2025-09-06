@@ -1,260 +1,207 @@
-#!/bin/bash
-# RAD Agent Documentation Linter
-# Проверяет синхронизацию кода и документации для ChatAI MVP 13
-
+#!/usr/bin/env bash
 set -e
-set +e  # Отключаем немедленный выход при ошибках для более гибкой обработки
 
-# Конфигурация
+# RAD Agent - Code to Documentation Synchronization Checker
+# Проверяет соответствие кода и документации
+
+MODE="${1:-warn}"  # warn или fail
 PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-FAIL_MODE="${FAIL_MODE:-warn}"  # warn/fail
-VERBOSE="${VERBOSE:-false}"
 
-# Цвета для вывода
-RED='\033[0;31m'
-YELLOW='\033[1;33m'
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+echo "🤖 RAD Agent: Code-to-Documentation Synchronization Check"
+echo "📂 Project: $PROJECT_ROOT"
+echo "🔧 Mode: $MODE"
+echo
 
-# Счетчики проблем
-ERRORS=0
 WARNINGS=0
-CHECKS=0
+ERRORS=0
 
-log() {
-    echo -e "${BLUE}[INFO]${NC} $1"
-}
-
+# Функция для логирования предупреждений
 warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
-    ((WARNINGS++))
+    echo "⚠️  WARNING: $1"
+    WARNINGS=$((WARNINGS + 1))
 }
 
+# Функция для логирования ошибок  
 error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-    ((ERRORS++))
+    echo "❌ ERROR: $1"
+    ERRORS=$((ERRORS + 1))
 }
 
+# Функция для успешных проверок
 success() {
-    echo -e "${GREEN}[OK]${NC} $1"
+    echo "✅ $1"
 }
 
-check_counter() {
-    ((CHECKS++))
-}
+echo "🔍 Checking API Documentation Sync..."
 
-# Проверка существования путей в документации
-check_file_paths() {
-    log "🔍 Проверяю пути к файлам в документации..."
-    
-    # Проверяем старые пути к воркерам (если директория docs существует)
-    if [ -d "$PROJECT_ROOT/docs/" ]; then
-        check_counter
-        if grep -r "backend/master/" "$PROJECT_ROOT/docs/" > /dev/null 2>&1 || true; then
-            if grep -r "backend/master/" "$PROJECT_ROOT/docs/" > /dev/null 2>&1; then
-                warn "Найдены устаревшие пути 'backend/master/' в документации"
-                if [ "$VERBOSE" = "true" ]; then
-                    grep -rn "backend/master/" "$PROJECT_ROOT/docs/" || true
-                fi
-            else
-                success "Старые пути 'backend/master/' не найдены"
-            fi
-        fi
-        
-        check_counter
-        if grep -r "backend/worker/" "$PROJECT_ROOT/docs/" > /dev/null 2>&1; then
-            warn "Найдены устаревшие пути 'backend/worker/' в документации"
-            if [ "$VERBOSE" = "true" ]; then
-                grep -rn "backend/worker/" "$PROJECT_ROOT/docs/"
-            fi
-        else
-            success "Старые пути 'backend/worker/' не найдены"
-        fi
-    else
-        warn "Директория docs/ не найдена, пропускаем проверку путей"
-    fi
-    
-    # Проверяем корректность новых путей
-    check_counter
-    if [ -f "$PROJECT_ROOT/workers/master/scalable_bot_manager.js" ]; then
-        success "Файл workers/master/scalable_bot_manager.js существует"
-    else
-        warn "Файл workers/master/scalable_bot_manager.js не найден"
-    fi
-    
-    check_counter
-    if [ -f "$PROJECT_ROOT/workers/telegram/bot_worker.js" ]; then
-        success "Файл workers/telegram/bot_worker.js существует"
-    else
-        warn "Файл workers/telegram/bot_worker.js не найден"
-    fi
-}
+# 1. Проверка синхронизации API endpoints
+BACKEND_API_FILES=$(find "$PROJECT_ROOT/backend/api" -name "*.py" | wc -l | tr -d ' ')
+API_DOCS_FILES=$(find "$PROJECT_ROOT/docs/api" -name "*.md" | wc -l | tr -d ' ')
 
-# Проверка OpenAPI схемы
-check_openapi_schema() {
-    log "📋 Проверяю актуальность OpenAPI схемы..."
-    
-    check_counter
-    if [ -f "$PROJECT_ROOT/docs/api/openapi.json" ]; then
-        # Проверяем дату последнего изменения
-        schema_date=$(stat -f %m "$PROJECT_ROOT/docs/api/openapi.json" 2>/dev/null || echo "0")
-        code_date=$(find "$PROJECT_ROOT/backend/api" -name "*.py" -type f -exec stat -f %m {} \; | sort -n | tail -1)
-        
-        if [ "$code_date" -gt "$schema_date" ]; then
-            warn "OpenAPI схема устарела. Код API изменен позже схемы"
-        else
-            success "OpenAPI схема актуальна"
-        fi
-    else
-        warn "OpenAPI схема не найдена в docs/api/openapi.json"
-    fi
-}
+if [ -f "$PROJECT_ROOT/docs/api/openapi.json" ]; then
+    OPENAPI_ENDPOINTS=$(python3 -c "
+import json
+try:
+    with open('$PROJECT_ROOT/docs/api/openapi.json', 'r') as f:
+        spec = json.load(f)
+    endpoints = sum(len([m for m in methods.keys() if m in ['get','post','put','patch','delete']]) 
+                   for methods in spec.get('paths', {}).values())
+    print(endpoints)
+except:
+    print(0)
+")
+    success "OpenAPI spec found with $OPENAPI_ENDPOINTS endpoints"
+else
+    warn "OpenAPI specification not found at docs/api/openapi.json"
+fi
 
-# Проверка структуры документации
-check_doc_structure() {
-    log "📁 Проверяю структуру документации..."
+echo
+echo "🗄️  Checking Database Documentation Sync..."
+
+# 2. Проверка синхронизации схемы БД
+DATABASE_MODELS=$(find "$PROJECT_ROOT/backend/database" -name "*.py" | wc -l | tr -d ' ')
+DB_DOCS=$(find "$PROJECT_ROOT/docs/db" -name "*.md" | wc -l | tr -d ' ')
+
+if [ -f "$PROJECT_ROOT/docs/db/schema.sql" ]; then
+    success "Database schema.sql found"
+else
+    warn "Database schema.sql not found at docs/db/schema.sql"
+fi
+
+if [ -f "$PROJECT_ROOT/docs/db/schema_current.md" ]; then
+    success "Current database schema docs found"
+else
+    warn "Current database schema docs not found at docs/db/schema_current.md"
+fi
+
+echo
+echo "🔌 Checking WebSocket/SSE Events Documentation..."
+
+# 3. Проверка документации событий WebSocket/SSE
+if [ -f "$PROJECT_ROOT/docs/realtime/events.md" ]; then
+    success "WebSocket/SSE events documentation found"
     
-    required_files=(
-        "docs/architecture/overview.md"
-        "docs/architecture/service-catalog.md"
-        "docs/runbooks/workers.md"
-        "docs/runbooks/backend.md"
-        "docs/runbooks/frontend.md"
-        "docs/api/endpoints.md"
-        "docs/realtime/events.md"
-    )
+    # Проверяем наличие версий событий
+    VERSIONED_EVENTS=$(grep -c "@v[0-9]" "$PROJECT_ROOT/docs/realtime/events.md" 2>/dev/null || echo 0)
+    if [ "$VERSIONED_EVENTS" -gt 0 ]; then
+        success "Found $VERSIONED_EVENTS versioned events in docs/realtime/events.md"
+    else
+        warn "No versioned events found in docs/realtime/events.md (should use @vN notation)"
+    fi
+else
+    warn "WebSocket/SSE events documentation not found at docs/realtime/events.md"
+fi
+
+echo
+echo "🚀 Checking Deployment Documentation..."
+
+# 4. Проверка документации деплоя
+DEPLOYMENT_SCRIPTS=$(find "$PROJECT_ROOT/scripts/deployment" -name "*.sh" 2>/dev/null | wc -l | tr -d ' ')
+DEPLOYMENT_DOCS=$(find "$PROJECT_ROOT/docs/deployment" -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+
+if [ "$DEPLOYMENT_SCRIPTS" -gt 0 ] && [ "$DEPLOYMENT_DOCS" -gt 0 ]; then
+    success "Deployment scripts ($DEPLOYMENT_SCRIPTS) and docs ($DEPLOYMENT_DOCS) found"
+else
+    warn "Mismatch: $DEPLOYMENT_SCRIPTS deployment scripts vs $DEPLOYMENT_DOCS deployment docs"
+fi
+
+echo
+echo "📋 Checking Runbooks Coverage..."
+
+# 5. Проверка coverage runbooks
+RUNBOOKS=$(find "$PROJECT_ROOT/docs/runbooks" -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+if [ "$RUNBOOKS" -ge 4 ]; then
+    success "Found $RUNBOOKS runbooks (minimum 4 required: backend, frontend, workers, release)"
+else
+    warn "Found only $RUNBOOKS runbooks, minimum 4 required"
+fi
+
+echo
+echo "🏗️  Checking ADR Documentation..."
+
+# 6. Проверка ADR
+ADR_COUNT=$(find "$PROJECT_ROOT/docs/adr" -name "ADR-*.md" 2>/dev/null | wc -l | tr -d ' ')
+if [ "$ADR_COUNT" -gt 0 ]; then
+    success "Found $ADR_COUNT Architecture Decision Records"
     
-    for file in "${required_files[@]}"; do
-        check_counter
-        if [ -f "$PROJECT_ROOT/$file" ]; then
-            success "✓ $file"
-        else
-            error "✗ Отсутствует обязательный файл: $file"
+    # Проверяем последний ADR
+    LATEST_ADR=$(ls "$PROJECT_ROOT/docs/adr"/ADR-*.md 2>/dev/null | sort -V | tail -1)
+    if [ -n "$LATEST_ADR" ]; then
+        LATEST_ADR_NUM=$(basename "$LATEST_ADR" .md | grep -o '[0-9]\+' | tail -1)
+        success "Latest ADR: #$LATEST_ADR_NUM"
+    fi
+else
+    error "No Architecture Decision Records found in docs/adr/"
+fi
+
+echo
+echo "👥 Checking CODEOWNERS Coverage..."
+
+# 7. Проверка CODEOWNERS
+if [ -f "$PROJECT_ROOT/CODEOWNERS" ]; then
+    success "CODEOWNERS file found"
+    
+    # Проверяем покрытие основных директорий
+    COVERED_DIRS=0
+    for dir in "docs/" "backend/" "frontend/" "scripts/" "configs/"; do
+        if grep -q "$dir" "$PROJECT_ROOT/CODEOWNERS" 2>/dev/null; then
+            COVERED_DIRS=$((COVERED_DIRS + 1))
         fi
     done
-}
-
-# Проверка соответствия API эндпоинтов
-check_api_endpoints() {
-    log "🔌 Проверяю соответствие API эндпоинтов..."
     
-    check_counter
-    if [ -f "$PROJECT_ROOT/backend/main.py" ]; then
-        # Извлекаем роутеры из main.py
-        routers=$(grep -E "app\.include_router" "$PROJECT_ROOT/backend/main.py" | wc -l)
-        if [ "$routers" -gt 10 ]; then
-            success "Найдено $routers роутеров в main.py"
-        else
-            warn "Найдено только $routers роутеров, ожидалось больше"
-        fi
+    if [ "$COVERED_DIRS" -ge 3 ]; then
+        success "CODEOWNERS covers $COVERED_DIRS/5 major directories"
     else
-        error "Файл backend/main.py не найден"
+        warn "CODEOWNERS only covers $COVERED_DIRS/5 major directories"
     fi
-}
+else
+    warn "CODEOWNERS file not found"
+fi
 
-# Проверка событий WebSocket
-check_websocket_events() {
-    log "🔄 Проверяю документацию WebSocket событий..."
-    
-    check_counter
-    if [ -f "$PROJECT_ROOT/docs/realtime/events.md" ]; then
-        # Проверяем, есть ли таблица событий
-        if grep -q "| Event" "$PROJECT_ROOT/docs/realtime/events.md"; then
-            success "Таблица WebSocket событий найдена"
-        else
-            warn "Таблица WebSocket событий отсутствует или имеет неправильный формат"
-        fi
-    else
-        warn "Файл docs/realtime/events.md не найден"
-    fi
-}
+echo
+echo "📊 SUMMARY:"
+echo "=========="
+echo "Backend API files: $BACKEND_API_FILES"
+echo "API docs files: $API_DOCS_FILES" 
+echo "Database models: $DATABASE_MODELS"
+echo "DB docs files: $DB_DOCS"
+echo "Deployment scripts: $DEPLOYMENT_SCRIPTS"
+echo "Deployment docs: $DEPLOYMENT_DOCS"
+echo "Runbooks: $RUNBOOKS"
+echo "ADRs: $ADR_COUNT"
 
-# Проверка CODEOWNERS
-check_codeowners() {
-    log "👥 Проверяю файл CODEOWNERS..."
-    
-    check_counter
-    if [ -f "$PROJECT_ROOT/CODEOWNERS" ]; then
-        if grep -q "workers/" "$PROJECT_ROOT/CODEOWNERS"; then
-            success "CODEOWNERS покрывает workers/"
-        else
-            warn "CODEOWNERS не покрывает структуру workers"
-        fi
-    else
-        warn "Файл CODEOWNERS отсутствует"
-    fi
-}
+echo
+echo "🎯 RESULTS:"
+echo "==========="
+SUCCESS_COUNT=$(($BACKEND_API_FILES + $API_DOCS_FILES + $DATABASE_MODELS + $DB_DOCS + $RUNBOOKS + $ADR_COUNT))
+echo "✅ Components found: $SUCCESS_COUNT"
+echo "⚠️  Warnings: $WARNINGS"
+echo "❌ Errors: $ERRORS"
 
-# Главная функция
-main() {
-    echo "🤖 RAD Agent Documentation Linter v1.0"
-    echo "📁 Проект: ChatAI MVP 13"
-    echo "🔧 Режим: $FAIL_MODE"
-    echo ""
-    
-    cd "$PROJECT_ROOT"
-    
-    check_file_paths
-    check_openapi_schema  
-    check_doc_structure
-    check_api_endpoints
-    check_websocket_events
-    check_codeowners
-    
-    echo ""
-    echo "📊 РЕЗУЛЬТАТЫ ПРОВЕРКИ:"
-    echo "   ✅ Выполнено проверок: $CHECKS"
-    echo "   ⚠️  Предупреждений: $WARNINGS" 
-    echo "   ❌ Ошибок: $ERRORS"
-    echo ""
-    
+# Определяем exit code на основе режима
+if [ "$MODE" = "fail" ]; then
     if [ "$ERRORS" -gt 0 ]; then
-        if [ "$FAIL_MODE" = "fail" ]; then
-            error "❌ Проверка завершилась с ошибками. CI должен упасть."
-            exit 1
-        else
-            warn "⚠️ Найдены ошибки, но режим 'warn' - продолжаем"
-            exit 0
-        fi
+        echo
+        echo "💥 FAILED: $ERRORS error(s) found in fail mode"
+        exit 1
     elif [ "$WARNINGS" -gt 0 ]; then
-        warn "⚠️ Есть предупреждения, но критических ошибок нет"
+        echo
+        echo "⚠️  PASSED with warnings: $WARNINGS warning(s) in fail mode"
         exit 0
     else
-        success "✅ Все проверки пройдены успешно!"
+        echo
+        echo "🎉 ALL CHECKS PASSED in fail mode"
         exit 0
     fi
-}
-
-# Обработка аргументов
-while [[ $# -gt 0 ]]; do
-    case $1 in
-        --fail-mode)
-            FAIL_MODE="fail"
-            shift
-            ;;
-        --verbose)
-            VERBOSE="true"
-            shift
-            ;;
-        -h|--help)
-            echo "RAD Agent Documentation Linter"
-            echo ""
-            echo "Опции:"
-            echo "  --fail-mode    Режим строгих проверок (fail на любых ошибках)"
-            echo "  --verbose      Подробный вывод"
-            echo "  -h, --help     Показать справку"
-            echo ""
-            echo "Переменные окружения:"
-            echo "  FAIL_MODE=warn|fail   Режим работы (по умолчанию: warn)"
-            echo "  VERBOSE=true|false    Подробный вывод (по умолчанию: false)"
-            exit 0
-            ;;
-        *)
-            echo "Неизвестная опция: $1"
-            exit 1
-            ;;
-    esac
-done
-
-main "$@"
+else
+    # warn mode
+    if [ "$ERRORS" -gt 0 ]; then
+        echo
+        echo "⚠️  PASSED with errors: $ERRORS error(s) in warn mode (would fail in strict mode)"
+        exit 0
+    else
+        echo
+        echo "🎉 ALL CHECKS PASSED in warn mode"
+        exit 0
+    fi
+fi

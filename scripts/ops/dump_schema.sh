@@ -24,7 +24,7 @@ fi
 echo "📊 Подключение к базе данных: ${DATABASE_URL%/*}/[HIDDEN]"
 
 # Генерируем схему через SQLAlchemy
-python - <<'EOF'
+python3 - <<'EOF'
 import os
 import sys
 from datetime import datetime

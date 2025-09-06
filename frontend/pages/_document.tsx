@@ -17,6 +17,9 @@ export default function Document() {
         {/* Security headers are configured in next.config.js */}
         <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
         <meta httpEquiv="Referrer-Policy" content="origin-when-cross-origin" />
+
+        {/* SEO: Temporarily disable indexing for development */}
+        <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex, nocache" />
       </Head>
       <body>
         <Main />

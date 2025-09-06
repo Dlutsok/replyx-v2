@@ -37,7 +37,7 @@ const steps = [
 
 export default function HowItWorksSection() {
   return (
-    <SectionWrapper id="how-it-works" bg="white" className="pb-4">
+    <SectionWrapper id="how-it-works" bg="white" className="pb-20">
       <SectionWrapper.Header
         title="Запустите AI-поддержку за 5 минут"
         subtitle="Всего четыре шага — от загрузки знаний до круглосуточных ответов клиентам с точностью 98,7%."

@@ -122,7 +122,7 @@ const TestimonialsSection = () => {
   ];
 
   return (
-    <section className={`${DESIGN_TOKENS.spacing.sectionPadding} ${DESIGN_TOKENS.colors.sectionBg} pt-20`}>
+    <section className={`${DESIGN_TOKENS.spacing.sectionPadding} ${DESIGN_TOKENS.colors.sectionBg} pt-20 pb-20`}>
       <div className={`${DESIGN_TOKENS.spacing.maxWidth} ${DESIGN_TOKENS.spacing.containerPadding}`}>
         {/* Заголовок секции */}
         <div className="text-left mb-16">
@@ -219,8 +219,8 @@ const TestimonialsSection = () => {
 
         {/* Профессиональный CTA блок */}
         <div className="mt-20">
-          {/* Основной контейнер */}
-          <div className="max-w-4xl xl:max-w-[1200px] mx-auto px-4 sm:px-6 xl:px-0">
+          {/* Десктопная версия */}
+          <div className="hidden lg:block max-w-4xl xl:max-w-[1200px] mx-auto px-4 sm:px-6 xl:px-0">
             {/* Центральный CTA элемент */}
             <div className="relative bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 md:p-10 xl:p-12 shadow-lg overflow-hidden">
               {/* Декоративные элементы фона */}
@@ -293,6 +293,98 @@ const TestimonialsSection = () => {
                 {/* Социальное доказательство */}
                 <div className="border-t border-gray-200 pt-6 sm:pt-8 xl:pt-6">
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8 xl:gap-6 text-sm text-gray-600">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="font-medium">500+ компаний</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span className="font-medium">4.9/5 рейтинг</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                      <span className="font-medium">14 дней бесплатно</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Мобильная версия */}
+          <div className="block lg:hidden max-w-1200 mx-auto">
+            {/* Центральный CTA элемент */}
+            <div className="relative bg-white border border-gray-200 rounded-2xl p-6 shadow-lg overflow-hidden">
+              {/* Декоративные элементы фона */}
+              <div className="absolute inset-0 overflow-hidden">
+                {/* Основной градиентный круг */}
+                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-100/40 via-purple-200/30 to-transparent rounded-full blur-3xl transform translate-x-12 -translate-y-6"></div>
+
+                {/* Маленькие декоративные круги */}
+                <div className="absolute top-8 left-8 w-4 h-4 bg-gradient-to-br from-purple-200/60 to-purple-300/40 rounded-full blur-sm animate-pulse" style={{animationDelay: '1s'}}></div>
+                <div className="absolute bottom-12 right-12 w-6 h-6 bg-gradient-to-br from-purple-200/50 to-purple-300/30 rounded-full blur-md animate-pulse" style={{animationDelay: '2s'}}></div>
+                <div className="absolute top-1/2 left-1/3 w-3 h-3 bg-gradient-to-br from-purple-200/70 to-purple-300/50 rounded-full blur-sm animate-pulse" style={{animationDelay: '0.5s'}}></div>
+
+                {/* Геометрические элементы */}
+                <div className="absolute top-4 left-4 w-1 h-1 bg-purple-300/60 rotate-45 animate-bounce" style={{animationDelay: '3s'}}></div>
+                <div className="absolute bottom-4 right-4 w-1.5 h-1.5 bg-purple-300/50 rotate-12 animate-bounce" style={{animationDelay: '1.5s'}}></div>
+                <div className="absolute top-1/4 right-1/3 w-0.5 h-0.5 bg-purple-300/70 rounded-full animate-ping" style={{animationDelay: '4s'}}></div>
+
+                {/* Тонкие линии */}
+                <div className="absolute top-12 left-0 w-px h-8 bg-gradient-to-b from-transparent via-purple-200/40 to-transparent"></div>
+                <div className="absolute bottom-8 right-0 w-px h-6 bg-gradient-to-b from-transparent via-purple-200/40 to-transparent"></div>
+
+                {/* Плавающие иконки */}
+                <div className="absolute top-6 right-6 w-3 h-3 opacity-20 animate-float" style={{animationDelay: '0s'}}>
+                  <svg className="w-full h-full text-purple-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                  </svg>
+                </div>
+                <div className="absolute bottom-6 left-6 w-2 h-2 opacity-15 animate-float" style={{animationDelay: '2s'}}>
+                  <svg className="w-full h-full text-purple-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                </div>
+                <div className="absolute top-1/3 left-4 w-2 h-2 opacity-25 animate-float" style={{animationDelay: '1s'}}>
+                  <svg className="w-full h-full text-purple-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                  </svg>
+                </div>
+              </div>
+
+              <div className="relative z-10 text-center max-w-3xl mx-auto">
+                {/* Заголовок */}
+                <h3 className="text-xl font-bold text-gray-900 mb-3 leading-tight">
+                  Масштабируйте бизнес с{' '}
+                  <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                    ReplyX
+                  </span>
+                </h3>
+
+                {/* Описание */}
+                <p className="text-base text-gray-600 mb-4 leading-relaxed">
+                  От малого бизнеса до корпораций — автоматизируйте поддержку и фокусируйтесь на росте
+                </p>
+
+                {/* CTA кнопка */}
+                <div className="flex justify-center mb-4">
+                  <button className="px-6 py-3 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200 h-12 relative overflow-hidden bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 hover:from-purple-700 hover:via-violet-700 hover:to-indigo-700 text-base">
+                    <span className="absolute inset-0 z-0 animate-wave-gradient bg-gradient-to-r from-violet-400 via-fuchsia-500 to-violet-400" />
+                    <span className="relative z-10 flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      Начать бесплатно
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </span>
+                  </button>
+                </div>
+
+                {/* Социальное доказательство */}
+                <div className="border-t border-gray-200 pt-4">
+                  <div className="flex flex-col items-center justify-center gap-3 text-sm text-gray-600">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                       <span className="font-medium">500+ компаний</span>

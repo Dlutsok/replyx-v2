@@ -1,13 +1,21 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "ReplyX API",
-    "description": "\nReplyX - Comprehensive AI Assistant Platform API\n\n## Features\n- 🤖 AI Assistant Management\n- 💬 Real-time Dialog System  \n- 📄 Document Processing & Knowledge Base\n- 🤖 Telegram Bot Integration\n- 💰 Balance & Billing System\n- 👥 User Management & Authentication\n- 📊 Analytics & Monitoring\n- 🛡️ Security & Rate Limiting\n\n## Authentication\nAll endpoints (except public ones) require JWT authentication:\n- Include `Authorization: Bearer <token>` header\n- Include `X-CSRF-Token` header for state-changing operations\n\n## Base URLs\n- Production: `https://api.replyx.ru`\n- Development: `http://localhost:8000`\n        ",
-    "version": "1.0.0"
+    "title": "ChatAI MVP 13 API",
+    "description": "Comprehensive API for ChatAI platform with AI assistants, document management, and real-time analytics",
+    "version": "1.0.0",
+    "contact": {
+      "name": "ChatAI Support",
+      "email": "support@chatai.com"
+    },
+    "license": {
+      "name": "Proprietary",
+      "url": "https://chatai.com/license"
+    }
   },
   "servers": [
     {
-      "url": "https://api.replyx.ru",
+      "url": "https://api.chatai.com",
       "description": "Production server"
     },
     {
@@ -949,6 +957,57 @@
         ]
       }
     },
+    "/api/websocket/stats": {
+      "get": {
+        "summary": "Websocket Stats",
+        "description": "WebSocket система статистика для production мониторинга\nВозвращает детальную информацию о соединениях, rate limiting, message queue",
+        "operationId": "websocket_stats_api_websocket_stats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/websocket/health": {
+      "get": {
+        "summary": "Websocket Health",
+        "description": "WebSocket health check для load balancer проверок\nБыстрая проверка состояния WebSocket системы",
+        "operationId": "websocket_health_api_websocket_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ws/bridge/health": {
+      "get": {
+        "summary": "Ws Bridge Health",
+        "description": "WS-BRIDGE health check для диагностики Redis Pub/Sub подписчика\nИспользуется для мониторинга состояния реал-тайм системы",
+        "operationId": "ws_bridge_health_api_ws_bridge_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/register": {
       "post": {
         "summary": "Register",
@@ -1196,6 +1255,65 @@
             }
           }
         }
+      }
+    },
+    "/api/refresh-token": {
+      "post": {
+        "summary": "Refresh Access Token",
+        "description": "Обновление access token через refresh token\nДля production-ready WebSocket переподключений",
+        "operationId": "refresh_access_token_api_refresh_token_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/validate-token": {
+      "post": {
+        "summary": "Validate Access Token",
+        "description": "Валидация access token - для проверки актуальности перед WebSocket подключением",
+        "operationId": "validate_access_token_api_validate_token_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
       }
     },
     "/api/admin/users": {
@@ -1805,7 +1923,7 @@
     "/api/documents": {
       "get": {
         "summary": "Get Documents",
-        "description": "Получение документов пользователя с пагинацией и кэшированием",
+        "description": "Получение документов пользователя с пагинацией и фильтрацией по ассистенту",
         "operationId": "get_documents_api_documents_get",
         "security": [
           {
@@ -1839,6 +1957,24 @@
               "title": "Limit"
             },
             "description": "Количество документов на странице"
+          },
+          {
+            "name": "assistant_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ID ассистента для фильтрации документов",
+              "title": "Assistant Id"
+            },
+            "description": "ID ассистента для фильтрации документов"
           }
         ],
         "responses": {
@@ -2041,6 +2177,49 @@
         "summary": "Get Document Summary",
         "description": "Возвращает выжимку документа из БД; при отсутствии — генерирует и сохраняет.",
         "operationId": "get_document_summary_api_documents__doc_id__summary_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "doc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Doc Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/documents/{doc_id}/summary-status": {
+      "get": {
+        "summary": "Get Document Summary Status",
+        "description": "Проверяет статус генерации выжимки документа.",
+        "operationId": "get_document_summary_status_api_documents__doc_id__summary_status_get",
         "security": [
           {
             "OAuth2PasswordBearer": []
@@ -2393,46 +2572,27 @@
         ]
       }
     },
-    "/api/assistants": {
+    "/api/assistants/{assistant_id}": {
       "get": {
-        "summary": "Get My Assistants",
-        "description": "Optimized assistants endpoint - uses eager loading to avoid N+1 queries",
-        "operationId": "get_my_assistants_api_assistants_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/AssistantRead"
-                  },
-                  "type": "array",
-                  "title": "Response Get My Assistants Api Assistants Get"
-                }
-              }
-            }
-          }
-        },
+        "summary": "Get Assistant",
+        "description": "Получить конкретного ассистента по ID",
+        "operationId": "get_assistant_api_assistants__assistant_id__get",
         "security": [
           {
             "OAuth2PasswordBearer": []
           }
-        ]
-      },
-      "post": {
-        "summary": "Create My Assistant",
-        "operationId": "create_my_assistant_api_assistants_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AssistantCreate"
-              }
+        ],
+        "parameters": [
+          {
+            "name": "assistant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Assistant Id"
             }
-          },
-          "required": true
-        },
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -2454,15 +2614,8 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ]
-      }
-    },
-    "/api/assistants/{assistant_id}": {
+        }
+      },
       "patch": {
         "summary": "Update My Assistant",
         "operationId": "update_my_assistant_api_assistants__assistant_id__patch",
@@ -2556,6 +2709,75 @@
         }
       }
     },
+    "/api/assistants": {
+      "get": {
+        "summary": "Get My Assistants",
+        "description": "Optimized assistants endpoint - uses eager loading to avoid N+1 queries",
+        "operationId": "get_my_assistants_api_assistants_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssistantRead"
+                  },
+                  "type": "array",
+                  "title": "Response Get My Assistants Api Assistants Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create My Assistant",
+        "operationId": "create_my_assistant_api_assistants_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssistantCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssistantRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
     "/api/assistants/{assistant_id}/settings": {
       "get": {
         "summary": "Get Assistant Settings",
@@ -2620,6 +2842,128 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/validate-widget-token": {
+      "post": {
+        "summary": "Validate Widget Token",
+        "description": "Валидация токена виджета на актуальность доменов",
+        "operationId": "validate_widget_token_api_validate_widget_token_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "type": "object",
+                "title": "Token Data"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/widgets": {
+      "post": {
+        "summary": "Create Widget Token",
+        "description": "Выдать embed-код + свежий JWT для ассистента (виджета).",
+        "operationId": "create_widget_token_api_widgets_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "type": "object",
+                "title": "Data"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/widget-config": {
+      "post": {
+        "summary": "Get Widget Config By Token",
+        "description": "Получить настройки виджета по токену для виджета",
+        "operationId": "get_widget_config_by_token_api_widget_config_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "type": "object",
+                "title": "Token Data"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -2736,6 +3080,48 @@
             }
           }
         }
+      }
+    },
+    "/api/upload/avatar": {
+      "post": {
+        "summary": "Upload Avatar",
+        "description": "Загрузка аватара для виджета",
+        "operationId": "upload_avatar_api_upload_avatar_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_avatar_api_upload_avatar_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
       }
     },
     "/api/assistants/{assistant_id}/website-integration": {
@@ -3137,6 +3523,49 @@
         ]
       }
     },
+    "/api/assistants/{assistant_id}/stats": {
+      "get": {
+        "summary": "Get Assistant Stats",
+        "description": "Получить статистику конкретного ассистента",
+        "operationId": "get_assistant_stats_api_assistants__assistant_id__stats_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "assistant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Assistant Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/dialogs": {
       "get": {
         "summary": "Get Dialogs",
@@ -3188,6 +3617,61 @@
               "default": 50,
               "title": "Limit"
             }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Поиск по имени, email, содержимому сообщений, Telegram username",
+              "title": "Search"
+            },
+            "description": "Поиск по имени, email, содержимому сообщений, Telegram username"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Фильтр по статусу: active, taken_over, handoff_requested, handoff_active",
+              "title": "Status"
+            },
+            "description": "Фильтр по статусу: active, taken_over, handoff_requested, handoff_active"
+          },
+          {
+            "name": "channel",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Фильтр по каналу: telegram, website",
+              "title": "Channel"
+            },
+            "description": "Фильтр по каналу: telegram, website"
+          },
+          {
+            "name": "assistant_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "description": "Фильтр по ассистенту",
+              "title": "Assistant Id"
+            },
+            "description": "Фильтр по ассистенту"
+          },
+          {
+            "name": "time_filter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Временной фильтр: today, week, month",
+              "title": "Time Filter"
+            },
+            "description": "Временной фильтр: today, week, month"
           }
         ],
         "responses": {
@@ -3210,6 +3694,28 @@
             }
           }
         }
+      }
+    },
+    "/api/dialogs/filters-data": {
+      "get": {
+        "summary": "Get Filters Data",
+        "description": "Получить данные для фильтров (каналы и статистика)",
+        "operationId": "get_filters_data_api_dialogs_filters_data_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
       }
     },
     "/api/dialogs/{dialog_id}": {
@@ -5679,7 +6185,7 @@
       },
       "post": {
         "summary": "Site Create Dialog",
-        "description": "Создает новый site диалог",
+        "description": "Создает новый site диалог (идемпотентно)",
         "operationId": "site_create_dialog_api_site_dialogs_post",
         "parameters": [
           {
@@ -5893,7 +6399,7 @@
       },
       "post": {
         "summary": "Widget Create Dialog",
-        "description": "Создает новый widget диалог",
+        "description": "Создает новый widget диалог (идемпотентно)",
         "operationId": "widget_create_dialog_api_widget_dialogs_post",
         "parameters": [
           {
@@ -6263,6 +6769,45 @@
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/contact": {
+      "post": {
+        "summary": "Submit Contact Form",
+        "description": "Обрабатывает форму обратной связи и отправляет уведомление на email",
+        "operationId": "submit_contact_form_api_contact_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactFormCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactFormResponse"
+                }
               }
             }
           },
@@ -6875,6 +7420,74 @@
               "default": 50,
               "title": "Limit"
             }
+          },
+          {
+            "name": "transaction_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Transaction Type"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "name": "period_days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Period Days"
+            }
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "date",
+              "title": "Sort By"
+            }
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "desc",
+              "title": "Sort Order"
+            }
           }
         ],
         "responses": {
@@ -6932,209 +7545,6 @@
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
                 }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/ai/initialize-context": {
-      "post": {
-        "summary": "Initialize Ai Context",
-        "description": "Инициализация AI контекста для новой сессии",
-        "operationId": "initialize_ai_context_api_ai_initialize_context_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "additionalProperties": true,
-                "type": "object",
-                "title": "Data"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/ai/chat": {
-      "post": {
-        "summary": "Ai Chat",
-        "description": "Обработка сообщений для AI чата",
-        "operationId": "ai_chat_api_ai_chat_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "additionalProperties": true,
-                "type": "object",
-                "title": "Data"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/ai/session/{session_id}": {
-      "get": {
-        "summary": "Get Session Info",
-        "description": "Получение информации о сессии",
-        "operationId": "get_session_info_api_ai_session__session_id__get",
-        "parameters": [
-          {
-            "name": "session_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Session Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "summary": "Clear Session",
-        "description": "Очистка сессии",
-        "operationId": "clear_session_api_ai_session__session_id__delete",
-        "parameters": [
-          {
-            "name": "session_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Session Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/ai/debug": {
-      "get": {
-        "summary": "Debug Ai Status",
-        "description": "Debug информация о состоянии AI системы",
-        "operationId": "debug_ai_status_api_ai_debug_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/ai/reload-config": {
-      "post": {
-        "summary": "Reload Ai Config",
-        "description": "Перезагрузка конфигурации AI провайдеров",
-        "operationId": "reload_ai_config_api_ai_reload_config_post",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/ai/clear-all-sessions": {
-      "post": {
-        "summary": "Clear All Sessions",
-        "description": "Очистка всех активных сессий",
-        "operationId": "clear_all_sessions_api_ai_clear_all_sessions_post",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
               }
             }
           }
@@ -7558,6 +7968,1704 @@
             "OAuth2PasswordBearer": []
           }
         ]
+      }
+    },
+    "/api/qa-knowledge/": {
+      "get": {
+        "tags": [
+          "qa-knowledge"
+        ],
+        "summary": "Get Qa Knowledge",
+        "description": "Получить Q&A записи пользователя",
+        "operationId": "get_qa_knowledge_api_qa_knowledge__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "assistant_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ID ассистента для фильтрации",
+              "title": "Assistant Id"
+            },
+            "description": "ID ассистента для фильтрации"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Категория для фильтрации",
+              "title": "Category"
+            },
+            "description": "Категория для фильтрации"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Поиск по вопросу или ответу",
+              "title": "Search"
+            },
+            "description": "Поиск по вопросу или ответу"
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QAKnowledgeResponse"
+                  },
+                  "title": "Response Get Qa Knowledge Api Qa Knowledge  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "qa-knowledge"
+        ],
+        "summary": "Create Qa Knowledge",
+        "description": "Создать новую Q&A запись",
+        "operationId": "create_qa_knowledge_api_qa_knowledge__post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QAKnowledgeCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QAKnowledgeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/qa-knowledge/{qa_id}": {
+      "get": {
+        "tags": [
+          "qa-knowledge"
+        ],
+        "summary": "Get Qa Knowledge Item",
+        "description": "Получить конкретную Q&A запись",
+        "operationId": "get_qa_knowledge_item_api_qa_knowledge__qa_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "qa_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Qa Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QAKnowledgeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "qa-knowledge"
+        ],
+        "summary": "Update Qa Knowledge",
+        "description": "Обновить Q&A запись",
+        "operationId": "update_qa_knowledge_api_qa_knowledge__qa_id__put",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "qa_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Qa Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QAKnowledgeUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QAKnowledgeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "qa-knowledge"
+        ],
+        "summary": "Delete Qa Knowledge",
+        "description": "Удалить Q&A запись (мягкое удаление)",
+        "operationId": "delete_qa_knowledge_api_qa_knowledge__qa_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "qa_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Qa Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/qa-knowledge/categories/list": {
+      "get": {
+        "tags": [
+          "qa-knowledge"
+        ],
+        "summary": "Get Qa Categories",
+        "description": "Получить список всех категорий Q&A",
+        "operationId": "get_qa_categories_api_qa_knowledge_categories_list_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "assistant_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ID ассистента для фильтрации",
+              "title": "Assistant Id"
+            },
+            "description": "ID ассистента для фильтрации"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/qa-knowledge/{qa_id}/increment-usage": {
+      "post": {
+        "tags": [
+          "qa-knowledge"
+        ],
+        "summary": "Increment Usage",
+        "description": "Увеличить счетчик использования Q&A записи",
+        "operationId": "increment_usage_api_qa_knowledge__qa_id__increment_usage_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "qa_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Qa Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/database/tables": {
+      "get": {
+        "summary": "Get Tables List",
+        "description": "Получение списка всех доступных таблиц",
+        "operationId": "get_tables_list_api_admin_database_tables_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/admin/database/tables/{table_name}/schema": {
+      "get": {
+        "summary": "Get Table Schema",
+        "description": "Получение схемы таблицы",
+        "operationId": "get_table_schema_api_admin_database_tables__table_name__schema_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "table_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Table Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/database/tables/{table_name}/data": {
+      "post": {
+        "summary": "Get Table Data",
+        "description": "Получение данных таблицы с пагинацией, поиском и фильтрацией",
+        "operationId": "get_table_data_api_admin_database_tables__table_name__data_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "table_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Table Name"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TableDataRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/database/tables/{table_name}/records": {
+      "post": {
+        "summary": "Create Record",
+        "description": "Создание новой записи в таблице",
+        "operationId": "create_record_api_admin_database_tables__table_name__records_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "table_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Table Name"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/database/tables/{table_name}/records/{record_id}": {
+      "put": {
+        "summary": "Update Record",
+        "description": "Обновление существующей записи",
+        "operationId": "update_record_api_admin_database_tables__table_name__records__record_id__put",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "table_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Table Name"
+            }
+          },
+          {
+            "name": "record_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Record Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Record",
+        "description": "Удаление записи",
+        "operationId": "delete_record_api_admin_database_tables__table_name__records__record_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "table_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Table Name"
+            }
+          },
+          {
+            "name": "record_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Record Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Get Record",
+        "description": "Получение конкретной записи по ID",
+        "operationId": "get_record_api_admin_database_tables__table_name__records__record_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "table_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Table Name"
+            }
+          },
+          {
+            "name": "record_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Record Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/database/stats": {
+      "get": {
+        "summary": "Get Database Stats",
+        "description": "Получение общей статистики базы данных",
+        "operationId": "get_database_stats_api_admin_database_stats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/admin/database/query": {
+      "post": {
+        "summary": "Execute Custom Query",
+        "description": "Выполнение произвольного SQL запроса (только SELECT)",
+        "operationId": "execute_custom_query_api_admin_database_query_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "query_text",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Query Text"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/start/events/track": {
+      "post": {
+        "summary": "Track Start Page Event",
+        "description": "Отслеживание событий на странице /start\nМожет работать как для авторизованных, так и для анонимных пользователей",
+        "operationId": "track_start_page_event_api_start_events_track_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartPageEventCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Track Start Page Event Api Start Events Track Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/start/analytics/overview": {
+      "get": {
+        "summary": "Get Start Page Analytics",
+        "description": "Получить общую аналитику по странице /start\nДоступно только администраторам",
+        "operationId": "get_start_page_analytics_api_start_analytics_overview_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 7,
+              "title": "Days"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StartPageAnalytics"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/start/analytics/funnel": {
+      "get": {
+        "summary": "Get Start Page Funnel",
+        "description": "Получить анализ воронки страницы /start\nПоказывает прогрессию пользователей через все этапы",
+        "operationId": "get_start_page_funnel_api_start_analytics_funnel_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 7,
+              "title": "Days"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StartPageFunnelAnalysis"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/start/progress/status": {
+      "get": {
+        "summary": "Get User Progress Status",
+        "description": "Получить реальный статус выполнения шагов пользователем\nРаботает как для авторизованных, так и для анонимных пользователей",
+        "operationId": "get_user_progress_status_api_start_progress_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/start/progress/mark-widget-copied": {
+      "post": {
+        "summary": "Mark Widget Code Copied",
+        "description": "Отметить, что пользователь скопировал код виджета",
+        "operationId": "mark_widget_code_copied_api_start_progress_mark_widget_copied_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/start/analytics/events": {
+      "get": {
+        "summary": "Get Start Page Events",
+        "description": "Получить сырые события страницы /start с фильтрацией\nДоступно только администраторам",
+        "operationId": "get_start_page_events_api_start_analytics_events_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          },
+          {
+            "name": "event_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Event Type"
+            }
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 7,
+              "title": "Days"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StartPageEventRead"
+                  },
+                  "title": "Response Get Start Page Events Api Start Analytics Events Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/payments/create-payment": {
+      "post": {
+        "tags": [
+          "payments"
+        ],
+        "summary": "Create Payment",
+        "description": "Создание платежа и формирование формы для перенаправления на Т-Банк",
+        "operationId": "create_payment_api_payments_create_payment_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_create_payment_api_payments_create_payment_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/payments/status/{order_id}": {
+      "get": {
+        "tags": [
+          "payments"
+        ],
+        "summary": "Get Payment Status",
+        "description": "Получение статуса платежа",
+        "operationId": "get_payment_status_api_payments_status__order_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Order Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/payments/complete-payment": {
+      "post": {
+        "tags": [
+          "payments"
+        ],
+        "summary": "Complete Payment",
+        "description": "Обработка результата платежа (вызывается из frontend после возврата с Т-Банк)",
+        "operationId": "complete_payment_api_payments_complete_payment_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_complete_payment_api_payments_complete_payment_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/payments/history": {
+      "get": {
+        "tags": [
+          "payments"
+        ],
+        "summary": "Get Payment History",
+        "description": "История платежей пользователя",
+        "operationId": "get_payment_history_api_payments_history_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/debug/sse/sync": {
+      "get": {
+        "summary": "Debug Sse Sync",
+        "description": "Диагностика синхронизации SSE подключений между админкой и виджетом\nПомогает найти причины проблем типа \"работает только у одного\"",
+        "operationId": "debug_sse_sync_api_debug_sse_sync_get",
+        "parameters": [
+          {
+            "name": "dialog_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "title": "Dialog Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dialogs/{dialog_id}/events": {
+      "get": {
+        "tags": [
+          "SSE"
+        ],
+        "summary": "Dialog Events Stream",
+        "description": "SSE stream для событий диалога\nПоддерживает три режима авторизации:\n- token: JWT токен для admin панели\n- site_token: Site token для виджетов с авторизацией\n- assistant_id + guest_id: Гостевой режим для виджетов\n\nИнтеграция с существующей WebSocket архитектурой",
+        "operationId": "dialog_events_stream_api_dialogs__dialog_id__events_get",
+        "parameters": [
+          {
+            "name": "dialog_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Dialog Id"
+            }
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Token"
+            }
+          },
+          {
+            "name": "site_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Site Token"
+            }
+          },
+          {
+            "name": "assistant_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Assistant Id"
+            }
+          },
+          {
+            "name": "guest_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Guest Id"
+            }
+          },
+          {
+            "name": "Last-Event-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Last-Event-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "options": {
+        "tags": [
+          "SSE"
+        ],
+        "summary": "Sse Cors Preflight",
+        "description": "CORS preflight для SSE endpoints",
+        "operationId": "sse_cors_preflight_api_dialogs__dialog_id__events_options",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/site/dialogs/{dialog_id}/events": {
+      "get": {
+        "tags": [
+          "SSE"
+        ],
+        "summary": "Site Dialog Events Stream",
+        "description": "SSE stream для site виджетов (с site_token)\nУпрощенная версия основного endpoint'а",
+        "operationId": "site_dialog_events_stream_api_site_dialogs__dialog_id__events_get",
+        "parameters": [
+          {
+            "name": "dialog_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Dialog Id"
+            }
+          },
+          {
+            "name": "site_token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Site Token"
+            }
+          },
+          {
+            "name": "Last-Event-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Last-Event-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "options": {
+        "tags": [
+          "SSE"
+        ],
+        "summary": "Sse Cors Preflight",
+        "description": "CORS preflight для SSE endpoints",
+        "operationId": "sse_cors_preflight_api_site_dialogs__dialog_id__events_options",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/widget/dialogs/{dialog_id}/events": {
+      "get": {
+        "tags": [
+          "SSE"
+        ],
+        "summary": "Widget Dialog Events Stream",
+        "description": "SSE stream для widget режима (с assistant_id + guest_id)\nУпрощенная версия основного endpoint'а",
+        "operationId": "widget_dialog_events_stream_api_widget_dialogs__dialog_id__events_get",
+        "parameters": [
+          {
+            "name": "dialog_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Dialog Id"
+            }
+          },
+          {
+            "name": "assistant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Assistant Id"
+            }
+          },
+          {
+            "name": "guest_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Guest Id"
+            }
+          },
+          {
+            "name": "Last-Event-ID",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Last-Event-Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "options": {
+        "tags": [
+          "SSE"
+        ],
+        "summary": "Sse Cors Preflight",
+        "description": "CORS preflight для SSE endpoints",
+        "operationId": "sse_cors_preflight_api_widget_dialogs__dialog_id__events_options",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sse/health": {
+      "get": {
+        "tags": [
+          "SSE"
+        ],
+        "summary": "Sse Health Check",
+        "description": "Health check для SSE сервиса\nВозвращает статистику активных соединений",
+        "operationId": "sse_health_check_api_sse_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sse/stats": {
+      "get": {
+        "tags": [
+          "SSE"
+        ],
+        "summary": "Sse Detailed Stats",
+        "description": "Детальная статистика SSE сервиса\nТолько для development режима или admin авторизации",
+        "operationId": "sse_detailed_stats_api_sse_stats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sse/test-event": {
+      "post": {
+        "tags": [
+          "SSE"
+        ],
+        "summary": "Send Test Event",
+        "description": "Отправка тестового события через SSE\nТолько для development режима",
+        "operationId": "send_test_event_api_sse_test_event_post",
+        "parameters": [
+          {
+            "name": "dialog_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Dialog Id"
+            }
+          },
+          {
+            "name": "message",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "Test SSE event",
+              "title": "Message"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/metrics": {
@@ -8153,7 +10261,7 @@
           "system_prompt": {
             "type": "string",
             "title": "System Prompt",
-            "default": "Вы — корпоративный AI-ассистент. Предоставляю точную информацию по вопросам компании в деловом стиле. Отвечаю кратко, информативно, без использования смайликов и чрезмерной эмоциональности. ВАЖНО: Опираюсь ТОЛЬКО на данные из базы знаний компании. Если информации нет в предоставленных документах — сообщаю об этом прямо, не выдумываю и не использую общие знания."
+            "default": "Привет! Я ваш AI-помощник. Готов ответить на вопросы и помочь с любыми задачами. Чем могу быть полезен?"
           },
           "is_active": {
             "type": "boolean",
@@ -8164,6 +10272,76 @@
             "type": "boolean",
             "title": "Website Integration Enabled",
             "default": false
+          },
+          "allowed_domains": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allowed Domains"
+          },
+          "operator_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Operator Name",
+            "default": "Поддержка"
+          },
+          "business_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Business Name",
+            "default": "Наша компания"
+          },
+          "avatar_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avatar Url"
+          },
+          "widget_theme": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Widget Theme",
+            "default": "blue"
+          },
+          "widget_settings": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Widget Settings"
           }
         },
         "type": "object",
@@ -8186,7 +10364,7 @@
           "system_prompt": {
             "type": "string",
             "title": "System Prompt",
-            "default": "Вы — корпоративный AI-ассистент. Предоставляю точную информацию по вопросам компании в деловом стиле. Отвечаю кратко, информативно, без использования смайликов и чрезмерной эмоциональности. ВАЖНО: Опираюсь ТОЛЬКО на данные из базы знаний компании. Если информации нет в предоставленных документах — сообщаю об этом прямо, не выдумываю и не использую общие знания."
+            "default": "Привет! Я ваш AI-помощник. Готов ответить на вопросы и помочь с любыми задачами. Чем могу быть полезен?"
           },
           "is_active": {
             "type": "boolean",
@@ -8197,6 +10375,76 @@
             "type": "boolean",
             "title": "Website Integration Enabled",
             "default": false
+          },
+          "allowed_domains": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allowed Domains"
+          },
+          "operator_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Operator Name",
+            "default": "Поддержка"
+          },
+          "business_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Business Name",
+            "default": "Наша компания"
+          },
+          "avatar_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avatar Url"
+          },
+          "widget_theme": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Widget Theme",
+            "default": "blue"
+          },
+          "widget_settings": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Widget Settings"
           },
           "id": {
             "type": "integer",
@@ -8434,6 +10682,52 @@
         ],
         "title": "Body_auto_extract_training_data_api_training_auto_extract_post"
       },
+      "Body_complete_payment_api_payments_complete_payment_post": {
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "title": "Order Id"
+          },
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "payment_id": {
+            "type": "string",
+            "title": "Payment Id"
+          },
+          "error_message": {
+            "type": "string",
+            "title": "Error Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id",
+          "success"
+        ],
+        "title": "Body_complete_payment_api_payments_complete_payment_post"
+      },
+      "Body_create_payment_api_payments_create_payment_post": {
+        "properties": {
+          "amount": {
+            "type": "number",
+            "maximum": 50000.0,
+            "minimum": 1.0,
+            "title": "Amount"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "default": "Пополнение баланса ReplyX"
+          }
+        },
+        "type": "object",
+        "required": [
+          "amount"
+        ],
+        "title": "Body_create_payment_api_payments_create_payment_post"
+      },
       "Body_login_api_login_post": {
         "properties": {
           "grant_type": {
@@ -8504,6 +10798,20 @@
           "file"
         ],
         "title": "Body_upload_assistant_document_api_assistants__assistant_id__documents_post"
+      },
+      "Body_upload_avatar_api_upload_avatar_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_avatar_api_upload_avatar_post"
       },
       "Body_upload_document_api_documents_post": {
         "properties": {
@@ -8736,6 +11044,28 @@
           "message": {
             "type": "string",
             "title": "Message"
+          },
+          "access_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Token"
+          },
+          "token_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token Type"
           }
         },
         "type": "object",
@@ -8743,6 +11073,47 @@
           "message"
         ],
         "title": "ConfirmEmailResponse"
+      },
+      "ContactFormCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "phone",
+          "message"
+        ],
+        "title": "ContactFormCreate"
+      },
+      "ContactFormResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message",
+          "success"
+        ],
+        "title": "ContactFormResponse"
       },
       "ConversationPatternCreate": {
         "properties": {
@@ -8817,9 +11188,9 @@
       },
       "DatabaseTableInfo": {
         "properties": {
-          "schema": {
+          "table_schema": {
             "type": "string",
-            "title": "Schema"
+            "title": "Table Schema"
           },
           "table": {
             "type": "string",
@@ -8836,6 +11207,7 @@
         },
         "type": "object",
         "required": [
+          "table_schema",
           "table",
           "size",
           "bytes"
@@ -9673,6 +12045,286 @@
         "title": "ProcessesResponse",
         "description": "Ответ со списком процессов"
       },
+      "QAKnowledgeCreate": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "answer": {
+            "type": "string",
+            "title": "Answer"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "keywords": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Keywords"
+          },
+          "importance": {
+            "type": "integer",
+            "title": "Importance",
+            "default": 10
+          },
+          "assistant_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assistant Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question",
+          "answer"
+        ],
+        "title": "QAKnowledgeCreate"
+      },
+      "QAKnowledgeResponse": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "title": "Question"
+          },
+          "answer": {
+            "type": "string",
+            "title": "Answer"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "keywords": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Keywords"
+          },
+          "importance": {
+            "type": "integer",
+            "title": "Importance",
+            "default": 10
+          },
+          "assistant_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assistant Id"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "user_id": {
+            "type": "integer",
+            "title": "User Id"
+          },
+          "usage_count": {
+            "type": "integer",
+            "title": "Usage Count"
+          },
+          "last_used": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Used"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question",
+          "answer",
+          "id",
+          "user_id",
+          "usage_count",
+          "is_active",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "QAKnowledgeResponse"
+      },
+      "QAKnowledgeUpdate": {
+        "properties": {
+          "question": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Question"
+          },
+          "answer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Answer"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "keywords": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Keywords"
+          },
+          "importance": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Importance"
+          },
+          "assistant_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assistant Id"
+          },
+          "is_active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Active"
+          }
+        },
+        "type": "object",
+        "title": "QAKnowledgeUpdate"
+      },
+      "RecordCreateRequest": {
+        "properties": {
+          "data": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "RecordCreateRequest"
+      },
+      "RecordUpdateRequest": {
+        "properties": {
+          "data": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "RecordUpdateRequest"
+      },
+      "RefreshTokenRequest": {
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "title": "Refresh Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "refresh_token"
+        ],
+        "title": "RefreshTokenRequest"
+      },
       "ReloadBotRequest": {
         "properties": {
           "user_id": {
@@ -9775,6 +12427,297 @@
         },
         "type": "object",
         "title": "ServicePriceUpdate"
+      },
+      "StartPageAnalytics": {
+        "properties": {
+          "total_page_views": {
+            "type": "integer",
+            "title": "Total Page Views"
+          },
+          "unique_sessions": {
+            "type": "integer",
+            "title": "Unique Sessions"
+          },
+          "steps_completion": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Steps Completion"
+          },
+          "conversion_rate": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Conversion Rate"
+          },
+          "drop_off_rate": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Drop Off Rate"
+          },
+          "average_time_on_page": {
+            "type": "number",
+            "title": "Average Time On Page"
+          },
+          "most_popular_actions": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Most Popular Actions"
+          },
+          "user_flow": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "User Flow"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_page_views",
+          "unique_sessions",
+          "steps_completion",
+          "conversion_rate",
+          "drop_off_rate",
+          "average_time_on_page",
+          "most_popular_actions",
+          "user_flow"
+        ],
+        "title": "StartPageAnalytics",
+        "description": "Аналитика по странице /start"
+      },
+      "StartPageEventCreate": {
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "title": "Session Id"
+          },
+          "event_type": {
+            "type": "string",
+            "title": "Event Type"
+          },
+          "step_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Step Id"
+          },
+          "action_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Action Type"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
+          },
+          "user_agent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Agent"
+          }
+        },
+        "type": "object",
+        "required": [
+          "session_id",
+          "event_type"
+        ],
+        "title": "StartPageEventCreate",
+        "description": "Схема для создания события на странице /start"
+      },
+      "StartPageEventRead": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          },
+          "session_id": {
+            "type": "string",
+            "title": "Session Id"
+          },
+          "event_type": {
+            "type": "string",
+            "title": "Event Type"
+          },
+          "step_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Step Id"
+          },
+          "action_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Action Type"
+          },
+          "event_metadata": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Metadata"
+          },
+          "user_agent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Agent"
+          },
+          "ip_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ip Address"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "user_id",
+          "session_id",
+          "event_type",
+          "step_id",
+          "action_type",
+          "event_metadata",
+          "user_agent",
+          "ip_address",
+          "created_at"
+        ],
+        "title": "StartPageEventRead",
+        "description": "Схема для чтения события на странице /start"
+      },
+      "StartPageFunnelAnalysis": {
+        "properties": {
+          "total_sessions": {
+            "type": "integer",
+            "title": "Total Sessions"
+          },
+          "step_1_views": {
+            "type": "integer",
+            "title": "Step 1 Views"
+          },
+          "step_1_completion": {
+            "type": "integer",
+            "title": "Step 1 Completion"
+          },
+          "step_2_views": {
+            "type": "integer",
+            "title": "Step 2 Views"
+          },
+          "step_2_completion": {
+            "type": "integer",
+            "title": "Step 2 Completion"
+          },
+          "step_3_views": {
+            "type": "integer",
+            "title": "Step 3 Views"
+          },
+          "step_3_completion": {
+            "type": "integer",
+            "title": "Step 3 Completion"
+          },
+          "step_4_views": {
+            "type": "integer",
+            "title": "Step 4 Views"
+          },
+          "step_4_completion": {
+            "type": "integer",
+            "title": "Step 4 Completion"
+          },
+          "full_completion_rate": {
+            "type": "number",
+            "title": "Full Completion Rate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_sessions",
+          "step_1_views",
+          "step_1_completion",
+          "step_2_views",
+          "step_2_completion",
+          "step_3_views",
+          "step_3_completion",
+          "step_4_views",
+          "step_4_completion",
+          "full_completion_rate"
+        ],
+        "title": "StartPageFunnelAnalysis",
+        "description": "Анализ воронки страницы /start"
       },
       "SystemLogEntry": {
         "properties": {
@@ -10116,6 +13059,78 @@
         ],
         "title": "SystemSettingsGrouped",
         "description": "Настройки, сгруппированные по категориям"
+      },
+      "TableDataRequest": {
+        "properties": {
+          "page": {
+            "type": "integer",
+            "title": "Page",
+            "default": 1
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit",
+            "default": 20
+          },
+          "search": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Search"
+          },
+          "filter_field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filter Field"
+          },
+          "filter_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filter Value"
+          },
+          "sort_field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sort Field"
+          },
+          "sort_order": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sort Order",
+            "default": "asc"
+          }
+        },
+        "type": "object",
+        "title": "TableDataRequest"
       },
       "TelegramTokenCreate": {
         "properties": {

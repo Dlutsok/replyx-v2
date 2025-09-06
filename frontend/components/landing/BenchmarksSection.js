@@ -60,6 +60,30 @@ const BenchmarksSection = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const scrollContainerRef = useRef(null);
 
+  // Авто-скролл к активному табу на мобильных устройствах
+  const scrollToActiveTab = (tabIndex) => {
+    if (scrollContainerRef.current && window.innerWidth < 1024) {
+      const tabElement = scrollContainerRef.current.querySelector(`[data-tab-index="${tabIndex}"]`);
+      if (tabElement) {
+        const container = scrollContainerRef.current;
+        const tabRect = tabElement.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+
+        const scrollLeft = container.scrollLeft + tabRect.left - containerRect.left - (containerRect.width / 2) + (tabRect.width / 2);
+
+        container.scrollTo({
+          left: scrollLeft,
+          behavior: 'smooth'
+        });
+      }
+    }
+  };
+
+  const handleTabClick = (index) => {
+    setActiveTab(index);
+    scrollToActiveTab(index);
+  };
+
   // Контент для табов
   const tabContent = [
     {
@@ -267,7 +291,7 @@ const BenchmarksSection = () => {
 
 
   return (
-    <section className="relative min-h-[600px] md:min-h-[700px] flex items-center overflow-hidden">
+    <section className="relative min-h-[600px] md:min-h-[700px] flex items-center overflow-hidden pb-20">
       {/* Hero-style gradient background */}
       <div className="absolute inset-0 bg-gradient-to-b from-white via-white to-purple-50/30 pointer-events-none" />
 
@@ -285,7 +309,86 @@ const BenchmarksSection = () => {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-10 items-stretch">
+        {/* Мобильная версия - горизонтальный скролл табов */}
+        <div className="block lg:hidden">
+          <div className="overflow-x-auto pb-4 mb-6" ref={scrollContainerRef}>
+            <div className="flex gap-3" style={{width: 'max-content'}}>
+              {allMetrics.slice(0, 6).map((metric, index) => (
+                <motion.div
+                  key={index}
+                  {...DESIGN_TOKENS.animation.withDelay(0.1 + index * 0.1)}
+                  className={`bg-white rounded-xl px-3 py-2 shadow-sm border transition-all duration-300 cursor-pointer flex-shrink-0 min-w-[180px] relative ${
+                    activeTab === index
+                      ? 'border-purple-300 shadow-md bg-purple-50/50'
+                      : 'border-gray-200 hover:shadow-md hover:border-purple-200'
+                  }`}
+                  data-tab-index={index}
+                  onClick={() => handleTabClick(index)}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
+                      activeTab === index
+                        ? 'bg-purple-50'
+                        : colorClasses[metric.color].bg
+                    }`}>
+                      <metric.icon
+                        className={`w-5 h-5 transition-colors ${
+                          activeTab === index
+                            ? 'text-purple-600'
+                            : colorClasses[metric.color].icon
+                        }`}
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 leading-tight">{metric.title}</p>
+                      <p className="text-xs text-gray-600 leading-tight">{metric.subtitle}</p>
+                    </div>
+                  </div>
+                  {activeTab === index && (
+                    <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-6 h-1 bg-purple-600 rounded-full"></div>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Контент таба для мобильной версии */}
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm"
+          >
+            <div className="mb-4">
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                {tabContent[activeTab].title}
+              </h3>
+              <p className="text-purple-600 font-medium mb-3 text-sm">
+                {tabContent[activeTab].subtitle}
+              </p>
+              <p className="text-gray-600 leading-relaxed text-sm">
+                {tabContent[activeTab].description}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <h4 className="font-semibold text-gray-900 mb-2 text-sm">Ключевые возможности:</h4>
+              {tabContent[activeTab].features.map((feature, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-purple-50 rounded-full flex items-center justify-center flex-shrink-0">
+                    <FiCheckCircle className="w-2.5 h-2.5 text-purple-600" />
+                  </div>
+                  <span className="text-xs text-gray-700">{feature}</span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Десктопная версия - сетка */}
+        <div className="hidden lg:block">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-10 items-stretch">
             {/* Левая часть - интерактивные табы */}
             <motion.div
               {...DESIGN_TOKENS.animation.default}
@@ -301,7 +404,7 @@ const BenchmarksSection = () => {
                         ? 'border-purple-300 shadow-md bg-purple-50/50'
                         : 'border-gray-200 hover:shadow-md hover:border-purple-200'
                     }`}
-                    onClick={() => setActiveTab(index)}
+                    onClick={() => handleTabClick(index)}
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
@@ -369,6 +472,7 @@ const BenchmarksSection = () => {
 
               </motion.div>
             </motion.div>
+          </div>
         </div>
       </div>
     </section>

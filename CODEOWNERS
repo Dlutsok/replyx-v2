@@ -48,11 +48,15 @@ backend/alembic.ini                 @db-migrations-agent @devops
 backend/alembic/versions/a1b2c3d4e5f6_add_widget_version_to_assistants.py @db-migrations-agent @backend-team @teamlead
 
 # ===== SCRIPTS & TOOLS =====
+# Новая структура после реорганизации 2025-09-06
 scripts/                           @devops @teamlead
-scripts/agent-lint.sh              @rad-agent @devops  
-scripts/gen_openapi.sh             @api-contract-agent @devops
-scripts/admin/                     @devops @security-team
-backend/scripts/                   @devops @backend-team
+scripts/ops/                       @rad-agent @devops
+scripts/ops/agent-lint.sh          @rad-agent @devops  
+scripts/ops/gen_openapi.sh         @api-contract-agent @devops
+scripts/ops/dump_schema.sh         @db-migrations-agent @devops
+scripts/deployment/                @devops @teamlead
+scripts/maintenance/               @devops @backend-team
+configs/                           @devops @security-team
 
 # ===== FRONTEND (Next.js/React) =====
 frontend/                          @frontend-uiux-agent @frontend-team
@@ -76,12 +80,19 @@ frontend/styles/design-tokens.css  @ui-designer-agent @frontend-team
 frontend/constants/designSystem.js @ui-designer-agent @frontend-team
 
 # ===== ДОКУМЕНТАЦИЯ =====
+# Новая структура после реорганизации 2025-09-06
 docs/                              @rad-agent @teamlead
 docs/architecture/                 @rad-agent @teamlead  
 docs/api/                          @api-contract-agent @rad-agent
 docs/db/                           @db-migrations-agent @rad-agent
 docs/realtime/                     @rad-agent @backend-team
 docs/runbooks/                     @rad-agent @devops
+docs/deployment/                   @devops @rad-agent
+docs/security/                     @security-team @rad-agent
+docs/migration/                    @rad-agent @teamlead
+docs/testing/                      @rad-agent @devops
+docs/troubleshooting/              @rad-agent @devops
+docs/widget/                       @frontend-uiux-agent @rad-agent
 
 # Критические архитектурные документы
 docs/architecture/overview.md      @rad-agent @teamlead
@@ -91,6 +102,10 @@ docs/adr/                          @rad-agent @teamlead
 # Новые ADR после анализа кода
 docs/adr/ADR-0024-websocket-reconnection-strategy.md @rad-agent @frontend-uiux-agent @teamlead
 docs/adr/ADR-0025-api-url-configuration-strategy.md  @rad-agent @devops @teamlead
+docs/adr/ADR-0026-documentation-and-config-reorganization.md @rad-agent @teamlead
+
+# Архив после реорганизации
+archive/                           @rad-agent @devops
 
 # UI/UX документация
 docs/ui/                           @ui-designer-agent @rad-agent

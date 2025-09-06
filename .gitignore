@@ -65,6 +65,7 @@ backup_*
 .coverage
 htmlcov/
 .pytest_cache/
+test-artifacts/
 
 # Development
 .env.development
@@ -85,3 +86,9 @@ CLAUDE.md
 .vercel/
 .railway/
 .fly/
+
+# Development artifacts
+.dev/
+TASK/
+agent-workdir/
+*.backup

@@ -1,0 +1,195 @@
+name: Repository Structure Validation
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  structure-validation:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Validate top-level directory structure
+      run: |
+        echo "🔍 Validating top-level directory structure..."
+        
+        # Define allowed top-level directories
+        ALLOWED_DIRS=(
+          "backend"
+          "frontend" 
+          "workers"
+          "docs"
+          "scripts"
+          "tests"
+          "archive"
+          ".github"
+          ".claude"
+          "node_modules"
+        )
+        
+        # Find actual top-level directories (excluding hidden except allowed)
+        ACTUAL_DIRS=$(find . -maxdepth 1 -type d -not -name "." -not -name ".git" -not -path "./.*" -o -name ".github" -o -name ".claude" | sed 's|^\./||' | sort)
+        
+        # Check for disallowed directories
+        VIOLATIONS=""
+        for dir in $ACTUAL_DIRS; do
+          if [[ ! " ${ALLOWED_DIRS[@]} " =~ " ${dir} " ]]; then
+            VIOLATIONS="$VIOLATIONS $dir"
+          fi
+        done
+        
+        if [[ -n "$VIOLATIONS" ]]; then
+          echo "❌ Disallowed top-level directories found:$VIOLATIONS"
+          echo "📋 Allowed directories: ${ALLOWED_DIRS[@]}"
+          exit 1
+        fi
+        
+        echo "✅ Top-level directory structure is valid"
+
+    - name: Check for deep relative imports (Frontend)
+      run: |
+        echo "🔍 Checking for problematic relative imports in frontend..."
+        
+        cd frontend
+        
+        # Check for imports going up more than 2 levels
+        DEEP_IMPORTS=$(find . -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" | xargs grep -l "\.\./\.\./\.\." 2>/dev/null || true)
+        
+        if [[ -n "$DEEP_IMPORTS" ]]; then
+          echo "❌ Deep relative imports found (more than 2 levels):"
+          echo "$DEEP_IMPORTS"
+          echo "💡 Consider using path aliases instead: @/components, @/hooks, etc."
+          exit 1
+        fi
+        
+        echo "✅ No problematic relative imports found in frontend"
+
+    - name: Check TypeScript path aliases
+      run: |
+        echo "🔍 Validating TypeScript path aliases..."
+        
+        cd frontend
+        
+        # Check if tsconfig.json has proper path aliases
+        if ! grep -q '"@/components/\*"' tsconfig.json; then
+          echo "❌ Missing @/components/* alias in tsconfig.json"
+          exit 1
+        fi
+        
+        if ! grep -q '"@/hooks/\*"' tsconfig.json; then
+          echo "❌ Missing @/hooks/* alias in tsconfig.json"
+          exit 1
+        fi
+        
+        echo "✅ TypeScript path aliases are properly configured"
+
+    - name: Validate backend package structure
+      run: |
+        echo "🔍 Validating backend package structure..."
+        
+        cd backend
+        
+        # Check for __init__.py files in main packages
+        REQUIRED_INITS=(
+          "__init__.py"
+          "api/__init__.py"
+          "core/__init__.py"
+          "services/__init__.py"
+          "database/__init__.py"
+        )
+        
+        for init_file in "${REQUIRED_INITS[@]}"; do
+          if [[ ! -f "$init_file" ]]; then
+            echo "❌ Missing required __init__.py: $init_file"
+            exit 1
+          fi
+        done
+        
+        echo "✅ Backend package structure is valid"
+
+    - name: Check for ignored directories in wrong places
+      run: |
+        echo "🔍 Checking for directories that should be ignored..."
+        
+        # Check for build artifacts in wrong places
+        if [[ -d "uploads" ]] && [[ ! -f "uploads/.gitkeep" ]]; then
+          echo "⚠️  Found uploads/ directory - should be in backend/uploads/"
+        fi
+        
+        if [[ -d "test-artifacts" ]]; then
+          echo "⚠️  Found test-artifacts/ directory - should be in tests/reports/"
+        fi
+        
+        if [[ -d "TASK" ]]; then
+          echo "⚠️  Found TASK/ directory - should be in archive/ or .claude/"
+        fi
+        
+        echo "✅ Directory placement check complete"
+
+    - name: Validate documentation structure
+      run: |
+        echo "🔍 Validating documentation structure..."
+        
+        cd docs
+        
+        # Check for required documentation directories
+        REQUIRED_DOCS=(
+          "architecture"
+          "api" 
+          "deployment"
+        )
+        
+        for doc_dir in "${REQUIRED_DOCS[@]}"; do
+          if [[ ! -d "$doc_dir" ]]; then
+            echo "❌ Missing required documentation directory: $doc_dir"
+            exit 1
+          fi
+        done
+        
+        echo "✅ Documentation structure is valid"
+
+    - name: Check for .gitignore compliance
+      run: |
+        echo "🔍 Checking .gitignore compliance..."
+        
+        # Check that important paths are ignored
+        SHOULD_BE_IGNORED=(
+          "node_modules/"
+          "__pycache__/"
+          ".venv/"
+          "*.log"
+          ".env"
+        )
+        
+        for pattern in "${SHOULD_BE_IGNORED[@]}"; do
+          if ! grep -q "$pattern" .gitignore; then
+            echo "❌ Missing .gitignore pattern: $pattern"
+            exit 1
+          fi
+        done
+        
+        echo "✅ .gitignore compliance check passed"
+
+    - name: Generate structure report
+      run: |
+        echo "📊 Repository Structure Report"
+        echo "=========================="
+        echo ""
+        echo "Top-level directories:"
+        find . -maxdepth 1 -type d -not -name "." -not -name ".git" | sort
+        echo ""
+        echo "Backend structure:"
+        cd backend && find . -maxdepth 2 -type d | sort
+        echo ""
+        echo "Frontend structure:"
+        cd ../frontend && find . -maxdepth 2 -type d -not -path "./node_modules*" | sort
+        echo ""
+        echo "Workers structure:"
+        cd ../workers && find . -maxdepth 2 -type d -not -path "./node_modules*" | sort

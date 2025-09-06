@@ -7,7 +7,7 @@ echo "🔧 Генерация OpenAPI спецификации для ChatAI MVP
 pushd "$(dirname "$0")/../../backend" >/dev/null
 
 # Генерируем OpenAPI JSON из FastAPI приложения
-python - <<'EOF'
+python3 - <<'EOF'
 import json
 import sys
 import os

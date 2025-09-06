@@ -22,10 +22,13 @@
       "@/components/*": ["./components/*"],
       "@/hooks/*": ["./hooks/*"],
       "@/utils/*": ["./utils/*"],
+      "@/lib/*": ["./lib/*"],
       "@/config/*": ["./config/*"],
       "@/constants/*": ["./constants/*"],
+      "@/contexts/*": ["./contexts/*"],
       "@/styles/*": ["./styles/*"],
-      "@/pages/*": ["./pages/*"]
+      "@/pages/*": ["./pages/*"],
+      "@/public/*": ["./public/*"]
     }
   },
   "include": [

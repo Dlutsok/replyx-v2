@@ -175,7 +175,7 @@ const ProblemSection = () => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-100px' }}
         transition={{ duration: 0.6, delay: 0.1, ease: 'easeOut' }}
-        className="hidden xl:grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6"
+        className="hidden lg:grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6"
       >
         <div className="flex items-center gap-2">
           <span className="inline-flex w-2 h-2 rounded-full bg-red-500"></span>
@@ -190,8 +190,8 @@ const ProblemSection = () => {
       {/* Ряды сравнения */}
       <div className="relative">
         {/* Мобильная версия - квадратики */}
-        <div className="block xl:hidden">
-          <div className="grid grid-cols-2 gap-3">
+        <div className="block lg:hidden">
+          <div className="grid grid-cols-2 gap-4">
             {comparisons.flatMap((row, rowIndex) => [
               <motion.div
                 key={`left-${rowIndex}`}
@@ -199,14 +199,14 @@ const ProblemSection = () => {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.3, delay: rowIndex * 0.1 }}
-                className="h-28 rounded-lg border border-red-200 bg-red-50/60 p-2 flex flex-col items-center justify-center text-center relative overflow-hidden"
+                className="h-40 rounded-lg border border-red-200 bg-red-50/60 p-3 flex flex-col items-center justify-center text-center relative overflow-hidden"
               >
                 <row.left.icon className="w-6 h-6 text-red-600 mb-1 flex-shrink-0" />
                 <div className="text-xs font-semibold text-gray-900 mb-0.5 leading-tight">{row.left.title}</div>
                 <div className="text-xs text-gray-600 leading-tight">{row.left.description}</div>
                 {/* Крестик в углу */}
-                <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-red-500/20 text-red-600 flex items-center justify-center">
-                  <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-red-500/20 text-red-600 flex items-center justify-center">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </div>
@@ -217,14 +217,14 @@ const ProblemSection = () => {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.3, delay: rowIndex * 0.1 + 0.05 }}
-                className="h-28 rounded-lg border border-green-200 bg-green-50/60 p-2 flex flex-col items-center justify-center text-center relative overflow-hidden"
+                className="h-40 rounded-lg border border-green-200 bg-green-50/60 p-3 flex flex-col items-center justify-center text-center relative overflow-hidden"
               >
                 <row.right.icon className="w-6 h-6 text-green-600 mb-1 flex-shrink-0" />
                 <div className="text-xs font-semibold text-gray-900 mb-0.5 leading-tight">{row.right.title}</div>
                 <div className="text-xs text-gray-600 leading-tight">{row.right.description}</div>
                 {/* Галочка в углу */}
-                <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-green-500/20 text-green-600 flex items-center justify-center">
-                  <FiCheck size={10} />
+                <div className="absolute top-3 right-3 w-5 h-5 rounded-full bg-green-500/20 text-green-600 flex items-center justify-center">
+                  <FiCheck size={12} />
                 </div>
               </motion.div>
             ])}
@@ -232,7 +232,7 @@ const ProblemSection = () => {
         </div>
 
         {/* Десктопная версия - оригинальная */}
-        <div className="hidden xl:block">
+        <div className="hidden lg:block">
           <div className="space-y-3">
             {comparisons.map((row, index) => (
               <motion.div

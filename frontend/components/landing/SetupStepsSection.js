@@ -90,7 +90,7 @@ const SetupStepsSection = () => {
 
   return (
     <motion.section
-      className={`${DESIGN_TOKENS.spacing.sectionPadding} ${DESIGN_TOKENS.colors.sectionBg}`}
+      className={`${DESIGN_TOKENS.spacing.sectionPadding} ${DESIGN_TOKENS.colors.sectionBg} pb-20`}
       {...DESIGN_TOKENS.animation.default}
     >
       <div className={`${DESIGN_TOKENS.spacing.maxWidth} ${DESIGN_TOKENS.spacing.containerPadding}`}>
@@ -108,158 +108,419 @@ const SetupStepsSection = () => {
           </p>
         </motion.div>
 
-        {/* Прогресс-бар */}
-        <motion.div
-          className="mb-12"
-          {...DESIGN_TOKENS.animation.withDelay(0.2)}
-        >
-          <div className="relative">
-            {/* Фон прогресс-бара */}
-            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-gradient-to-r from-purple-400 via-purple-500 to-purple-600 rounded-full"
-                initial={{ width: 0 }}
-                animate={{ width: getProgressWidth() }}
-                transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
-              />
-            </div>
+        {/* Мобильная версия прогресс-бара */}
+        <div className="block lg:hidden">
+          <motion.div
+            className="mb-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2, ease: "easeOut" }}
+          >
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+              {/* Заголовок прогресса */}
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-sm font-semibold text-gray-900">Прогресс настройки</h4>
+                <span className="text-xs text-gray-500">
+                  {steps.filter(step => step.status === 'completed').length} из {steps.length} шагов
+                </span>
+              </div>
 
-            {/* Индикаторы шагов */}
-            <div className="absolute -top-6 left-0 right-0 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {steps.map((step, index) => (
+              {/* Основной прогресс-бар */}
+              <div className="relative mb-4">
+                <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-gradient-to-r from-purple-400 via-purple-500 to-purple-600 rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: getProgressWidth() }}
+                    transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
+                  />
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-xs font-medium text-purple-600 drop-shadow-sm">
+                    {getProgressWidth()}
+                  </span>
+                </div>
+              </div>
+
+              {/* Мини-индикаторы шагов */}
+              <div className="flex justify-between">
+                {steps.map((step, index) => (
+                  <motion.div
+                    key={step.id}
+                    className="flex flex-col items-center"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      duration: 0.4,
+                      delay: 0.5 + index * 0.1,
+                      ease: "easeOut"
+                    }}
+                  >
+                    <div className={`
+                      w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all duration-300 mb-1
+                      ${step.status === 'completed'
+                        ? 'bg-gradient-to-br from-green-500 to-emerald-600 border-green-500 text-white shadow-sm'
+                        : step.status === 'current'
+                        ? 'bg-gradient-to-br from-purple-500 to-violet-600 border-purple-500 text-white shadow-sm animate-pulse'
+                        : 'bg-white border-gray-300 text-gray-400'
+                      }
+                    `}>
+                      {step.status === 'completed' ? (
+                        <FiCheckCircle size={14} />
+                      ) : (
+                        <span className="text-xs font-semibold">{step.id}</span>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Десктопная версия прогресс-бара */}
+        <div className="hidden lg:block">
+          <motion.div
+            className="mb-12"
+            {...DESIGN_TOKENS.animation.withDelay(0.2)}
+          >
+            <div className="relative">
+              {/* Фон прогресс-бара */}
+              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-purple-400 via-purple-500 to-purple-600 rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: getProgressWidth() }}
+                  transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
+                />
+              </div>
+
+              {/* Индикаторы шагов */}
+              <div className="absolute -top-6 left-0 right-0 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {steps.map((step, index) => (
+                  <motion.div
+                    key={step.id}
+                    className="flex justify-center"
+                    {...DESIGN_TOKENS.animation.withDelay(0.3 + index * 0.1)}
+                  >
+                    <div className={`
+                      w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300
+                      ${step.status === 'completed' ? 'bg-purple-500 border-purple-500 text-white' :
+                        step.status === 'current' ? 'bg-purple-500 border-purple-500 text-white' :
+                        'bg-white border-gray-300 text-gray-400'}
+                    `}>
+                      {step.status === 'completed' ? (
+                        <FiCheckCircle size={20} />
+                      ) : (
+                        <span className="text-sm font-semibold">{step.id}</span>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Мобильная версия - современный вертикальный стек */}
+        <div className="block lg:hidden">
+          <motion.div
+            className="space-y-3"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4, delay: 0.4 }}
+          >
+            {steps.map((step, index) => {
+              const statusColors = getStatusColor(step.status);
+
+              return (
                 <motion.div
                   key={step.id}
-                  className="flex justify-center"
-                  {...DESIGN_TOKENS.animation.withDelay(0.3 + index * 0.1)}
+                  className={`
+                    relative overflow-hidden transition-all duration-500
+                    ${step.status === 'current'
+                      ? 'bg-gradient-to-br from-purple-50 via-purple-25 to-purple-50 border-2 border-purple-200 shadow-lg'
+                      : step.status === 'completed'
+                      ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 shadow-md'
+                      : 'bg-white border-2 border-gray-100 shadow-sm'
+                    }
+                    rounded-3xl
+                  `}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.5,
+                    delay: 0.6 + index * 0.15,
+                    ease: "easeOut"
+                  }}
                 >
-                  <div className={`
-                    w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300
-                    ${step.status === 'completed' ? 'bg-purple-500 border-purple-500 text-white' :
-                      step.status === 'current' ? 'bg-purple-500 border-purple-500 text-white' :
-                      'bg-white border-gray-300 text-gray-400'}
-                  `}>
-                    {step.status === 'completed' ? (
-                      <FiCheckCircle size={20} />
-                    ) : (
-                      <span className="text-sm font-semibold">{step.id}</span>
-                    )}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Шаги в виде карточек */}
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-          {...DESIGN_TOKENS.animation.withDelay(0.4)}
-        >
-          {steps.map((step, index) => {
-            const statusColors = getStatusColor(step.status);
-
-            return (
-              <motion.div
-                key={step.id}
-                className={`
-                  relative bg-white rounded-2xl border transition-all duration-300 cursor-pointer
-                  ${statusColors.border} ${statusColors.bg}
-                  ${step.status === 'current' ? 'shadow-lg hover:shadow-xl border-purple-300' :
-                    step.status === 'completed' ? 'shadow-md hover:shadow-lg' :
-                    'shadow-sm hover:shadow-md border-gray-200'}
-                `}
-                {...DESIGN_TOKENS.animation.withDelay(0.5 + index * 0.1)}
-                onMouseEnter={() => setHoveredStep(index)}
-                onMouseLeave={() => setHoveredStep(null)}
-                onClick={() => setActiveStep(index)}
-              >
-                {/* Статус индикатор */}
-                <div className="absolute top-1/2 -translate-y-1/2 -right-2 w-6 h-6 rounded-full bg-white border-2 flex items-center justify-center">
-                  {step.status === 'completed' ? (
-                    <div className="w-3 h-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full" />
-                  ) : step.status === 'current' ? (
-                    <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse" />
-                  ) : (
-                    <div className="w-3 h-3 bg-gray-300 rounded-full" />
-                  )}
-                </div>
-
-                {/* Контент карточки */}
-                <div className="p-6">
-                  {/* Иконка */}
-                  <div className={`
-                    w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-all duration-300
-                    ${step.id === 1 ? 'bg-blue-100' :
-                      step.id === 2 ? 'bg-green-100' :
-                      step.id === 3 ? 'bg-orange-100' :
-                      'bg-purple-100'}
-                  `}>
-                    <step.icon
-                      className={`w-6 h-6 transition-colors duration-300 ${
-                        step.id === 1 ? 'text-blue-600' :
-                        step.id === 2 ? 'text-green-600' :
-                        step.id === 3 ? 'text-orange-600' :
-                        'text-purple-600'
-                      }`}
-                    />
-                  </div>
-
-                  {/* Заголовок */}
-                  <h3 className={`text-lg font-semibold mb-2 transition-colors duration-300 ${
-                    step.status === 'completed' ? 'text-purple-900' :
-                    step.status === 'current' ? 'text-purple-900' : 'text-gray-700'
-                  }`}>
-                    {step.title}
-                  </h3>
-
-
-
-                  {/* Описание */}
-                  <p className="text-sm text-gray-600 leading-relaxed mb-4">
-                    {step.description}
-                  </p>
-
-                  {/* Стрелка для текущего шага */}
+                  {/* Фоновый градиент для активного шага */}
                   {step.status === 'current' && (
                     <motion.div
-                      className="flex items-center gap-2 text-purple-600"
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <span className="text-sm font-medium">Продолжить</span>
-                      <FiChevronRight className="w-4 h-4" />
-                    </motion.div>
+                      className="absolute inset-0 bg-gradient-to-br from-purple-100/30 via-violet-50/20 to-purple-100/30"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.6 }}
+                    />
                   )}
-                </div>
 
-                {/* Hover эффект */}
-                {hoveredStep === index && step.status !== 'completed' && (
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-blue-50/50 rounded-2xl pointer-events-none"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  />
-                )}
-              </motion.div>
-            );
-          })}
-        </motion.div>
+                  <div className="relative p-5">
+                    {/* Верхняя часть с номером и статусом */}
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        {/* Большой номер шага */}
+                        <div className={`
+                          w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-lg transition-all duration-300
+                          ${step.status === 'completed'
+                            ? 'bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg'
+                            : step.status === 'current'
+                            ? 'bg-gradient-to-br from-purple-500 to-violet-600 text-white shadow-lg animate-pulse'
+                            : 'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-600'
+                          }
+                        `}>
+                          {step.status === 'completed' ? (
+                            <FiCheckCircle size={20} />
+                          ) : (
+                            step.id
+                          )}
+                        </div>
 
-        {/* CTA кнопка */}
-        <motion.div
-          className="text-center mt-12"
-          {...DESIGN_TOKENS.animation.withDelay(0.8)}
-        >
-          <button
-            onClick={() => router.push('/register')}
-            className="px-8 py-2.5 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200 h-11 relative overflow-hidden bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 hover:from-purple-700 hover:via-violet-700 hover:to-indigo-700"
+                        {/* Статус бейдж */}
+                        <div className={`
+                          px-3 py-1 rounded-full text-xs font-medium transition-all duration-300
+                          ${step.status === 'completed'
+                            ? 'bg-green-100 text-green-700'
+                            : step.status === 'current'
+                            ? 'bg-purple-100 text-purple-700'
+                            : 'bg-gray-100 text-gray-600'
+                          }
+                        `}>
+                          {step.status === 'completed' ? 'Готово' :
+                           step.status === 'current' ? 'В процессе' : 'Ожидает'}
+                        </div>
+                      </div>
+
+                      {/* Иконка шага */}
+                      <div className={`
+                        w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 shadow-sm
+                        ${step.id === 1 ? 'bg-gradient-to-br from-blue-100 to-blue-200' :
+                          step.id === 2 ? 'bg-gradient-to-br from-green-100 to-green-200' :
+                          step.id === 3 ? 'bg-gradient-to-br from-orange-100 to-orange-200' :
+                          'bg-gradient-to-br from-purple-100 to-purple-200'}
+                      `}>
+                        <step.icon
+                          className={`w-7 h-7 transition-colors duration-300 ${
+                            step.id === 1 ? 'text-blue-600' :
+                            step.id === 2 ? 'text-green-600' :
+                            step.id === 3 ? 'text-orange-600' :
+                            'text-purple-600'
+                          }`}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Контент */}
+                    <div className="space-y-2">
+                      <h3 className={`text-lg font-bold leading-tight transition-colors duration-300 ${
+                        step.status === 'completed' ? 'text-green-900' :
+                        step.status === 'current' ? 'text-purple-900' : 'text-gray-900'
+                      }`}>
+                        {step.title}
+                      </h3>
+
+                      <p className="text-sm text-gray-600 leading-relaxed">
+                        {step.description}
+                      </p>
+                    </div>
+
+                    {/* Индикатор прогресса */}
+                    <div className="mt-4 pt-3 border-t border-gray-100">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-500">Прогресс</span>
+                        <span className={`text-xs font-medium ${
+                          step.status === 'completed' ? 'text-green-600' :
+                          step.status === 'current' ? 'text-purple-600' : 'text-gray-400'
+                        }`}>
+                          {step.status === 'completed' ? '100%' :
+                           step.status === 'current' ? '50%' : '0%'}
+                        </span>
+                      </div>
+                      <div className="mt-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <motion.div
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            step.status === 'completed'
+                              ? 'bg-gradient-to-r from-green-400 to-emerald-500'
+                              : step.status === 'current'
+                              ? 'bg-gradient-to-r from-purple-400 to-violet-500'
+                              : 'bg-gray-200'
+                          }`}
+                          initial={{ width: 0 }}
+                          animate={{
+                            width: step.status === 'completed' ? '100%' :
+                                   step.status === 'current' ? '50%' : '0%'
+                          }}
+                          transition={{ duration: 0.8, delay: index * 0.1 }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* CTA для текущего шага */}
+                    {step.status === 'current' && (
+                      <motion.div
+                        className="mt-4 pt-3 border-t border-purple-200"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.2 }}
+                      >
+                        <button className="w-full bg-gradient-to-r from-purple-500 to-violet-600 text-white py-2.5 px-4 rounded-xl font-medium text-sm transition-all duration-200 hover:from-purple-600 hover:to-violet-700 hover:shadow-md active:scale-95">
+                          Продолжить шаг {step.id}
+                        </button>
+                      </motion.div>
+                    )}
+                  </div>
+
+                  {/* Декоративный элемент */}
+                  <div className={`absolute top-0 right-0 w-20 h-20 rounded-full opacity-10 ${
+                    step.id === 1 ? 'bg-blue-500' :
+                    step.id === 2 ? 'bg-green-500' :
+                    step.id === 3 ? 'bg-orange-500' : 'bg-purple-500'
+                  }`} style={{
+                    transform: 'translate(10px, -10px)'
+                  }} />
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </div>
+
+        {/* Десктопная версия - сетка */}
+        <div className="hidden lg:block">
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+            {...DESIGN_TOKENS.animation.withDelay(0.4)}
           >
-            <span className="absolute inset-0 z-0 animate-wave-gradient bg-gradient-to-r from-violet-400 via-fuchsia-500 to-violet-400" />
-            <span className="relative z-10">Начать настройку</span>
-          </button>
-        </motion.div>
+            {steps.map((step, index) => {
+              const statusColors = getStatusColor(step.status);
+
+              return (
+                <motion.div
+                  key={step.id}
+                  className={`
+                    relative bg-white rounded-2xl border transition-all duration-300 cursor-pointer
+                    ${statusColors.border} ${statusColors.bg}
+                    ${step.status === 'current' ? 'shadow-lg hover:shadow-xl border-purple-300' :
+                      step.status === 'completed' ? 'shadow-md hover:shadow-lg' :
+                      'shadow-sm hover:shadow-md border-gray-200'}
+                  `}
+                  {...DESIGN_TOKENS.animation.withDelay(0.5 + index * 0.1)}
+                  onClick={() => setActiveStep(index)}
+                >
+                  {/* Статус индикатор */}
+                  <div className="absolute top-1/2 -translate-y-1/2 -right-2 w-6 h-6 rounded-full bg-white border-2 flex items-center justify-center">
+                    {step.status === 'completed' ? (
+                      <div className="w-3 h-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full" />
+                    ) : step.status === 'current' ? (
+                      <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse" />
+                    ) : (
+                      <div className="w-3 h-3 bg-gray-300 rounded-full" />
+                    )}
+                  </div>
+
+                  {/* Контент карточки */}
+                  <div className="p-6">
+                    {/* Иконка */}
+                    <div className={`
+                      w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-all duration-300
+                      ${step.id === 1 ? 'bg-blue-100' :
+                        step.id === 2 ? 'bg-green-100' :
+                        step.id === 3 ? 'bg-orange-100' :
+                        'bg-purple-100'}
+                    `}>
+                      <step.icon
+                        className={`w-6 h-6 transition-colors duration-300 ${
+                          step.id === 1 ? 'text-blue-600' :
+                          step.id === 2 ? 'text-green-600' :
+                          step.id === 3 ? 'text-orange-600' :
+                          'text-purple-600'
+                        }`}
+                      />
+                    </div>
+
+                    {/* Заголовок */}
+                    <h3 className={`text-lg font-semibold mb-2 transition-colors duration-300 ${
+                      step.status === 'completed' ? 'text-purple-900' :
+                      step.status === 'current' ? 'text-purple-900' : 'text-gray-700'
+                    }`}>
+                      {step.title}
+                    </h3>
+
+
+
+                    {/* Описание */}
+                    <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                      {step.description}
+                    </p>
+
+                    {/* Стрелка для текущего шага */}
+                    {step.status === 'current' && (
+                      <motion.div
+                        className="flex items-center gap-2 text-purple-600"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <span className="text-sm font-medium">Продолжить</span>
+                        <FiChevronRight className="w-4 h-4" />
+                      </motion.div>
+                    )}
+                  </div>
+
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </div>
+
+        {/* Мобильная CTA кнопка */}
+        <div className="block lg:hidden">
+          <motion.div
+            className="mt-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.8, ease: "easeOut" }}
+          >
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+              <button
+                onClick={() => router.push('/register')}
+                className="w-full bg-gradient-to-r from-purple-500 via-violet-600 to-indigo-600 text-white py-4 px-6 rounded-2xl font-semibold text-base transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200/50 hover:from-purple-600 hover:via-violet-700 hover:to-indigo-700 hover:shadow-lg active:scale-95 relative overflow-hidden"
+              >
+                <span className="absolute inset-0 bg-gradient-to-r from-violet-400 via-fuchsia-500 to-violet-400 opacity-0 hover:opacity-20 transition-opacity duration-300" />
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                  <span>🚀 Начать настройку</span>
+                </span>
+              </button>
+              <p className="text-xs text-gray-500 text-center mt-3">
+                7 дней бесплатно • Без кредитной карты
+              </p>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Десктопная CTA кнопка */}
+        <div className="hidden lg:block">
+          <motion.div
+            className="text-center mt-12"
+            {...DESIGN_TOKENS.animation.withDelay(0.8)}
+          >
+            <button
+              onClick={() => router.push('/register')}
+              className="px-8 py-2.5 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200 h-11 relative overflow-hidden bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 hover:from-purple-700 hover:via-violet-700 hover:to-indigo-700"
+            >
+              <span className="absolute inset-0 z-0 animate-wave-gradient bg-gradient-to-r from-violet-400 via-fuchsia-500 to-violet-400" />
+              <span className="relative z-10">Начать настройку</span>
+            </button>
+          </motion.div>
+        </div>
       </div>
     </motion.section>
   );

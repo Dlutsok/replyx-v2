@@ -54,5 +54,12 @@
     "max_workers": 1000,
     "default_timeout": 90000,
     "heartbeat_interval": 45000
+  },
+  "imports": {
+    "#workers/*": "./workers/*",
+    "#services/*": "./services/*",
+    "#config/*": "./config/*",
+    "#scripts/*": "./scripts/*",
+    "#utils/*": "./utils/*"
   }
 }
