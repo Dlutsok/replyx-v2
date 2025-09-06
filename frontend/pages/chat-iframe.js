@@ -873,6 +873,36 @@ export default function ChatIframe() {
             return;
           }
 
+          // Обычное сообщение в прямом формате {id, sender, text, timestamp} 
+          if (data.id && data.sender && data.text && !data.type) {
+            setMessages((prev) => {
+              const exists = prev.find(m => m.id === data.id);
+              if (exists) return prev;
+              
+              setDialogLoaded(true);
+              const newMessages = [...prev, data];
+              setMessageCache(cache => ({ ...cache, [dialogId]: newMessages }));
+              return newMessages;
+            });
+            
+            if (data.sender === 'assistant') {
+              setTyping(false);
+              setLoading(false);
+              
+              // Уведомляем родительское окно о получении ответа
+              if (typeof window !== 'undefined' && window.parent) {
+                window.parent.postMessage({
+                  type: 'replyX_message_received',
+                  text: data.text,
+                  timestamp: data.timestamp
+                }, '*');
+              }
+            }
+            
+            scrollToBottom();
+            return;
+          }
+
           // Обычное сообщение в формате {message: {id, sender, text, timestamp}}
           if (data.message && data.message.sender !== 'user') {
             const msg = data.message;
