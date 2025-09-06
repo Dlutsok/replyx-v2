@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 import logging
 import os
+from jose import jwt, JWTError
 
 from database import get_db, models, schemas, auth
 from validators.rate_limiter import rate_limit_api
@@ -161,8 +162,15 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), request: Request = N
         user_agent=user_agent
     )
     
+    # Создаём access и refresh токены
     access_token = auth.create_access_token(data={"sub": str(user.id), "email": user.email})
-    return {"access_token": access_token, "token_type": "bearer"}
+    refresh_token = auth.create_refresh_token(data={"sub": str(user.id), "email": user.email})
+    
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer"
+    }
 
 # Схема для смены пароля
 class ChangePasswordRequest(BaseModel):
@@ -360,3 +368,143 @@ def validate_reset_token(request: schemas.TokenValidationRequest, db: Session = 
         raise HTTPException(status_code=400, detail="Недействительный или истёкший токен")
     
     return {"message": "Токен действителен", "valid": True}
+
+# Схема для refresh token
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
+
+@router.post("/refresh-token")
+@rate_limit_api(limit=50, window=300)  # 50 попыток обновления токена за 5 минут
+def refresh_access_token(
+    request_data: RefreshTokenRequest,
+    request: Request = None,
+    db: Session = Depends(get_db)
+):
+    """
+    Обновление access token через refresh token
+    Для production-ready WebSocket переподключений
+    """
+    from monitoring.audit_logger import audit_log
+    from core.auth import verify_refresh_token, create_access_token
+    
+    # Получаем IP и User-Agent
+    ip_address = request.client.host if request and request.client else None
+    user_agent = request.headers.get('user-agent') if request else None
+    
+    if not request_data.refresh_token:
+        raise HTTPException(status_code=400, detail="Refresh token обязателен")
+    
+    try:
+        # Верифицируем refresh token
+        payload = verify_refresh_token(request_data.refresh_token)
+        user_id = payload.get("sub")
+        
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Недействительный refresh token")
+        
+        # Получаем пользователя из БД
+        user = db.query(models.User).filter(models.User.id == int(user_id)).first()
+        if not user:
+            logger.warning(f"User not found for refresh token: {user_id}")
+            audit_log(
+                operation='token_refresh',
+                user_id=None,
+                status='failed', 
+                details={
+                    'reason': 'user_not_found',
+                    'user_id': user_id
+                },
+                ip_address=ip_address,
+                user_agent=user_agent
+            )
+            raise HTTPException(status_code=401, detail="Пользователь не найден")
+        
+        # Проверяем активность аккаунта
+        if not user.is_email_confirmed and getattr(user, 'role', None) != 'admin':
+            logger.warning(f"Email not confirmed for user: {user.email}")
+            audit_log(
+                operation='token_refresh',
+                user_id=user.id,
+                status='failed',
+                details={
+                    'email': user.email,
+                    'reason': 'email_not_confirmed'
+                },
+                ip_address=ip_address,
+                user_agent=user_agent
+            )
+            raise HTTPException(status_code=403, detail="Email не подтверждён")
+        
+        # Создаём новый access token
+        new_access_token = create_access_token(
+            data={"sub": str(user.id), "email": user.email}
+        )
+        
+        # Логируем успешное обновление токена
+        audit_log(
+            operation='token_refresh',
+            user_id=user.id,
+            status='success',
+            details={
+                'email': user.email
+            },
+            ip_address=ip_address,
+            user_agent=user_agent
+        )
+        
+        logger.info(f"Access token refreshed for user: {user.email}")
+        
+        return {
+            "access_token": new_access_token,
+            "token_type": "bearer",
+            "user_id": user.id,
+            "email": user.email
+        }
+        
+    except JWTError as e:
+        logger.warning(f"Invalid refresh token: {e}")
+        audit_log(
+            operation='token_refresh',
+            user_id=None,
+            status='failed',
+            details={
+                'reason': 'invalid_token',
+                'error': str(e)
+            },
+            ip_address=ip_address,
+            user_agent=user_agent
+        )
+        raise HTTPException(status_code=401, detail="Недействительный refresh token")
+    
+    except HTTPException:
+        # Пробрасываем HTTP исключения как есть
+        raise
+    
+    except Exception as e:
+        logger.error(f"Token refresh error: {e}", exc_info=True)
+        audit_log(
+            operation='token_refresh',
+            user_id=None,
+            status='error',
+            details={
+                'error': str(e)
+            },
+            ip_address=ip_address,
+            user_agent=user_agent
+        )
+        raise HTTPException(status_code=500, detail="Ошибка при обновлении токена")
+
+@router.post("/validate-token")
+@rate_limit_api(limit=100, window=60)  # 100 проверок токена в минуту
+def validate_access_token(
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    """
+    Валидация access token - для проверки актуальности перед WebSocket подключением
+    """
+    return {
+        "valid": True,
+        "user_id": current_user.id,
+        "email": current_user.email,
+        "role": getattr(current_user, 'role', 'user')
+    }

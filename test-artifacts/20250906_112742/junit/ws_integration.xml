@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="8" skipped="0" tests="24" time="0.843" timestamp="2025-09-06T11:27:46.972047+03:00" hostname="MacBook-Pro-Dan.local"><testcase classname="tests.test_websocket_integration.TestWebSocketCloseCodes" name="test_rate_limited_close_code" time="0.039" /><testcase classname="tests.test_websocket_integration.TestWebSocketCloseCodes" name="test_auth_failed_close_code" time="0.002" /><testcase classname="tests.test_websocket_integration.TestWebSocketCloseCodes" name="test_forbidden_domain_close_code" time="0.002" /><testcase classname="tests.test_websocket_integration.TestWebSocketCloseCodes" name="test_not_found_close_code" time="0.002" /><testcase classname="tests.test_websocket_integration.TestRateLimiting" name="test_rate_limit_allow_under_limit" time="0.002" /><testcase classname="tests.test_websocket_integration.TestRateLimiting" name="test_rate_limit_deny_over_limit" time="0.001" /><testcase classname="tests.test_websocket_integration.TestRateLimiting" name="test_rate_limit_window_cleanup" time="0.001" /><testcase classname="tests.test_websocket_integration.TestRateLimiting" name="test_rate_limit_no_ip" time="0.002" /><testcase classname="tests.test_websocket_integration.TestDomainValidation" name="test_normalize_host_from_origin" time="0.003" /><testcase classname="tests.test_websocket_integration.TestDomainValidation" name="test_domain_allowed_by_token_valid" time="0.001"><failure message="AttributeError: &lt;module 'services.websocket_manager' from '/Users/dan/Documents/chatAI/MVP 13/backend/services/websocket_manager.py'&gt; does not have the attribute 'jwt'">args = (&lt;test_websocket_integration.TestDomainValidation object at 0x115e37c50&gt;,)
+keywargs = {}
+
+    @wraps(func)
+    def patched(*args, **keywargs):
+&gt;       with self.decoration_helper(patched,
+                                    args,
+                                    keywargs) as (newargs, newkeywargs):
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/unittest/mock.py:1423: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/unittest/mock.py:1405: in decoration_helper
+    arg = exit_stack.enter_context(patching)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/contextlib.py:530: in enter_context
+    result = _enter(cm)
+             ^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/unittest/mock.py:1497: in __enter__
+    original, local = self.get_original()
+                      ^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;unittest.mock._patch object at 0x115e54c90&gt;
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+&gt;           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: &lt;module 'services.websocket_manager' from '/Users/dan/Documents/chatAI/MVP 13/backend/services/websocket_manager.py'&gt; does not have the attribute 'jwt'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/unittest/mock.py:1467: AttributeError</failure></testcase><testcase classname="tests.test_websocket_integration.TestDomainValidation" name="test_domain_allowed_by_token_invalid" time="0.005"><failure message="AttributeError: &lt;module 'services.websocket_manager' from '/Users/dan/Documents/chatAI/MVP 13/backend/services/websocket_manager.py'&gt; does not have the attribute 'jwt'">args = (&lt;test_websocket_integration.TestDomainValidation object at 0x115e91940&gt;,)
+keywargs = {}
+
+    @wraps(func)
+    def patched(*args, **keywargs):
+&gt;       with self.decoration_helper(patched,
+                                    args,
+                                    keywargs) as (newargs, newkeywargs):
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/unittest/mock.py:1423: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/unittest/mock.py:1405: in decoration_helper
+    arg = exit_stack.enter_context(patching)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/contextlib.py:530: in enter_context
+    result = _enter(cm)
+             ^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/unittest/mock.py:1497: in __enter__
+    original, local = self.get_original()
+                      ^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;unittest.mock._patch object at 0x115e550f0&gt;
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+&gt;           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: &lt;module 'services.websocket_manager' from '/Users/dan/Documents/chatAI/MVP 13/backend/services/websocket_manager.py'&gt; does not have the attribute 'jwt'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/unittest/mock.py:1467: AttributeError</failure></testcase><testcase classname="tests.test_websocket_integration.TestDomainValidation" name="test_domain_allowed_subdomain_support" time="0.001"><failure message="AttributeError: &lt;module 'services.websocket_manager' from '/Users/dan/Documents/chatAI/MVP 13/backend/services/websocket_manager.py'&gt; does not have the attribute 'jwt'">args = (&lt;test_websocket_integration.TestDomainValidation object at 0x115e91a70&gt;,)
+keywargs = {}
+
+    @wraps(func)
+    def patched(*args, **keywargs):
+&gt;       with self.decoration_helper(patched,
+                                    args,
+                                    keywargs) as (newargs, newkeywargs):
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/unittest/mock.py:1423: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/contextlib.py:141: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/unittest/mock.py:1405: in decoration_helper
+    arg = exit_stack.enter_context(patching)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/contextlib.py:530: in enter_context
+    result = _enter(cm)
+             ^^^^^^^^^^
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/unittest/mock.py:1497: in __enter__
+    original, local = self.get_original()
+                      ^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;unittest.mock._patch object at 0x115e55710&gt;
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+&gt;           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: &lt;module 'services.websocket_manager' from '/Users/dan/Documents/chatAI/MVP 13/backend/services/websocket_manager.py'&gt; does not have the attribute 'jwt'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/unittest/mock.py:1467: AttributeError</failure></testcase><testcase classname="tests.test_websocket_integration.TestMessageQueue" name="test_message_queue_creation" time="0.001" /><testcase classname="tests.test_websocket_integration.TestMessageQueue" name="test_send_message_with_ack" time="0.001" /><testcase classname="tests.test_websocket_integration.TestMessageQueue" name="test_handle_ack" time="0.001" /><testcase classname="tests.test_websocket_integration.TestMessageQueue" name="test_handle_ack_wrong_websocket" time="0.001" /><testcase classname="tests.test_websocket_integration.TestMessageQueue" name="test_is_message_processed_deduplication" time="0.001" /><testcase classname="tests.test_websocket_integration.TestConcurrentOperations" name="test_concurrent_push_messages" time="0.006"><failure message="assert 0 == 10&#10; +  where 0 = len([])&#10; +    where [] = &lt;test_websocket_integration.MockWebSocket object at 0x115e935c0&gt;.messages_sent">self = &lt;test_websocket_integration.TestConcurrentOperations object at 0x115ed8050&gt;
+
+    @pytest.mark.asyncio
+    async def test_concurrent_push_messages(self):
+        """Тест concurrent отправки сообщений"""
+        dialog_id = 1
+    
+        # Создаем несколько mock WebSocket'ов
+        mock_ws_list = [MockWebSocket() for _ in range(5)]
+        ws_connections[dialog_id] = set(mock_ws_list)
+    
+        # Отправляем сообщения конкурентно
+        tasks = []
+        for i in range(10):
+            task = asyncio.create_task(
+                push_dialog_message(dialog_id, {"id": i, "text": f"Message {i}"})
+            )
+            tasks.append(task)
+    
+        # Ждем завершения всех задач
+        await asyncio.gather(*tasks)
+    
+        # Проверяем что все сообщения дошли до всех клиентов
+        for mock_ws in mock_ws_list:
+&gt;           assert len(mock_ws.messages_sent) == 10
+E           assert 0 == 10
+E            +  where 0 = len([])
+E            +    where [] = &lt;test_websocket_integration.MockWebSocket object at 0x115e935c0&gt;.messages_sent
+
+tests/test_websocket_integration.py:310: AssertionError</failure></testcase><testcase classname="tests.test_websocket_integration.TestConcurrentOperations" name="test_connection_cleanup_on_error" time="0.002"><failure message="assert &lt;test_websocket_integration.MockWebSocket object at 0x115eb32f0&gt; in set()">self = &lt;test_websocket_integration.TestConcurrentOperations object at 0x115ed8190&gt;
+
+    @pytest.mark.asyncio
+    async def test_connection_cleanup_on_error(self):
+        """Тест очистки соединений при ошибках"""
+        dialog_id = 1
+    
+        # Создаем mock WebSocket который будет выбрасывать ошибку при send_json
+        error_ws = MockWebSocket()
+        error_ws.send_json = AsyncMock(side_effect=Exception("Connection error"))
+    
+        good_ws = MockWebSocket()
+    
+        ws_connections[dialog_id] = {error_ws, good_ws}
+    
+        # Отправляем сообщение
+        await push_dialog_message(dialog_id, {"text": "test"})
+    
+        # Проверяем что error_ws удален, а good_ws остался
+        remaining_connections = ws_connections.get(dialog_id, set())
+        assert error_ws not in remaining_connections
+&gt;       assert good_ws in remaining_connections
+E       assert &lt;test_websocket_integration.MockWebSocket object at 0x115eb32f0&gt; in set()
+
+tests/test_websocket_integration.py:331: AssertionError</failure></testcase><testcase classname="tests.test_websocket_integration.TestConnectionStatistics" name="test_connection_stats_basic" time="0.001"><failure message="AssertionError: assert 'admin_dialogs' in {'connection_details': {'admin_connections': 0, 'admin_dialogs': 0, 'site_connections': 0, 'site_dialogs': 0}, 'message_queue': {'pending_messages': 0, 'processed_messages': 0, 'registered_websockets': 0, 'retry_ready': 0}, 'performance': {'cleanup_cycles': 0, 'dialog_locks': 1}, 'rate_limiting': {'rate_limit_per_ip': 100, 'rate_limit_window': 60, 'rate_limited_ips': 0, 'total_rate_limit_entries': 0}, ...}">self = &lt;test_websocket_integration.TestConnectionStatistics object at 0x115ed82d0&gt;
+
+    def test_connection_stats_basic(self):
+        """Тест базовой статистики"""
+        stats = get_connection_stats()
+    
+        assert "total_connections" in stats
+&gt;       assert "admin_dialogs" in stats
+E       AssertionError: assert 'admin_dialogs' in {'connection_details': {'admin_connections': 0, 'admin_dialogs': 0, 'site_connections': 0, 'site_dialogs': 0}, 'message_queue': {'pending_messages': 0, 'processed_messages': 0, 'registered_websockets': 0, 'retry_ready': 0}, 'performance': {'cleanup_cycles': 0, 'dialog_locks': 1}, 'rate_limiting': {'rate_limit_per_ip': 100, 'rate_limit_window': 60, 'rate_limited_ips': 0, 'total_rate_limit_entries': 0}, ...}
+
+tests/test_websocket_integration.py:342: AssertionError</failure></testcase><testcase classname="tests.test_websocket_integration.TestConnectionStatistics" name="test_connection_stats_with_active_limits" time="0.001"><failure message="KeyError: 'rate_limited_ips'">self = &lt;test_websocket_integration.TestConnectionStatistics object at 0x115ed8410&gt;
+
+    def test_connection_stats_with_active_limits(self):
+        """Тест статистики с активными rate limits"""
+        # Добавляем активные rate limits
+        current_time = time.time()
+        _ws_rate_limits["10.0.0.1"] = [current_time]
+        _ws_rate_limits["10.0.0.2"] = [current_time - WS_RATE_LIMIT_WINDOW - 1]  # Старая запись
+    
+        stats = get_connection_stats()
+    
+        # Должна быть только одна активная запись
+&gt;       assert stats["rate_limited_ips"] == 1
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'rate_limited_ips'
+
+tests/test_websocket_integration.py:358: KeyError</failure></testcase><testcase classname="tests.test_websocket_integration.TestProductionEdgeCases" name="test_websocket_disconnect_during_message" time="0.001" /><testcase classname="tests.test_websocket_integration.TestProductionEdgeCases" name="test_memory_cleanup_large_rate_limits" time="0.001" /><testcase classname="tests.test_websocket_integration.TestProductionEdgeCases" name="test_high_concurrency_connections" time="0.012"><failure message="assert 0 == 1&#10; +  where 0 = len([])&#10; +    where [] = &lt;test_websocket_integration.MockWebSocket object at 0x115f96a50&gt;.messages_sent">self = &lt;test_websocket_integration.TestProductionEdgeCases object at 0x115e91e00&gt;
+
+    @pytest.mark.asyncio
+    async def test_high_concurrency_connections(self):
+        """Тест высокой конкурентности подключений"""
+        dialog_id = 1
+    
+        # Симулируем много одновременных подключений
+        mock_ws_list = [MockWebSocket() for _ in range(100)]
+    
+        # Добавляем все сразу (имитация concurrent подключений)
+        ws_connections[dialog_id] = set(mock_ws_list)
+    
+        # Отправляем сообщение всем
+        await push_dialog_message(dialog_id, {"text": "broadcast test"})
+    
+        # Все должны получить сообщение
+        for mock_ws in mock_ws_list:
+&gt;           assert len(mock_ws.messages_sent) == 1
+E           assert 0 == 1
+E            +  where 0 = len([])
+E            +    where [] = &lt;test_websocket_integration.MockWebSocket object at 0x115f96a50&gt;.messages_sent
+
+tests/test_websocket_integration.py:414: AssertionError</failure></testcase></testsuite></testsuites>

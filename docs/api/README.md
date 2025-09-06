@@ -203,7 +203,7 @@ Use [openapi.json](openapi.json) with OpenAPI generators:
 # Generate client for any language
 npx @openapitools/openapi-generator-cli generate \
   -i docs/api/openapi.json \
-  -g python \
+  -g python3 \
   -o ./replyx-python-client
 ```
 

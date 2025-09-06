@@ -29,6 +29,7 @@ ReplyX is a comprehensive AI assistant platform that enables businesses to deplo
 | **[Architecture](architecture/)** | System design and technology stack | [overview.md](architecture/overview.md), [technology-stack.md](architecture/technology-stack.md) |
 | **[Backend Guide](backend/)** | Backend development and structure | [structure-guide.md](backend/structure-guide.md) |
 | **[Frontend Guide](frontend/)** | Frontend development with Next.js | [structure-guide.md](frontend/structure-guide.md) |
+| **[Testing](testing/)** | Test strategies and token protection | [README.md](testing/README.md), [token-protection.md](testing/token-protection.md) |
 
 ### 🔒 **Security & Operations**
 | Section | Description | Key Files |
@@ -75,6 +76,7 @@ ReplyX is a comprehensive AI assistant platform that enables businesses to deplo
 3. Bots Monitoring → runbooks/bots-monitoring.md
 4. Monitoring Setup → observability/logging.md
 5. Security Configuration → security/authentication.md
+6. Testing Strategy → testing/README.md
 ```
 
 ### 🌐 **For Frontend Developers**
@@ -168,6 +170,8 @@ The project underwent a comprehensive structural reorganization for improved mai
 - ✅ **Repository Structure Reorganization** - Clean separation of technologies
 - ✅ **Workers System Standardized** - Node.js workers moved to project root
 - ✅ **Centralized Testing** - All tests consolidated in /tests/
+- ✅ **🛡️ Token Protection System** - CRITICAL: 100% защита от трат токенов в тестах
+- ✅ **WebSocket Security Fixes** - Rate limiting, IP spoofing protection
 - ✅ **Complete API Documentation** - All 126 endpoints documented
 - ✅ **Bots Monitoring System** - Real-time bot monitoring and management
 - ✅ **Automated Documentation** - Auto-generation scripts

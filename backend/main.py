@@ -243,6 +243,12 @@ DB_POOL_SIZE = Gauge('db_pool_size', 'DB pool size')
 DB_POOL_OVERFLOW = Gauge('db_pool_overflow', 'DB pool overflow')
 REDIS_AVAILABLE = Gauge('redis_available', 'Redis availability (1/0)')
 WEBSOCKET_CONNECTIONS = Gauge('websocket_connections_total', 'Total active WebSocket connections')
+WEBSOCKET_CONNECTIONS_BY_TYPE = Gauge('websocket_connections_by_type', 'WebSocket connections by type', ['connection_type'])
+WEBSOCKET_RATE_LIMITED_IPS = Gauge('websocket_rate_limited_ips', 'Currently rate limited IP addresses')
+WEBSOCKET_MESSAGE_QUEUE_PENDING = Gauge('websocket_message_queue_pending', 'Pending messages in WebSocket queue')
+WEBSOCKET_MESSAGE_QUEUE_PROCESSED = Counter('websocket_message_queue_processed_total', 'Total processed WebSocket messages')
+WEBSOCKET_CLOSE_CODES = Counter('websocket_close_codes_total', 'WebSocket close codes', ['code', 'reason'])
+WEBSOCKET_CONNECTION_DURATION = Histogram('websocket_connection_duration_seconds', 'WebSocket connection duration')
 
 # Метрики виджет эндпоинтов для CORS безопасности
 WIDGET_CORS_REQUESTS = Counter('widget_cors_requests_total', 'Total widget CORS requests', ['endpoint', 'origin', 'status'])
@@ -307,12 +313,34 @@ def prometheus_metrics():
     except Exception:
         REDIS_AVAILABLE.set(0)
     try:
-        from services.websocket_manager import ws_connections, ws_site_connections
-        total_ws = sum(len(lst) for lst in ws_connections.values()) + \
-                   sum(len(lst) for lst in ws_site_connections.values())
-        WEBSOCKET_CONNECTIONS.set(total_ws)
-    except Exception:
-        WEBSOCKET_CONNECTIONS.set(0)
+        from services.websocket_manager import get_connection_stats
+        stats = get_connection_stats()
+        
+        # Обновляем все WebSocket метрики из централизованной статистики
+        WEBSOCKET_CONNECTIONS.set(stats.get('total_connections', 0))
+        
+        # Метрики по типам подключений
+        conn_details = stats.get('connection_details', {})
+        WEBSOCKET_CONNECTIONS_BY_TYPE.labels(connection_type='admin').set(conn_details.get('admin_connections', 0))
+        WEBSOCKET_CONNECTIONS_BY_TYPE.labels(connection_type='site').set(conn_details.get('site_connections', 0))
+        
+        # Rate limiting метрики
+        rate_limit = stats.get('rate_limiting', {})
+        WEBSOCKET_RATE_LIMITED_IPS.set(rate_limit.get('rate_limited_ips', 0))
+        
+        # Message queue метрики
+        queue_stats = stats.get('message_queue', {})
+        WEBSOCKET_MESSAGE_QUEUE_PENDING.set(queue_stats.get('pending_messages', 0))
+        
+    except Exception as e:
+        # Fallback к простому подсчету при ошибке
+        try:
+            from services.websocket_manager import ws_connections, ws_site_connections
+            total_ws = sum(len(lst) for lst in ws_connections.values()) + \
+                       sum(len(lst) for lst in ws_site_connections.values())
+            WEBSOCKET_CONNECTIONS.set(total_ws)
+        except Exception:
+            WEBSOCKET_CONNECTIONS.set(0)
 
     data = generate_latest()
     return Response(content=data, media_type=CONTENT_TYPE_LATEST)

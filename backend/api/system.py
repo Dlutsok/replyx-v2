@@ -742,3 +742,55 @@ async def get_system_processes(current_user: models.User = Depends(auth.get_curr
             "processes": [],
             "total_processes": 0
         }
+
+
+@router.get("/websocket/stats")
+async def websocket_stats():
+    """
+    WebSocket система статистика для production мониторинга
+    Возвращает детальную информацию о соединениях, rate limiting, message queue
+    """
+    try:
+        from services.websocket_manager import get_connection_stats
+        return get_connection_stats()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get WebSocket stats: {str(e)}")
+
+
+@router.get("/websocket/health")
+async def websocket_health():
+    """
+    WebSocket health check для load balancer проверок
+    Быстрая проверка состояния WebSocket системы
+    """
+    try:
+        from services.websocket_manager import get_connection_stats
+        stats = get_connection_stats()
+        
+        # Определяем health status на основе метрик
+        total_connections = stats.get('total_connections', 0)
+        rate_limited_ips = stats.get('rate_limiting', {}).get('rate_limited_ips', 0)
+        
+        # Health criteria
+        is_healthy = (
+            total_connections < 900 and  # < 90% от max limit (1000)
+            rate_limited_ips < 50        # разумное количество rate limited IPs
+        )
+        
+        status = "healthy" if is_healthy else "degraded"
+        
+        return {
+            "status": status,
+            "connections": total_connections,
+            "rate_limited_ips": rate_limited_ips,
+            "timestamp": stats.get('timestamp'),
+            "uptime": True
+        }
+        
+    except Exception as e:
+        return {
+            "status": "unhealthy", 
+            "error": str(e),
+            "timestamp": time.time(),
+            "uptime": False
+        }

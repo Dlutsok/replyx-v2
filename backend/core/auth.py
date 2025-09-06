@@ -15,6 +15,7 @@ import re
 from core.app_config import SECRET_KEY
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
+REFRESH_TOKEN_EXPIRE_DAYS = 30  # Refresh token живёт 30 дней
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login")
@@ -75,11 +76,50 @@ def sanitize_input(input_string: str, max_length: int = 255) -> str:
     return sanitized
 
 def create_access_token(data: dict, expires_delta: timedelta = None):
+    """Создаёт access token с коротким сроком жизни"""
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
-    to_encode.update({"exp": expire})
+    to_encode.update({
+        "exp": expire,
+        "type": "access"  # Тип токена для различения
+    })
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+def create_refresh_token(data: dict, expires_delta: timedelta = None):
+    """Создаёт refresh token с длинным сроком жизни"""
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
+    to_encode.update({
+        "exp": expire,
+        "type": "refresh",  # Тип токена для различения
+        "jti": secrets.token_urlsafe(16)  # Уникальный ID токена
+    })
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+def verify_refresh_token(token: str) -> dict:
+    """Верифицирует refresh token и возвращает payload"""
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        
+        # Проверяем тип токена
+        if payload.get("type") != "refresh":
+            raise JWTError("Invalid token type")
+        
+        # Проверяем время истечения
+        exp = payload.get("exp")
+        if exp is None:
+            raise JWTError("Token has no expiration")
+            
+        current_timestamp = datetime.now(timezone.utc).timestamp()
+        if current_timestamp > exp:
+            raise JWTError("Token has expired")
+            
+        return payload
+        
+    except JWTError as e:
+        raise JWTError(f"Invalid refresh token: {str(e)}")
 
 # get_db импортируется из database.connection
 
@@ -331,3 +371,21 @@ def get_organization_owner_user(current_user: models.User, db: Session) -> model
         return current_user
     else:
         return db.query(models.User).filter(models.User.id == effective_user_id).first()
+
+def revoke_refresh_token(token: str):
+    """
+    Отзыв refresh token (добавление в blacklist)
+    В production можно хранить отозванные токены в Redis или БД
+    """
+    # TODO: Реализация blacklist для отозванных токенов
+    # Пока что возвращаем True как заглушку
+    return True
+
+def is_token_blacklisted(jti: str) -> bool:
+    """
+    Проверяет, находится ли токен в чёрном списке
+    В production можно проверять в Redis или БД
+    """
+    # TODO: Реализация проверки blacklist
+    # Пока что возвращаем False как заглушку
+    return False

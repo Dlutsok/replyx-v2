@@ -408,17 +408,17 @@ chmod +x start_production.sh
 ```bash
 cd backend
 # From project root:
-python scripts/backend/admin/create_admin.py --email admin@example.com
-python scripts/backend/admin/cleanup_users.py --inactive-days 90
+python3 scripts/backend/admin/create_admin.py --email admin@example.com
+python3 scripts/backend/admin/cleanup_users.py --inactive-days 90
 ```
 
 ### Обслуживание системы
 ```bash
 cd backend
 # From project root:
-python scripts/backend/maintenance/database_backup.py
-python scripts/backend/maintenance/cleanup_uploads.py --older-than 30
-python scripts/backend/maintenance/system_monitor.py --check-health
+python3 scripts/backend/maintenance/database_backup.py
+python3 scripts/backend/maintenance/cleanup_uploads.py --older-than 30
+python3 scripts/backend/maintenance/system_monitor.py --check-health
 ```
 
 ## Workers (Node.js)
@@ -516,7 +516,7 @@ async def get_user(user_id: int):
 **База данных не подключается**
 ```bash
 # Проверьте подключение
-python -c "from database.connection import engine; print('Connected:', engine.url)"
+python3 -c "from database.connection import engine; print('Connected:', engine.url)"
 ```
 
 **Миграции не применяются**
@@ -535,7 +535,7 @@ export PYTHONPATH="${PYTHONPATH}:/path/to/backend"
 **Redis недоступен**
 ```bash
 # Проверьте подключение к Redis
-python -c "from cache.redis_cache import redis_client; redis_client.ping()"
+python3 -c "from cache.redis_cache import redis_client; redis_client.ping()"
 ```
 
 ---

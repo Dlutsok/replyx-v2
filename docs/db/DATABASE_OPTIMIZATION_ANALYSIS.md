@@ -71,7 +71,7 @@ users (16k+ записей)
 #### 1.1 Консолидация миграций
 ```bash
 # Анализ текущих миграций
-python scripts/analyze_migrations.py
+python3 scripts/analyze_migrations.py
 
 # Создание снапшота схемы
 pg_dump --schema-only chatai_db > current_schema.sql

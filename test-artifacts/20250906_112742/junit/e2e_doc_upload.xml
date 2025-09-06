@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="0.849" timestamp="2025-09-06T11:28:07.696870+03:00" hostname="MacBook-Pro-Dan.local"><testcase classname="tests.e2e.test_document_upload" name="test_document_upload_with_assistant" time="0.197" /></testsuite></testsuites>

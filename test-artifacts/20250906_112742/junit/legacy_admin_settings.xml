@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="0.111" timestamp="2025-09-06T11:28:09.417581+03:00" hostname="MacBook-Pro-Dan.local"><testcase classname="scripts.backend.legacy.test_admin_settings_api" name="test_admin_settings_api" time="0.032" /></testsuite></testsuites>

@@ -59,7 +59,7 @@ print(f"📊 [Site] Remaining connections for dialog {dialog_id}: {len(ws_site_c
 ### 3. Widget режим: `/ws/widget/dialogs/{dialog_id}?assistant_id=`
 - Используется: виджеты без site_token
 - Handler: `widget_dialog_websocket_endpoint`
-- Пул соединений: `ws_site_connections` (тот же что и site!)
+- Пул соединений: `ws_connections` (исправлено 5.09.2025)
 - Логи: `[Widget]` префикс
 
 ## Команды диагностики на сервере
@@ -132,7 +132,15 @@ if (siteToken) {
 - Добавлен location `/ws/` с поддержкой WebSocket upgrade
 - Настроены правильные timeouts и headers
 
-## После применения изменений
-1. Перезапустить backend: `docker-compose restart replyx_backend_1`
-2. Перезапустить nginx: `docker-compose restart replyx_nginx_1`  
+## После применения изменений (обновлено 5.09.2025)
+1. Перезапустить backend: `docker-compose restart deployed-backend-1`
+2. Перезапустить nginx: `docker-compose restart deployed-nginx-1`  
 3. Проверить логи подключений с новыми префиксами `[Site]`
+
+### Критические исправления от 5.09.2025:
+- ✅ Исправлен WebSocket routing для widget endpoint
+- ✅ Удален дублирующий endpoint в site.py  
+- ✅ Исправлена race condition в frontend
+- ✅ Добавлены подробные логи
+
+**См. подробности:** `docs/troubleshooting/widget-fixes-2025-09-05.md`

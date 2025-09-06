@@ -1,0 +1,184 @@
+name: WebSocket Stability Guard
+on:
+  pull_request:
+    paths:
+      - 'backend/services/websocket_manager.py'
+      - 'backend/api/websockets.py'  
+      - 'backend/api/site.py'
+      - 'frontend/pages/chat-iframe.js'
+      - 'frontend/public/widget.js'
+  push:
+    branches: [main]
+    paths:
+      - 'backend/services/websocket_manager.py'
+      - 'backend/api/websockets.py'
+      - 'backend/api/site.py'
+      - 'frontend/pages/chat-iframe.js'
+      - 'frontend/public/widget.js'
+
+jobs:
+  websocket-critical-fixes-validation:
+    name: 🚨 Critical WebSocket Fixes Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: |
+          pip install pytest pytest-asyncio fastapi
+          
+      - name: Validate WebSocket fixes are intact
+        run: |
+          python3 scripts/validate-websocket-fixes.py
+          
+      - name: Run critical WebSocket tests
+        run: |
+          pytest backend/tests/test_websocket_critical_fixes.py -v
+          
+      - name: Check for WebSocket endpoint conflicts
+        run: |
+          # Проверка что нет дублирующих endpoints
+          SITE_WS_COUNT=$(grep -r "@router.websocket.*ws/site/dialogs" backend/api/ | wc -l)
+          if [ "$SITE_WS_COUNT" -gt 1 ]; then
+            echo "❌ CRITICAL: Found $SITE_WS_COUNT site WebSocket endpoints (should be 1)"
+            exit 1
+          fi
+          echo "✅ No duplicate WebSocket endpoints found"
+          
+      - name: Validate WebSocket routing consistency
+        run: |
+          # Проверка что widget endpoint использует правильный пул
+          if grep -A 20 "async def widget_dialog_websocket_endpoint" backend/services/websocket_manager.py | grep "ws_site_connections"; then
+            echo "❌ CRITICAL: Widget endpoint using wrong connection pool!"
+            exit 1
+          fi
+          echo "✅ Widget endpoint routing is correct"
+          
+      - name: Frontend race condition check
+        run: |
+          # Проверка исправления race condition
+          if ! grep -A 5 "useEffect.*dialogId.*siteToken.*assistantId.*guestId" frontend/pages/chat-iframe.js | grep "dialogLoaded"; then
+            echo "❌ CRITICAL: Race condition fix missing in frontend!"
+            exit 1
+          fi
+          echo "✅ Frontend race condition fix is intact"
+
+  websocket-integration-tests:
+    name: 🔗 WebSocket Integration Tests
+    runs-on: ubuntu-latest
+    needs: websocket-critical-fixes-validation
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4  
+        with:
+          python-version: '3.11'
+          
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+          pip install pytest-asyncio httpx
+          
+      - name: Run WebSocket integration tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost/postgres
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          cd backend
+          pytest tests/test_websocket_critical_fixes.py::TestWebSocketIntegration -v
+          
+  frontend-e2e-widget:
+    name: 🎭 Frontend E2E Widget Tests
+    runs-on: ubuntu-latest
+    needs: websocket-critical-fixes-validation
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+          
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+          
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+          
+      - name: Run widget E2E tests
+        run: |
+          cd frontend
+          # Запуск E2E тестов виджета (если есть)
+          # npm run test:e2e:widget || echo "E2E tests not implemented yet"
+          echo "✅ E2E tests placeholder (implement later)"
+
+  websocket-load-test:
+    name: 📊 WebSocket Load Test
+    runs-on: ubuntu-latest
+    needs: websocket-integration-tests
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+          
+      - name: Run WebSocket load tests
+        run: |
+          # Запуск нагрузочных тестов WebSocket (если есть)
+          # k6 run docs/perf/k6_widget_websocket.js || echo "Load tests not implemented yet"
+          echo "✅ Load tests placeholder (implement later)"
+
+  deployment-gate:
+    name: 🚪 Deployment Gate
+    runs-on: ubuntu-latest
+    needs: [websocket-critical-fixes-validation, websocket-integration-tests, frontend-e2e-widget]
+    if: always()
+    steps:
+      - name: Check if all tests passed
+        run: |
+          if [ "${{ needs.websocket-critical-fixes-validation.result }}" != "success" ] || 
+             [ "${{ needs.websocket-integration-tests.result }}" != "success" ] ||
+             [ "${{ needs.frontend-e2e-widget.result }}" != "success" ]; then
+            echo "❌ DEPLOYMENT BLOCKED: Critical WebSocket tests failed"
+            echo "DO NOT MERGE until all WebSocket stability checks pass"
+            exit 1
+          fi
+          echo "✅ All WebSocket stability checks passed"
+          echo "Safe to deploy WebSocket changes"

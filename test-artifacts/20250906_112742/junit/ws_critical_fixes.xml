@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="10" time="1.094" timestamp="2025-09-06T11:27:43.840137+03:00" hostname="MacBook-Pro-Dan.local"><testcase classname="tests.test_websocket_critical_fixes.TestWebSocketCriticalFixes" name="test_widget_endpoint_uses_correct_connection_pool" time="0.035"><failure message="KeyError: 1">self = &lt;test_websocket_critical_fixes.TestWebSocketCriticalFixes object at 0x10b12b390&gt;
+
+    @pytest.mark.asyncio
+    async def test_widget_endpoint_uses_correct_connection_pool(self):
+        """КРИТИЧНО: Widget endpoint ДОЛЖЕН использовать ws_connections, НЕ ws_site_connections"""
+        # Мокаем зависимости
+        mock_websocket = MagicMock(spec=WebSocket)
+        mock_websocket.accept = AsyncMock()
+        mock_websocket.close = AsyncMock()
+    
+        mock_db = MagicMock()
+        mock_assistant = MagicMock()
+        mock_assistant.id = 1
+        mock_db.query().filter().first.return_value = mock_assistant
+    
+        dialog_id = 1
+        assistant_id = 1
+    
+        # Мокаем внутренние функции для контроля
+        with patch('services.websocket_manager._register_connection', new_callable=AsyncMock) as mock_register, \
+             patch('services.websocket_manager._receive_loop', new_callable=AsyncMock), \
+             patch('services.websocket_manager._heartbeat_loop', new_callable=AsyncMock), \
+             patch('services.websocket_manager._unregister_connection', new_callable=AsyncMock) as mock_unregister, \
+             patch('asyncio.wait', new_callable=AsyncMock):
+    
+            mock_register.return_value = True
+    
+            # Вызов widget endpoint
+&gt;           await widget_dialog_websocket_endpoint(mock_websocket, dialog_id, assistant_id, mock_db)
+
+tests/test_websocket_critical_fixes.py:56: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+websocket = &lt;MagicMock spec='WebSocket' id='4481941584'&gt;, dialog_id = 1
+assistant_id = 1, db = &lt;MagicMock id='4481942592'&gt;
+
+    async def widget_dialog_websocket_endpoint(websocket: WebSocket, dialog_id: int, assistant_id: int, db: Session = None):
+        """WebSocket endpoint для widget диалогов"""
+        logger.info(f"Widget WebSocket connection attempt for dialog {dialog_id}, assistant {assistant_id}")
+    
+        await websocket.accept()  # Accept до проверок
+    
+        # Rate limiting проверка после accept() с защитой от IP spoofing
+        client_ip = _extract_client_ip(websocket)
+        if not _check_rate_limit(client_ip):
+            await websocket.close(code=WSCloseCodes.RATE_LIMITED, reason="Too many connections")
+            return
+    
+        # Проверяем, что ассистент существует
+        assistant = db.query(models.Assistant).filter(models.Assistant.id == assistant_id).first()
+        if not assistant:
+            logger.error(f"Widget assistant {assistant_id} not found")
+            await websocket.close(code=WSCloseCodes.NOT_FOUND, reason="Assistant not found")
+            return
+    
+        logger.info(f"Widget WebSocket accepted for dialog {dialog_id}")
+    
+        ok = await _register_connection(ws_connections, ws_meta, dialog_id, websocket)
+        if not ok:
+            return
+    
+&gt;       logger.info(f"Total widget connections for dialog {dialog_id}: {len(ws_connections[dialog_id])}")
+                                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 1
+
+services/websocket_manager.py:462: KeyError</failure></testcase><testcase classname="tests.test_websocket_critical_fixes.TestWebSocketCriticalFixes" name="test_site_endpoint_uses_correct_connection_pool" time="0.005"><failure message="assert 0 == 1&#10; +  where 0 = len([])">self = &lt;test_websocket_critical_fixes.TestWebSocketCriticalFixes object at 0x10b12b4d0&gt;
+
+    @pytest.mark.asyncio
+    async def test_site_endpoint_uses_correct_connection_pool(self):
+        """Site endpoint должен использовать ws_site_connections"""
+        mock_websocket = MagicMock(spec=WebSocket)
+        mock_websocket.accept = AsyncMock()
+    
+        mock_db = MagicMock()
+        site_token = "test_token"
+        dialog_id = 1
+    
+        with patch('services.websocket_manager.get_current_site_user_simple') as mock_auth, \
+             patch('services.websocket_manager._register_connection', new_callable=AsyncMock) as mock_register, \
+             patch('services.websocket_manager._receive_loop', new_callable=AsyncMock), \
+             patch('services.websocket_manager._heartbeat_loop', new_callable=AsyncMock), \
+             patch('services.websocket_manager._unregister_connection', new_callable=AsyncMock), \
+             patch('asyncio.wait', new_callable=AsyncMock):
+    
+            mock_auth.return_value = MagicMock()  # Успешная авторизация
+            mock_register.return_value = True
+    
+            await site_dialog_websocket_endpoint(mock_websocket, dialog_id, site_token, mock_db)
+    
+            # Проверяем использование правильного пула
+            register_calls = mock_register.call_args_list
+&gt;           assert len(register_calls) == 1
+E           assert 0 == 1
+E            +  where 0 = len([])
+
+tests/test_websocket_critical_fixes.py:91: AssertionError</failure></testcase><testcase classname="tests.test_websocket_critical_fixes.TestWebSocketCriticalFixes" name="test_message_routing_widget_connections" time="0.001" /><testcase classname="tests.test_websocket_critical_fixes.TestWebSocketCriticalFixes" name="test_message_routing_site_connections" time="0.001" /><testcase classname="tests.test_websocket_critical_fixes.TestWebSocketCriticalFixes" name="test_no_cross_pool_contamination" time="0.001" /><testcase classname="tests.test_websocket_critical_fixes" name="test_no_duplicate_websocket_endpoints" time="0.307" /><testcase classname="tests.test_websocket_critical_fixes.TestWebSocketIntegration" name="test_widget_websocket_full_flow" time="0.001" /><testcase classname="tests.test_websocket_critical_fixes.TestWebSocketIntegration" name="test_site_websocket_full_flow" time="0.001" /><testcase classname="tests.test_websocket_critical_fixes.TestWebSocketLoad" name="test_multiple_concurrent_connections" time="0.001" /><testcase classname="tests.test_websocket_critical_fixes.TestWebSocketLoad" name="test_high_message_throughput" time="0.001" /></testsuite></testsuites>

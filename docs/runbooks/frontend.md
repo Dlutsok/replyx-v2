@@ -588,7 +588,7 @@ npm install
 npm run dev
 
 # With backend
-cd ../backend && python main.py &
+cd ../backend && python3 main.py &
 cd ../frontend && npm run dev
 ```
 

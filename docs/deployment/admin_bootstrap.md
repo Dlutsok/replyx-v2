@@ -22,7 +22,7 @@
 export FIRST_ADMIN_EMAIL="admin@your-domain.com"
 export FIRST_ADMIN_MODE="invite"
 export PUBLIC_APP_URL="https://replyx.your-domain.com"
-python scripts/admin_bootstrap.py
+python3 scripts/admin_bootstrap.py
 ```
 
 **Вывод:**
@@ -40,7 +40,7 @@ python scripts/admin_bootstrap.py
 ```bash
 export FIRST_ADMIN_EMAIL="admin@your-domain.com"
 export FIRST_ADMIN_MODE="interactive"
-python scripts/admin_bootstrap.py
+python3 scripts/admin_bootstrap.py
 ```
 
 ## Интеграция с production_deploy.sh
@@ -88,7 +88,7 @@ export PUBLIC_APP_URL="https://replyx.your-domain.com"
 ```bash
 export FIRST_ADMIN_EMAIL="admin@localhost"
 export FIRST_ADMIN_MODE="interactive"
-python scripts/admin_bootstrap.py
+python3 scripts/admin_bootstrap.py
 ```
 
 ### Staging/Production (с отправкой email)
@@ -97,7 +97,7 @@ export FIRST_ADMIN_EMAIL="admin@company.com"
 export FIRST_ADMIN_MODE="invite"  
 export PUBLIC_APP_URL="https://replyx.company.com"
 export SEND_ADMIN_EMAIL="true"  # Отправить email автоматически
-python scripts/admin_bootstrap.py
+python3 scripts/admin_bootstrap.py
 ```
 
 ### Staging/Production (безопасно, без email)
@@ -106,7 +106,7 @@ export FIRST_ADMIN_EMAIL="admin@company.com"
 export FIRST_ADMIN_MODE="invite"  
 export PUBLIC_APP_URL="https://replyx.company.com"
 # SEND_ADMIN_EMAIL не установлена = ссылка выводится в консоль
-python scripts/admin_bootstrap.py
+python3 scripts/admin_bootstrap.py
 ```
 
 ### В составе CI/CD

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="15" time="0.507" timestamp="2025-09-06T11:27:57.348820+03:00" hostname="MacBook-Pro-Dan.local"><testcase classname="tests.test_integration_cross_channel.TestCrossChannelIntegration" name="test_complete_message_flow_admin_to_widget" time="0.024" /><testcase classname="tests.test_integration_cross_channel.TestCrossChannelIntegration" name="test_complete_message_flow_widget_to_admin" time="0.001" /><testcase classname="tests.test_integration_cross_channel.TestCrossChannelIntegration" name="test_ai_response_broadcast_to_all_channels" time="0.002" /><testcase classname="tests.test_integration_cross_channel.TestMultipleConnectionsIntegration" name="test_multiple_admin_panels_receive_messages" time="0.002" /><testcase classname="tests.test_integration_cross_channel.TestMultipleConnectionsIntegration" name="test_multiple_widgets_receive_operator_messages" time="0.002" /><testcase classname="tests.test_integration_cross_channel.TestHandoffEventsIntegration" name="test_handoff_started_event_broadcast" time="0.001" /><testcase classname="tests.test_integration_cross_channel.TestHandoffEventsIntegration" name="test_handoff_requested_event_broadcast" time="0.001" /><testcase classname="tests.test_integration_cross_channel.TestTypingIndicatorsIntegration" name="test_typing_indicators_widget_only" time="0.003" /><testcase classname="tests.test_integration_cross_channel.TestFailureRecoveryIntegration" name="test_partial_connection_failure" time="0.003"><failure message="AttributeError: 'list' object has no attribute 'discard'">dialog_id = 123
+message = {'id': 456, 'sender': 'manager', 'text': 'Message with partial failure', 'timestamp': '2025-01-15T10:30:00Z'}
+
+    async def push_dialog_message(dialog_id: int, message: dict):
+        """Отправляет сообщение всем подключенным клиентам диалога (админ панель)"""
+        async with await _get_dialog_lock(dialog_id):
+            conns = ws_connections.get(dialog_id, set())
+            logger.info(f"Push to ADMIN dialog {dialog_id}: {len(conns)} connections")
+            logger.debug(f"Admin message: {message}")
+    
+            if not conns:
+                logger.warning(f"No ADMIN WebSocket connections found for dialog {dialog_id}")
+                logger.debug(f"Available ADMIN dialogs: {list(ws_connections.keys())}")
+                return
+    
+            sent_count = 0
+            # Создаем копию set для итерации, чтобы избежать изменений во время итерации
+            for ws in conns.copy():
+                try:
+&gt;                   await ws.send_json(message)
+
+services/websocket_manager.py:499: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;AsyncMock name='mock.send_json' id='4502757664'&gt;
+args = ({'id': 456, 'sender': 'manager', 'text': 'Message with partial failure', 'timestamp': '2025-01-15T10:30:00Z'},)
+kwargs = {}
+_call = call({'id': 456, 'sender': 'manager', 'text': 'Message with partial failure', 'timestamp': '2025-01-15T10:30:00Z'})
+effect = Exception('Connection closed')
+
+    async def _execute_mock_call(self, /, *args, **kwargs):
+        # This is nearly just like super(), except for special handling
+        # of coroutines
+    
+        _call = _Call((args, kwargs), two=True)
+        self.await_count += 1
+        self.await_args = _call
+        self.await_args_list.append(_call)
+    
+        effect = self.side_effect
+        if effect is not None:
+            if _is_exception(effect):
+&gt;               raise effect
+E               Exception: Connection closed
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/unittest/mock.py:2321: Exception
+
+During handling of the above exception, another exception occurred:
+
+self = &lt;test_integration_cross_channel.TestFailureRecoveryIntegration object at 0x10c58e350&gt;
+
+    @pytest.mark.asyncio
+    async def test_partial_connection_failure(self):
+        """Test behavior when some connections fail"""
+        # Setup connections where one fails
+        working_admin_ws = AsyncMock()
+        failing_admin_ws = AsyncMock()
+        failing_admin_ws.send_json.side_effect = Exception("Connection closed")
+    
+        working_widget_ws = AsyncMock()
+    
+        dialog_id = 123
+        ws_connections[dialog_id] = [working_admin_ws, failing_admin_ws]
+        ws_site_connections[dialog_id] = [working_widget_ws]
+    
+        message_data = {
+            "id": 456,
+            "sender": "manager",
+            "text": "Message with partial failure",
+            "timestamp": "2025-01-15T10:30:00Z"
+        }
+    
+        # Should not raise exception despite one failing connection
+&gt;       await push_dialog_message(dialog_id, message_data)
+
+tests/test_integration_cross_channel.py:306: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+services/websocket_manager.py:505: in push_dialog_message
+    await _drop_socket(ws_connections, ws_meta, dialog_id, ws, reason="Send failed")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+bucket = {123: [&lt;AsyncMock id='4502759008'&gt;, &lt;AsyncMock id='4502758336'&gt;]}
+meta_bucket = {}, dialog_id = 123, ws = &lt;AsyncMock id='4502758336'&gt;, code = 1001
+reason = 'Send failed'
+
+    async def _drop_socket(bucket: Dict[int, Set[WebSocket]], meta_bucket: Dict[int, Dict[WebSocket, Dict[str, float]]], dialog_id: int, ws: WebSocket, code=WSCloseCodes.GOING_AWAY, reason="Connection dropped"):
+        """Безопасно удаляет сокет из всех структур данных"""
+        global _total_connections
+    
+        conns = bucket.get(dialog_id, set())
+        if ws in conns:
+&gt;           conns.discard(ws)
+            ^^^^^^^^^^^^^
+E           AttributeError: 'list' object has no attribute 'discard'
+
+services/websocket_manager.py:236: AttributeError</failure></testcase><testcase classname="tests.test_integration_cross_channel.TestFailureRecoveryIntegration" name="test_no_connections_graceful_handling" time="0.003" /><testcase classname="tests.test_integration_cross_channel.TestMessageFormatIntegration" name="test_direct_message_format" time="0.002" /><testcase classname="tests.test_integration_cross_channel.TestMessageFormatIntegration" name="test_wrapped_message_format" time="0.002" /><testcase classname="tests.test_integration_cross_channel.TestMessageFormatIntegration" name="test_system_event_format" time="0.001" /><testcase classname="tests.test_integration_cross_channel.TestPerformanceIntegration" name="test_high_throughput_cross_channel" time="0.016" /><testcase classname="tests.test_integration_cross_channel.TestPerformanceIntegration" name="test_concurrent_message_sending" time="0.005" /></testsuite></testsuites>

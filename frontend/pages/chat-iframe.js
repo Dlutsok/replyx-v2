@@ -386,8 +386,39 @@ export default function ChatIframe() {
   const [creatingDialog, setCreatingDialog] = useState(false);
   const reconnectAttempts = useRef(0);
   const maxReconnectAttempts = 5;
+  const decorrelatedDelay = useRef(1000); // Для decorrelated jitter
   // Используем state-нонс для безопасного переподключения без перезагрузки iframe
   const [wsReconnectNonce, setWsReconnectNonce] = useState(0);
+
+  // WebSocket Close Codes (синхронизированы с backend)
+  const WSCloseCodes = {
+    NORMAL_CLOSURE: 1000,
+    GOING_AWAY: 1001,
+    SERVICE_RESTART: 1012,
+    TRY_AGAIN_LATER: 1013,
+    INTERNAL_ERROR: 1011,
+    AUTH_EXPIRED: 4001,
+    AUTH_FAILED: 4002,
+    FORBIDDEN_DOMAIN: 4003,
+    RATE_LIMITED: 4008,
+    CONFLICT_CONNECTION: 4009
+  };
+
+  // Decorrelated jitter для устойчивости к штормам переподключений
+  const getNextDecorrelatedDelay = () => {
+    const capMs = 15000;
+    decorrelatedDelay.current = Math.min(
+      capMs,
+      Math.floor(Math.random() * (decorrelatedDelay.current * 3 - 1000)) + 1000
+    );
+    return decorrelatedDelay.current;
+  };
+
+  // Сброс backoff при успешном подключении
+  const resetBackoff = () => {
+    decorrelatedDelay.current = 1000;
+    reconnectAttempts.current = 0;
+  };
 
   // HANDOFF FUNCTION - Запрос оператора
   const requestHandoff = async () => {
@@ -755,7 +786,7 @@ export default function ChatIframe() {
       socket.onopen = () => {
         setDebugInfo(`✅ Чат готов к работе!`);
         setIsOnline(true);
-        reconnectAttempts.current = 0; // Сброс счётчика при успешном подключении
+        resetBackoff(); // Сброс backoff при успешном подключении
         // При переподключении сохраняем состояние загрузки диалога
         if (!dialogLoaded && messages.length > 0) {
           setDialogLoaded(true);
@@ -1017,31 +1048,96 @@ export default function ChatIframe() {
         }
       };
       
-      socket.onclose = (event) => {
-        setDebugInfo(`⚠️ Соединение прервано`);
+      socket.onclose = async (event) => {
         setIsOnline(false);
         setWs(null);
-
-        // Переподключение при ошибках (кроме намеренного закрытия)
-        if (event.code !== 1000 && reconnectAttempts.current < maxReconnectAttempts) {
-          reconnectAttempts.current++;
-          const delay = Math.min(1000 * Math.pow(2, reconnectAttempts.current), 10000);
-          
-          setDebugInfo(`🔄 Переподключение через ${Math.round(delay/1000)}с (попытка ${reconnectAttempts.current}/${maxReconnectAttempts})`);
-          
-          // Триггерим повторное подключение без перезагрузки iframe
-          setTimeout(() => {
-            setWsReconnectNonce((n) => n + 1);
-          }, delay);
-        } else if (reconnectAttempts.current >= maxReconnectAttempts) {
-          setDebugInfo(`❌ Максимум попыток переподключения достигнут`);
+        
+        const code = event.code;
+        const reason = event.reason || '';
+        
+        console.log(`[WebSocket] Connection closed: code=${code}, reason=${reason}`);
+        
+        // Таблица принятия решений по кодам закрытия
+        switch (code) {
+          case WSCloseCodes.NORMAL_CLOSURE:
+            setDebugInfo('Соединение закрыто');
+            return; // Не переподключаемся
+            
+          case WSCloseCodes.FORBIDDEN_DOMAIN:
+            setDebugInfo('❌ Домен не разрешен для этого виджета');
+            return; // Не переподключаемся
+            
+          case WSCloseCodes.AUTH_FAILED:
+            setDebugInfo('❌ Ошибка аутентификации');
+            return; // Не переподключаемся
+            
+          case WSCloseCodes.AUTH_EXPIRED:
+            setDebugInfo('🔐 Обновление сессии...');
+            // TODO: В следующем этапе добавим refresh токена
+            // Пока переподключаемся немедленно
+            setTimeout(() => setWsReconnectNonce(n => n + 1), 1000);
+            return;
+            
+          case WSCloseCodes.CONFLICT_CONNECTION:
+            setDebugInfo('🔄 Обнаружено дублирующее соединение, переподключаемся...');
+            // Немедленное переподключение без увеличения attempts
+            setTimeout(() => setWsReconnectNonce(n => n + 1), 1000);
+            return;
+            
+          default:
+            // Все остальные коды: backoff переподключение
+            if (reconnectAttempts.current >= maxReconnectAttempts) {
+              setDebugInfo('❌ Максимум попыток переподключения достигнут');
+              return;
+            }
+            
+            reconnectAttempts.current++;
+            const delay = getNextDecorrelatedDelay();
+            
+            setDebugInfo(
+              `🔄 Переподключение через ${Math.round(delay/1000)}с ` +
+              `(попытка ${reconnectAttempts.current}/${maxReconnectAttempts})`
+            );
+            
+            setTimeout(() => setWsReconnectNonce(n => n + 1), delay);
         }
       };
       
       setWs(socket);
-      return () => socket.close();
+      return () => {
+        // Proper cleanup для предотвращения утечек памяти
+        if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
+          socket.close(WSCloseCodes.NORMAL_CLOSURE);
+        }
+      };
     }
   }, [dialogId, siteToken, assistantId, guestId, wsReconnectNonce, dialogLoaded]);
+
+  // Network и visibility awareness
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && ws?.readyState !== WebSocket.OPEN) {
+        // Быстрая проверка при возврате на вкладку
+        resetBackoff();
+        setWsReconnectNonce(n => n + 1);
+      }
+    };
+    
+    const handleOnlineStatus = () => {
+      if (navigator.onLine && ws?.readyState !== WebSocket.OPEN) {
+        resetBackoff();
+        setWsReconnectNonce(n => n + 1);
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('online', handleOnlineStatus);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('online', handleOnlineStatus);
+    };
+  }, [ws]);
 
   // Запрос разрешения на уведомления (с защитой для Safari/iOS)
   useEffect(() => {

@@ -89,11 +89,11 @@ sudo journalctl -u chatai-bot-manager -f
 #### Process Management
 ```bash
 # Check running processes
-ps aux | grep python | grep main.py
+ps aux | grep python3 | grep main.py
 ps aux | grep node | grep scalable_bot_manager
 
 # Kill processes (if needed)
-pkill -f "python.*main.py"
+pkill -f "python3.*main.py"
 pkill -f "scalable_bot_manager.js"
 
 # Check port usage
@@ -175,7 +175,7 @@ alembic upgrade head --sql
 ### Database Maintenance
 ```bash
 # Create database backup
-python scripts/database_backup.py
+python3 scripts/database_backup.py
 
 # Check database size
 psql $DATABASE_URL -c "\dt+"
@@ -469,7 +469,7 @@ valgrind --tool=memcheck --leak-check=full python3 main.py
 
 # Enable memory profiling (development)
 pip install memory-profiler
-python -m memory_profiler main.py
+python3 -m memory_profiler main.py
 ```
 
 #### 5. Performance Issues
