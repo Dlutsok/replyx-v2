@@ -25,7 +25,10 @@ def force_test_environment():
         "LLM_PROVIDER": "fake", 
         "FAKE_LLM_MODE": "echo",
         "BLOCK_EXTERNAL_IO": "true",
-        "IS_TEST_ENV": "true"
+        "IS_TEST_ENV": "true",
+        "SECRET_KEY": "dummy_secret_key_for_tests_only",
+        "OPENAI_API_KEY": "dummy",
+        "REPLYX_PROXY_DISABLED": "1"
     }
     
     for key, value in test_env_vars.items():
@@ -57,7 +60,10 @@ def verify_no_real_llm():
         "LLM_PROVIDER": "fake", 
         "FAKE_LLM_MODE": "echo",
         "BLOCK_EXTERNAL_IO": "true",
-        "IS_TEST_ENV": "true"
+        "IS_TEST_ENV": "true",
+        "SECRET_KEY": "dummy_secret_key_for_tests_only",
+        "OPENAI_API_KEY": "dummy",
+        "REPLYX_PROXY_DISABLED": "1"
     }
     
     for key, value in critical_vars.items():

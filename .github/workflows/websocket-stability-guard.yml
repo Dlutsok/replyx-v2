@@ -35,10 +35,24 @@ jobs:
           pip install -r requirements.txt || echo "requirements.txt not found, using minimal deps"
           
       - name: Validate WebSocket fixes are intact
+        env:
+          SECRET_KEY: dummy_secret_key_for_tests
+          REPLYX_TEST_MODE: 1
+          LLM_OFFLINE: 1
+          OPENAI_API_KEY: dummy
+          REPLYX_PROXY_DISABLED: 1
+          WS_TRUSTED_IFRAME_HOSTS: "replyx.ru,www.replyx.ru,localhost:3000"
         run: |
           python3 scripts/validate-websocket-fixes.py
           
       - name: Run critical WebSocket tests
+        env:
+          SECRET_KEY: dummy_secret_key_for_tests
+          REPLYX_TEST_MODE: 1
+          LLM_OFFLINE: 1
+          OPENAI_API_KEY: dummy
+          REPLYX_PROXY_DISABLED: 1
+          WS_TRUSTED_IFRAME_HOSTS: "replyx.ru,www.replyx.ru,localhost:3000"
         run: |
           pytest backend/tests/test_websocket_critical_fixes.py -v
           
@@ -110,6 +124,12 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost/postgres
           REDIS_URL: redis://localhost:6379/0
+          SECRET_KEY: dummy_secret_key_for_tests
+          REPLYX_TEST_MODE: 1
+          LLM_OFFLINE: 1
+          OPENAI_API_KEY: dummy
+          REPLYX_PROXY_DISABLED: 1
+          WS_TRUSTED_IFRAME_HOSTS: "replyx.ru,www.replyx.ru,localhost:3000"
         run: |
           cd backend
           pytest tests/test_websocket_critical_fixes.py::TestWebSocketIntegration -v
