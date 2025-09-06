@@ -232,7 +232,7 @@ async def site_add_dialog_message(
         logger.error(f"❌ [SITE] Failed to publish Redis event for dialog {dialog_id}: {e}")
     
     # Для сообщений пользователя отправляем только в админ панель
-    # НЕ отправляем в виджет, так как виджет уже добавляет оптимистично
+    # ИСПРАВЛЕНО: Отправляем в виджет тоже через SSE для консистентности
     if msg.sender == 'user':
         user_message_data = {
             "id": msg.id,
@@ -247,8 +247,9 @@ async def site_add_dialog_message(
             f"[MSG_BROADCAST] dialog={dialog_id} sender=user admin_conns={stats['connection_details']['admin_connections']} site_conns={stats['connection_details']['site_connections']}"
         )
         
-        # ОСНОВНОЙ broadcast в админку
+        # Отправляем в ОБА канала: админ И виджет для консистентности SSE
         await push_dialog_message(dialog_id, user_message_data)
+        await ws_push_site_dialog_message(dialog_id, user_message_data)
         
         # СТРАХОВОЧНЫЙ механизм: если админ не подключён, предупреждаем
         if stats['connection_details']['admin_connections'] == 0:
@@ -604,7 +605,7 @@ async def widget_add_dialog_message(
     db.refresh(msg)
     
     # Для сообщений пользователя отправляем только в админ панель
-    # НЕ отправляем в виджет, так как виджет уже добавляет оптимистично
+    # ИСПРАВЛЕНО: Отправляем в виджет тоже через SSE для консистентности
     if msg.sender == 'user':
         user_message_data = {
             "id": msg.id,
@@ -619,8 +620,9 @@ async def widget_add_dialog_message(
             f"[MSG_BROADCAST] dialog={dialog_id} sender=user admin_conns={stats['connection_details']['admin_connections']} site_conns={stats['connection_details']['site_connections']}"
         )
         
-        # ОСНОВНОЙ broadcast в админку
+        # Отправляем в ОБА канала: админ И виджет для консистентности SSE
         await push_dialog_message(dialog_id, user_message_data)
+        await ws_push_site_dialog_message(dialog_id, user_message_data)
         
         # СТРАХОВОЧНЫЙ механизм: если админ не подключён, предупреждаем
         if stats['connection_details']['admin_connections'] == 0:

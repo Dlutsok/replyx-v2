@@ -879,6 +879,19 @@ export default function ChatIframe() {
               const exists = prev.find(m => m.id === data.id);
               if (exists) return prev;
               
+              // Для сообщений пользователя: проверяем дубли по тексту и времени
+              if (data.sender === 'user') {
+                const recentDuplicate = prev.find(m => 
+                  m.sender === 'user' && 
+                  m.text === data.text && 
+                  Math.abs(new Date(m.timestamp) - new Date(data.timestamp)) < 60000 // в пределах минуты
+                );
+                if (recentDuplicate) {
+                  console.log(`🔄 [Widget] Skipping duplicate user message: ${data.text}`);
+                  return prev;
+                }
+              }
+              
               setDialogLoaded(true);
               const newMessages = [...prev, data];
               setMessageCache(cache => ({ ...cache, [dialogId]: newMessages }));
@@ -904,12 +917,25 @@ export default function ChatIframe() {
           }
 
           // Обычное сообщение в формате {message: {id, sender, text, timestamp}}
-          if (data.message && data.message.sender !== 'user') {
+          if (data.message && data.message.sender) {
             const msg = data.message;
             
             setMessages((prev) => {
               const exists = prev.find(m => m.id === msg.id);
               if (exists) return prev;
+              
+              // Для сообщений пользователя: проверяем дубли по тексту и времени
+              if (msg.sender === 'user') {
+                const recentDuplicate = prev.find(m => 
+                  m.sender === 'user' && 
+                  m.text === msg.text && 
+                  Math.abs(new Date(m.timestamp) - new Date(msg.timestamp)) < 60000 // в пределах минуты
+                );
+                if (recentDuplicate) {
+                  console.log(`🔄 [Widget] Skipping duplicate user message: ${msg.text}`);
+                  return prev;
+                }
+              }
               
               setDialogLoaded(true);
               const newMessages = [...prev, msg];
