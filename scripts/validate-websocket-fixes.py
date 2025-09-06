@@ -79,29 +79,20 @@ def check_race_condition_fix():
     
     # Проверка добавления dialogLoaded в условие
     websocket_useeffect = re.search(
-        r'useEffect\(\(\) => \{.*?if \(dialogId.*?\) \{',
-        content, re.DOTALL
+        r'if \(dialogId && \(siteToken \|\| assistantId\) && guestId && dialogLoaded\)',
+        content
     )
     
     if not websocket_useeffect:
-        print("❌ WebSocket useEffect not found")
-        return False
-    
-    condition = websocket_useeffect.group()
-    
-    if "dialogLoaded" not in condition:
-        print("❌ КРИТИЧНО: dialogLoaded not added to WebSocket useEffect condition!")
-        print("   Current condition:", condition.split('if (')[1].split(') {')[0])
+        print("❌ WebSocket useEffect condition with dialogLoaded not found")
         return False
     
     # Проверка добавления dialogLoaded в dependencies
-    deps_pattern = r'}, \[(.*?)\]\);'
+    deps_pattern = r'\[dialogId, siteToken, assistantId, guestId, wsReconnectNonce, dialogLoaded\]'
     deps_match = re.search(deps_pattern, content)
     
-    if not deps_match or "dialogLoaded" not in deps_match.group(1):
-        print("❌ КРИТИЧНО: dialogLoaded not added to useEffect dependencies!")
-        if deps_match:
-            print("   Current dependencies:", deps_match.group(1))
+    if not deps_match:
+        print("❌ КРИТИЧНО: WebSocket useEffect dependencies not correct!")
         return False
     
     print("✅ Race condition fix confirmed")

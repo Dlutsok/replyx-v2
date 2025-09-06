@@ -380,7 +380,7 @@ async def dialog_websocket_endpoint(websocket: WebSocket, dialog_id: int, token:
 
 async def site_dialog_websocket_endpoint(websocket: WebSocket, dialog_id: int, site_token: str = Query(None), db: Session = None):
     """WebSocket endpoint для site диалогов"""
-    logger.info(f"Site WebSocket connection attempt for dialog {dialog_id}")
+    logger.info(f"[Site] WebSocket connection attempt for dialog {dialog_id}")
     
     await websocket.accept()  # Accept до проверок
     
@@ -413,16 +413,16 @@ async def site_dialog_websocket_endpoint(websocket: WebSocket, dialog_id: int, s
             await websocket.close(code=WSCloseCodes.AUTH_FAILED, reason="Site token invalid")
         return
     
-    logger.info(f"Site WebSocket accepted for dialog {dialog_id}")
+    logger.info(f"[Site] WebSocket accepted for dialog {dialog_id}")
     
     ok = await _register_connection(ws_site_connections, ws_site_meta, dialog_id, websocket)
     if not ok:
         return
     
-    logger.info(f"Site WebSocket connected to dialog {dialog_id}")
+    logger.info(f"[Site] WebSocket подключён к диалогу {dialog_id}")
     # Безопасная проверка количества соединений
     site_conn_count = len(ws_site_connections.get(dialog_id, set()))
-    logger.info(f"Total site connections for dialog {dialog_id}: {site_conn_count}")
+    logger.info(f"[Site] Total connections for dialog {dialog_id}: {site_conn_count}")
     
     receive_task = asyncio.create_task(_receive_loop(dialog_id, websocket, ws_site_meta))
     heartbeat_task = asyncio.create_task(_heartbeat_loop(dialog_id, websocket, ws_site_meta))

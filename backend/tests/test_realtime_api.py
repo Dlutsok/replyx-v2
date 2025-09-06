@@ -220,6 +220,9 @@ class TestWebSocketEndpointIntegration:
         from api.websockets import dialog_ws
         
         mock_websocket = AsyncMock()
+        mock_websocket.headers = {"x-forwarded-for": "127.0.0.1"}
+        mock_websocket.client = Mock()
+        mock_websocket.client.host = "127.0.0.1"
         mock_db = Mock()
         
         # Test with invalid token
@@ -227,7 +230,7 @@ class TestWebSocketEndpointIntegration:
             await dialog_ws(mock_websocket, dialog_id=123, token="invalid", db=mock_db)
         
         # Should close with auth error
-        mock_websocket.close.assert_called_once_with(code=1008, reason="Invalid token")
+        mock_websocket.close.assert_called_once_with(code=4002, reason="Invalid or expired token")
     
     @pytest.mark.asyncio
     async def test_widget_websocket_assistant_validation(self):
@@ -235,13 +238,16 @@ class TestWebSocketEndpointIntegration:
         from api.websockets import widget_dialog_ws
         
         mock_websocket = AsyncMock()
+        mock_websocket.headers = {"x-forwarded-for": "127.0.0.1"}
+        mock_websocket.client = Mock()
+        mock_websocket.client.host = "127.0.0.1"
         mock_db = Mock()
         mock_db.query.return_value.filter.return_value.first.return_value = None
         
         await widget_dialog_ws(mock_websocket, dialog_id=123, assistant_id=999, db=mock_db)
         
         # Should close with assistant not found error
-        mock_websocket.close.assert_called_once_with(code=4004)
+        mock_websocket.close.assert_called_once_with(code=4004, reason="Assistant not found")
 
 
 class TestMessageDeduplication:

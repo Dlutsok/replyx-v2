@@ -37,7 +37,7 @@ class MockWebSocket:
     """Mock WebSocket для тестирования"""
     
     def __init__(self, client_ip="127.0.0.1", origin=None):
-        self.state = WebSocketState.CONNECTING
+        self.state = WebSocketState.CONNECTED  # Изначально connected для тестов
         self.client = Mock()
         self.client.host = client_ip
         self.headers = {"origin": origin} if origin else {}

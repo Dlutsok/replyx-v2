@@ -109,7 +109,7 @@ class TestWebSocketCriticalFixes:
         # Добавляем мок-соединение в правильный пул
         mock_websocket = MagicMock()
         mock_websocket.send_json = AsyncMock()
-        ws_connections[dialog_id] = [mock_websocket]
+        ws_connections[dialog_id] = {mock_websocket}
         
         # Отправка сообщения
         await push_dialog_message(dialog_id, test_message)
@@ -126,7 +126,7 @@ class TestWebSocketCriticalFixes:
         # Добавляем мок-соединение в site пул
         mock_websocket = MagicMock()
         mock_websocket.send_json = AsyncMock()
-        ws_site_connections[dialog_id] = [mock_websocket]
+        ws_site_connections[dialog_id] = {mock_websocket}
         
         await push_site_dialog_message(dialog_id, test_message)
         
@@ -140,11 +140,11 @@ class TestWebSocketCriticalFixes:
         # Добавляем соединения в разные пулы
         widget_ws = MagicMock()
         widget_ws.send_json = AsyncMock()
-        ws_connections[dialog_id] = [widget_ws]
+        ws_connections[dialog_id] = {widget_ws}
         
         site_ws = MagicMock() 
         site_ws.send_json = AsyncMock()
-        ws_site_connections[dialog_id] = [site_ws]
+        ws_site_connections[dialog_id] = {site_ws}
         
         # Отправка admin сообщения не должна идти в site пул
         await push_dialog_message(dialog_id, {"test": "admin"})
