@@ -33,15 +33,15 @@ services:
       retries: 3
       start_period: 40s
 
-  # Backend FastAPI application
+  # Backend FastAPI application with SSE support
   backend:
     image: ghcr.io/dlutsok/replyx-backend:${TAG:-latest}
     container_name: replyx-backend
     
-    # Resource limits
-    mem_limit: 1024m
-    memswap_limit: 1024m
-    cpus: "1.0"
+    # Resource limits - increased for SSE connections
+    mem_limit: 1536m
+    memswap_limit: 1536m
+    cpus: "1.5"
     
     ports:
       - "8000:8000"
@@ -50,8 +50,7 @@ services:
     environment:
       - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
       - SKIP_PIP_INSTALL=1
-      - UVICORN_WORKERS=4  # Multi-worker for API performance
-      - ENABLE_WS_BRIDGE=false  # Backend only publishes, doesn't subscribe
+      - UVICORN_WORKERS=4  # Multi-worker for API + SSE performance
     depends_on:
       - redis
     volumes:
@@ -68,49 +67,6 @@ services:
       retries: 3
       start_period: 40s
 
-  # WebSocket Gateway - separate service for stable WebSocket connections
-  ws-gateway:
-    image: ghcr.io/dlutsok/replyx-backend:${TAG:-latest}
-    container_name: replyx-ws-gateway
-    
-    # Resource limits optimized for WebSocket connections
-    mem_limit: 768m
-    memswap_limit: 768m
-    cpus: "0.75"
-    
-    ports:
-      - "8001:8001"
-    env_file:
-      - .env.production
-    environment:
-      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
-      - SKIP_PIP_INSTALL=1
-      - UVICORN_WORKERS=1  # Single worker for WebSocket state consistency
-      - UVICORN_PORT=8001
-      - SERVICE_MODE=websocket  # Flag to indicate WebSocket-only mode
-      - ENABLE_WS_BRIDGE=true  # Enable Redis Pub/Sub subscriber for real-time
-      - WEBSOCKET_PING_INTERVAL=25  # WebSocket ping interval in seconds
-      - WEBSOCKET_PING_TIMEOUT=20   # WebSocket ping timeout in seconds
-    depends_on:
-      - redis
-    # Use same main.py but with different port - optimized for WebSocket connections
-    command: >
-      sh -c "uvicorn main:app --host 0.0.0.0 --port 8001
-             --workers 1 --loop uvloop --http httptools
-             --log-level info --access-log"
-    volumes:
-      - ./ssl:/app/ssl
-      - uploads-data:/app/uploads
-    restart: unless-stopped
-    networks:
-      - replyx-network
-    
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8001/docs"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
 
   # Workers Node.js for Telegram bots
   workers:
@@ -199,7 +155,6 @@ services:
     depends_on:
       - frontend
       - backend
-      - ws-gateway
     restart: unless-stopped
     networks:
       - replyx-network

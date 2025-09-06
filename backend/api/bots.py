@@ -490,10 +490,10 @@ async def add_bot_dialog_message(dialog_id: int, data: dict, db: Session = Depen
     except Exception as e:
         logger.error(f"❌ [TELEGRAM_BOT] Failed to publish Redis event for dialog {dialog_id}: {e}")
     
-    # 🔥 ИНТЕГРАЦИЯ С WEBSOCKET СИСТЕМОЙ
-    # Отправляем сообщение в админ панель через WebSocket
+    # 🔥 ИНТЕГРАЦИЯ С SSE СИСТЕМОЙ
+    # Отправляем сообщение в админ панель через SSE
     try:
-        from services.websocket_manager import push_dialog_message
+        from services.sse_manager import push_sse_event
         
         message_data = {
             "id": msg.id,
@@ -502,14 +502,14 @@ async def add_bot_dialog_message(dialog_id: int, data: dict, db: Session = Depen
             "timestamp": msg.timestamp.isoformat() + 'Z'
         }
         
-        # Отправляем в админ панель (всегда для всех Telegram сообщений)
-        await push_dialog_message(dialog_id, message_data)
+        # Отправляем в админ панель через SSE (всегда для всех Telegram сообщений)
+        await push_sse_event(dialog_id, message_data)
         
-        logger.info(f"✅ [TELEGRAM_BOT] Сообщение от Telegram бота отправлено в WebSocket админ панели: dialog_id={dialog_id}, sender={sender}")
+        logger.info(f"✅ [TELEGRAM_BOT] Сообщение от Telegram бота отправлено через SSE в админ панель: dialog_id={dialog_id}, sender={sender}")
         
-    except Exception as ws_error:
-        # Не блокируем основную логику при ошибках WebSocket
-        logger.warning(f"⚠️ [TELEGRAM_BOT] Ошибка отправки WebSocket сообщения в админ панель: {ws_error}")
+    except Exception as sse_error:
+        # Не блокируем основную логику при ошибках SSE
+        logger.warning(f"⚠️ [TELEGRAM_BOT] Ошибка отправки SSE сообщения в админ панель: {sse_error}")
     
     return {
         "id": msg.id,

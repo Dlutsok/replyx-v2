@@ -58,6 +58,14 @@ async def lifespan(app: FastAPI):
     else:
         logger.info(f"Production environment: {environment} - using Alembic migrations only")
     
+    # Инициализация SSE Manager
+    try:
+        from services.sse_manager import sse_manager
+        await sse_manager.initialize()
+        logger.info("✅ SSE Manager initialized successfully")
+    except Exception as e:
+        logger.error(f"❌ Failed to initialize SSE Manager: {e}")
+    
     # Инициализация данных по умолчанию
     db = SessionLocal()
     try:
@@ -93,17 +101,8 @@ async def lifespan(app: FastAPI):
                     
                     logger.info(f"🔔 WS-BRIDGE received: {event_type} dialog={dialog_id}")
                     
-                    # Транслируем сообщение во все активные WebSocket соединения
-                    if event_type == "message:new":
-                        from services.websocket_manager import push_dialog_message, push_site_dialog_message
-                        
-                        # Отправляем в админ панель (admin connections)
-                        await push_dialog_message(dialog_id, message)
-                        
-                        # Отправляем в site/widget соединения
-                        await push_site_dialog_message(dialog_id, message)
-                        
-                        logger.debug(f"📡 WS-BRIDGE broadcasted message {message.get('id')} to dialog {dialog_id}")
+                    # WS-BRIDGE disabled - migrated to SSE
+                    logger.info(f"🔔 WS-BRIDGE: Event ignored (migrated to SSE): {event_type} dialog={dialog_id}")
                     
                 except Exception as e:
                     logger.error(f"❌ WS-BRIDGE event handler error: {e}", exc_info=True)
@@ -125,6 +124,14 @@ async def lifespan(app: FastAPI):
     yield
     
     # Shutdown
+    # Остановка SSE Manager
+    try:
+        from services.sse_manager import sse_manager
+        await sse_manager.shutdown()
+        logger.info("✅ SSE Manager shutdown completed")
+    except Exception as e:
+        logger.error(f"❌ Error shutting down SSE Manager: {e}")
+    
     if ws_bridge_task and not ws_bridge_task.done():
         logger.info("🛑 Stopping WS-BRIDGE subscriber...")
         ws_bridge_task.cancel()
@@ -156,7 +163,7 @@ from api.site import router as site_router
 from api.tokens import router as tokens_router
 from api.email import router as email_router
 
-from api.websockets import router as websockets_router
+# from api.websockets import router as websockets_router  # REMOVED - migrated to SSE
 from api.balance import router as balance_router
 from api.support import router as support_router
 from api.handoff import router as handoff_router, operator_router as operator_handoff_router
@@ -164,7 +171,8 @@ from api.qa_knowledge import router as qa_knowledge_router
 from api.database_admin import router as database_admin_router
 from api.start_analytics import router as start_analytics_router
 from api.tinkoff_payments import router as tinkoff_payments_router
-from api.debug_websocket import router as debug_websocket_router
+from api.debug_sse import router as debug_sse_router  # Renamed from debug_websocket
+from api.sse import router as sse_router
 app.include_router(system_router, prefix="/api")
 app.include_router(auth_router, prefix="/api")
 app.include_router(users_router, prefix="/api")
@@ -182,12 +190,13 @@ app.include_router(balance_router)
 app.include_router(support_router, prefix="/api")
 app.include_router(handoff_router, prefix="/api")
 app.include_router(operator_handoff_router, prefix="/api")
-app.include_router(websockets_router)
+# app.include_router(websockets_router)  # REMOVED - migrated to SSE
 app.include_router(qa_knowledge_router, prefix="/api")
 app.include_router(database_admin_router, prefix="/api")
 app.include_router(start_analytics_router, prefix="/api/start")
 app.include_router(tinkoff_payments_router)
-app.include_router(debug_websocket_router, prefix="/api")
+app.include_router(debug_sse_router, prefix="/api")
+app.include_router(sse_router)
 
 # Static files для загруженных файлов (аватары, документы)
 from fastapi.staticfiles import StaticFiles
@@ -264,14 +273,8 @@ from services.bot_manager import (
     reload_user_assistant_bots
 )
 
-# WebSocket соединения перенесены в services/websocket_manager.py
-from services.websocket_manager import (
-    dialog_websocket_endpoint,
-    site_dialog_websocket_endpoint,
-    widget_dialog_websocket_endpoint,
-    push_dialog_message,
-    push_site_dialog_message
-)
+# WebSocket removed - migrated to SSE
+# from services.websocket_manager import (...) - REMOVED
 
 # AI Token Manager
 from ai.ai_token_manager import ai_token_manager
@@ -374,34 +377,27 @@ def prometheus_metrics():
     except Exception:
         REDIS_AVAILABLE.set(0)
     try:
-        from services.websocket_manager import get_connection_stats
-        stats = get_connection_stats()
+        # SSE метрики вместо WebSocket
+        from services.sse_manager import get_sse_stats
+        sse_stats = get_sse_stats()
         
-        # Обновляем все WebSocket метрики из централизованной статистики
-        WEBSOCKET_CONNECTIONS.set(stats.get('total_connections', 0))
+        # Обновляем SSE метрики (заменяем WebSocket)
+        WEBSOCKET_CONNECTIONS.set(sse_stats.get('active_connections', 0))
         
-        # Метрики по типам подключений
-        conn_details = stats.get('connection_details', {})
-        WEBSOCKET_CONNECTIONS_BY_TYPE.labels(connection_type='admin').set(conn_details.get('admin_connections', 0))
-        WEBSOCKET_CONNECTIONS_BY_TYPE.labels(connection_type='site').set(conn_details.get('site_connections', 0))
+        # SSE connections by type
+        clients_per_dialog = sse_stats.get('clients_per_dialog', {})
+        total_sse_connections = sum(clients_per_dialog.values())
+        WEBSOCKET_CONNECTIONS_BY_TYPE.labels(connection_type='sse').set(total_sse_connections)
         
-        # Rate limiting метрики
-        rate_limit = stats.get('rate_limiting', {})
-        WEBSOCKET_RATE_LIMITED_IPS.set(rate_limit.get('rate_limited_ips', 0))
-        
-        # Message queue метрики
-        queue_stats = stats.get('message_queue', {})
-        WEBSOCKET_MESSAGE_QUEUE_PENDING.set(queue_stats.get('pending_messages', 0))
+        # Очистка неиспользуемых метрик (set to 0)
+        WEBSOCKET_RATE_LIMITED_IPS.set(0)
+        WEBSOCKET_MESSAGE_QUEUE_PENDING.set(0)
         
     except Exception as e:
-        # Fallback к простому подсчету при ошибке
-        try:
-            from services.websocket_manager import ws_connections, ws_site_connections
-            total_ws = sum(len(lst) for lst in ws_connections.values()) + \
-                       sum(len(lst) for lst in ws_site_connections.values())
-            WEBSOCKET_CONNECTIONS.set(total_ws)
-        except Exception:
-            WEBSOCKET_CONNECTIONS.set(0)
+        # Fallback: устанавливаем 0 при ошибке получения SSE статистики
+        logger.warning(f"Error getting SSE stats: {e}")
+        WEBSOCKET_CONNECTIONS.set(0)
+        WEBSOCKET_CONNECTIONS_BY_TYPE.labels(connection_type='sse').set(0)
 
     data = generate_latest()
     return Response(content=data, media_type=CONTENT_TYPE_LATEST)

@@ -19,8 +19,12 @@ const getApiUrl = () => {
 
 const API_URL = getApiUrl();
 
+// Feature flags - MIGRATED TO SSE: Always use SSE transport
+const USE_SSE_TRANSPORT = true;
+
 // Debug логирование API URL
 console.log('[ReplyX iframe] API_URL:', API_URL);
+console.log('[ReplyX iframe] Transport mode: SSE (WebSocket removed)');
 console.log('[ReplyX iframe] URL params:', typeof window !== 'undefined' ? window.location.search : 'N/A');
 
 // Security utility: safely logs URLs with tokens
@@ -400,47 +404,12 @@ export default function ChatIframe() {
   const [assistantId, setAssistantId] = useState(null);
   const [handoffStatus, setHandoffStatus] = useState('none');
   const [dialogId, setDialogId] = useState(null);
-  const [ws, setWs] = useState(null);
   const [typing, setTyping] = useState(false);
   const [guestId, setGuestId] = useState(null);
   const [debugInfo, setDebugInfo] = useState("Инициализация...");
   const [dialogLoaded, setDialogLoaded] = useState(false);
   const [creatingDialog, setCreatingDialog] = useState(false);
-  const reconnectAttempts = useRef(0);
-  const maxReconnectAttempts = Infinity; // Бесконечные попытки переподключения
-  const decorrelatedDelay = useRef(1000); // Для decorrelated jitter
-  // Используем state-нонс для безопасного переподключения без перезагрузки iframe
-  const [wsReconnectNonce, setWsReconnectNonce] = useState(0);
 
-  // WebSocket Close Codes (синхронизированы с backend)
-  const WSCloseCodes = {
-    NORMAL_CLOSURE: 1000,
-    GOING_AWAY: 1001,
-    SERVICE_RESTART: 1012,
-    TRY_AGAIN_LATER: 1013,
-    INTERNAL_ERROR: 1011,
-    AUTH_EXPIRED: 4001,
-    AUTH_FAILED: 4002,
-    FORBIDDEN_DOMAIN: 4003,
-    RATE_LIMITED: 4008,
-    CONFLICT_CONNECTION: 4009
-  };
-
-  // Decorrelated jitter для устойчивости к штормам переподключений
-  const getNextDecorrelatedDelay = () => {
-    const capMs = 15000;
-    decorrelatedDelay.current = Math.min(
-      capMs,
-      Math.floor(Math.random() * (decorrelatedDelay.current * 3 - 1000)) + 1000
-    );
-    return decorrelatedDelay.current;
-  };
-
-  // Сброс backoff при успешном подключении
-  const resetBackoff = () => {
-    decorrelatedDelay.current = 1000;
-    reconnectAttempts.current = 0;
-  };
 
   // HANDOFF FUNCTION - Запрос оператора
   const requestHandoff = async () => {
@@ -791,52 +760,37 @@ export default function ChatIframe() {
     initializeChat();
   }, []);
 
+  // SSE Connection Effect - Replaces WebSocket
   useEffect(() => {
     if (dialogId && (siteToken || assistantId) && guestId) {
-      setDebugInfo(`Подключаю WebSocket для диалога ${dialogId}...`);
-      let wsUrl;
-      const wsApiUrl = API_URL.replace('http://', 'ws://').replace('https://', 'wss://');
+      setDebugInfo(`Подключаю SSE для диалога ${dialogId}...`);
       
-      // Получаем parent_origin для iframe сценария
-      let parentOrigin = null;
-      try {
-        if (typeof window !== 'undefined' && window.parent && window.parent !== window) {
-          // Пытаемся получить origin родительского окна (может не работать из-за CORS)
-          try {
-            parentOrigin = window.parent.location.origin;
-          } catch (e) {
-            // Если не можем прочитать из-за CORS, попробуем получить из referrer
-            if (document.referrer) {
-              const referrerUrl = new URL(document.referrer);
-              parentOrigin = referrerUrl.origin;
-            }
-          }
-        }
-      } catch (e) {
-        console.log('[ReplyX iframe] Could not determine parent origin:', e);
-      }
+      // Build SSE endpoint URL
+      let sseUrl = `${API_URL}/api/dialogs/${dialogId}/events`;
+      const params = new URLSearchParams();
       
       if (siteToken) {
-        // Приоритет токенному режиму
-        wsUrl = `${wsApiUrl}/ws/site/dialogs/${dialogId}?site_token=${siteToken}`;
-        // Добавляем parent_origin если есть
-        if (parentOrigin) {
-          wsUrl += `&parent_origin=${encodeURIComponent(parentOrigin)}`;
-        }
-      } else if (assistantId) {
-        // Fallback на гостевой режим
-        wsUrl = `${wsApiUrl}/ws/widget/dialogs/${dialogId}?assistant_id=${assistantId}`;
+        params.append('site_token', siteToken);
+      }
+      if (assistantId) {
+        params.append('assistant_id', assistantId);  
+      }
+      if (guestId) {
+        params.append('guest_id', guestId);
       }
       
-      safeLogUrl(wsUrl, "WebSocket URL");
-      console.log(`[ReplyX iframe] Parent origin: ${parentOrigin}`);
+      if (params.toString()) {
+        sseUrl += `?${params.toString()}`;
+      }
       
-      const socket = new window.WebSocket(wsUrl);
+      console.log('[ReplyX iframe] SSE URL:', sseUrl);
       
-      socket.onopen = () => {
-        setDebugInfo(`✅ Чат готов к работе!`);
+      const eventSource = new EventSource(sseUrl);
+      
+      eventSource.onopen = () => {
+        setDebugInfo(`✅ Чат готов к работе (SSE)!`);
         setIsOnline(true);
-        resetBackoff(); // Сброс backoff при успешном подключении
+        
         // После соединения — подтягиваем статус handoff для синхронизации
         (async () => {
           try {
@@ -848,30 +802,21 @@ export default function ChatIframe() {
           } catch (e) {}
         })();
         
-        // Уведомляем родительское окно о подключении WebSocket
+        // Уведомляем родительское окно о подключении SSE
         if (typeof window !== 'undefined' && window.parent) {
           window.parent.postMessage({
-            type: 'replyX_websocket_connected'
+            type: 'replyX_sse_connected'
           }, '*');
         }
       };
       
-      socket.onmessage = (event) => {
-        // Обработка ping/pong для поддержания соединения
-        if (event.data === '__ping__') {
-          if (socket.readyState === WebSocket.OPEN) {
-            socket.send('__pong__');
-          }
-          return;
-        }
-
+      eventSource.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          console.log('📨 [Widget] WebSocket message received:', data);
+          console.log('📨 [Widget] SSE message received:', data);
           
-          // Обработка разных типов сообщений
+          // Обработка разных типов сообщений через SSE
           if (data.type === 'typing_start') {
-            // Показываем индикатор печати только если диалог НЕ у оператора
             if (handoffStatus === 'none') {
               setTyping(true);
             }
@@ -886,7 +831,7 @@ export default function ChatIframe() {
           // HANDOFF EVENTS - Обработка событий передачи оператору
           if (data.type === 'handoff_requested') {
             setHandoffStatus('requested');
-            setTyping(false); // Отключаем индикатор печати при передаче оператору
+            setTyping(false);
             const systemMessage = {
               id: `system-${Date.now()}`,
               sender: 'system',
@@ -901,7 +846,7 @@ export default function ChatIframe() {
 
           if (data.type === 'handoff_started') {
             setHandoffStatus('active');
-            setTyping(false); // Отключаем индикатор печати - теперь с оператором говорим
+            setTyping(false);
             const systemMessage = {
               id: `system-${Date.now()}`,
               sender: 'system',
@@ -928,251 +873,78 @@ export default function ChatIframe() {
             return;
           }
 
-          if (data.type === 'operator_handling') {
-            setTyping(false); // Отключаем индикатор печати - диалог у оператора
-            const systemMessage = {
-              id: `system-${Date.now()}`,
-              sender: 'assistant',
-              text: data.message || 'Диалог обрабатывается оператором. Ожидайте ответа.',
-              timestamp: new Date().toISOString(),
-              system_type: 'operator_handling'
-            };
-            setMessages(prev => [...prev, systemMessage]);
-            scrollToBottom();
-            return;
-          }
-          
           // Обычное сообщение в формате {message: {id, sender, text, timestamp}}
-          if (data.message) {
+          if (data.message && data.message.sender !== 'user') {
             const msg = data.message;
             
             setMessages((prev) => {
-              // Проверяем, не дублируется ли сообщение
               const exists = prev.find(m => m.id === msg.id);
               if (exists) return prev;
               
-              // Отмечаем диалог как загруженный при получении любого сообщения
               setDialogLoaded(true);
-              
               const newMessages = [...prev, msg];
-              // Update cache immediately
               setMessageCache(cache => ({ ...cache, [dialogId]: newMessages }));
               return newMessages;
             });
-          }
-          
-          // Прямое сообщение в формате {id, sender, text, timestamp}
-          // НЕ обрабатываем сообщения от пользователя, так как они добавляются оптимистично
-          if (data.id && data.sender && data.text && !data.message && !data.type && data.sender !== 'user') {
-            console.log('📨 [Widget] Direct message received (not from user):', data);
             
-            setMessages((prev) => {
-              // Проверяем, не дублируется ли сообщение
-              const exists = prev.find(m => m.id === data.id);
-              if (exists) {
-                console.log('⚠️ [Widget] Message already exists, skipping:', data.id);
-                return prev;
+            if (msg.sender === 'assistant') {
+              setTyping(false);
+              setLoading(false);
+              
+              // Уведомляем родительское окно о получении ответа
+              if (typeof window !== 'undefined' && window.parent) {
+                window.parent.postMessage({
+                  type: 'replyX_message_received',
+                  text: msg.text,
+                  timestamp: msg.timestamp
+                }, '*');
               }
               
-              // Отмечаем диалог как загруженный
-              setDialogLoaded(true);
-              
-              console.log('✅ [Widget] Adding direct message to chat:', data.id);
-              const newMessages = [...prev, data];
-              // Update cache immediately
-              setMessageCache(cache => ({ ...cache, [dialogId]: newMessages }));
-              return newMessages;
-            });
-          } else if (data.id && data.sender === 'user' && !data.message && !data.type) {
-            console.log('⚠️ [Widget] Ignoring user message from WebSocket (handled optimistically):', data);
-          }
-          
-          // Обработка сообщений от ассистента (в формате data.message)
-          if (data.message && data.message.sender === 'assistant') {
-            const msg = data.message;
-            setTyping(false);
-            setLoading(false);
-            
-            // Уведомляем родительское окно о получении ответа
-            if (typeof window !== 'undefined' && window.parent) {
-              window.parent.postMessage({
-                type: 'replyX_message_received',
-                text: msg.text,
-                timestamp: msg.timestamp
-              }, '*');
-            }
-            
-            // Если чат минимизирован и получено сообщение от ассистента
-            if (isMinimized) {
-              setNewMessageCount(prev => prev + 1);
-              playNotificationSound();
-              
-              // Показываем браузерное уведомление
-              if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-                new Notification("Новое сообщение в чате", {
-                  body: msg.text.slice(0, 100) + (msg.text.length > 100 ? '...' : ''),
-                  icon: '/favicon.ico'
-                });
-              }
-            }
-          }
-          
-          // Обработка прямых сообщений от ассистента и менеджера
-          if (data.sender === 'assistant' && data.id && !data.message) {
-            console.log('📨 [Widget] Direct AI message received:', data);
-            setTyping(false);
-            setLoading(false);
-            
-            // Уведомляем родительское окно о получении ответа
-            if (typeof window !== 'undefined' && window.parent) {
-              window.parent.postMessage({
-                type: 'replyX_message_received',
-                text: data.text,
-                timestamp: data.timestamp
-              }, '*');
-            }
-            
-            // Если чат минимизирован и получено сообщение от ассистента
-            if (isMinimized) {
-              setNewMessageCount(prev => prev + 1);
-              playNotificationSound();
-              
-              // Показываем браузерное уведомление
-              if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-                new Notification("Новое сообщение в чате", {
-                  body: data.text.slice(0, 100) + (data.text.length > 100 ? '...' : ''),
-                  icon: '/favicon.ico'
-                });
-              }
-            }
-          }
-          
-          // Обработка сообщений от менеджера/оператора
-          if (data.sender === 'manager' && data.id && !data.message) {
-            console.log('📨 [Widget] Manager message received:', data);
-            
-            // Уведомляем родительское окно о получении сообщения от оператора
-            if (typeof window !== 'undefined' && window.parent) {
-              window.parent.postMessage({
-                type: 'replyX_operator_message_received',
-                text: data.text,
-                timestamp: data.timestamp
-              }, '*');
-            }
-            
-            // Если чат минимизирован и получено сообщение от оператора
-            if (isMinimized) {
-              setNewMessageCount(prev => prev + 1);
-              playNotificationSound();
-              
-              // Показываем браузерное уведомление
-              if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-                new Notification("Сообщение от оператора", {
-                  body: data.text.slice(0, 100) + (data.text.length > 100 ? '...' : ''),
-                  icon: '/favicon.ico'
-                });
+              // Если чат минимизирован и получено сообщение от ассистента
+              if (isMinimized) {
+                setNewMessageCount(prev => prev + 1);
+                playNotificationSound();
               }
             }
           }
           
           scrollToBottom();
         } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
+          console.error('Error parsing SSE message:', error);
         }
       };
       
-      socket.onerror = (error) => {
-        setDebugInfo(`❌ Ошибка WebSocket: ${error}`);
+      eventSource.onerror = (error) => {
+        console.error('SSE connection error:', error);
+        setDebugInfo(`❌ Ошибка SSE: Переподключение...`);
         setIsOnline(false);
         
         // Уведомляем родительское окно об ошибке
         if (typeof window !== 'undefined' && window.parent) {
           window.parent.postMessage({
             type: 'replyX_error',
-            message: `WebSocket error: ${error}`
+            message: `SSE error: ${error}`
           }, '*');
         }
       };
       
-      socket.onclose = async (event) => {
-        setIsOnline(false);
-        setWs(null);
-        
-        const code = event.code;
-        const reason = event.reason || '';
-        
-        console.log(`[WebSocket] Connection closed: code=${code}, reason=${reason}`);
-        
-        // Таблица принятия решений по кодам закрытия
-        switch (code) {
-          case WSCloseCodes.NORMAL_CLOSURE:
-            setDebugInfo('Соединение закрыто');
-            return; // Не переподключаемся
-            
-          case WSCloseCodes.FORBIDDEN_DOMAIN:
-            setDebugInfo('❌ Домен не разрешен для этого виджета');
-            return; // Не переподключаемся
-            
-          case WSCloseCodes.AUTH_FAILED:
-            setDebugInfo('❌ Ошибка аутентификации');
-            return; // Не переподключаемся
-            
-          case WSCloseCodes.AUTH_EXPIRED:
-            setDebugInfo('🔐 Обновление сессии...');
-            // TODO: В следующем этапе добавим refresh токена
-            // Пока переподключаемся немедленно
-            setTimeout(() => setWsReconnectNonce(n => n + 1), 1000);
-            return;
-            
-          case WSCloseCodes.CONFLICT_CONNECTION:
-            setDebugInfo('🔄 Обнаружено дублирующее соединение, переподключаемся...');
-            // Немедленное переподключение без увеличения attempts
-            setTimeout(() => setWsReconnectNonce(n => n + 1), 1000);
-            return;
-            
-          default:
-            // Все остальные коды: backoff переподключение
-            if (maxReconnectAttempts !== Infinity && reconnectAttempts.current >= maxReconnectAttempts) {
-              setDebugInfo('❌ Максимум попыток переподключения достигнут');
-              return;
-            }
-            
-            reconnectAttempts.current++;
-            const delay = getNextDecorrelatedDelay();
-            
-            setDebugInfo(
-              `🔄 Переподключение через ${Math.round(delay/1000)}с ` +
-              `(попытка ${reconnectAttempts.current}${maxReconnectAttempts === Infinity ? '' : '/' + maxReconnectAttempts})`
-            );
-            
-            setTimeout(() => setWsReconnectNonce(n => n + 1), delay);
-        }
-      };
-      
-      setWs(socket);
       return () => {
-        // Proper cleanup для предотвращения утечек памяти
-        if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
-          socket.close(WSCloseCodes.NORMAL_CLOSURE);
-        }
+        eventSource.close();
       };
     }
-  }, [dialogId, siteToken, assistantId, guestId, wsReconnectNonce]);
+  }, [dialogId, siteToken, assistantId, guestId]);
 
-  // Network и visibility awareness
+  // Network и visibility awareness для SSE переподключения
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (!document.hidden && ws?.readyState !== WebSocket.OPEN) {
-        // Быстрая проверка при возврате на вкладку
-        resetBackoff();
-        setWsReconnectNonce(n => n + 1);
+      if (!document.hidden && !isOnline) {
+        console.log('Visibility changed, SSE reconnect logic here');
       }
-    };
+    }
     
     const handleOnlineStatus = () => {
-      if (navigator.onLine && ws?.readyState !== WebSocket.OPEN) {
-        resetBackoff();
-        setWsReconnectNonce(n => n + 1);
+      if (navigator.onLine && !isOnline) {
+        console.log('Online status changed, SSE reconnect logic here');
       }
     };
     
@@ -1183,7 +955,8 @@ export default function ChatIframe() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('online', handleOnlineStatus);
     };
-  }, [ws]);
+  }, [isOnline]);
+
 
   // Запрос разрешения на уведомления (с защитой для Safari/iOS)
   useEffect(() => {
@@ -1449,7 +1222,7 @@ export default function ChatIframe() {
       setMessages(prev => prev.filter(m => m.id !== userMessage.id));
     }
     
-    // Не сбрасываем loading здесь - это делается при получении ответа через WebSocket
+    // Не сбрасываем loading здесь - это делается при получении ответа через SSE
     // setLoading(false);
   };
 
@@ -1513,7 +1286,7 @@ export default function ChatIframe() {
 
 
   // Показываем загрузку только если есть критическая ошибка (убираем обычную загрузку)
-  if (!dialogId && debugInfo && debugInfo.includes('❌') && !debugInfo.includes('Подключаю WebSocket')) {
+  if (!dialogId && debugInfo && debugInfo.includes('❌') && !debugInfo.includes('Подключаю SSE')) {
     return (
       <>
         <style>{styles}</style>

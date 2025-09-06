@@ -35,8 +35,25 @@ def is_user_blocked(user):
     except ImportError:
         return False  # fallback
 
-# Import WebSocket helpers from websocket_manager
-from services.websocket_manager import push_dialog_message, push_site_dialog_message, broadcast_dialog_message
+# Migrated to SSE - removed WebSocket helpers
+# from services.websocket_manager import (...) - REMOVED
+from services.sse_manager import push_sse_event
+
+# SSE compatibility functions
+async def push_dialog_message(dialog_id: int, message: dict):
+    """SSE compatibility wrapper"""
+    try:
+        await push_sse_event(dialog_id, message)
+    except Exception as e:
+        logger.error(f"Failed to push SSE event: {e}")
+
+async def push_site_dialog_message(dialog_id: int, message: dict):
+    """SSE compatibility wrapper"""
+    await push_dialog_message(dialog_id, message)
+
+async def broadcast_dialog_message(dialog_id: int, message: dict):
+    """SSE compatibility wrapper"""
+    await push_dialog_message(dialog_id, message)
 
 # ---- Dialog context helpers ----
 def _detect_follow_up(user_text: str) -> bool:

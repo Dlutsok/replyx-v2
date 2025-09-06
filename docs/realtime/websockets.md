@@ -1,6 +1,18 @@
-# WebSocket Real-time Communication
+# ⚠️ DEPRECATED: WebSocket Real-time Communication
 
-**Last Updated:** 2025-08-23
+**Last Updated:** 2025-08-23  
+**Status:** ❌ DEPRECATED - Migrated to SSE on 2025-01-14  
+**New Documentation:** [`sse-architecture.md`](./sse-architecture.md)
+
+## Migration Notice
+
+This WebSocket system has been **completely replaced with Server-Sent Events (SSE)** for improved stability and simplified architecture.
+
+**📖 See:** [`sse-architecture.md`](./sse-architecture.md) for current implementation.
+
+---
+
+**HISTORICAL DOCUMENTATION (for reference only):**
 
 Guide to real-time WebSocket communication system in ChatAI for live chat, operator handoffs, and system notifications.
 

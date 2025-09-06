@@ -12,7 +12,9 @@ from datetime import datetime, timedelta
 from database import models, schemas, auth, get_db
 from ai import prompt_variations
 from ai.ai_token_manager import ai_token_manager
-from services.websocket_manager import push_site_dialog_message as ws_push_site_dialog_message, push_dialog_message, broadcast_dialog_message
+# WebSocket removed - using SSE instead
+# from services.websocket_manager import (...) - REMOVED
+from services.sse_manager import push_sse_event
 from services.handoff_service import HandoffService
 from services.balance_service import BalanceService
 
@@ -21,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-# WebSocket connections импортируем из websocket_manager
+# Migrated to SSE - removed WebSocket connections
 
 # JWT settings for site tokens
 from core.app_config import SITE_SECRET
@@ -797,11 +799,32 @@ async def widget_add_dialog_message(
         }
     }
 
-# Helper functions - используем функции из websocket_manager
+# Helper functions - migrated to SSE
 async def push_site_dialog_message(dialog_id: int, message: dict):
-    """Отправляет сообщение всем подключенным WebSocket клиентам"""
-    print(f"🔄 Delegating to websocket_manager.push_site_dialog_message")
-    await ws_push_site_dialog_message(dialog_id, message)
+    """Отправляет сообщение через SSE"""
+    try:
+        await push_sse_event(dialog_id, message)
+    except Exception as e:
+        logger.error(f"Failed to push SSE event: {e}")
+
+async def push_dialog_message(dialog_id: int, message: dict):
+    """Отправляет сообщение через SSE"""
+    try:
+        await push_sse_event(dialog_id, message)
+    except Exception as e:
+        logger.error(f"Failed to push SSE event: {e}")
+
+async def ws_push_site_dialog_message(dialog_id: int, message: dict):
+    """Alias for SSE compatibility"""
+    await push_site_dialog_message(dialog_id, message)
+
+def get_connection_stats():
+    """SSE connection stats"""
+    try:
+        from services.sse_manager import get_sse_stats
+        return get_sse_stats()
+    except Exception:
+        return {'connection_details': {'admin_connections': 0, 'site_connections': 0}}
 
 async def generate_ai_response(dialog_id: int, current_user: models.User, db: Session) -> models.DialogMessage:
     """Генерирует AI ответ для диалога"""

@@ -86,12 +86,13 @@ HTTP endpoints organized by domain:
 - **documents.py** - Document upload & processing
 - **bots.py** - Telegram bot configuration
 - **admin.py** - Administrative endpoints
-- **websockets.py** - Real-time WebSocket connections
+- **sse.py** - Real-time Server-Sent Events connections (migrated from WebSocket)
 
 ### Services Layer (`/services/`)
 Business logic and use cases:
 - **bot_manager.py** - Bot lifecycle management
-- **websocket_manager.py** - WebSocket connection handling
+- **sse_manager.py** - SSE connection handling (replaces WebSocket)
+- **sse_service.py** - SSE service layer
 - **balance_service.py** - User billing & credits
 - **embeddings_service.py** - Document vectorization
 - **handoff_service.py** - Human-AI handoff logic
@@ -162,7 +163,7 @@ ENVIRONMENT=production python3 main.py
 - HTTP request latency & count
 - Database connection pool status  
 - Redis availability
-- WebSocket connections
+- SSE connections (Server-Sent Events)
 - Telegram bot throughput
 
 ## 🛡️ Security Features
