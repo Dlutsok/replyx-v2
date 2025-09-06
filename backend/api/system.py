@@ -751,7 +751,7 @@ async def websocket_stats():
     Возвращает детальную информацию о соединениях, rate limiting, message queue
     """
     try:
-        from services.websocket_manager import get_connection_stats
+        from services.sse_manager import get_sse_stats as get_connection_stats
         return get_connection_stats()
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get WebSocket stats: {str(e)}")
@@ -764,7 +764,7 @@ async def websocket_health():
     Быстрая проверка состояния WebSocket системы
     """
     try:
-        from services.websocket_manager import get_connection_stats
+        from services.sse_manager import get_sse_stats as get_connection_stats
         stats = get_connection_stats()
         
         # Определяем health status на основе метрик

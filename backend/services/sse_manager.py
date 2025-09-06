@@ -474,10 +474,20 @@ async def validate_sse_auth(
         
         # Site token
         if site_token:
-            if _is_domain_allowed_by_token(origin, site_token):
-                return True, "site"
-            else:
+            # For SSE, we may not have Origin header, so we validate token structure only
+            if origin and not _is_domain_allowed_by_token(origin, site_token):
                 return False, "forbidden_domain"
+            
+            # If no origin, validate token structure only (SSE-friendly)
+            try:
+                from core.app_config import SITE_SECRET
+                payload = jwt.decode(site_token, SITE_SECRET, algorithms=['HS256'], options={"verify_exp": False})
+                if payload.get('type') == 'site' and payload.get('user_id'):
+                    return True, "site"
+            except Exception:
+                pass
+                
+            return False, "invalid_site_token"
         
         # Widget mode (assistant_id)
         if assistant_id:

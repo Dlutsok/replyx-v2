@@ -622,7 +622,7 @@ class HandoffService:
     async def _send_ws_notification(self, dialog_id: int, event_type: str, manager_id: int = None):
         """Send WebSocket notification for handoff event."""
         try:
-            from services.websocket_manager import push_dialog_message
+            from services.sse_manager import push_sse_event
             
             self._seq_counter += 1
             event_data = {
@@ -640,7 +640,7 @@ class HandoffService:
                         "name": manager.first_name.strip() if manager.first_name else f"User #{manager_id}"
                     }
             
-            await push_dialog_message(dialog_id, event_data)
+            await push_sse_event(dialog_id, event_data)
             
         except Exception as e:
             logger.error(f"Error sending WebSocket notification: {str(e)}")
