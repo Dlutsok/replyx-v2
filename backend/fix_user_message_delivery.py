@@ -26,7 +26,7 @@ if msg.sender == 'user':
         "timestamp": msg.timestamp.isoformat() + 'Z'
     }
     # ✅ ДИАГНОСТИКА: Проверяем состояние подключений
-    from services.websocket_manager import get_connection_stats
+    from services.sse_manager import get_sse_stats as get_connection_stats
     stats = get_connection_stats()
     logger.info(
         f"[MSG_BROADCAST] dialog={dialog_id} sender=user "

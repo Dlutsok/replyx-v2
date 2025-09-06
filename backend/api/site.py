@@ -240,7 +240,7 @@ async def site_add_dialog_message(
             "timestamp": msg.timestamp.isoformat() + 'Z'
         }
         # Диагностическое логирование для отладки доставки в админку
-        from services.websocket_manager import get_connection_stats
+        from services.sse_manager import get_sse_stats as get_connection_stats
         stats = get_connection_stats()
         logger.info(
             f"[MSG_BROADCAST] dialog={dialog_id} sender=user admin_conns={stats['connection_details']['admin_connections']} site_conns={stats['connection_details']['site_connections']}"
@@ -612,7 +612,7 @@ async def widget_add_dialog_message(
             "timestamp": msg.timestamp.isoformat() + 'Z'
         }
         # Диагностическое логирование для отладки доставки в админку
-        from services.websocket_manager import get_connection_stats
+        from services.sse_manager import get_sse_stats as get_connection_stats
         stats = get_connection_stats()
         logger.info(
             f"[MSG_BROADCAST] dialog={dialog_id} sender=user admin_conns={stats['connection_details']['admin_connections']} site_conns={stats['connection_details']['site_connections']}"
