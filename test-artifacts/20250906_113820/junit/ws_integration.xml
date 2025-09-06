@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="24" time="0.554" timestamp="2025-09-06T11:38:24.484855+03:00" hostname="MacBook-Pro-Dan.local"><testcase classname="tests.test_websocket_integration.TestWebSocketCloseCodes" name="test_rate_limited_close_code" time="0.023" /><testcase classname="tests.test_websocket_integration.TestWebSocketCloseCodes" name="test_auth_failed_close_code" time="0.001" /><testcase classname="tests.test_websocket_integration.TestWebSocketCloseCodes" name="test_forbidden_domain_close_code" time="0.001" /><testcase classname="tests.test_websocket_integration.TestWebSocketCloseCodes" name="test_not_found_close_code" time="0.001" /><testcase classname="tests.test_websocket_integration.TestRateLimiting" name="test_rate_limit_allow_under_limit" time="0.001" /><testcase classname="tests.test_websocket_integration.TestRateLimiting" name="test_rate_limit_deny_over_limit" time="0.001" /><testcase classname="tests.test_websocket_integration.TestRateLimiting" name="test_rate_limit_window_cleanup" time="0.000" /><testcase classname="tests.test_websocket_integration.TestRateLimiting" name="test_rate_limit_no_ip" time="0.000" /><testcase classname="tests.test_websocket_integration.TestDomainValidation" name="test_normalize_host_from_origin" time="0.000" /><testcase classname="tests.test_websocket_integration.TestDomainValidation" name="test_domain_allowed_by_token_valid" time="0.001" /><testcase classname="tests.test_websocket_integration.TestDomainValidation" name="test_domain_allowed_by_token_invalid" time="0.001" /><testcase classname="tests.test_websocket_integration.TestDomainValidation" name="test_domain_allowed_subdomain_support" time="0.001" /><testcase classname="tests.test_websocket_integration.TestMessageQueue" name="test_message_queue_creation" time="0.001" /><testcase classname="tests.test_websocket_integration.TestMessageQueue" name="test_send_message_with_ack" time="0.001" /><testcase classname="tests.test_websocket_integration.TestMessageQueue" name="test_handle_ack" time="0.001" /><testcase classname="tests.test_websocket_integration.TestMessageQueue" name="test_handle_ack_wrong_websocket" time="0.001" /><testcase classname="tests.test_websocket_integration.TestMessageQueue" name="test_is_message_processed_deduplication" time="0.000" /><testcase classname="tests.test_websocket_integration.TestConcurrentOperations" name="test_concurrent_push_messages" time="0.001" /><testcase classname="tests.test_websocket_integration.TestConcurrentOperations" name="test_connection_cleanup_on_error" time="0.003" /><testcase classname="tests.test_websocket_integration.TestConnectionStatistics" name="test_connection_stats_basic" time="0.001"><failure message="AssertionError: assert 'admin_dialogs' in {'connection_details': {'admin_connections': 0, 'admin_dialogs': 0, 'site_connections': 0, 'site_dialogs': 0}, 'message_queue': {'pending_messages': 0, 'processed_messages': 0, 'registered_websockets': 0, 'retry_ready': 0}, 'performance': {'cleanup_cycles': 0, 'dialog_locks': 1}, 'rate_limiting': {'rate_limit_per_ip': 100, 'rate_limit_window': 60, 'rate_limited_ips': 0, 'total_rate_limit_entries': 0}, ...}">self = &lt;test_websocket_integration.TestConnectionStatistics object at 0x1116d42d0&gt;
+
+    def test_connection_stats_basic(self):
+        """Тест базовой статистики"""
+        stats = get_connection_stats()
+    
+        assert "total_connections" in stats
+&gt;       assert "admin_dialogs" in stats
+E       AssertionError: assert 'admin_dialogs' in {'connection_details': {'admin_connections': 0, 'admin_dialogs': 0, 'site_connections': 0, 'site_dialogs': 0}, 'message_queue': {'pending_messages': 0, 'processed_messages': 0, 'registered_websockets': 0, 'retry_ready': 0}, 'performance': {'cleanup_cycles': 0, 'dialog_locks': 1}, 'rate_limiting': {'rate_limit_per_ip': 100, 'rate_limit_window': 60, 'rate_limited_ips': 0, 'total_rate_limit_entries': 0}, ...}
+
+tests/test_websocket_integration.py:342: AssertionError</failure></testcase><testcase classname="tests.test_websocket_integration.TestConnectionStatistics" name="test_connection_stats_with_active_limits" time="0.001"><failure message="KeyError: 'rate_limited_ips'">self = &lt;test_websocket_integration.TestConnectionStatistics object at 0x1116d4410&gt;
+
+    def test_connection_stats_with_active_limits(self):
+        """Тест статистики с активными rate limits"""
+        # Добавляем активные rate limits
+        current_time = time.time()
+        _ws_rate_limits["10.0.0.1"] = [current_time]
+        _ws_rate_limits["10.0.0.2"] = [current_time - WS_RATE_LIMIT_WINDOW - 1]  # Старая запись
+    
+        stats = get_connection_stats()
+    
+        # Должна быть только одна активная запись
+&gt;       assert stats["rate_limited_ips"] == 1
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'rate_limited_ips'
+
+tests/test_websocket_integration.py:358: KeyError</failure></testcase><testcase classname="tests.test_websocket_integration.TestProductionEdgeCases" name="test_websocket_disconnect_during_message" time="0.001" /><testcase classname="tests.test_websocket_integration.TestProductionEdgeCases" name="test_memory_cleanup_large_rate_limits" time="0.001" /><testcase classname="tests.test_websocket_integration.TestProductionEdgeCases" name="test_high_concurrency_connections" time="0.001" /></testsuite></testsuites>

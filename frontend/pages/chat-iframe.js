@@ -774,13 +774,41 @@ export default function ChatIframe() {
       setDebugInfo(`Подключаю WebSocket для диалога ${dialogId}...`);
       let wsUrl;
       const wsApiUrl = API_URL.replace('http://', 'ws://').replace('https://', 'wss://');
+      
+      // Получаем parent_origin для iframe сценария
+      let parentOrigin = null;
+      try {
+        if (typeof window !== 'undefined' && window.parent && window.parent !== window) {
+          // Пытаемся получить origin родительского окна (может не работать из-за CORS)
+          try {
+            parentOrigin = window.parent.location.origin;
+          } catch (e) {
+            // Если не можем прочитать из-за CORS, попробуем получить из referrer
+            if (document.referrer) {
+              const referrerUrl = new URL(document.referrer);
+              parentOrigin = referrerUrl.origin;
+            }
+          }
+        }
+      } catch (e) {
+        console.log('[ReplyX iframe] Could not determine parent origin:', e);
+      }
+      
       if (siteToken) {
         // Приоритет токенному режиму
         wsUrl = `${wsApiUrl}/ws/site/dialogs/${dialogId}?site_token=${siteToken}`;
+        // Добавляем parent_origin если есть
+        if (parentOrigin) {
+          wsUrl += `&parent_origin=${encodeURIComponent(parentOrigin)}`;
+        }
       } else if (assistantId) {
         // Fallback на гостевой режим
         wsUrl = `${wsApiUrl}/ws/widget/dialogs/${dialogId}?assistant_id=${assistantId}`;
       }
+      
+      console.log(`[ReplyX iframe] WebSocket URL: ${wsUrl}`);
+      console.log(`[ReplyX iframe] Parent origin: ${parentOrigin}`);
+      
       const socket = new window.WebSocket(wsUrl);
       
       socket.onopen = () => {

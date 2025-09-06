@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="1" failures="0" skipped="0" tests="1" time="0.108" timestamp="2025-09-06T11:38:39.302790+03:00" hostname="MacBook-Pro-Dan.local"><testcase classname="" name="tests.backend.integration.test_telegram_delivery" time="0.000"><error message="collection failure">ImportError while importing test module '/Users/dan/Documents/chatAI/MVP 13/tests/backend/integration/test_telegram_delivery.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/backend/integration/test_telegram_delivery.py:7: in &lt;module&gt;
+    from services.bot_manager import send_operator_message_to_telegram
+E   ModuleNotFoundError: No module named 'services'</error></testcase></testsuite></testsuites>

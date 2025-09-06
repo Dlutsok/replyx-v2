@@ -1,0 +1,429 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="6" skipped="0" tests="21" time="0.643" timestamp="2025-09-06T11:38:25.588637+03:00" hostname="MacBook-Pro-Dan.local"><testcase classname="tests.test_websocket_manager.TestWebSocketManager" name="test_push_dialog_message_success" time="0.023" /><testcase classname="tests.test_websocket_manager.TestWebSocketManager" name="test_push_dialog_message_no_connections" time="0.001" /><testcase classname="tests.test_websocket_manager.TestWebSocketManager" name="test_push_dialog_message_connection_error" time="0.002"><failure message="AttributeError: 'list' object has no attribute 'discard'">dialog_id = 123, message = {'id': 1, 'text': 'test'}
+
+    async def push_dialog_message(dialog_id: int, message: dict):
+        """Отправляет сообщение всем подключенным клиентам диалога (админ панель)"""
+        async with await _get_dialog_lock(dialog_id):
+            conns = ws_connections.get(dialog_id, set())
+            logger.info(f"Push to ADMIN dialog {dialog_id}: {len(conns)} connections")
+            logger.debug(f"Admin message: {message}")
+    
+            if not conns:
+                logger.warning(f"No ADMIN WebSocket connections found for dialog {dialog_id}")
+                logger.debug(f"Available ADMIN dialogs: {list(ws_connections.keys())}")
+                return
+    
+            sent_count = 0
+            # Создаем копию set для итерации, чтобы избежать изменений во время итерации
+            for ws in conns.copy():
+                try:
+&gt;                   await ws.send_json(message)
+
+services/websocket_manager.py:503: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;AsyncMock name='mock.send_json' id='4422073520'&gt;
+args = ({'id': 1, 'text': 'test'},), kwargs = {}
+_call = call({'id': 1, 'text': 'test'}), effect = Exception('Connection closed')
+
+    async def _execute_mock_call(self, /, *args, **kwargs):
+        # This is nearly just like super(), except for special handling
+        # of coroutines
+    
+        _call = _Call((args, kwargs), two=True)
+        self.await_count += 1
+        self.await_args = _call
+        self.await_args_list.append(_call)
+    
+        effect = self.side_effect
+        if effect is not None:
+            if _is_exception(effect):
+&gt;               raise effect
+E               Exception: Connection closed
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/unittest/mock.py:2321: Exception
+
+During handling of the above exception, another exception occurred:
+
+self = &lt;test_websocket_manager.TestWebSocketManager object at 0x1079290f0&gt;
+
+    @pytest.mark.asyncio
+    async def test_push_dialog_message_connection_error(self):
+        """Test message push with connection error"""
+        mock_ws = AsyncMock()
+        mock_ws.send_json.side_effect = Exception("Connection closed")
+    
+        dialog_id = 123
+        ws_connections[dialog_id] = [mock_ws]
+    
+        message = {"id": 1, "text": "test"}
+    
+        # Should not raise exception
+&gt;       await push_dialog_message(dialog_id, message)
+
+tests/test_websocket_manager.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+services/websocket_manager.py:509: in push_dialog_message
+    await _drop_socket(ws_connections, ws_meta, dialog_id, ws, reason="Send failed")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+bucket = {123: [&lt;AsyncMock id='4422062432'&gt;]}, meta_bucket = {}, dialog_id = 123
+ws = &lt;AsyncMock id='4422062432'&gt;, code = 1001, reason = 'Send failed'
+
+    async def _drop_socket(bucket: Dict[int, Set[WebSocket]], meta_bucket: Dict[int, Dict[WebSocket, Dict[str, float]]], dialog_id: int, ws: WebSocket, code=WSCloseCodes.GOING_AWAY, reason="Connection dropped"):
+        """Безопасно удаляет сокет из всех структур данных"""
+        global _total_connections
+    
+        conns = bucket.get(dialog_id, set())
+        if ws in conns:
+&gt;           conns.discard(ws)
+            ^^^^^^^^^^^^^
+E           AttributeError: 'list' object has no attribute 'discard'
+
+services/websocket_manager.py:236: AttributeError</failure></testcase><testcase classname="tests.test_websocket_manager.TestWebSocketManager" name="test_push_site_dialog_message_success" time="0.001" /><testcase classname="tests.test_websocket_manager.TestWebSocketManager" name="test_push_site_dialog_message_multiple_connections" time="0.001" /><testcase classname="tests.test_websocket_manager.TestWebSocketManager" name="test_dialog_websocket_endpoint_invalid_token" time="0.001"><failure message="AttributeError: &lt;module 'services.websocket_manager' from '/Users/dan/Documents/chatAI/MVP 13/backend/services/websocket_manager.py'&gt; does not have the attribute 'get_user_from_token'">self = &lt;test_websocket_manager.TestWebSocketManager object at 0x1078f4f30&gt;
+
+    @pytest.mark.asyncio
+    async def test_dialog_websocket_endpoint_invalid_token(self):
+        """Test admin WebSocket endpoint with invalid token"""
+        mock_websocket = AsyncMock()
+        dialog_id = 123
+    
+&gt;       with patch('services.websocket_manager.get_user_from_token', return_value=None):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_websocket_manager.py:118: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/unittest/mock.py:1497: in __enter__
+    original, local = self.get_original()
+                      ^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;unittest.mock._patch object at 0x10795fbd0&gt;
+
+    def get_original(self):
+        target = self.getter()
+        name = self.attribute
+    
+        original = DEFAULT
+        local = False
+    
+        try:
+            original = target.__dict__[name]
+        except (AttributeError, KeyError):
+            original = getattr(target, name, DEFAULT)
+        else:
+            local = True
+    
+        if name in _builtins and isinstance(target, ModuleType):
+            self.create = True
+    
+        if not self.create and original is DEFAULT:
+&gt;           raise AttributeError(
+                "%s does not have the attribute %r" % (target, name)
+            )
+E           AttributeError: &lt;module 'services.websocket_manager' from '/Users/dan/Documents/chatAI/MVP 13/backend/services/websocket_manager.py'&gt; does not have the attribute 'get_user_from_token'
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/unittest/mock.py:1467: AttributeError</failure></testcase><testcase classname="tests.test_websocket_manager.TestWebSocketManager" name="test_dialog_websocket_endpoint_no_token" time="0.002"><failure message="AttributeError: 'coroutine' object has no attribute 'split'">self = &lt;test_websocket_manager.TestWebSocketManager object at 0x1078f5150&gt;
+
+    @pytest.mark.asyncio
+    async def test_dialog_websocket_endpoint_no_token(self):
+        """Test admin WebSocket endpoint with no token"""
+        mock_websocket = AsyncMock()
+        mock_db = Mock()
+        dialog_id = 123
+    
+        with patch('services.websocket_manager._register_connection', return_value=True):
+            with patch('asyncio.wait') as mock_wait:
+                mock_wait.return_value = (set(), set())
+    
+&gt;               await dialog_websocket_endpoint(mock_websocket, dialog_id, None, mock_db)
+
+tests/test_websocket_manager.py:135: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+services/websocket_manager.py:342: in dialog_websocket_endpoint
+    client_ip = _extract_client_ip(websocket)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+websocket = &lt;AsyncMock id='4422869280'&gt;
+trusted_proxies = {'10.0.0.0/8', '127.0.0.1', '172.16.0.0/12', '192.168.0.0/16', '::1'}
+
+    def _extract_client_ip(websocket, trusted_proxies=None) -&gt; str:
+        """
+        Безопасно извлекает client IP с защитой от spoofing
+    
+        Args:
+            websocket: WebSocket connection объект
+            trusted_proxies: List доверенных proxy IP (None = use defaults)
+    
+        Returns:
+            str: Real client IP или None если определить невозможно
+        """
+        # Список доверенных proxy/load balancer IP (customize для вашей инфраструктуры)
+        if trusted_proxies is None:
+            trusted_proxies = {
+                "127.0.0.1",      # localhost
+                "::1",            # IPv6 localhost
+                "10.0.0.0/8",     # Private networks
+                "172.16.0.0/12",  # Docker networks
+                "192.168.0.0/16", # Local networks
+                # Добавьте ваши load balancer IPs здесь
+            }
+    
+        # 1. Прямое подключение от клиента
+        direct_ip = getattr(websocket.client, 'host', None)
+        if not direct_ip:
+            return None
+    
+        # 2. Если прямое подключение НЕ от доверенного proxy - используем его
+        if not _is_trusted_proxy(direct_ip, trusted_proxies):
+            return direct_ip
+    
+        # 3. Если запрос от доверенного proxy - проверяем X-Forwarded-For
+        forwarded_for = websocket.headers.get('x-forwarded-for')
+        if forwarded_for:
+            # Берем первый IP из цепочки (реальный клиент)
+&gt;           client_ip = forwarded_for.split(',')[0].strip()
+                        ^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'coroutine' object has no attribute 'split'
+
+services/websocket_manager.py:89: AttributeError</failure></testcase><testcase classname="tests.test_websocket_manager.TestWebSocketManager" name="test_widget_websocket_endpoint_invalid_assistant" time="0.002"><failure message="AttributeError: 'coroutine' object has no attribute 'split'">self = &lt;test_websocket_manager.TestWebSocketManager object at 0x1078bf450&gt;
+
+    @pytest.mark.asyncio
+    async def test_widget_websocket_endpoint_invalid_assistant(self):
+        """Test widget WebSocket endpoint with invalid assistant"""
+        mock_websocket = AsyncMock()
+        mock_db = Mock()
+        mock_db.query.return_value.filter.return_value.first.return_value = None
+    
+        dialog_id = 123
+        assistant_id = 999
+    
+&gt;       await widget_dialog_websocket_endpoint(mock_websocket, dialog_id, assistant_id, mock_db)
+
+tests/test_websocket_manager.py:150: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+services/websocket_manager.py:446: in widget_dialog_websocket_endpoint
+    client_ip = _extract_client_ip(websocket)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+websocket = &lt;AsyncMock id='4422870288'&gt;
+trusted_proxies = {'10.0.0.0/8', '127.0.0.1', '172.16.0.0/12', '192.168.0.0/16', '::1'}
+
+    def _extract_client_ip(websocket, trusted_proxies=None) -&gt; str:
+        """
+        Безопасно извлекает client IP с защитой от spoofing
+    
+        Args:
+            websocket: WebSocket connection объект
+            trusted_proxies: List доверенных proxy IP (None = use defaults)
+    
+        Returns:
+            str: Real client IP или None если определить невозможно
+        """
+        # Список доверенных proxy/load balancer IP (customize для вашей инфраструктуры)
+        if trusted_proxies is None:
+            trusted_proxies = {
+                "127.0.0.1",      # localhost
+                "::1",            # IPv6 localhost
+                "10.0.0.0/8",     # Private networks
+                "172.16.0.0/12",  # Docker networks
+                "192.168.0.0/16", # Local networks
+                # Добавьте ваши load balancer IPs здесь
+            }
+    
+        # 1. Прямое подключение от клиента
+        direct_ip = getattr(websocket.client, 'host', None)
+        if not direct_ip:
+            return None
+    
+        # 2. Если прямое подключение НЕ от доверенного proxy - используем его
+        if not _is_trusted_proxy(direct_ip, trusted_proxies):
+            return direct_ip
+    
+        # 3. Если запрос от доверенного proxy - проверяем X-Forwarded-For
+        forwarded_for = websocket.headers.get('x-forwarded-for')
+        if forwarded_for:
+            # Берем первый IP из цепочки (реальный клиент)
+&gt;           client_ip = forwarded_for.split(',')[0].strip()
+                        ^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'coroutine' object has no attribute 'split'
+
+services/websocket_manager.py:89: AttributeError</failure></testcase><testcase classname="tests.test_websocket_manager.TestWebSocketManager" name="test_widget_websocket_endpoint_success" time="0.002"><failure message="AttributeError: 'coroutine' object has no attribute 'split'">self = &lt;test_websocket_manager.TestWebSocketManager object at 0x1078bf650&gt;
+
+    @pytest.mark.asyncio
+    async def test_widget_websocket_endpoint_success(self):
+        """Test successful widget WebSocket connection"""
+        mock_websocket = AsyncMock()
+        mock_db = Mock()
+        mock_assistant = Mock()
+        mock_db.query.return_value.filter.return_value.first.return_value = mock_assistant
+    
+        dialog_id = 123
+        assistant_id = 456
+    
+        with patch('services.websocket_manager._register_connection', return_value=True):
+            with patch('asyncio.wait') as mock_wait:
+                mock_wait.return_value = (set(), set())
+    
+&gt;               await widget_dialog_websocket_endpoint(mock_websocket, dialog_id, assistant_id, mock_db)
+
+tests/test_websocket_manager.py:170: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+services/websocket_manager.py:446: in widget_dialog_websocket_endpoint
+    client_ip = _extract_client_ip(websocket)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+websocket = &lt;AsyncMock id='4422867936'&gt;
+trusted_proxies = {'10.0.0.0/8', '127.0.0.1', '172.16.0.0/12', '192.168.0.0/16', '::1'}
+
+    def _extract_client_ip(websocket, trusted_proxies=None) -&gt; str:
+        """
+        Безопасно извлекает client IP с защитой от spoofing
+    
+        Args:
+            websocket: WebSocket connection объект
+            trusted_proxies: List доверенных proxy IP (None = use defaults)
+    
+        Returns:
+            str: Real client IP или None если определить невозможно
+        """
+        # Список доверенных proxy/load balancer IP (customize для вашей инфраструктуры)
+        if trusted_proxies is None:
+            trusted_proxies = {
+                "127.0.0.1",      # localhost
+                "::1",            # IPv6 localhost
+                "10.0.0.0/8",     # Private networks
+                "172.16.0.0/12",  # Docker networks
+                "192.168.0.0/16", # Local networks
+                # Добавьте ваши load balancer IPs здесь
+            }
+    
+        # 1. Прямое подключение от клиента
+        direct_ip = getattr(websocket.client, 'host', None)
+        if not direct_ip:
+            return None
+    
+        # 2. Если прямое подключение НЕ от доверенного proxy - используем его
+        if not _is_trusted_proxy(direct_ip, trusted_proxies):
+            return direct_ip
+    
+        # 3. Если запрос от доверенного proxy - проверяем X-Forwarded-For
+        forwarded_for = websocket.headers.get('x-forwarded-for')
+        if forwarded_for:
+            # Берем первый IP из цепочки (реальный клиент)
+&gt;           client_ip = forwarded_for.split(',')[0].strip()
+                        ^^^^^^^^^^^^^^^^^^^
+E           AttributeError: 'coroutine' object has no attribute 'split'
+
+services/websocket_manager.py:89: AttributeError</failure></testcase><testcase classname="tests.test_websocket_manager.TestWebSocketIntegration" name="test_cross_channel_message_delivery" time="0.001" /><testcase classname="tests.test_websocket_manager.TestWebSocketIntegration" name="test_user_message_admin_only_routing" time="0.001" /><testcase classname="tests.test_websocket_manager.TestWebSocketIntegration" name="test_ai_response_all_channels_routing" time="0.001" /><testcase classname="tests.test_websocket_manager.TestWebSocketConnectionManagement" name="test_connection_limit_enforcement" time="0.006"><failure message="AssertionError: expected call not found.&#10;Expected: close(code=1013)&#10;  Actual: close(code=1013, reason='Too many connections for this dialog')&#10;&#10;pytest introspection follows:&#10;&#10;Kwargs:&#10;assert {'code': 1013... this dialog'} == {'code': 1013}&#10;  &#10;  Omitting 1 identical items, use -vv to show&#10;  Left contains 1 more item:&#10;  {'reason': 'Too many connections for this dialog'}&#10;  &#10;  Full diff:&#10;    {...&#10;  &#10;  ...Full output truncated (3 lines hidden), use '-vv' to show">self = &lt;AsyncMock name='mock.close' id='4425188080'&gt;, args = ()
+kwargs = {'code': 1013}, expected = call(code=1013)
+actual = call(code=1013, reason='Too many connections for this dialog')
+_error_message = &lt;function NonCallableMock.assert_called_with.&lt;locals&gt;._error_message at 0x107989da0&gt;
+cause = None
+
+    def assert_called_with(self, /, *args, **kwargs):
+        """assert that the last call was made with the specified arguments.
+    
+        Raises an AssertionError if the args and keyword args passed in are
+        different to the last call to the mock."""
+        if self.call_args is None:
+            expected = self._format_mock_call_signature(args, kwargs)
+            actual = 'not called.'
+            error_message = ('expected call not found.\nExpected: %s\n  Actual: %s'
+                    % (expected, actual))
+            raise AssertionError(error_message)
+    
+        def _error_message():
+            msg = self._format_mock_failure_message(args, kwargs)
+            return msg
+        expected = self._call_matcher(_Call((args, kwargs), two=True))
+        actual = self._call_matcher(self.call_args)
+        if actual != expected:
+            cause = expected if isinstance(expected, Exception) else None
+&gt;           raise AssertionError(_error_message()) from cause
+E           AssertionError: expected call not found.
+E           Expected: close(code=1013)
+E             Actual: close(code=1013, reason='Too many connections for this dialog')
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/unittest/mock.py:979: AssertionError
+
+During handling of the above exception, another exception occurred:
+
+self = &lt;AsyncMock name='mock.close' id='4425188080'&gt;, args = ()
+kwargs = {'code': 1013}
+
+    def assert_called_once_with(self, /, *args, **kwargs):
+        """assert that the mock was called exactly once and that that call was
+        with the specified arguments."""
+        if not self.call_count == 1:
+            msg = ("Expected '%s' to be called once. Called %s times.%s"
+                   % (self._mock_name or 'mock',
+                      self.call_count,
+                      self._calls_repr()))
+            raise AssertionError(msg)
+&gt;       return self.assert_called_with(*args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: expected call not found.
+E       Expected: close(code=1013)
+E         Actual: close(code=1013, reason='Too many connections for this dialog')
+E       
+E       pytest introspection follows:
+E       
+E       Kwargs:
+E       assert {'code': 1013... this dialog'} == {'code': 1013}
+E         
+E         Omitting 1 identical items, use -vv to show
+E         Left contains 1 more item:
+E         {'reason': 'Too many connections for this dialog'}
+E         
+E         Full diff:
+E           {...
+E         
+E         ...Full output truncated (3 lines hidden), use '-vv' to show
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/unittest/mock.py:991: AssertionError
+
+During handling of the above exception, another exception occurred:
+
+self = &lt;test_websocket_manager.TestWebSocketConnectionManagement object at 0x1078c7610&gt;
+
+    @pytest.mark.asyncio
+    async def test_connection_limit_enforcement(self):
+        """Test that connection limits are enforced"""
+        from services.websocket_manager import _register_connection, MAX_CONNECTIONS_PER_DIALOG
+    
+        mock_websockets = [AsyncMock() for _ in range(MAX_CONNECTIONS_PER_DIALOG + 1)]
+        dialog_id = 123
+    
+        # Register maximum allowed connections
+        for i in range(MAX_CONNECTIONS_PER_DIALOG):
+            result = await _register_connection(ws_connections, {}, dialog_id, mock_websockets[i])
+            assert result is True
+    
+        # Try to register one more - should fail
+        result = await _register_connection(ws_connections, {}, dialog_id, mock_websockets[-1])
+        assert result is False
+    
+        # Verify the last WebSocket was closed
+&gt;       mock_websockets[-1].close.assert_called_once_with(code=1013)
+E       AssertionError: expected call not found.
+E       Expected: close(code=1013)
+E         Actual: close(code=1013, reason='Too many connections for this dialog')
+E       
+E       pytest introspection follows:
+E       
+E       Kwargs:
+E       assert {'code': 1013... this dialog'} == {'code': 1013}
+E         
+E         Omitting 1 identical items, use -vv to show
+E         Left contains 1 more item:
+E         {'reason': 'Too many connections for this dialog'}
+E         
+E         Full diff:
+E           {...
+E         
+E         ...Full output truncated (3 lines hidden), use '-vv' to show
+
+tests/test_websocket_manager.py:282: AssertionError</failure></testcase><testcase classname="tests.test_websocket_manager.TestWebSocketConnectionManagement" name="test_connection_cleanup" time="0.001" /><testcase classname="tests.test_websocket_manager.TestMessageFormats" name="test_direct_message_format" time="0.001" /><testcase classname="tests.test_websocket_manager.TestMessageFormats" name="test_wrapped_message_format" time="0.001" /><testcase classname="tests.test_websocket_manager.TestMessageFormats" name="test_system_event_format" time="0.001" /><testcase classname="tests.test_websocket_manager.TestMessageFormats" name="test_typing_indicator_format" time="0.002" /><testcase classname="tests.test_websocket_manager.TestRealWorldScenarios" name="test_user_sends_message_from_widget" time="0.001" /><testcase classname="tests.test_websocket_manager.TestRealWorldScenarios" name="test_operator_replies_from_admin" time="0.001" /><testcase classname="tests.test_websocket_manager.TestRealWorldScenarios" name="test_ai_generates_response" time="0.001" /></testsuite></testsuites>

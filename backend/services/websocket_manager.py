@@ -165,8 +165,12 @@ def _normalize_host_from_origin(origin: str) -> str:
     host = origin.split("://", 1)[-1].split("/", 1)[0].lower()
     return host.split(":", 1)[0]  # Убираем порт
 
-def _is_domain_allowed_by_token(origin: str, site_token: str) -> bool:
-    """Проверка разрешен ли домен по site_token"""
+def _is_domain_allowed_by_token(origin: str, site_token: str, parent_origin: str = None) -> bool:
+    """
+    Проверка разрешен ли домен по site_token
+    Поддерживает iframe сценарий: если origin - доверенный iframe хост, 
+    то валидируем parent_origin против allowed_domains
+    """
     host = _normalize_host_from_origin(origin)
     if not host:
         # Нативные/CLI клиенты только при наличии токена
@@ -177,7 +181,7 @@ def _is_domain_allowed_by_token(origin: str, site_token: str) -> bool:
     
     try:
         from jose import jwt
-        from core.app_config import SECRET_KEY
+        from core.app_config import SECRET_KEY, WS_TRUSTED_IFRAME_HOSTS
         
         # Проверяем подпись токена для безопасности
         try:
@@ -199,7 +203,19 @@ def _is_domain_allowed_by_token(origin: str, site_token: str) -> bool:
         
         domains = [d.strip().lower() for d in allowed.split(",") if d.strip()]
         
-        # Проверяем точное совпадение или совпадение субдомена
+        # IFRAME LOGIC: Если origin - доверенный iframe хост, валидируем parent_origin
+        if host in WS_TRUSTED_IFRAME_HOSTS and parent_origin:
+            parent_host = _normalize_host_from_origin(parent_origin)
+            logger.info(f"[Domain] Iframe scenario: origin={origin} (trusted), validating parent_origin={parent_origin} -> {parent_host}")
+            
+            if parent_host:
+                # Проверяем parent_origin против allowed_domains
+                return any(parent_host == d or parent_host.endswith('.' + d) for d in domains)
+            else:
+                logger.warning(f"[Domain] Trusted iframe host {host} but no valid parent_origin")
+                return False
+        
+        # Обычная логика: проверяем origin против allowed_domains
         return any(host == d or host.endswith('.' + d) for d in domains)
         
     except Exception as e:
@@ -390,10 +406,26 @@ async def site_dialog_websocket_endpoint(websocket: WebSocket, dialog_id: int, s
         await websocket.close(code=WSCloseCodes.RATE_LIMITED, reason="Too many connections")
         return
     
-    # Проверка домена по токену
+    # Проверка домена по токену с поддержкой iframe
     origin = websocket.headers.get('origin', '')
-    if site_token and not _is_domain_allowed_by_token(origin, site_token):
-        logger.warning(f"Forbidden domain: {origin} for site_token")
+    
+    # Извлекаем parent_origin из query параметров если есть 
+    # (фронтенд может передать его как параметр)
+    parent_origin = None
+    try:
+        from urllib.parse import urlparse, parse_qs
+        query_string = websocket.url.query if hasattr(websocket.url, 'query') else ''
+        if query_string:
+            query_params = parse_qs(query_string)
+            parent_origin = query_params.get('parent_origin', [None])[0]
+    except Exception:
+        pass
+    
+    # Детальное логирование для отладки
+    logger.info(f"[Site] WebSocket domain check: origin={origin}, parent_origin={parent_origin}, site_token present={bool(site_token)}")
+    
+    if site_token and not _is_domain_allowed_by_token(origin, site_token, parent_origin):
+        logger.warning(f"Forbidden domain: origin={origin}, parent_origin={parent_origin} for site_token")
         await websocket.close(code=WSCloseCodes.FORBIDDEN_DOMAIN, reason="Domain not allowed for this token")
         return
     elif not site_token and not _is_domain_allowed(origin):

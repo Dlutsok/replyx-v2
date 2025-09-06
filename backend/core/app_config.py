@@ -100,6 +100,15 @@ BOT_SERVICE_URL = os.getenv('BOT_SERVICE_URL', 'http://localhost:3002')
 FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://replyx.ru')
 BACKEND_URL = os.getenv('BACKEND_URL', 'https://replyx.ru')
 
+# Доверенные iframe хосты для WebSocket соединений
+# Если WebSocket подключается из iframe на одном из этих доменов,
+# то валидируем parent_origin вместо origin
+WS_TRUSTED_IFRAME_HOSTS = [
+    host.strip().lower() for host in 
+    os.getenv('WS_TRUSTED_IFRAME_HOSTS', 'replyx.ru,www.replyx.ru,localhost:3000').split(',')
+    if host.strip()
+]
+
 
 # RAG / embeddings settings
 RAG_MAX_CONTEXT_TOKENS_BOT = int(os.getenv('RAG_MAX_CONTEXT_TOKENS_BOT', '1500'))

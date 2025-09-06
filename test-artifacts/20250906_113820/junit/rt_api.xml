@@ -1,0 +1,676 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="12" time="1.144" timestamp="2025-09-06T11:38:30.688909+03:00" hostname="MacBook-Pro-Dan.local"><testcase classname="tests.test_realtime_api.TestDialogAPIRealtime" name="test_add_dialog_message_websocket_routing" time="0.043"><failure message="fastapi.exceptions.HTTPException: 403: You can only reply as manager in your own dialogs">self = &lt;test_realtime_api.TestDialogAPIRealtime object at 0x1144b2e90&gt;
+mock_push_site = &lt;AsyncMock name='push_site_dialog_message' id='4638232928'&gt;
+mock_push_admin = &lt;AsyncMock name='push_dialog_message' id='4638233936'&gt;
+
+    @pytest.mark.asyncio
+    @patch('api.dialogs.push_dialog_message')
+    @patch('api.dialogs.push_site_dialog_message')
+    async def test_add_dialog_message_websocket_routing(self, mock_push_site, mock_push_admin):
+        """Test that messages are routed correctly through WebSocket"""
+        from api.dialogs import add_dialog_message
+    
+        # Mock database objects
+        mock_db = Mock()
+        mock_user = Mock()
+        mock_dialog = Mock(id=123, handoff_status='none')
+        mock_message = Mock(
+            id=456,
+            sender='manager',
+            text='Test message',
+            timestamp='2025-01-15T10:30:00Z'
+        )
+    
+        mock_db.query.return_value.filter.return_value.first.return_value = mock_dialog
+        mock_db.add = Mock()
+        mock_db.commit = Mock()
+        mock_db.refresh = Mock()
+    
+        with patch('api.dialogs.models.DialogMessage', return_value=mock_message):
+            data = {"sender": "manager", "text": "Test message"}
+    
+            # Execute
+&gt;           result = await add_dialog_message(
+                dialog_id=123,
+                data=data,
+                current_user=mock_user,
+                db=mock_db
+            )
+
+tests/test_realtime_api.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+dialog_id = 123, data = {'sender': 'manager', 'text': 'Test message'}
+db = &lt;Mock id='4638234608'&gt;, current_user = &lt;Mock id='4638234944'&gt;
+
+    @router.post("/dialogs/{dialog_id}/messages")
+    async def add_dialog_message(dialog_id: int, data: dict, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+        from validators.input_validator import validate_message_data, ValidationError, create_validation_error_response
+        from services.balance_service import BalanceService
+    
+        # Валидация входных данных
+        try:
+            validated_data = validate_message_data(data)
+        except ValidationError as e:
+            raise create_validation_error_response(e)
+    
+        dialog = db.query(models.Dialog).filter(models.Dialog.id == dialog_id).first()
+        if not dialog:
+            raise HTTPException(status_code=404, detail="Dialog not found")
+    
+        # HANDOFF INTEGRATION: Проверка прав для менеджера
+        sender = validated_data.get('sender', 'user')
+        if sender == 'manager':
+            logger.info(f"#x1F510 [DIALOGS] Проверка прав менеджера. User ID: {current_user.id}")
+            logger.info(f"#x1F510 [DIALOGS] Диалог #{dialog_id}: user_id={dialog.user_id}")
+    
+            # В системе нет ролей - каждый пользователь может отвечать как менеджер в СВОИХ диалогах
+            # Или админ может отвечать в любых диалогах
+            is_admin = getattr(current_user, 'role', None) == 'admin'
+            is_dialog_owner = dialog.user_id == current_user.id
+    
+            logger.info(f"#x1F510 [DIALOGS] is_admin: {is_admin}, is_dialog_owner: {is_dialog_owner}")
+    
+            if not (is_admin or is_dialog_owner):
+                logger.error(f"❌ [DIALOGS] Отказано в доступе. Пользователь {current_user.id} может отвечать как менеджер только в своих диалогах (dialog.user_id={dialog.user_id})")
+&gt;               raise HTTPException(status_code=403, detail="You can only reply as manager in your own dialogs")
+E               fastapi.exceptions.HTTPException: 403: You can only reply as manager in your own dialogs
+
+api/dialogs.py:437: HTTPException</failure></testcase><testcase classname="tests.test_realtime_api.TestDialogAPIRealtime" name="test_widget_user_message_admin_only" time="0.292"><failure message="fastapi.exceptions.HTTPException: 402: {'error': 'payment_failed', 'message': 'Ошибка списания средств. Попробуйте позже.', 'needsTopUp': True}">dialog_id = 123, data = {'sender': 'user', 'text': 'User message from widget'}
+assistant_id = 456, guest_id = 'guest123', db = &lt;Mock id='4652966848'&gt;
+
+    @router.post('/widget/dialogs/{dialog_id}/messages')
+    async def widget_add_dialog_message(
+        dialog_id: int,
+        data: dict,
+        assistant_id: int,
+        guest_id: str = Query(...),
+        db: Session = Depends(get_db)
+    ):
+        """Добавляет сообщение в widget диалог"""
+        # Получаем ассистента и его пользователя
+        assistant = db.query(models.Assistant).filter(models.Assistant.id == assistant_id).first()
+        if not assistant:
+            raise HTTPException(status_code=404, detail="Assistant not found")
+    
+        dialog = db.query(models.Dialog).filter(
+            models.Dialog.id == dialog_id,
+            models.Dialog.user_id == assistant.user_id,
+            models.Dialog.guest_id == guest_id
+        ).first()
+    
+        if not dialog:
+            raise HTTPException(status_code=404, detail="Dialog not found")
+    
+        # CHECK IF WIDGET DIALOG IS TAKEN OVER - блокируем AI при запросе И взятии оператором (как в телеграме)
+        is_taken_over = getattr(dialog, 'handoff_status', 'none') in ['requested', 'active']
+    
+        # If dialog is taken over, only allow manager messages, no AI responses
+        if is_taken_over and data.get('sender') == 'user':
+            logger.info(f"Widget dialog {dialog_id} is taken over, blocking AI response")
+    
+        sender = data.get('sender')
+        text = data.get('text')
+        if not text:
+            raise HTTPException(status_code=400, detail="Text required")
+    
+        # Создаем сообщение
+        msg = models.DialogMessage(dialog_id=dialog_id, sender=sender, text=text)
+        db.add(msg)
+        db.commit()
+        db.refresh(msg)
+    
+        # Для сообщений пользователя отправляем только в админ панель
+        # НЕ отправляем в виджет, так как виджет уже добавляет оптимистично
+        if msg.sender == 'user':
+            user_message_data = {
+                "id": msg.id,
+                "sender": msg.sender,
+                "text": msg.text,
+                "timestamp": msg.timestamp.isoformat() + 'Z'
+            }
+            await push_dialog_message(dialog_id, user_message_data)
+        else:
+            # Для сообщений НЕ от пользователя (менеджер, система) отправляем в оба канала
+            message_data = {
+                "id": msg.id,
+                "sender": msg.sender,
+                "text": msg.text,
+                "timestamp": msg.timestamp.isoformat() + 'Z'
+            }
+            await push_dialog_message(dialog_id, message_data)
+            await ws_push_site_dialog_message(dialog_id, message_data)
+    
+        response_msg = None
+        if sender == 'user' and not is_taken_over:
+            # АВТОТРИГГЕР для widget: Проверяем триггерные фразы ПЕРЕД генерацией ответа
+            handoff_service = HandoffService(db)
+            trigger_keywords = ['оператор', 'человек', 'менеджер', 'поддержка', 'помощь', 'жалоба', 'проблема']
+            user_text = text.lower() if text else ''
+    
+            # Проверяем не был ли недавно освобожден диалог (избегаем ложных срабатываний)
+            recent_release = db.query(models.HandoffAudit).filter(
+                models.HandoffAudit.dialog_id == dialog_id,
+                models.HandoffAudit.to_status == 'released',
+                models.HandoffAudit.created_at &gt; datetime.now() - timedelta(minutes=5)
+            ).first()
+    
+            should_trigger_handoff = (
+                any(keyword in user_text for keyword in trigger_keywords) and
+                not recent_release and
+                dialog.handoff_status != 'requested' and
+                dialog.handoff_status != 'active'
+            )
+    
+            if should_trigger_handoff:
+                try:
+                    from uuid import uuid4
+                    new_request_id = str(uuid4())
+                    logger.info(f"Auto-triggering handoff for widget dialog {dialog_id} due to keywords: {user_text[:100]}")
+                    handoff_result = handoff_service.request_handoff(
+                        dialog_id=dialog_id,
+                        reason="auto_trigger",
+                        request_id=new_request_id,
+                        last_user_text=text[:200] if text else None
+                    )
+    
+                    # Отправляем уведомление о запросе оператора
+                    await ws_push_site_dialog_message(dialog_id, {
+                        "type": "handoff_requested",
+                        "message": "Ваш запрос передан оператору. Пожалуйста, подождите..."
+                    })
+    
+                    # Останавливаем генерацию AI ответа
+                    await ws_push_site_dialog_message(dialog_id, {"type": "typing_stop"})
+    
+                    return {
+                        "user_message": {
+                            "id": msg.id,
+                            "sender": msg.sender,
+                            "text": msg.text,
+                            "timestamp": msg.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+                        },
+                        "handoff_triggered": True,
+                        "handoff_status": handoff_result.status
+                    }
+    
+                except Exception as e:
+                    logger.error(f"Failed to auto-trigger handoff: {e}")
+                    # НЕ продолжаем с AI ответом даже при ошибке handoff
+                    return {
+                        "user_message": {
+                            "id": msg.id,
+                            "sender": msg.sender,
+                            "text": msg.text,
+                            "timestamp": msg.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+                        },
+                        "handoff_triggered": True,
+                        "handoff_error": str(e)
+                    }
+    
+            # Отправляем typing_start только если handoff НЕ сработал
+            await ws_push_site_dialog_message(dialog_id, {"type": "typing_start"})
+    
+            # Списываем средства за AI сообщение ПЕРЕД генерацией ответа (widget)
+            user = db.query(models.User).filter(models.User.id == assistant.user_id).first()
+            if not user:
+                logger.error(f"User not found for assistant {assistant_id}")
+                await ws_push_site_dialog_message(dialog_id, {"type": "typing_stop"})
+                raise HTTPException(status_code=404, detail="User not found")
+    
+            balance_service = BalanceService(db)
+            try:
+&gt;               transaction = balance_service.charge_for_service(
+                    user.id,
+                    'widget_message',
+                    f"AI сообщение в виджете (диалог #{dialog_id})",
+                    msg.id  # related_id - ID пользовательского сообщения
+                )
+
+api/site.py:677: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;services.balance_service.BalanceService object at 0x1155f0830&gt;
+user_id = &lt;Mock name='mock.query().filter().first().id' id='4653517184'&gt;
+service_type = 'widget_message'
+description = 'AI сообщение в виджете (диалог #123)', related_id = 789
+
+    def charge_for_service(self, user_id: int, service_type: str, description: Optional[str] = None, related_id: Optional[int] = None) -&gt; BalanceTransaction:
+        """Списать средства за услугу"""
+        # Получаем цену услуги
+        service_price = self.db.query(ServicePrice).filter(
+            ServicePrice.service_type == service_type,
+            ServicePrice.is_active == True
+        ).first()
+    
+        if not service_price:
+            logger.error(f"Цена для услуги {service_type} не найдена")
+            raise ValueError(f"Цена для услуги {service_type} не найдена")
+    
+        amount = service_price.price
+        balance = self.get_or_create_balance(user_id)
+    
+        # Проверяем достаточность средств
+&gt;       if balance.balance &lt; amount:
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: '&lt;' not supported between instances of 'Mock' and 'Mock'
+
+services/balance_service.py:83: TypeError
+
+During handling of the above exception, another exception occurred:
+
+self = &lt;test_realtime_api.TestDialogAPIRealtime object at 0x1144b34d0&gt;
+mock_push_site = &lt;AsyncMock name='ws_push_site_dialog_message' id='4652965504'&gt;
+mock_push_admin = &lt;AsyncMock name='push_dialog_message' id='4652966176'&gt;
+
+    @pytest.mark.asyncio
+    @patch('api.site.push_dialog_message')
+    @patch('api.site.ws_push_site_dialog_message')
+    async def test_widget_user_message_admin_only(self, mock_push_site, mock_push_admin):
+        """Test that user messages from widget only go to admin panel"""
+        from api.site import widget_add_dialog_message
+    
+        # Mock database objects
+        mock_db = Mock()
+        mock_assistant = Mock(user_id=1)
+        mock_dialog = Mock(id=123, handoff_status='none')
+        mock_message = Mock(
+            id=789,
+            sender='user',
+            text='User message from widget'
+        )
+        mock_message.timestamp.isoformat.return_value = '2025-01-15T10:30:00'
+    
+        mock_db.query.return_value.filter.return_value.first.return_value = mock_assistant
+        mock_db.query.return_value.filter.return_value.filter.return_value.first.return_value = mock_dialog
+        mock_db.add = Mock()
+        mock_db.commit = Mock()
+        mock_db.refresh = Mock()
+    
+        with patch('api.site.models.DialogMessage', return_value=mock_message):
+            data = {"sender": "user", "text": "User message from widget"}
+    
+            # Execute
+&gt;           result = await widget_add_dialog_message(
+                dialog_id=123,
+                data=data,
+                assistant_id=456,
+                guest_id="guest123",
+                db=mock_db
+            )
+
+tests/test_realtime_api.py:96: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+dialog_id = 123, data = {'sender': 'user', 'text': 'User message from widget'}
+assistant_id = 456, guest_id = 'guest123', db = &lt;Mock id='4652966848'&gt;
+
+    @router.post('/widget/dialogs/{dialog_id}/messages')
+    async def widget_add_dialog_message(
+        dialog_id: int,
+        data: dict,
+        assistant_id: int,
+        guest_id: str = Query(...),
+        db: Session = Depends(get_db)
+    ):
+        """Добавляет сообщение в widget диалог"""
+        # Получаем ассистента и его пользователя
+        assistant = db.query(models.Assistant).filter(models.Assistant.id == assistant_id).first()
+        if not assistant:
+            raise HTTPException(status_code=404, detail="Assistant not found")
+    
+        dialog = db.query(models.Dialog).filter(
+            models.Dialog.id == dialog_id,
+            models.Dialog.user_id == assistant.user_id,
+            models.Dialog.guest_id == guest_id
+        ).first()
+    
+        if not dialog:
+            raise HTTPException(status_code=404, detail="Dialog not found")
+    
+        # CHECK IF WIDGET DIALOG IS TAKEN OVER - блокируем AI при запросе И взятии оператором (как в телеграме)
+        is_taken_over = getattr(dialog, 'handoff_status', 'none') in ['requested', 'active']
+    
+        # If dialog is taken over, only allow manager messages, no AI responses
+        if is_taken_over and data.get('sender') == 'user':
+            logger.info(f"Widget dialog {dialog_id} is taken over, blocking AI response")
+    
+        sender = data.get('sender')
+        text = data.get('text')
+        if not text:
+            raise HTTPException(status_code=400, detail="Text required")
+    
+        # Создаем сообщение
+        msg = models.DialogMessage(dialog_id=dialog_id, sender=sender, text=text)
+        db.add(msg)
+        db.commit()
+        db.refresh(msg)
+    
+        # Для сообщений пользователя отправляем только в админ панель
+        # НЕ отправляем в виджет, так как виджет уже добавляет оптимистично
+        if msg.sender == 'user':
+            user_message_data = {
+                "id": msg.id,
+                "sender": msg.sender,
+                "text": msg.text,
+                "timestamp": msg.timestamp.isoformat() + 'Z'
+            }
+            await push_dialog_message(dialog_id, user_message_data)
+        else:
+            # Для сообщений НЕ от пользователя (менеджер, система) отправляем в оба канала
+            message_data = {
+                "id": msg.id,
+                "sender": msg.sender,
+                "text": msg.text,
+                "timestamp": msg.timestamp.isoformat() + 'Z'
+            }
+            await push_dialog_message(dialog_id, message_data)
+            await ws_push_site_dialog_message(dialog_id, message_data)
+    
+        response_msg = None
+        if sender == 'user' and not is_taken_over:
+            # АВТОТРИГГЕР для widget: Проверяем триггерные фразы ПЕРЕД генерацией ответа
+            handoff_service = HandoffService(db)
+            trigger_keywords = ['оператор', 'человек', 'менеджер', 'поддержка', 'помощь', 'жалоба', 'проблема']
+            user_text = text.lower() if text else ''
+    
+            # Проверяем не был ли недавно освобожден диалог (избегаем ложных срабатываний)
+            recent_release = db.query(models.HandoffAudit).filter(
+                models.HandoffAudit.dialog_id == dialog_id,
+                models.HandoffAudit.to_status == 'released',
+                models.HandoffAudit.created_at &gt; datetime.now() - timedelta(minutes=5)
+            ).first()
+    
+            should_trigger_handoff = (
+                any(keyword in user_text for keyword in trigger_keywords) and
+                not recent_release and
+                dialog.handoff_status != 'requested' and
+                dialog.handoff_status != 'active'
+            )
+    
+            if should_trigger_handoff:
+                try:
+                    from uuid import uuid4
+                    new_request_id = str(uuid4())
+                    logger.info(f"Auto-triggering handoff for widget dialog {dialog_id} due to keywords: {user_text[:100]}")
+                    handoff_result = handoff_service.request_handoff(
+                        dialog_id=dialog_id,
+                        reason="auto_trigger",
+                        request_id=new_request_id,
+                        last_user_text=text[:200] if text else None
+                    )
+    
+                    # Отправляем уведомление о запросе оператора
+                    await ws_push_site_dialog_message(dialog_id, {
+                        "type": "handoff_requested",
+                        "message": "Ваш запрос передан оператору. Пожалуйста, подождите..."
+                    })
+    
+                    # Останавливаем генерацию AI ответа
+                    await ws_push_site_dialog_message(dialog_id, {"type": "typing_stop"})
+    
+                    return {
+                        "user_message": {
+                            "id": msg.id,
+                            "sender": msg.sender,
+                            "text": msg.text,
+                            "timestamp": msg.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+                        },
+                        "handoff_triggered": True,
+                        "handoff_status": handoff_result.status
+                    }
+    
+                except Exception as e:
+                    logger.error(f"Failed to auto-trigger handoff: {e}")
+                    # НЕ продолжаем с AI ответом даже при ошибке handoff
+                    return {
+                        "user_message": {
+                            "id": msg.id,
+                            "sender": msg.sender,
+                            "text": msg.text,
+                            "timestamp": msg.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+                        },
+                        "handoff_triggered": True,
+                        "handoff_error": str(e)
+                    }
+    
+            # Отправляем typing_start только если handoff НЕ сработал
+            await ws_push_site_dialog_message(dialog_id, {"type": "typing_start"})
+    
+            # Списываем средства за AI сообщение ПЕРЕД генерацией ответа (widget)
+            user = db.query(models.User).filter(models.User.id == assistant.user_id).first()
+            if not user:
+                logger.error(f"User not found for assistant {assistant_id}")
+                await ws_push_site_dialog_message(dialog_id, {"type": "typing_stop"})
+                raise HTTPException(status_code=404, detail="User not found")
+    
+            balance_service = BalanceService(db)
+            try:
+                transaction = balance_service.charge_for_service(
+                    user.id,
+                    'widget_message',
+                    f"AI сообщение в виджете (диалог #{dialog_id})",
+                    msg.id  # related_id - ID пользовательского сообщения
+                )
+                logger.info(f"Списано {abs(transaction.amount)} руб. за AI сообщение в виджете пользователя {user.id}")
+            except ValueError as e:
+                logger.error(f"Ошибка списания средств за AI сообщение в виджете: {e}")
+                await ws_push_site_dialog_message(dialog_id, {"type": "typing_stop"})
+                raise HTTPException(
+                    status_code=402,
+                    detail={
+                        "error": "insufficient_funds",
+                        "message": "Недостаточно средств для отправки AI сообщения",
+                        "needsTopUp": True
+                    }
+                )
+            except Exception as e:
+                logger.error(f"Ошибка списания средств за AI сообщение в виджете: {e}")
+                await ws_push_site_dialog_message(dialog_id, {"type": "typing_stop"})
+&gt;               raise HTTPException(
+                    status_code=402,
+                    detail={
+                        "error": "payment_failed",
+                        "message": "Ошибка списания средств. Попробуйте позже.",
+                        "needsTopUp": True
+                    }
+                )
+E               fastapi.exceptions.HTTPException: 402: {'error': 'payment_failed', 'message': 'Ошибка списания средств. Попробуйте позже.', 'needsTopUp': True}
+
+api/site.py:698: HTTPException</failure></testcase><testcase classname="tests.test_realtime_api.TestSiteAPIRealtime" name="test_site_ai_response_both_channels" time="0.002"><failure message="TypeError: '&gt;=' not supported between instances of 'MagicMock' and 'datetime.datetime'">self = &lt;test_realtime_api.TestSiteAPIRealtime object at 0x1144b3610&gt;
+mock_push_site = &lt;AsyncMock name='ws_push_site_dialog_message' id='4653519872'&gt;
+mock_push_admin = &lt;AsyncMock name='push_dialog_message' id='4653520544'&gt;
+
+    @pytest.mark.asyncio
+    @patch('api.site.push_dialog_message')
+    @patch('api.site.ws_push_site_dialog_message')
+    async def test_site_ai_response_both_channels(self, mock_push_site, mock_push_admin):
+        """Test that AI responses go to both admin and widget channels"""
+        from api.site import site_add_dialog_message
+    
+        # Mock database and AI response
+        mock_db = Mock()
+        mock_user = Mock(id=1)
+        mock_dialog = Mock(id=123, handoff_status='none')
+        mock_user_message = Mock(
+            id=101,
+            sender='user',
+            text='User question'
+        )
+        mock_ai_message = Mock(
+            id=102,
+            sender='assistant',
+            text='AI response'
+        )
+    
+        # Setup timestamp mocks
+        mock_user_message.timestamp.isoformat.return_value = '2025-01-15T10:30:00'
+        mock_ai_message.timestamp.isoformat.return_value = '2025-01-15T10:31:00'
+    
+        mock_db.query.return_value.filter.return_value.first.return_value = mock_dialog
+        mock_db.add = Mock()
+        mock_db.commit = Mock()
+        mock_db.refresh = Mock()
+    
+        with patch('api.site.models.DialogMessage', return_value=mock_user_message):
+            with patch('api.site.generate_ai_response', return_value=mock_ai_message):
+                data = {"sender": "user", "text": "User question"}
+    
+                # Execute
+&gt;               result = await site_add_dialog_message(
+                    dialog_id=123,
+                    data=data,
+                    guest_id="guest123",
+                    db=mock_db,
+                    current_user=mock_user
+                )
+
+tests/test_realtime_api.py:155: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+dialog_id = 123, data = {'sender': 'user', 'text': 'User question'}
+guest_id = 'guest123', db = &lt;Mock id='4653521216'&gt;
+current_user = &lt;Mock id='4653521552'&gt;
+
+    @router.post('/site/dialogs/{dialog_id}/messages')
+    async def site_add_dialog_message(
+        dialog_id: int,
+        data: dict,
+        guest_id: str = Query(...),
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_site_user)
+    ):
+        """Добавляет сообщение в site диалог"""
+        dialog = db.query(models.Dialog).filter(
+            models.Dialog.id == dialog_id,
+            models.Dialog.user_id == current_user.id,
+            models.Dialog.guest_id == guest_id
+        ).first()
+    
+        if not dialog:
+            raise HTTPException(status_code=404, detail="Dialog not found")
+    
+        # CHECK IF DIALOG IS TAKEN OVER - блокируем AI при запросе И взятии оператором (как в телеграме)
+        is_taken_over = getattr(dialog, 'handoff_status', 'none') in ['requested', 'active']
+    
+        # If dialog is taken over, only allow manager messages, no AI responses
+        if is_taken_over and data.get('sender') == 'user':
+            logger.info(f"Dialog {dialog_id} is taken over, blocking AI response")
+            # Don't generate AI response for taken over dialogs
+            pass
+    
+        sender = data.get('sender')
+        text = data.get('text')
+        if not text:
+            raise HTTPException(status_code=400, detail="Text required")
+    
+        # Проверка блокировки пользователя
+        if is_user_blocked(current_user):
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "error": "trial_expired",
+                    "message": "Ваш пробный период завершился. Обновите план для продолжения использования.",
+                    "needsUpgrade": True
+                }
+            )
+    
+        # Лимит по тарифу
+        limit = get_user_message_limit(current_user)
+        month_ago = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        msg_count = db.query(models.DialogMessage).join(models.Dialog).filter(
+            models.Dialog.user_id == current_user.id,
+            models.Dialog.guest_id == guest_id,
+&gt;           models.DialogMessage.timestamp &gt;= month_ago,
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            models.DialogMessage.sender == 'assistant'
+        ).count()
+E       TypeError: '&gt;=' not supported between instances of 'MagicMock' and 'datetime.datetime'
+
+api/site.py:199: TypeError</failure></testcase><testcase classname="tests.test_realtime_api.TestHandoffEventRouting" name="test_handoff_events_all_channels" time="0.001" /><testcase classname="tests.test_realtime_api.TestWebSocketEndpointIntegration" name="test_admin_websocket_authentication" time="0.003" /><testcase classname="tests.test_realtime_api.TestWebSocketEndpointIntegration" name="test_widget_websocket_assistant_validation" time="0.002" /><testcase classname="tests.test_realtime_api.TestMessageDeduplication" name="test_message_id_uniqueness" time="0.035" /><testcase classname="tests.test_realtime_api.TestOptimisticUpdates" name="test_optimistic_message_replacement" time="0.001" /><testcase classname="tests.test_realtime_api.TestErrorHandling" name="test_websocket_connection_failure_handling" time="0.002"><failure message="AttributeError: 'list' object has no attribute 'discard'">dialog_id = 123, message = {'id': 1, 'text': 'test'}
+
+    async def push_dialog_message(dialog_id: int, message: dict):
+        """Отправляет сообщение всем подключенным клиентам диалога (админ панель)"""
+        async with await _get_dialog_lock(dialog_id):
+            conns = ws_connections.get(dialog_id, set())
+            logger.info(f"Push to ADMIN dialog {dialog_id}: {len(conns)} connections")
+            logger.debug(f"Admin message: {message}")
+    
+            if not conns:
+                logger.warning(f"No ADMIN WebSocket connections found for dialog {dialog_id}")
+                logger.debug(f"Available ADMIN dialogs: {list(ws_connections.keys())}")
+                return
+    
+            sent_count = 0
+            # Создаем копию set для итерации, чтобы избежать изменений во время итерации
+            for ws in conns.copy():
+                try:
+&gt;                   await ws.send_json(message)
+
+services/websocket_manager.py:503: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;AsyncMock name='mock.send_json' id='4653530288'&gt;
+args = ({'id': 1, 'text': 'test'},), kwargs = {}
+_call = call({'id': 1, 'text': 'test'}), effect = Exception('Connection lost')
+
+    async def _execute_mock_call(self, /, *args, **kwargs):
+        # This is nearly just like super(), except for special handling
+        # of coroutines
+    
+        _call = _Call((args, kwargs), two=True)
+        self.await_count += 1
+        self.await_args = _call
+        self.await_args_list.append(_call)
+    
+        effect = self.side_effect
+        if effect is not None:
+            if _is_exception(effect):
+&gt;               raise effect
+E               Exception: Connection lost
+
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/unittest/mock.py:2321: Exception
+
+During handling of the above exception, another exception occurred:
+
+self = &lt;test_realtime_api.TestErrorHandling object at 0x1144b3c50&gt;
+
+    @pytest.mark.asyncio
+    async def test_websocket_connection_failure_handling(self):
+        """Test handling of WebSocket connection failures"""
+        from services.websocket_manager import push_dialog_message
+    
+        # Create a mock WebSocket that always fails
+        failing_ws = AsyncMock()
+        failing_ws.send_json.side_effect = Exception("Connection lost")
+    
+        working_ws = AsyncMock()
+    
+        dialog_id = 123
+        ws_connections[dialog_id] = [failing_ws, working_ws]
+    
+        message = {"id": 1, "text": "test"}
+    
+        # Should not raise exception
+&gt;       await push_dialog_message(dialog_id, message)
+
+tests/test_realtime_api.py:344: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+services/websocket_manager.py:509: in push_dialog_message
+    await _drop_socket(ws_connections, ws_meta, dialog_id, ws, reason="Send failed")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+bucket = {123: [&lt;AsyncMock id='4653527600'&gt;, &lt;AsyncMock id='4653530624'&gt;]}
+meta_bucket = {}, dialog_id = 123, ws = &lt;AsyncMock id='4653527600'&gt;, code = 1001
+reason = 'Send failed'
+
+    async def _drop_socket(bucket: Dict[int, Set[WebSocket]], meta_bucket: Dict[int, Dict[WebSocket, Dict[str, float]]], dialog_id: int, ws: WebSocket, code=WSCloseCodes.GOING_AWAY, reason="Connection dropped"):
+        """Безопасно удаляет сокет из всех структур данных"""
+        global _total_connections
+    
+        conns = bucket.get(dialog_id, set())
+        if ws in conns:
+&gt;           conns.discard(ws)
+            ^^^^^^^^^^^^^
+E           AttributeError: 'list' object has no attribute 'discard'
+
+services/websocket_manager.py:236: AttributeError</failure></testcase><testcase classname="tests.test_realtime_api.TestErrorHandling" name="test_malformed_message_handling" time="0.001" /><testcase classname="tests.test_realtime_api.TestPerformance" name="test_multiple_connections_performance" time="0.011" /><testcase classname="tests.test_realtime_api.TestPerformance" name="test_rapid_message_sending" time="0.002" /></testsuite></testsuites>
