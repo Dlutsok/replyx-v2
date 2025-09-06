@@ -170,14 +170,14 @@ class SSEManager:
         try:
             stream_key = f"sse:dialog:{dialog_id}"
             
-            # Если last_event_id не указан, берем последние events
+            # Если last_event_id не указан, читаем только новые события
             if not last_event_id:
-                start_id = "-"  # Начинаем с самого начала
+                start_id = "$"  # Читаем только новые события
             else:
                 # Проверяем формат ID (должен быть Redis Stream ID)
                 if not self._is_valid_stream_id(last_event_id):
                     logger.warning(f"⚠️ [SSE Manager] Invalid last_event_id format: {last_event_id}")
-                    start_id = "-"
+                    start_id = "$"
                 else:
                     start_id = f"({last_event_id}"  # Исключаем сам last_event_id
             
