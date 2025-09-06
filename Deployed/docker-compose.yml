@@ -89,10 +89,15 @@ services:
       - UVICORN_PORT=8001
       - SERVICE_MODE=websocket  # Flag to indicate WebSocket-only mode
       - ENABLE_WS_BRIDGE=true  # Enable Redis Pub/Sub subscriber for real-time
+      - WEBSOCKET_PING_INTERVAL=25  # WebSocket ping interval in seconds
+      - WEBSOCKET_PING_TIMEOUT=20   # WebSocket ping timeout in seconds
     depends_on:
       - redis
-    # Use same main.py but with different port
-    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001", "--workers", "1"]
+    # Use same main.py but with different port - optimized for WebSocket connections
+    command: >
+      sh -c "uvicorn main:app --host 0.0.0.0 --port 8001
+             --workers 1 --loop uvloop --http httptools
+             --log-level info --access-log"
     volumes:
       - ./ssl:/app/ssl
       - uploads-data:/app/uploads
@@ -189,7 +194,7 @@ services:
       - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./ssl:/etc/nginx/ssl:ro
       - ./nginx/static:/var/www/static
     depends_on:
       - frontend

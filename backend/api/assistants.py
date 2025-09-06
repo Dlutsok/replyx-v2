@@ -344,7 +344,7 @@ def validate_widget_token(token_data: dict, db: Session = Depends(get_db)):
         if not token:
             return {"valid": False, "reason": "No token provided"}
             
-        from core.app_config import SITE_SECRET
+        from core.app_config import SITE_SECRET, is_development
         
         # Декодируем токен
         try:
@@ -372,6 +372,12 @@ def validate_widget_token(token_data: dict, db: Session = Depends(get_db)):
             d.strip().lower().replace('https://', '').replace('http://', '').replace('www.', '').rstrip('/')
             for d in raw_current.split(',') if d.strip()
         ]
+        
+        # В режиме разработки добавляем localhost домены для тестирования
+        if is_development:
+            localhost_domains = ['localhost:3000', 'localhost:3001', '127.0.0.1:3000', '127.0.0.1:3001']
+            current_domains_list.extend(localhost_domains)
+        
         current_domains_list = sorted(list(set([d for d in current_domains_list if d])))
         current_domains_str = ",".join(current_domains_list)
         
@@ -382,7 +388,13 @@ def validate_widget_token(token_data: dict, db: Session = Depends(get_db)):
         import hashlib
         current_hash = hashlib.sha256(current_domains_str.encode('utf-8')).hexdigest()
         
-        if token_domains_hash != current_hash:
+        # В режиме разработки разрешаем localhost домены даже если хэш не совпадает
+        if is_development and current_domain and any(
+            current_domain.startswith(local) for local in ['localhost:', '127.0.0.1:']
+        ):
+            # Для localhost в dev режиме пропускаем проверку хэша доменов
+            pass
+        elif token_domains_hash != current_hash:
             return {"valid": False, "reason": "domains changed", "allowed_domains": current_domains_str}
 
         # Проверяем версию виджета (точечный отзыв)

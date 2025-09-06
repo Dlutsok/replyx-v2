@@ -67,7 +67,9 @@ const nextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "frame-ancestors 'self';",
+            value: process.env.NODE_ENV === 'development' 
+              ? "frame-ancestors 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';" 
+              : "frame-ancestors 'self';",
           },
         ],
       },

@@ -407,7 +407,7 @@ export default function ChatIframe() {
   const [dialogLoaded, setDialogLoaded] = useState(false);
   const [creatingDialog, setCreatingDialog] = useState(false);
   const reconnectAttempts = useRef(0);
-  const maxReconnectAttempts = 5;
+  const maxReconnectAttempts = Infinity; // Бесконечные попытки переподключения
   const decorrelatedDelay = useRef(1000); // Для decorrelated jitter
   // Используем state-нонс для безопасного переподключения без перезагрузки iframe
   const [wsReconnectNonce, setWsReconnectNonce] = useState(0);
@@ -548,9 +548,9 @@ export default function ChatIframe() {
     }
   }, [dialogId, messages]);
 
-  // Load cached messages on dialog change
+  // Load cached messages on dialog change (только если нет текущих сообщений)
   useEffect(() => {
-    if (dialogId && messageCache[dialogId]) {
+    if (dialogId && messageCache[dialogId] && messages.length === 0) {
       setMessages(messageCache[dialogId]);
       // Auto-scroll to bottom when loading cached messages
       scrollToBottom(200);
@@ -792,7 +792,7 @@ export default function ChatIframe() {
   }, []);
 
   useEffect(() => {
-    if (dialogId && (siteToken || assistantId) && guestId && dialogLoaded) {
+    if (dialogId && (siteToken || assistantId) && guestId) {
       setDebugInfo(`Подключаю WebSocket для диалога ${dialogId}...`);
       let wsUrl;
       const wsApiUrl = API_URL.replace('http://', 'ws://').replace('https://', 'wss://');
@@ -837,10 +837,6 @@ export default function ChatIframe() {
         setDebugInfo(`✅ Чат готов к работе!`);
         setIsOnline(true);
         resetBackoff(); // Сброс backoff при успешном подключении
-        // При переподключении сохраняем состояние загрузки диалога
-        if (!dialogLoaded && messages.length > 0) {
-          setDialogLoaded(true);
-        }
         // После соединения — подтягиваем статус handoff для синхронизации
         (async () => {
           try {
@@ -1136,7 +1132,7 @@ export default function ChatIframe() {
             
           default:
             // Все остальные коды: backoff переподключение
-            if (reconnectAttempts.current >= maxReconnectAttempts) {
+            if (maxReconnectAttempts !== Infinity && reconnectAttempts.current >= maxReconnectAttempts) {
               setDebugInfo('❌ Максимум попыток переподключения достигнут');
               return;
             }
@@ -1146,7 +1142,7 @@ export default function ChatIframe() {
             
             setDebugInfo(
               `🔄 Переподключение через ${Math.round(delay/1000)}с ` +
-              `(попытка ${reconnectAttempts.current}/${maxReconnectAttempts})`
+              `(попытка ${reconnectAttempts.current}${maxReconnectAttempts === Infinity ? '' : '/' + maxReconnectAttempts})`
             );
             
             setTimeout(() => setWsReconnectNonce(n => n + 1), delay);
@@ -1161,7 +1157,7 @@ export default function ChatIframe() {
         }
       };
     }
-  }, [dialogId, siteToken, assistantId, guestId, wsReconnectNonce, dialogLoaded]);
+  }, [dialogId, siteToken, assistantId, guestId, wsReconnectNonce]);
 
   // Network и visibility awareness
   useEffect(() => {

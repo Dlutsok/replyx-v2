@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест виджета ReplyX на localhost</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .test-section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .code {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        h1 {
+            color: #2d3748;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        
+        h2 {
+            color: #4a5568;
+            margin-top: 30px;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .status.info {
+            background: #e3f2fd;
+            color: #0277bd;
+            border: 1px solid #81d4fa;
+        }
+        
+        .status.warning {
+            background: #fff3e0;
+            color: #f57c00;
+            border: 1px solid #ffb74d;
+        }
+        
+        .widget-container {
+            min-height: 200px;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Тестовая страница виджета ReplyX</h1>
+    
+    <div class="status info">
+        ✅ Страница загружена на localhost:3000
+    </div>
+    
+    <h2>📋 Информация о тесте</h2>
+    <div class="test-section">
+        <p><strong>Цель:</strong> Протестировать работу виджета ReplyX на localhost с локальным backend</p>
+        <ul>
+            <li>Frontend: localhost:3000</li>
+            <li>Backend: localhost:8000 (планируется)</li>
+            <li>Production: https://replyx.ru (по умолчанию)</li>
+        </ul>
+    </div>
+    
+    <h2>🔧 Тест 1: Виджет с production API (по умолчанию)</h2>
+    <div class="test-section">
+        <p><strong>Ожидается:</strong> Ошибка "Invalid token: Signature verification failed" потому что токен подписан для localhost, а запрос идет к production</p>
+        
+        <div class="code">
+&lt;script src="http://localhost:3000/widget.js?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo2LCJhc3Npc3RhbnRfaWQiOjMsInR5cGUiOiJzaXRlIiwiYWxsb3dlZF9kb21haW5zIjoic3RlbmNvbS5ydSIsImRvbWFpbnNfaGFzaCI6ImNiYzNkOWM3ZGQyMTdmMTNkNzFjYTMyYTY3Mjc5NzJmYTEwYWVjNDc5OWQ4YjQ2ODM5ZTc4YWQyOGQ3NGYxMGUiLCJpc3N1ZWRfYXQiOjE3NTcxNjM5MDAsIndpZGdldF92ZXJzaW9uIjoxfQ.FjalS0UFCRcLxInAWXieMsLnyBn5ppcjbgp6ys_VXTA&assistant_id=3&theme=orange&type=floating&host=http://localhost:3000&v=cbc3d9c7dd217f13d71ca32a6727972fa10aec4799d8b46839e78ad28d74f10e" async&gt;&lt;/script&gt;
+        </div>
+        
+        <div class="widget-container">
+            <!-- Виджет загрузится здесь -->
+        </div>
+    </div>
+    
+    <div class="status warning">
+        ⚠️ Откройте консоль разработчика (F12) для просмотра логов виджета
+    </div>
+    
+    <h2>🔧 Тест 2: Виджет с локальным API</h2>
+    <div class="test-section">
+        <p><strong>Добавлен параметр:</strong> <code>&api=http://localhost:8000</code> для использования локального backend</p>
+        <p><strong>Ожидается:</strong> Успешная валидация токена на localhost:8000</p>
+        
+        <div class="code">
+&lt;script src="http://localhost:3000/widget.js?token=...&assistant_id=3&theme=blue&type=floating&host=http://localhost:3000&api=http://localhost:8000&v=..." async&gt;&lt;/script&gt;
+        </div>
+        
+        <div class="widget-container">
+            <!-- Виджет с локальным API загрузится здесь -->
+        </div>
+    </div>
+    
+    <h2>📊 Логи консоли</h2>
+    <div class="test-section">
+        <p>Ожидаемые сообщения в консоли:</p>
+        <ul>
+            <li><strong>[ReplyX Widget] Configuration:</strong> - конфигурация виджета</li>
+            <li><strong>apiUrl:</strong> - должен быть 'https://replyx.ru' (в первом тесте)</li>
+            <li><strong>✅ Локальная валидация пройдена</strong> - токен корректный</li>
+            <li><strong>❌ Серверная проверка: токен не актуален</strong> - ошибка подписи на production</li>
+        </ul>
+    </div>
+
+    <!-- Тестовый виджет с localhost токеном и локальным API -->
+    <script src="http://localhost:3000/widget.js?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo2LCJhc3Npc3RhbnRfaWQiOjMsInR5cGUiOiJzaXRlIiwiYWxsb3dlZF9kb21haW5zIjoibG9jYWxob3N0IiwiZG9tYWluc19oYXNoIjoiNDk5NjBkZTU4ODBlOGM2ODc0MzQxNzBmNjQ3NjYwNWI4ZmU0YWViOWEyODYzMmM3OTk1Y2YzYmE4MzFkOTc2MyIsImlzc3VlZF9hdCI6MTc1NzE2NDcwNCwid2lkZ2V0X3ZlcnNpb24iOjF9.Qfx9FmeGoB06S1qQ0gmcMFdMJf76_-lIE2ERNcjYyf8&assistant_id=3&theme=orange&type=floating&host=http://localhost:3000&api=http://localhost:8000&v=49960de5880e8c687434170f6476605b8fe4aeb9a28632c7995cf3ba831d9763" async></script>
+
+</body>
+</html>
