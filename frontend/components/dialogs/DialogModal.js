@@ -36,39 +36,60 @@ const DialogModal = ({
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
-  // WebSocket подключение и обработка сообщений
-  const connectWebSocket = useCallback(() => {
+  // SSE подключение и обработка сообщений (Migrated from WebSocket)
+  const connectSSE = useCallback(() => {
     if (!dialogId || !token || !isOpen) return;
 
-    // Закрываем существующее соединение
+    // Закрываем существующее SSE соединение
     if (websocketRef.current) {
       websocketRef.current.close();
     }
 
     try {
-      const wsProtocol = API_URL.startsWith('https') ? 'wss' : 'ws';
-      const wsHost = API_URL.replace(/^https?:\/\//, '');
-      const wsUrl = `${wsProtocol}://${wsHost}/ws/dialogs/${dialogId}?token=${encodeURIComponent(token)}`;
-      console.log('🔌 [DialogModal] Connecting to WebSocket:', wsUrl);
+      const sseUrl = `${API_URL}/api/dialogs/${dialogId}/events?token=${encodeURIComponent(token)}`;
+      console.log('🔌 [DialogModal] Connecting to SSE:', sseUrl);
       
-      const ws = new WebSocket(wsUrl);
-      websocketRef.current = ws;
+      const eventSource = new EventSource(sseUrl);
+      websocketRef.current = eventSource;
 
-      ws.onopen = () => {
-        console.log('✅ [DialogModal] WebSocket connected');
+      // SSE не имеет onclose, но EventSource автоматически переподключается
+      // Мы обрабатываем закрытие и переподключение вручную
+      const handleSSEClose = () => {
+        console.log('🔌 [DialogModal] SSE connection closed');
+        setWsConnected(false);
+        websocketRef.current = null;
+
+        // Переподключение при ошибках SSE (EventSource переподключается автоматически)
+        if (isOpen && reconnectAttemptsRef.current < maxReconnectAttempts) {
+          reconnectAttemptsRef.current++;
+          const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 10000);
+          console.log(`🔄 [DialogModal] SSE Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current})`);
+          
+          reconnectTimeoutRef.current = setTimeout(() => {
+            connectSSE();
+          }, delay);
+        } else if (isOpen && reconnectAttemptsRef.current >= maxReconnectAttempts) {
+          // Переключаемся на fallback polling после исчерпания попыток  
+          console.log('⚠️ [DialogModal] SSE reconnection failed, switching to polling fallback');
+          setUseFallback(true);
+          startFallbackPolling();
+        }
+      };
+
+      eventSource.onopen = () => {
+        console.log('✅ [DialogModal] SSE connected');
         setWsConnected(true);
         setWsError(null);
         reconnectAttemptsRef.current = 0;
       };
 
-      ws.onmessage = (event) => {
+      eventSource.onmessage = (event) => {
         try {
           let data;
-          if (event.data === '__ping__') {
-            // Отвечаем на ping
-            if (ws.readyState === WebSocket.OPEN) {
-              ws.send('__pong__');
-            }
+          // SSE heartbeat handling (вместо WebSocket ping/pong)
+          if (event.data === '__heartbeat__' || event.data === '{"type":"heartbeat"}') {
+            // SSE heartbeat - просто логируем
+            console.log('💓 [DialogModal] SSE heartbeat received');
             return;
           }
 
@@ -79,11 +100,11 @@ const DialogModal = ({
             return;
           }
 
-          console.log('📨 [DialogModal] WebSocket message received:', data);
+          console.log('📨 [DialogModal] SSE message received:', data);
 
           // Обрабатываем новые сообщения
           if (data.id && data.sender && data.text) {
-            console.log('📥 [DialogModal] Adding new message from WebSocket:', data);
+            console.log('📥 [DialogModal] Adding new message from SSE:', data);
             setMessages(prevMessages => {
               // Проверяем, есть ли уже такое сообщение
               const exists = prevMessages.some(msg => msg.id === data.id);
@@ -106,51 +127,31 @@ const DialogModal = ({
           }
 
         } catch (err) {
-          console.error('❌ [DialogModal] Error processing WebSocket message:', err);
+          console.error('❌ [DialogModal] Error processing SSE message:', err);
         }
       };
 
-      ws.onerror = (error) => {
-        console.error('❌ [DialogModal] WebSocket error:', error);
-        setWsError('Ошибка соединения');
-      };
-
-      ws.onclose = (event) => {
-        console.log('🔌 [DialogModal] WebSocket closed:', event.code, event.reason);
-        setWsConnected(false);
-        websocketRef.current = null;
-
-        // Переподключение при ошибках (кроме намеренного закрытия)
-        if (isOpen && event.code !== 1000 && reconnectAttemptsRef.current < maxReconnectAttempts) {
-          reconnectAttemptsRef.current++;
-          const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 10000);
-          console.log(`🔄 [DialogModal] Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current})`);
-          
-          reconnectTimeoutRef.current = setTimeout(() => {
-            connectWebSocket();
-          }, delay);
-        } else if (isOpen && reconnectAttemptsRef.current >= maxReconnectAttempts) {
-          // Переключаемся на fallback polling после исчерпания попыток
-          console.log('⚠️ [DialogModal] WebSocket reconnection failed, switching to polling fallback');
-          setUseFallback(true);
-          startFallbackPolling();
-        }
+      eventSource.onerror = (error) => {
+        console.error('❌ [DialogModal] SSE error:', error);
+        setWsError('Ошибка SSE соединения');
+        // При ошибке вызываем обработку закрытия для переподключения
+        handleSSEClose();
       };
 
     } catch (err) {
-      console.error('❌ [DialogModal] Failed to create WebSocket:', err);
-      setWsError('Не удалось подключиться');
+      console.error('❌ [DialogModal] Failed to create SSE connection:', err);
+      setWsError('Не удалось подключиться к SSE');
     }
   }, [dialogId, token, isOpen]);
 
-  const disconnectWebSocket = useCallback(() => {
+  const disconnectSSE = useCallback(() => {
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
       reconnectTimeoutRef.current = null;
     }
 
     if (websocketRef.current) {
-      websocketRef.current.close(1000, 'Dialog modal closed');
+      websocketRef.current.close(); // EventSource.close() не принимает параметры
       websocketRef.current = null;
     }
 
@@ -159,7 +160,7 @@ const DialogModal = ({
     reconnectAttemptsRef.current = 0;
   }, []);
 
-  // Fallback polling для случаев, когда WebSocket не работает
+  // Fallback polling для случаев, когда SSE не работает
   const startFallbackPolling = useCallback(() => {
     if (!dialogId || !token || pollingIntervalRef.current) return;
 
@@ -428,8 +429,8 @@ const DialogModal = ({
       const responseData = await response.json();
       console.log('✅ [FRONTEND] Успешный ответ:', responseData);
 
-      // Оптимистичное обновление: добавляем сообщение сразу, если WebSocket подключен
-      // WebSocket может не успеть доставить обновление моментально
+      // Оптимистичное обновление: добавляем сообщение сразу, если SSE подключен
+      // SSE может не успеть доставить обновление моментально
       if (wsConnected && responseData.id) {
         setMessages(prevMessages => {
           // Проверяем, есть ли уже такое сообщение
@@ -441,9 +442,9 @@ const DialogModal = ({
         });
       }
 
-      // Перезагружаем сообщения только если WebSocket не подключен
+      // Перезагружаем сообщения только если SSE не подключен
       if (!wsConnected) {
-        console.log('🔄 [FRONTEND] Перезагружаем сообщения (WebSocket не подключен)...');
+        console.log('🔄 [FRONTEND] Перезагружаем сообщения (SSE не подключен)...');
         await loadMessages();
         console.log('✅ [FRONTEND] Сообщения перезагружены');
       } else {
@@ -474,7 +475,7 @@ const DialogModal = ({
     setWsConnected(false);
     setWsError(null);
     setUseFallback(false);
-    disconnectWebSocket();
+    disconnectSSE();
     stopFallbackPolling();
     onClose();
   };
@@ -486,28 +487,28 @@ const DialogModal = ({
     }
   };
 
-  // Управление WebSocket соединением
+  // Управление SSE соединением
   useEffect(() => {
     if (isOpen && dialogId) {
       if (!useFallback) {
-        // Устанавливаем WebSocket соединение
-        connectWebSocket();
+        // Устанавливаем SSE соединение
+        connectSSE();
       } else {
         // Используем fallback polling
         startFallbackPolling();
       }
     } else {
       // Закрываем соединение при закрытии модала
-      disconnectWebSocket();
+      disconnectSSE();
       stopFallbackPolling();
     }
 
     // Cleanup при размонтировании
     return () => {
-      disconnectWebSocket();
+      disconnectSSE();
       stopFallbackPolling();
     };
-  }, [isOpen, dialogId, useFallback, connectWebSocket, disconnectWebSocket, startFallbackPolling, stopFallbackPolling]);
+  }, [isOpen, dialogId, useFallback, connectSSE, disconnectSSE, startFallbackPolling, stopFallbackPolling]);
 
   // Загрузка данных при открытии модала
   useEffect(() => {
