@@ -145,18 +145,30 @@ class SSEManager:
     async def broadcast_event(self, dialog_id: int, event_data: dict) -> Optional[str]:
         """Добавляет событие в Stream и рассылает всем активным клиентам диалога"""
         try:
+            logger.info(f"📢 [SSE Manager] Broadcasting event to dialog {dialog_id}: {event_data.get('sender', 'unknown')} - {event_data.get('text', '')[:50]}...")
+            
             event_id = await self.add_event_to_stream(dialog_id, event_data)
             sse_formatted = self._format_sse_event(event_data, event_id)
+            
             # Отправляем всем клиентам диалога
             if dialog_id in sse_connections:
+                client_count = len(sse_connections[dialog_id])
+                logger.info(f"📤 [SSE Manager] Sending to {client_count} clients for dialog {dialog_id}")
+                
                 for client_id in list(sse_connections[dialog_id]):
                     queue = self.client_queues.get(client_id)
                     if queue is not None:
                         try:
                             await queue.put(sse_formatted)
                             sse_stats['events_sent'] += 1
+                            logger.debug(f"✅ [SSE Manager] Event queued for {client_id}")
                         except Exception as qe:
                             logger.error(f"❌ [SSE Manager] Failed to enqueue event for {client_id}: {qe}")
+                    else:
+                        logger.warning(f"⚠️ [SSE Manager] No queue found for client {client_id}")
+            else:
+                logger.warning(f"⚠️ [SSE Manager] No active connections for dialog {dialog_id}")
+                
             return event_id
         except Exception as e:
             logger.error(f"❌ [SSE Manager] Failed to broadcast event: {e}")
@@ -439,7 +451,9 @@ async def push_sse_event(dialog_id: int, event_data: dict):
     Интегрируется с существующим push_dialog_message
     """
     try:
+        logger.info(f"🚀 [push_sse_event] Called for dialog {dialog_id}: {event_data.get('sender', 'unknown')} - {event_data.get('text', '')[:30]}...")
         await sse_manager.broadcast_event(dialog_id, event_data)
+        logger.info(f"✅ [push_sse_event] Successfully broadcasted for dialog {dialog_id}")
     except Exception as e:
         logger.error(f"❌ [SSE] Failed to push event for dialog {dialog_id}: {e}")
 
