@@ -17,6 +17,7 @@ from ai.ai_token_manager import ai_token_manager
 from services.sse_manager import push_sse_event
 from services.handoff_service import HandoffService
 from services.balance_service import BalanceService
+from api.dialogs import broadcast_dialog_message
 
 # Настройка логгера
 logger = logging.getLogger(__name__)
