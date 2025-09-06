@@ -444,13 +444,25 @@ async def push_sse_event(dialog_id: int, event_data: dict):
         logger.error(f"❌ [SSE] Failed to push event for dialog {dialog_id}: {e}")
 
 def get_sse_stats() -> dict:
-    """Возвращает статистику SSE соединений"""
+    """Возвращает статистику SSE соединений (совместимость с websocket_manager)"""
+    # Подсчитываем типы соединений для обратной совместимости
+    admin_connections = sum(1 for client_id in sse_clients.keys() if client_id.startswith('admin_'))
+    site_connections = sum(1 for client_id in sse_clients.keys() if client_id.startswith('site_'))
+    widget_connections = sum(1 for client_id in sse_clients.keys() if client_id.startswith('widget_'))
+    
     return {
         **sse_stats,
         'active_dialogs': len(sse_connections),
         'clients_per_dialog': {
             dialog_id: len(client_ids) 
             for dialog_id, client_ids in sse_connections.items()
+        },
+        # Обратная совместимость с websocket_manager
+        'connection_details': {
+            'admin_connections': admin_connections,
+            'site_connections': site_connections,
+            'widget_connections': widget_connections,
+            'total_connections': len(sse_clients)
         }
     }
 
