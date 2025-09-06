@@ -145,7 +145,9 @@ class SSEManager:
     async def broadcast_event(self, dialog_id: int, event_data: dict) -> Optional[str]:
         """Добавляет событие в Stream и рассылает всем активным клиентам диалога"""
         try:
-            logger.info(f"📢 [SSE Manager] Broadcasting event to dialog {dialog_id}: {event_data.get('sender', 'unknown')} - {event_data.get('text', '')[:50]}...")
+            sender = event_data.get('sender', 'unknown')
+            text_preview = event_data.get('text', '')[:50] if event_data.get('text') else 'N/A'
+            logger.info(f"📢 [SSE Manager] Broadcasting event to dialog {dialog_id}: {sender} - {text_preview}...")
             
             event_id = await self.add_event_to_stream(dialog_id, event_data)
             sse_formatted = self._format_sse_event(event_data, event_id)
@@ -153,25 +155,33 @@ class SSEManager:
             # Отправляем всем клиентам диалога
             if dialog_id in sse_connections:
                 client_count = len(sse_connections[dialog_id])
-                logger.info(f"📤 [SSE Manager] Sending to {client_count} clients for dialog {dialog_id}")
+                logger.info(f"📤 [SSE Manager] Отправляем {client_count} клиентам для диалога {dialog_id}")
                 
+                # Детальная информация о клиентах
                 for client_id in list(sse_connections[dialog_id]):
+                    client_info = sse_clients.get(client_id)
+                    auth_type = client_info.auth_type if client_info else 'unknown'
+                    logger.info(f"📤 [SSE Manager] Клиент {client_id} (тип: {auth_type})")
+                    
                     queue = self.client_queues.get(client_id)
                     if queue is not None:
                         try:
                             await queue.put(sse_formatted)
                             sse_stats['events_sent'] += 1
-                            logger.debug(f"✅ [SSE Manager] Event queued for {client_id}")
+                            logger.info(f"✅ [SSE Manager] Событие отправлено клиенту {client_id} (тип: {auth_type})")
                         except Exception as qe:
-                            logger.error(f"❌ [SSE Manager] Failed to enqueue event for {client_id}: {qe}")
+                            logger.error(f"❌ [SSE Manager] Ошибка отправки клиенту {client_id}: {qe}")
                     else:
-                        logger.warning(f"⚠️ [SSE Manager] No queue found for client {client_id}")
+                        logger.warning(f"⚠️ [SSE Manager] Нет очереди для клиента {client_id}")
             else:
-                logger.warning(f"⚠️ [SSE Manager] No active connections for dialog {dialog_id}")
+                logger.warning(f"⚠️ [SSE Manager] НЕТ активных соединений для диалога {dialog_id}")
+                logger.info(f"🔍 [SSE Manager] Активные диалоги: {list(sse_connections.keys())}")
                 
             return event_id
         except Exception as e:
             logger.error(f"❌ [SSE Manager] Failed to broadcast event: {e}")
+            import traceback
+            logger.error(f"❌ [SSE Manager] Traceback: {traceback.format_exc()}")
             return None
     
     async def get_events_since(self, dialog_id: int, last_event_id: str = None, limit: int = 50) -> List[dict]:
@@ -365,16 +375,33 @@ class SSEManager:
                         # Добавляем в Stream и рассылаем клиентам
                         event_id = await self.add_event_to_stream(dialog_id, event_data)
                         sse_formatted = self._format_sse_event(event_data, event_id)
+                        
+                        logger.info(f"📢 [SSE Manager] Получено Redis Pub/Sub событие для диалога {dialog_id}")
+                        logger.info(f"📢 [SSE Manager] Тип события: {event_data.get('type', 'unknown')}")
+                        
                         if dialog_id in sse_connections:
+                            client_count = len(sse_connections[dialog_id])
+                            logger.info(f"📤 [SSE Manager] Pub/Sub → отправляем {client_count} клиентам диалога {dialog_id}")
+                            
                             for client_id in list(sse_connections[dialog_id]):
+                                client_info = sse_clients.get(client_id)
+                                auth_type = client_info.auth_type if client_info else 'unknown'
+                                
                                 queue = self.client_queues.get(client_id)
                                 if queue is not None:
                                     try:
                                         await queue.put(sse_formatted)
                                         sse_stats['events_sent'] += 1
+                                        logger.info(f"✅ [SSE Manager] Pub/Sub событие отправлено {client_id} (тип: {auth_type})")
                                     except Exception as qe:
-                                        logger.error(f"❌ [SSE Manager] Failed to enqueue pubsub event for {client_id}: {qe}")
-                        logger.debug(f"📤 [SSE Manager] Enqueued event for dialog {dialog_id} to active SSE clients")
+                                        logger.error(f"❌ [SSE Manager] Ошибка отправки Pub/Sub события {client_id}: {qe}")
+                                else:
+                                    logger.warning(f"⚠️ [SSE Manager] Нет очереди для Pub/Sub клиента {client_id}")
+                        else:
+                            logger.warning(f"⚠️ [SSE Manager] Pub/Sub: НЕТ подключений для диалога {dialog_id}")
+                            logger.info(f"🔍 [SSE Manager] Pub/Sub: активные диалоги {list(sse_connections.keys())}")
+                        
+                        logger.info(f"📤 [SSE Manager] Pub/Sub обработка завершена для диалога {dialog_id}")
                         
                     except Exception as e:
                         logger.error(f"❌ [SSE Manager] Error processing pubsub message: {e}")
@@ -502,7 +529,12 @@ async def validate_sse_auth(
         if site_token:
             # For SSE, we may not have Origin header, so we validate token structure only
             if origin and not _is_domain_allowed_by_token(origin, site_token):
-                return False, "forbidden_domain"
+                # В dev режиме разрешаем localhost
+                from core.app_config import is_development
+                if is_development and origin and ('localhost' in origin or '127.0.0.1' in origin):
+                    logger.info(f"🚧 [SSE Auth] Dev mode: allowing localhost origin {origin}")
+                else:
+                    return False, "forbidden_domain"
             
             # If no origin, validate token structure only (SSE-friendly)
             try:

@@ -8,7 +8,13 @@ const resolveBaseUrl = () => {
       return `https://${host}`;
     }
     
-    // Для localhost используем текущий протокол
+    // Для localhost используем бэкенд на порту 8000
+    if (host.startsWith('localhost:') || host.startsWith('127.0.0.1:')) {
+      const protocol = window.location.protocol;
+      return `${protocol}//localhost:8000`;
+    }
+    
+    // Для других хостов используем текущий протокол и хост
     const protocol = window.location.protocol;
     return `${protocol}//${host}`;
   }

@@ -1224,28 +1224,41 @@ export default function ChatIframe() {
     // Auto-scroll to bottom after sending message
     scrollToBottom();
     
+    console.log('🚀 [ВИДЖЕТ→АДМИН] Отправляем сообщение в диалог', dialogId);
+    console.log('🚀 [ВИДЖЕТ→АДМИН] Текст сообщения:', textToSend.substring(0, 50));
+    console.log('🚀 [ВИДЖЕТ→АДМИН] API URL:', API_URL);
+    
     try {
       let res;
+      let endpoint;
+      
       if (assistantId) {
         // Гостевой режим
-        res = await fetch(`${API_URL}/api/widget/dialogs/${dialogId}/messages?assistant_id=${assistantId}&guest_id=${guestId}`, {
+        endpoint = `${API_URL}/api/widget/dialogs/${dialogId}/messages?assistant_id=${assistantId}&guest_id=${guestId}`;
+        console.log('🚀 [ВИДЖЕТ→АДМИН] Гостевой режим, endpoint:', endpoint);
+        res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ sender: 'user', text: textToSend })
         });
       } else {
         // Режим с токеном
-        res = await fetch(`${API_URL}/api/site/dialogs/${dialogId}/messages?site_token=${siteToken}&guest_id=${guestId}`, {
+        endpoint = `${API_URL}/api/site/dialogs/${dialogId}/messages?site_token=${siteToken}&guest_id=${guestId}`;
+        console.log('🚀 [ВИДЖЕТ→АДМИН] Режим с токеном, endpoint:', endpoint);
+        res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ sender: 'user', text: textToSend })
         });
       }
       
+      console.log('🚀 [ВИДЖЕТ→АДМИН] Ответ сервера:', res.status, res.statusText);
+      
       if (res.ok) {
         // Сообщение успешно отправлено, ожидаем ответ
         setLoading(false); // Сразу разблокируем кнопку после успешной отправки
         setDebugInfo(`✅ Сообщение отправлено, ожидаю ответ...`);
+        console.log('✅ [ВИДЖЕТ→АДМИН] Сообщение успешно отправлено на сервер');
         
         // Уведомляем родительское окно об отправке сообщения
         if (typeof window !== 'undefined' && window.parent) {

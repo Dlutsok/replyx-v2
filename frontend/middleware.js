@@ -53,8 +53,9 @@ async function validateWidgetToken(token, request) {
       return null
     }
 
-    // Определяем backend URL
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru'
+    // Определяем backend URL (приоритет: api из query → env → прод)
+    const apiParam = request?.nextUrl?.searchParams?.get('api')
+    const backendUrl = apiParam || process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru'
     
     console.log(`CSP Middleware: Валидация токена через ${backendUrl}/api/validate-widget-token`)
     
@@ -99,7 +100,7 @@ async function validateWidgetToken(token, request) {
 /**
  * Генерирует CSP заголовок с разрешенными доменами
  */
-function generateCSPHeader(allowedDomains) {
+function generateCSPHeader(allowedDomains, backendOriginOverride) {
   // Базовые разрешенные домены
   const baseDomains = ["'self'", "https://replyx.ru", "https://www.replyx.ru"]
   
@@ -116,7 +117,7 @@ function generateCSPHeader(allowedDomains) {
   }
   
   // Разрешаем backend origin для API запросов (dev/prod)
-  let backendOrigin = process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru'
+  let backendOrigin = backendOriginOverride || process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru'
   try {
     const u = new URL(backendOrigin)
     backendOrigin = `${u.protocol}//${u.host}`
@@ -144,13 +145,36 @@ function generateCSPHeader(allowedDomains) {
  * Генерирует ограничительный CSP для невалидных токенов
  */
 function generateRestrictiveCSP() {
+  // В dev режиме разрешаем localhost для тестирования
+  const frameAncestors = process.env.NODE_ENV === 'development' 
+    ? "'self' http://localhost:3000 http://localhost:3001 http://127.0.0.1:3000 https://stencom.ru https://www.stencom.ru"
+    : "'self'";
+  
+  // В dev режиме разрешаем unsafe-inline и unsafe-eval для Next.js
+  const scriptSrc = process.env.NODE_ENV === 'development'
+    ? "'self' 'unsafe-inline' 'unsafe-eval' https:"
+    : "'self'";
+    
+  const styleSrc = process.env.NODE_ENV === 'development'
+    ? "'self' 'unsafe-inline' https:"
+    : "'self'";
+    
+  const defaultSrc = process.env.NODE_ENV === 'development'
+    ? "'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:"
+    : "'self'";
+    
+  const connectSrc = process.env.NODE_ENV === 'development'
+    ? "'self' https: wss: ws: https://replyx.ru http://localhost:8000"
+    : "'self'";
+    
   return [
-    "frame-ancestors 'self'",
-    "default-src 'self'",
-    "script-src 'self'",
-    "style-src 'self'",
-    "img-src 'self' data:",
-    "connect-src 'self'"
+    `frame-ancestors ${frameAncestors}`,
+    `default-src ${defaultSrc}`,
+    `script-src ${scriptSrc}`,
+    `style-src ${styleSrc}`,
+    "img-src 'self' data: blob: https:",
+    `connect-src ${connectSrc}`,
+    "font-src 'self' https:"
   ].join('; ')
 }
 
@@ -199,7 +223,17 @@ export async function middleware(request) {
   }
   
   // Генерируем динамический CSP
-  const dynamicCSP = generateCSPHeader(allowedDomains)
+  // Если в URL iframe передан api, разрешим именно этот origin в connect-src
+  const apiParam = searchParams.get('api')
+  let backendOriginOverride = undefined
+  if (apiParam) {
+    try {
+      const u = new URL(apiParam)
+      backendOriginOverride = `${u.protocol}//${u.host}`
+    } catch {}
+  }
+
+  const dynamicCSP = generateCSPHeader(allowedDomains, backendOriginOverride)
   
   console.log(`✅ CSP Middleware: Разрешенные домены для assistant_id=${tokenInfo.assistant_id}: ${allowedDomains.join(', ')}`)
   console.log(`CSP заголовок: ${dynamicCSP}`)

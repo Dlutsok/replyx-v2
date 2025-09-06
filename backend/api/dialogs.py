@@ -38,6 +38,7 @@ def is_user_blocked(user):
 # Migrated to SSE - removed WebSocket helpers
 # from services.websocket_manager import (...) - REMOVED
 from services.sse_manager import push_sse_event
+from services.events_pubsub import publish_dialog_event
 
 # SSE compatibility functions
 async def push_dialog_message(dialog_id: int, message: dict):
@@ -707,8 +708,11 @@ async def add_dialog_message(dialog_id: int, data: dict, db: Session = Depends(g
                             "text": cached_msg.text,
                             "timestamp": cached_msg.timestamp.isoformat() + 'Z'
                         }
-                        # Используем универсальный broadcast для гарантированной доставки
-                        await broadcast_dialog_message(dialog_id, cached_message_data)
+                        # Публикуем событие через Redis Pub/Sub (SSE менеджер доставит всем подписчикам)
+                        await publish_dialog_event(dialog_id, {
+                            "type": "message:new",
+                            "message": cached_message_data
+                        })
                         
                         return {"id": cached_msg.id, "sender": cached_msg.sender, "text": cached_msg.text, "timestamp": cached_msg.timestamp.isoformat() + 'Z'}
                     
@@ -889,8 +893,11 @@ async def add_dialog_message(dialog_id: int, data: dict, db: Session = Depends(g
                         "text": assistant_msg.text,
                         "timestamp": assistant_msg.timestamp.isoformat() + 'Z'
                     }
-                    # Используем универсальный broadcast для гарантированной доставки
-                    await broadcast_dialog_message(dialog_id, ai_message_data)
+                    # Публикуем событие через Redis Pub/Sub (SSE менеджер доставит всем подписчикам)
+                    await publish_dialog_event(dialog_id, {
+                        "type": "message:new",
+                        "message": ai_message_data
+                    })
                 
             except Exception as e:
                     print(f"Ошибка генерации ответа ассистента: {e}")
@@ -914,8 +921,11 @@ async def add_dialog_message(dialog_id: int, data: dict, db: Session = Depends(g
         "timestamp": msg.timestamp.isoformat() + 'Z'
     }
     
-    # Используем универсальный broadcast для гарантированной доставки в оба канала
-    await broadcast_dialog_message(dialog_id, message_data)
+    # Публикуем событие через Redis Pub/Sub (SSE менеджер доставит всем подписчикам)
+    await publish_dialog_event(dialog_id, {
+        "type": "message:new",
+        "message": message_data
+    })
     
     # НОВОЕ: Если это сообщение от оператора в Telegram диалоге, отправляем в Telegram
     logger.info(f"🔍 [DIALOGS] Проверяем условия отправки в Telegram: sender='{sender}', telegram_chat_id='{dialog.telegram_chat_id}'")

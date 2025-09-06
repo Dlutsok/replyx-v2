@@ -216,20 +216,32 @@ async def site_add_dialog_message(
     db.refresh(msg)
     
     # 🔥 ПУБЛИКАЦИЯ СОБЫТИЯ В REDIS PUB/SUB ДЛЯ РЕАЛ-ТАЙМ ДОСТАВКИ
+    message_data = {
+        "id": msg.id,
+        "sender": msg.sender,
+        "text": msg.text,
+        "timestamp": msg.timestamp.isoformat() + 'Z'
+    }
+    
+    logger.info(f"🚀 [WIDGET→ADMIN] Отправляем сообщение от {sender} в диалоге {dialog_id}")
+    logger.info(f"🚀 [WIDGET→ADMIN] Данные сообщения: {message_data}")
+    
     try:
         from services.events_pubsub import publish_dialog_event
-        await publish_dialog_event(dialog_id, {
+        success = await publish_dialog_event(dialog_id, {
             "type": "message:new",
-            "message": {
-                "id": msg.id,
-                "sender": msg.sender,
-                "text": msg.text,
-                "timestamp": msg.timestamp.isoformat() + 'Z'
-            }
+            "message": message_data
         })
-        logger.debug(f"📢 [SITE] Published Redis event for dialog {dialog_id}, message {msg.id}")
+        
+        if success:
+            logger.info(f"✅ [WIDGET→ADMIN] Redis Pub/Sub успешно: dialog_id={dialog_id}, message_id={msg.id}")
+        else:
+            logger.error(f"❌ [WIDGET→ADMIN] Redis Pub/Sub НЕУДАЧНО: dialog_id={dialog_id}, message_id={msg.id}")
+            
     except Exception as e:
-        logger.error(f"❌ [SITE] Failed to publish Redis event for dialog {dialog_id}: {e}")
+        logger.error(f"❌ [WIDGET→ADMIN] ОШИБКА Redis Pub/Sub для dialog {dialog_id}: {e}")
+        import traceback
+        logger.error(f"❌ [WIDGET→ADMIN] Traceback: {traceback.format_exc()}")
     
     # Для сообщений пользователя отправляем только в админ панель
     # ИСПРАВЛЕНО: Отправляем в виджет тоже через SSE для консистентности
@@ -248,8 +260,16 @@ async def site_add_dialog_message(
         )
         
         # Отправляем в ОБА канала: админ И виджет для консистентности SSE
-        await push_dialog_message(dialog_id, user_message_data)
-        await ws_push_site_dialog_message(dialog_id, user_message_data)
+        # 🔥 ПУБЛИКУЕМ СОБЫТИЕ ЧЕРЕЗ REDIS PUB/SUB ДЛЯ ДОСТАВКИ В АДМИНКУ
+        try:
+            from services.events_pubsub import publish_dialog_event
+            await publish_dialog_event(dialog_id, {
+                "type": "message:new",
+                "message": user_message_data
+            })
+            logger.info(f"✅ [WIDGET→ADMIN] Сообщение пользователя опубликовано в Redis: dialog_id={dialog_id}, message_id={msg.id}")
+        except Exception as e:
+            logger.error(f"❌ [WIDGET→ADMIN] Ошибка публикации в Redis для dialog {dialog_id}: {e}")
         
         # СТРАХОВОЧНЫЙ механизм: если админ не подключён, предупреждаем
         if stats['connection_details']['admin_connections'] == 0:
@@ -262,8 +282,16 @@ async def site_add_dialog_message(
             "text": msg.text,
             "timestamp": msg.timestamp.isoformat() + 'Z'
         }
-        await push_dialog_message(dialog_id, message_data)
-        await ws_push_site_dialog_message(dialog_id, message_data)
+        # 🔥 ПУБЛИКУЕМ СОБЫТИЕ ЧЕРЕЗ REDIS PUB/SUB ДЛЯ ДОСТАВКИ В АДМИНКУ
+        try:
+            from services.events_pubsub import publish_dialog_event
+            await publish_dialog_event(dialog_id, {
+                "type": "message:new",
+                "message": message_data
+            })
+            logger.info(f"✅ [WIDGET→ADMIN] Сообщение НЕ-пользователя опубликовано в Redis: dialog_id={dialog_id}, message_id={msg.id}")
+        except Exception as e:
+            logger.error(f"❌ [WIDGET→ADMIN] Ошибка публикации в Redis для dialog {dialog_id}: {e}")
     
     response_msg = None
     if sender == 'user' and not is_taken_over:
@@ -621,8 +649,16 @@ async def widget_add_dialog_message(
         )
         
         # Отправляем в ОБА канала: админ И виджет для консистентности SSE
-        await push_dialog_message(dialog_id, user_message_data)
-        await ws_push_site_dialog_message(dialog_id, user_message_data)
+        # 🔥 ПУБЛИКУЕМ СОБЫТИЕ ЧЕРЕЗ REDIS PUB/SUB ДЛЯ ДОСТАВКИ В АДМИНКУ
+        try:
+            from services.events_pubsub import publish_dialog_event
+            await publish_dialog_event(dialog_id, {
+                "type": "message:new",
+                "message": user_message_data
+            })
+            logger.info(f"✅ [WIDGET→ADMIN] Сообщение пользователя опубликовано в Redis: dialog_id={dialog_id}, message_id={msg.id}")
+        except Exception as e:
+            logger.error(f"❌ [WIDGET→ADMIN] Ошибка публикации в Redis для dialog {dialog_id}: {e}")
         
         # СТРАХОВОЧНЫЙ механизм: если админ не подключён, предупреждаем
         if stats['connection_details']['admin_connections'] == 0:
@@ -635,8 +671,16 @@ async def widget_add_dialog_message(
             "text": msg.text,
             "timestamp": msg.timestamp.isoformat() + 'Z'
         }
-        await push_dialog_message(dialog_id, message_data)
-        await ws_push_site_dialog_message(dialog_id, message_data)
+        # 🔥 ПУБЛИКУЕМ СОБЫТИЕ ЧЕРЕЗ REDIS PUB/SUB ДЛЯ ДОСТАВКИ В АДМИНКУ
+        try:
+            from services.events_pubsub import publish_dialog_event
+            await publish_dialog_event(dialog_id, {
+                "type": "message:new",
+                "message": message_data
+            })
+            logger.info(f"✅ [WIDGET→ADMIN] Сообщение НЕ-пользователя опубликовано в Redis: dialog_id={dialog_id}, message_id={msg.id}")
+        except Exception as e:
+            logger.error(f"❌ [WIDGET→ADMIN] Ошибка публикации в Redis для dialog {dialog_id}: {e}")
     
     response_msg = None
     if sender == 'user' and not is_taken_over:
@@ -770,7 +814,7 @@ async def widget_add_dialog_message(
         # Отправляем typing_stop и ответ
         await ws_push_site_dialog_message(dialog_id, {"type": "typing_stop"})
         
-        # Отправляем ответ бота через WebSocket в оба канала (админ и виджет)
+        # Отправляем ответ бота через Redis Pub/Sub (SSE менеджер доставит всем подписчикам)
         if response_msg:
             ai_response_data = {
                 "id": response_msg.id,
@@ -778,14 +822,24 @@ async def widget_add_dialog_message(
                 "text": response_msg.text,
                 "timestamp": response_msg.timestamp.isoformat() + 'Z'
             }
-            # Используем универсальный broadcast для гарантированной доставки
-            await broadcast_dialog_message(dialog_id, ai_response_data)
+            try:
+                from services.events_pubsub import publish_dialog_event
+                await publish_dialog_event(dialog_id, {
+                    "type": "message:new",
+                    "message": ai_response_data
+                })
+            except Exception as e:
+                logger.error(f"❌ Failed to publish AI response via Redis for dialog {dialog_id}: {e}")
     elif sender == 'user' and is_taken_over:
-        # Widget диалог перехвачен - только уведомляем о получении сообщения
-        await ws_push_site_dialog_message(dialog_id, {
-            "type": "message_received",
-            "message": "Ваше сообщение получено. Оператор ответит в ближайшее время."
-        })
+        # Widget диалог перехвачен - только уведомляем о получении сообщения через Redis Pub/Sub
+        try:
+            from services.events_pubsub import publish_dialog_event
+            await publish_dialog_event(dialog_id, {
+                "type": "message_received",
+                "message": "Ваше сообщение получено. Оператор ответит в ближайшее время."
+            })
+        except Exception as e:
+            logger.error(f"❌ Failed to publish 'message_received' via Redis for dialog {dialog_id}: {e}")
     
     return {
         "user_message": {

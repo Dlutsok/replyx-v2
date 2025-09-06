@@ -100,21 +100,44 @@ const DialogModal = ({
             return;
           }
 
-          console.log('📨 [DialogModal] SSE message received:', data);
+          console.log('📨 [АДМИН SSE] Получено событие:', data);
+          console.log('📨 [АДМИН SSE] Диалог ID:', dialogId);
+          console.log('📨 [АДМИН SSE] Тип события:', data.type || 'message');
 
-          // Обрабатываем новые сообщения
-          if (data.id && data.sender && data.text) {
-            console.log('📥 [DialogModal] Adding new message from SSE:', data);
+          // Обрабатываем новые сообщения - НОВЫЙ ФОРМАТ
+          if (data.type === 'message:new' && data.message) {
+            const message = data.message;
+            console.log('📥 [АДМИН SSE] Добавляем сообщение от', message.sender, ':', message.text.substring(0, 50));
+            console.log('📥 [АДМИН SSE] ID сообщения:', message.id);
+            
             setMessages(prevMessages => {
               // Проверяем, есть ли уже такое сообщение
-              const exists = prevMessages.some(msg => msg.id === data.id);
+              const exists = prevMessages.some(msg => msg.id === message.id);
               if (exists) {
-                console.log('⚠️ [DialogModal] Message already exists, skipping:', data.id);
+                console.log('⚠️ [АДМИН SSE] Сообщение уже существует, пропускаем:', message.id);
                 return prevMessages;
               }
               
               // Добавляем новое сообщение
-              console.log('✅ [DialogModal] Message added to state:', data.id);
+              console.log('✅ [АДМИН SSE] Сообщение добавлено в состояние:', message.id);
+              return [...prevMessages, message];
+            });
+          }
+          // Поддержка старого формата для совместимости
+          else if (data.id && data.sender && data.text) {
+            console.log('📥 [АДМИН SSE] Добавляем сообщение (старый формат) от', data.sender, ':', data.text.substring(0, 50));
+            console.log('📥 [АДМИН SSE] ID сообщения:', data.id);
+            
+            setMessages(prevMessages => {
+              // Проверяем, есть ли уже такое сообщение
+              const exists = prevMessages.some(msg => msg.id === data.id);
+              if (exists) {
+                console.log('⚠️ [АДМИН SSE] Сообщение уже существует, пропускаем:', data.id);
+                return prevMessages;
+              }
+              
+              // Добавляем новое сообщение
+              console.log('✅ [АДМИН SSE] Сообщение добавлено в состояние:', data.id);
               return [...prevMessages, data];
             });
           }
@@ -229,7 +252,7 @@ const DialogModal = ({
   }, [dialogId, token]);
 
   // Загрузка сообщений
-  const loadMessages = useCallback(async () => {
+  const loadMessages = useCallback(async (forceReplace = false) => {
     if (!dialogId || !token) return;
 
     try {
@@ -243,7 +266,24 @@ const DialogModal = ({
       }
 
       const messagesData = await response.json();
-      setMessages(messagesData);
+      
+      if (forceReplace) {
+        // Полная замена сообщений (только при первой загрузке)
+        console.log('🔄 [DialogModal] Полная замена сообщений:', messagesData.length);
+        setMessages(messagesData);
+      } else {
+        // Умное объединение: добавляем только новые сообщения
+        setMessages(prevMessages => {
+          const newMessages = messagesData.filter(newMsg => 
+            !prevMessages.some(existingMsg => existingMsg.id === newMsg.id)
+          );
+          if (newMessages.length > 0) {
+            console.log('🔄 [DialogModal] Добавляем новые сообщения из API:', newMessages.length);
+            return [...prevMessages, ...newMessages].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+          }
+          return prevMessages;
+        });
+      }
     } catch (err) {
       setMessageError(err.message || 'Ошибка загрузки сообщений');
     } finally {
@@ -445,7 +485,7 @@ const DialogModal = ({
       // Перезагружаем сообщения только если SSE не подключен
       if (!wsConnected) {
         console.log('🔄 [FRONTEND] Перезагружаем сообщения (SSE не подключен)...');
-        await loadMessages();
+        await loadMessages(false); // forceReplace=false при перезагрузке после отправки
         console.log('✅ [FRONTEND] Сообщения перезагружены');
       } else {
         console.log('✅ [FRONTEND] Сообщение добавлено оптимистично');
@@ -520,7 +560,7 @@ const DialogModal = ({
         // Унифицированная логика: диалог считается перехваченным при статусах 'requested' или 'active'
         setIsTakenOver(initialDialog.handoff_status === 'requested' || initialDialog.handoff_status === 'active');
       }
-      loadMessages();
+      loadMessages(true); // forceReplace=true при первой загрузке
     }
   }, [isOpen, dialogId, initialDialog, loadDialog, loadMessages]);
 

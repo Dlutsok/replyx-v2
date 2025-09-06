@@ -74,7 +74,7 @@
         const u = new URL(scriptSrc);
         const host = u.hostname;
         if (host === 'localhost' || host === '127.0.0.1') {
-          return 'https://replyx.ru';
+          return 'http://localhost:8000';
         }
         // прод: используем протокол + hostname без смены порта
         return `${u.protocol}//${u.hostname}`;
@@ -387,7 +387,7 @@
       .then(data => {
         if (!data.valid) {
           console.warn('[ReplyX Widget] Серверная проверка: токен не актуален -', data.reason);
-          if (data.reason === 'Domains changed, token outdated' || data.reason === 'No domains configured') {
+          if (data.reason === 'domains changed' || data.reason === 'No domains configured') {
             console.warn('[ReplyX Widget] Виджет отключен из-за изменения настроек доменов');
             this.disableWidget('Настройки виджета изменились. Обновите embed-код.');
           }
