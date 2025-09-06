@@ -1,0 +1,233 @@
+name: Repository Structure Validation
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main, develop ]
+
+jobs:
+  validate-structure:
+    runs-on: ubuntu-latest
+    name: Validate Repository Structure
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate top-level directory structure
+        run: |
+          echo "🔍 Validating top-level directory structure..."
+          
+          # Define allowed top-level directories
+          allowed_dirs=(
+            "backend"
+            "frontend" 
+            "workers"
+            "docs"
+            "scripts"
+            "alembic"
+            ".github"
+            ".git"
+            ".dev"
+          )
+          
+          # Find all top-level directories
+          actual_dirs=$(find . -maxdepth 1 -type d -not -name "." | sed 's|^./||')
+          
+          # Check for disallowed directories
+          disallowed_found=false
+          for dir in $actual_dirs; do
+            if [[ ! " ${allowed_dirs[@]} " =~ " $dir " ]]; then
+              echo "::error ::❌ Disallowed top-level directory found: $dir"
+              disallowed_found=true
+            fi
+          done
+          
+          if [ "$disallowed_found" = true ]; then
+            echo "::error ::Repository structure validation failed"
+            echo "Allowed top-level directories: ${allowed_dirs[@]}"
+            exit 1
+          fi
+          
+          echo "✅ Top-level directory structure is valid"
+
+      - name: Check for prohibited cache/temp directories
+        run: |
+          echo "🔍 Checking for prohibited cache and temporary directories..."
+          
+          prohibited_patterns=(
+            "__pycache__"
+            ".pytest_cache"
+            "test-artifacts"
+            "TASK"
+            "*.tmp"
+            "*.log"
+          )
+          
+          violations_found=false
+          
+          for pattern in "${prohibited_patterns[@]}"; do
+            # Use find with specific patterns
+            if [ "$pattern" = "__pycache__" ] || [ "$pattern" = ".pytest_cache" ] || [ "$pattern" = "test-artifacts" ] || [ "$pattern" = "TASK" ]; then
+              found=$(find . -name "$pattern" -type d 2>/dev/null | head -5)
+            else
+              found=$(find . -name "$pattern" -type f 2>/dev/null | head -5)
+            fi
+            
+            if [ -n "$found" ]; then
+              echo "::error ::❌ Found prohibited $pattern:"
+              echo "$found" | while read -r item; do
+                echo "::error ::  $item"
+              done
+              violations_found=true
+            fi
+          done
+          
+          if [ "$violations_found" = true ]; then
+            echo "::error ::❌ Prohibited files/directories found. Please clean up before merging."
+            echo "💡 Run: scripts/repo_cleanup_safe.sh --dry-run to see what can be cleaned"
+            exit 1
+          fi
+          
+          echo "✅ No prohibited cache/temp directories found"
+
+      - name: Validate import patterns (Frontend)
+        run: |
+          echo "🔍 Validating frontend import patterns..."
+          
+          if [ ! -d "frontend" ]; then
+            echo "⏭️ Frontend directory not found, skipping frontend validation"
+            exit 0
+          fi
+          
+          # Check for deep relative imports (more than 2 levels)
+          deep_imports=$(find frontend -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" | \
+                        xargs grep -l "\.\./\.\./\.\." 2>/dev/null || true)
+          
+          if [ -n "$deep_imports" ]; then
+            echo "::error ::❌ Deep relative imports found (more than 2 levels):"
+            echo "$deep_imports" | while read -r file; do
+              echo "::error ::  $file"
+              grep -n "\.\./\.\./\.\." "$file" | head -3 | while read -r line; do
+                echo "::error ::    $line"
+              done
+            done
+            echo "💡 Use @ aliases instead: @/components/, @/hooks/, @/utils/, etc."
+            exit 1
+          fi
+          
+          echo "✅ Frontend import patterns are valid"
+
+      - name: Validate import patterns (Backend)
+        run: |
+          echo "🔍 Validating backend import patterns..."
+          
+          if [ ! -d "backend" ]; then
+            echo "⏭️ Backend directory not found, skipping backend validation"
+            exit 0
+          fi
+          
+          # Check for problematic relative imports in Python
+          problematic_imports=$(find backend -name "*.py" | \
+                               xargs grep -l "from \.\.\." 2>/dev/null || true)
+          
+          if [ -n "$problematic_imports" ]; then
+            echo "::warning ::⚠️ Deep relative imports found in Python files:"
+            echo "$problematic_imports" | while read -r file; do
+              echo "::warning ::  $file"
+            done
+            echo "💡 Consider using absolute imports: from backend.module import ..."
+          fi
+          
+          echo "✅ Backend import pattern validation completed"
+
+      - name: Validate required configuration files
+        run: |
+          echo "🔍 Validating required configuration files..."
+          
+          required_files=(
+            "frontend/tsconfig.json"
+            "frontend/package.json"
+            "workers/package.json"
+            "backend/__init__.py"
+            ".gitignore"
+          )
+          
+          missing_files=false
+          for file in "${required_files[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "::error ::❌ Required configuration file missing: $file"
+              missing_files=true
+            fi
+          done
+          
+          if [ "$missing_files" = true ]; then
+            echo "::error ::❌ Required configuration files are missing"
+            exit 1
+          fi
+          
+          echo "✅ All required configuration files present"
+
+      - name: Check TypeScript path aliases
+        run: |
+          echo "🔍 Checking TypeScript path aliases configuration..."
+          
+          if [ ! -f "frontend/tsconfig.json" ]; then
+            echo "⏭️ TypeScript config not found, skipping"
+            exit 0
+          fi
+          
+          # Check if path aliases are configured
+          if ! grep -q '"paths"' frontend/tsconfig.json; then
+            echo "::warning ::⚠️ No path aliases configured in tsconfig.json"
+            echo "💡 Consider adding @ aliases for better import management"
+          else
+            echo "✅ TypeScript path aliases are configured"
+          fi
+
+      - name: Validate directory naming conventions
+        run: |
+          echo "🔍 Validating directory naming conventions..."
+          
+          # Check for directories with spaces or special characters
+          invalid_dirs=$(find . -type d -name "* *" -o -name "*[^a-zA-Z0-9._-]*" | \
+                        grep -v ".git" | grep -v "node_modules" || true)
+          
+          if [ -n "$invalid_dirs" ]; then
+            echo "::error ::❌ Directories with invalid naming found:"
+            echo "$invalid_dirs" | while read -r dir; do
+              echo "::error ::  $dir"
+            done
+            echo "💡 Use lowercase with hyphens (kebab-case) for directory names"
+            exit 1
+          fi
+          
+          echo "✅ Directory naming conventions are valid"
+
+      - name: Generate structure report
+        if: always()
+        run: |
+          echo "📊 Repository Structure Report"
+          echo "=============================="
+          
+          echo ""
+          echo "📁 Top-level directories:"
+          find . -maxdepth 1 -type d -not -name "." | sort | sed 's|^./|  |'
+          
+          echo ""
+          echo "📊 Directory sizes:"
+          du -sh */ 2>/dev/null | sort -hr | head -10
+          
+          echo ""
+          echo "📈 File counts by type:"
+          echo "  TypeScript/JavaScript: $(find . -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" | wc -l)"
+          echo "  Python: $(find . -name "*.py" | wc -l)"
+          echo "  Markdown: $(find . -name "*.md" | wc -l)"
+          echo "  JSON: $(find . -name "*.json" | wc -l)"
+          echo "  YAML: $(find . -name "*.yml" -o -name "*.yaml" | wc -l)"
+          
+          echo ""
+          echo "✅ Structure validation completed"

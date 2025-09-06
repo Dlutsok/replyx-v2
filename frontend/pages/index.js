@@ -23,42 +23,148 @@ import landingStyles from '../styles/pages/Landing.module.css';
 
 function LandingHeader() {
   const router = useRouter();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Close mobile menu when clicking outside or on a link
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   return (
     <header className={landingStyles.header}>
-      <div className={landingStyles.headerContainer}>
-        <Link href="/" className={landingStyles.logo}>
-          <svg className={landingStyles.logoIcon} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M9 12l2 2 4-4"></path>
-            <path d="M21 12c.552 0 1-.448 1-1V8c0-.552-.448-1-1-1h-1V6a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v1H3c-.552 0-1 .448-1 1v3c0 .552.448 1 1 1h1v7a4 4 0 0 0 4 4h8a4 4 0 0 0 4-4v-7h1z"></path>
-            <circle cx="9" cy="9" r="1"></circle>
-            <circle cx="15" cy="9" r="1"></circle>
-          </svg>
-          <span className={landingStyles.logoText}>ReplyX</span>
-        </Link>
-        
-        <nav className={landingStyles.nav}>
-          <a href="#features" className={landingStyles.navLink}>Возможности</a>
-          <a href="#solutions" className={landingStyles.navLink}>Решения</a>
-          <a href="#pricing" className={landingStyles.navLink}>Тарифы</a>
-          <Link href="/blog" className={landingStyles.navLink}>Блог</Link>
-        </nav>
-        
-        <div className={landingStyles.headerActions}>
-          <button 
-            className={landingStyles.loginButton}
-            onClick={() => router.push('/login')}
+      {/* Десктопная версия */}
+      <div className="hidden lg:block">
+        <div className={landingStyles.headerContainer}>
+          <Link href="/" className={landingStyles.logo}>
+            <svg className={landingStyles.logoIcon} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 12l2 2 4-4"></path>
+              <path d="M21 12c.552 0 1-.448 1-1V8c0-.552-.448-1-1-1h-1V6a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v1H3c-.552 0-1 .448-1 1v3c0 .552.448 1 1 1h1v7a4 4 0 0 0 4 4h8a4 4 0 0 0 4-4v-7h1z"></path>
+              <circle cx="9" cy="9" r="1"></circle>
+              <circle cx="15" cy="9" r="1"></circle>
+            </svg>
+            <span className={landingStyles.logoText}>ReplyX</span>
+          </Link>
+
+          <nav className={landingStyles.nav}>
+            <a href="#features" className={landingStyles.navLink}>Возможности</a>
+            <a href="#solutions" className={landingStyles.navLink}>Решения</a>
+            <a href="#pricing" className={landingStyles.navLink}>Тарифы</a>
+            <Link href="/blog" className={landingStyles.navLink}>Блог</Link>
+          </nav>
+
+          <div className={landingStyles.headerActions}>
+            <button
+              className={landingStyles.loginButton}
+              onClick={() => router.push('/login')}
+            >
+              Войти
+            </button>
+            <button
+              className="px-6 py-2.5 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200 h-11 relative overflow-hidden"
+              onClick={() => router.push('/register')}
+              style={{background: 'linear-gradient(90deg, #7c3aed, #6366f1)'}}
+            >
+              <span className="absolute inset-0 z-0 animate-wave-gradient" style={{background: 'linear-gradient(90deg, #a855f7, #7c3aed)'}} />
+              <span className="relative z-10">Начать бесплатно</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Мобильная версия */}
+      <div className="block lg:hidden">
+        <div className="px-4 sm:px-6 lg:px-8 py-2">
+          <div className="flex items-center justify-between">
+            {/* Логотип */}
+            <Link href="/" className={landingStyles.logo} onClick={closeMobileMenu}>
+              <svg className={landingStyles.logoIcon} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 12l2 2 4-4"></path>
+                <path d="M21 12c.552 0 1-.448 1-1V8c0-.552-.448-1-1-1h-1V6a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v1H3c-.552 0-1 .448-1 1v3c0 .552.448 1 1 1h1v7a4 4 0 0 0 4 4h8a4 4 0 0 0 4-4v-7h1z"></path>
+                <circle cx="9" cy="9" r="1"></circle>
+                <circle cx="15" cy="9" r="1"></circle>
+              </svg>
+              <span className={landingStyles.logoText}>ReplyX</span>
+            </Link>
+
+            {/* Гамбургер меню */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+              aria-label="Toggle mobile menu"
+            >
+              <svg
+                className={`w-6 h-6 transition-transform duration-200 ${isMobileMenuOpen ? 'rotate-90' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                {isMobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
+
+          {/* Мобильное меню */}
+          <div
+            className={`mt-3 pb-3 border-t border-gray-200 transition-all duration-300 overflow-hidden ${
+              isMobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+            }`}
           >
-            Войти
-          </button>
-          <button
-            className="px-6 py-2.5 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200 h-11 relative overflow-hidden"
-            onClick={() => router.push('/register')}
-            style={{background: 'linear-gradient(90deg, #7c3aed, #6366f1)'}}
-          >
-            <span className="absolute inset-0 z-0 animate-wave-gradient" style={{background: 'linear-gradient(90deg, #a855f7, #7c3aed)'}} />
-            <span className="relative z-10">Начать бесплатно</span>
-          </button>
+            <nav className="flex flex-col gap-2 pt-3">
+              <a
+                href="#features"
+                className="text-gray-600 hover:text-purple-600 transition-colors duration-200 py-1.5 px-3 rounded-lg hover:bg-purple-50"
+                onClick={closeMobileMenu}
+              >
+                Возможности
+              </a>
+              <a
+                href="#solutions"
+                className="text-gray-600 hover:text-purple-600 transition-colors duration-200 py-1.5 px-3 rounded-lg hover:bg-purple-50"
+                onClick={closeMobileMenu}
+              >
+                Решения
+              </a>
+              <a
+                href="#pricing"
+                className="text-gray-600 hover:text-purple-600 transition-colors duration-200 py-1.5 px-3 rounded-lg hover:bg-purple-50"
+                onClick={closeMobileMenu}
+              >
+                Тарифы
+              </a>
+              <Link
+                href="/blog"
+                className="text-gray-600 hover:text-purple-600 transition-colors duration-200 py-1.5 px-3 rounded-lg hover:bg-purple-50"
+                onClick={closeMobileMenu}
+              >
+                Блог
+              </Link>
+            </nav>
+
+            <div className="flex flex-col gap-2 mt-4 pt-3 border-t border-gray-200">
+              <button
+                className="w-full text-center py-2.5 px-4 text-gray-600 hover:text-purple-600 transition-colors duration-200 border border-gray-200 rounded-lg hover:border-purple-300"
+                onClick={() => {
+                  closeMobileMenu();
+                  router.push('/login');
+                }}
+              >
+                Войти
+              </button>
+              <button
+                className="w-full text-center py-2.5 px-4 text-white font-semibold rounded-lg transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200 relative overflow-hidden"
+                onClick={() => {
+                  closeMobileMenu();
+                  router.push('/register');
+                }}
+                style={{background: 'linear-gradient(90deg, #7c3aed, #6366f1)'}}
+              >
+                <span className="absolute inset-0 z-0 animate-wave-gradient" style={{background: 'linear-gradient(90deg, #a855f7, #7c3aed)'}} />
+                <span className="relative z-10">Начать бесплатно</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </header>
