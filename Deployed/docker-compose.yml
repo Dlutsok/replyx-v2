@@ -56,6 +56,7 @@ services:
     environment:
       - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
       - SKIP_PIP_INSTALL=1
+      - UVICORN_WORKERS=4  # Multi-worker for API performance
     depends_on:
       - redis
     volumes:
@@ -68,6 +69,48 @@ services:
     
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # WebSocket Gateway - separate service for stable WebSocket connections
+  ws-gateway:
+    image: ghcr.io/yourorg/replyx-backend:${TAG:-latest}
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: replyx-ws-gateway
+    
+    # Resource limits optimized for WebSocket connections
+    mem_limit: 768m
+    memswap_limit: 768m
+    cpus: "0.75"
+    
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env.production
+    environment:
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - SKIP_PIP_INSTALL=1
+      - UVICORN_WORKERS=1  # Single worker for WebSocket state consistency
+      - UVICORN_PORT=8001
+      - SERVICE_MODE=websocket  # Flag to indicate WebSocket-only mode
+    depends_on:
+      - redis
+    # Use WebSocket-optimized entrypoint
+    command: ["python", "ws_main.py"]
+    volumes:
+      - ../backend/uploads:/app/uploads
+      - ../backend/data/logs:/app/data/logs
+      - ./ssl:/app/ssl
+    restart: unless-stopped
+    networks:
+      - replyx-network
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -163,6 +206,7 @@ services:
     depends_on:
       - frontend
       - backend
+      - ws-gateway
     restart: unless-stopped
     networks:
       - replyx-network

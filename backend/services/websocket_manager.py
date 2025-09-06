@@ -770,3 +770,40 @@ def get_connection_stats():
         "message_queue": queue_stats,
         "timestamp": current_time
     }
+
+async def cleanup_all_connections():
+    """
+    Gracefully close all WebSocket connections during shutdown
+    Used by ws-gateway lifespan events
+    """
+    logger.info("Starting WebSocket connections cleanup...")
+    
+    cleanup_count = 0
+    
+    # Cleanup admin connections
+    for dialog_id, connections in ws_connections.items():
+        for websocket in list(connections):
+            try:
+                await websocket.close(code=WSCloseCodes.SERVICE_RESTART, reason="Service restarting")
+                cleanup_count += 1
+            except Exception as e:
+                logger.warning(f"Failed to close admin websocket for dialog {dialog_id}: {e}")
+    
+    # Cleanup site connections
+    for dialog_id, connections in ws_site_connections.items():
+        for websocket in list(connections):
+            try:
+                await websocket.close(code=WSCloseCodes.SERVICE_RESTART, reason="Service restarting")
+                cleanup_count += 1
+            except Exception as e:
+                logger.warning(f"Failed to close site websocket for dialog {dialog_id}: {e}")
+    
+    # Clear connection pools and metadata
+    ws_connections.clear()
+    ws_site_connections.clear()
+    ws_meta.clear()
+    ws_site_meta.clear()
+    _dialog_locks.clear()
+    
+    logger.info(f"WebSocket cleanup completed. Closed {cleanup_count} connections.")
+    return cleanup_count

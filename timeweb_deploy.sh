@@ -108,6 +108,11 @@ setup_server() {
             rm get-docker.sh
         fi
         
+        # docker compose v2 plugin (иногда не ставится автоматом)
+        echo "🔧 Установка docker compose plugin..."
+        apt install -y docker-compose-plugin
+        docker compose version || (echo "❌ docker compose не установлен" && exit 1)
+        
         # Настройка файрвола
         echo "🛡️ Настройка файрвола..."
         ufw allow 22/tcp
@@ -222,6 +227,11 @@ deploy_containers() {
         docker compose up -d workers
         sleep 15
         
+        # WS Gateway
+        echo "▶️ Запуск WS Gateway..."
+        docker compose up -d ws-gateway
+        sleep 10
+        
         # Frontend
         echo "▶️ Запуск Frontend..."
         docker compose up -d frontend
@@ -261,6 +271,13 @@ verify_deployment() {
             echo "✅ Workers: http://$SERVER_IP:8443/health"
         else
             echo "❌ Workers: FAILED"
+        fi
+        
+        # WS Gateway Health Check
+        if curl -sf http://localhost:8001/health >/dev/null 2>&1; then
+            echo "✅ WS Gateway: http://$SERVER_IP:8001/health"
+        else
+            echo "❌ WS Gateway: FAILED"
         fi
         
         # Frontend Check
