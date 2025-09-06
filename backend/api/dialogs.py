@@ -36,7 +36,7 @@ def is_user_blocked(user):
         return False  # fallback
 
 # Import WebSocket helpers from websocket_manager
-from services.websocket_manager import push_dialog_message, push_site_dialog_message
+from services.websocket_manager import push_dialog_message, push_site_dialog_message, broadcast_dialog_message
 
 # ---- Dialog context helpers ----
 def _detect_follow_up(user_text: str) -> bool:
@@ -674,8 +674,8 @@ async def add_dialog_message(dialog_id: int, data: dict, db: Session = Depends(g
                             "text": cached_msg.text,
                             "timestamp": cached_msg.timestamp.isoformat() + 'Z'
                         }
-                        await push_dialog_message(dialog_id, cached_message_data)
-                        await push_site_dialog_message(dialog_id, cached_message_data)
+                        # Используем универсальный broadcast для гарантированной доставки
+                        await broadcast_dialog_message(dialog_id, cached_message_data)
                         
                         return {"id": cached_msg.id, "sender": cached_msg.sender, "text": cached_msg.text, "timestamp": cached_msg.timestamp.isoformat() + 'Z'}
                     
@@ -856,8 +856,8 @@ async def add_dialog_message(dialog_id: int, data: dict, db: Session = Depends(g
                         "text": assistant_msg.text,
                         "timestamp": assistant_msg.timestamp.isoformat() + 'Z'
                     }
-                    await push_dialog_message(dialog_id, ai_message_data)
-                    await push_site_dialog_message(dialog_id, ai_message_data)
+                    # Используем универсальный broadcast для гарантированной доставки
+                    await broadcast_dialog_message(dialog_id, ai_message_data)
                 
             except Exception as e:
                     print(f"Ошибка генерации ответа ассистента: {e}")
@@ -881,8 +881,8 @@ async def add_dialog_message(dialog_id: int, data: dict, db: Session = Depends(g
         "timestamp": msg.timestamp.isoformat() + 'Z'
     }
     
-    await push_dialog_message(dialog_id, message_data)
-    await push_site_dialog_message(dialog_id, message_data)
+    # Используем универсальный broadcast для гарантированной доставки в оба канала
+    await broadcast_dialog_message(dialog_id, message_data)
     
     # НОВОЕ: Если это сообщение от оператора в Telegram диалоге, отправляем в Telegram
     logger.info(f"🔍 [DIALOGS] Проверяем условия отправки в Telegram: sender='{sender}', telegram_chat_id='{dialog.telegram_chat_id}'")

@@ -105,6 +105,7 @@ from api.qa_knowledge import router as qa_knowledge_router
 from api.database_admin import router as database_admin_router
 from api.start_analytics import router as start_analytics_router
 from api.tinkoff_payments import router as tinkoff_payments_router
+from api.debug_websocket import router as debug_websocket_router
 app.include_router(system_router, prefix="/api")
 app.include_router(auth_router, prefix="/api")
 app.include_router(users_router, prefix="/api")
@@ -127,6 +128,7 @@ app.include_router(qa_knowledge_router, prefix="/api")
 app.include_router(database_admin_router, prefix="/api")
 app.include_router(start_analytics_router, prefix="/api/start")
 app.include_router(tinkoff_payments_router)
+app.include_router(debug_websocket_router, prefix="/api")
 
 # Static files для загруженных файлов (аватары, документы)
 from fastapi.staticfiles import StaticFiles

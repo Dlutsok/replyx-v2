@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from database import models, schemas, auth, get_db
 from ai import prompt_variations
 from ai.ai_token_manager import ai_token_manager
-from services.websocket_manager import push_site_dialog_message as ws_push_site_dialog_message, push_dialog_message
+from services.websocket_manager import push_site_dialog_message as ws_push_site_dialog_message, push_dialog_message, broadcast_dialog_message
 from services.handoff_service import HandoffService
 from services.balance_service import BalanceService
 
@@ -378,10 +378,8 @@ async def site_add_dialog_message(
                 "text": response_msg.text,
                 "timestamp": response_msg.timestamp.isoformat() + 'Z'
             }
-            await push_dialog_message(dialog_id, ai_response_data)
-            await ws_push_site_dialog_message(dialog_id, {
-                "message": ai_response_data
-            })
+            # Используем универсальный broadcast для гарантированной доставки
+            await broadcast_dialog_message(dialog_id, ai_response_data)
     elif sender == 'user' and is_taken_over:
         # Диалог перехвачен - только уведомляем о получении сообщения
         await ws_push_site_dialog_message(dialog_id, {
@@ -759,10 +757,8 @@ async def widget_add_dialog_message(
                 "text": response_msg.text,
                 "timestamp": response_msg.timestamp.isoformat() + 'Z'
             }
-            await push_dialog_message(dialog_id, ai_response_data)
-            await ws_push_site_dialog_message(dialog_id, {
-                "message": ai_response_data
-            })
+            # Используем универсальный broadcast для гарантированной доставки
+            await broadcast_dialog_message(dialog_id, ai_response_data)
     elif sender == 'user' and is_taken_over:
         # Widget диалог перехвачен - только уведомляем о получении сообщения
         await ws_push_site_dialog_message(dialog_id, {

@@ -492,16 +492,16 @@ async def widget_dialog_websocket_endpoint(websocket: WebSocket, dialog_id: int,
     
     logger.info(f"Widget WebSocket accepted for dialog {dialog_id}")
     
-    ok = await _register_connection(ws_connections, ws_meta, dialog_id, websocket)
+    ok = await _register_connection(ws_site_connections, ws_site_meta, dialog_id, websocket)
     if not ok:
         return
     
     # Безопасная проверка количества соединений
-    conn_count = len(ws_connections.get(dialog_id, set()))
+    conn_count = len(ws_site_connections.get(dialog_id, set()))
     logger.info(f"Total widget connections for dialog {dialog_id}: {conn_count}")
     
-    receive_task = asyncio.create_task(_receive_loop(dialog_id, websocket, ws_meta))
-    heartbeat_task = asyncio.create_task(_heartbeat_loop(dialog_id, websocket, ws_meta))
+    receive_task = asyncio.create_task(_receive_loop(dialog_id, websocket, ws_site_meta))
+    heartbeat_task = asyncio.create_task(_heartbeat_loop(dialog_id, websocket, ws_site_meta))
     
     try:
         await asyncio.wait([receive_task, heartbeat_task], return_when=asyncio.FIRST_COMPLETED)
@@ -509,8 +509,8 @@ async def widget_dialog_websocket_endpoint(websocket: WebSocket, dialog_id: int,
         receive_task.cancel()
         heartbeat_task.cancel()
         logger.info(f"Widget WebSocket disconnected from dialog {dialog_id}")
-        await _unregister_connection(ws_connections, ws_meta, dialog_id, websocket)
-        logger.info(f"Remaining widget connections for dialog {dialog_id}: {len(ws_connections.get(dialog_id, set()))}")
+        await _unregister_connection(ws_site_connections, ws_site_meta, dialog_id, websocket)
+        logger.info(f"Remaining widget connections for dialog {dialog_id}: {len(ws_site_connections.get(dialog_id, set()))}")
 
 async def _get_dialog_lock(dialog_id: int) -> asyncio.Lock:
     """Получает lock для диалога (создаёт при необходимости)"""
@@ -670,6 +670,63 @@ async def push_operator_handling(dialog_id: int, message_text: str, metadata: di
     # Отправляем в обычные и site connections
     await push_dialog_message(dialog_id, event)
     await push_site_dialog_message(dialog_id, event)
+
+async def broadcast_dialog_message(dialog_id: int, message: dict):
+    """
+    Универсальный broadcast в оба канала (админка + виджет)
+    Гарантирует доставку сообщений всем подписанным клиентам
+    """
+    logger.info(f"Broadcasting message to dialog {dialog_id} in both channels")
+    
+    # Диагностика состояния подключений
+    admin_count = len(ws_connections.get(dialog_id, set()))
+    site_count = len(ws_site_connections.get(dialog_id, set()))
+    logger.info(f"Broadcast stats: dialog_id={dialog_id}, admin_conns={admin_count}, site_conns={site_count}")
+    
+    # ВАЖНО: Если нет подключений в одном из каналов, предупреждаем
+    if admin_count == 0:
+        logger.warning(f"[DIALOG_SYNC] ⚠️  No admin connections for dialog {dialog_id} - admin won't receive this message!")
+    if site_count == 0:
+        logger.warning(f"[DIALOG_SYNC] ⚠️  No site connections for dialog {dialog_id} - widget won't receive this message!")
+    
+    # Отправляем в оба канала параллельно
+    await asyncio.gather(
+        push_dialog_message(dialog_id, message),      # админка
+        push_site_dialog_message(dialog_id, message), # виджет/сайт
+        return_exceptions=True  # Не падаем если один канал не работает
+    )
+
+def get_dialog_sync_info(dialog_id: int = None):
+    """
+    Диагностическая функция для проблем с синхронизацией dialog_id
+    Показывает какие диалоги активны в каждом пуле
+    """
+    result = {
+        "admin_dialogs": list(ws_connections.keys()),
+        "site_dialogs": list(ws_site_connections.keys()),
+        "admin_connections_count": sum(len(conns) for conns in ws_connections.values()),
+        "site_connections_count": sum(len(conns) for conns in ws_site_connections.values()),
+    }
+    
+    if dialog_id is not None:
+        result["specific_dialog"] = {
+            "dialog_id": dialog_id,
+            "admin_connections": len(ws_connections.get(dialog_id, set())),
+            "site_connections": len(ws_site_connections.get(dialog_id, set())),
+            "in_admin_pool": dialog_id in ws_connections,
+            "in_site_pool": dialog_id in ws_site_connections,
+        }
+    
+    # Находим orphaned dialogs (есть в одном пуле, но не в другом)
+    admin_only = set(ws_connections.keys()) - set(ws_site_connections.keys())
+    site_only = set(ws_site_connections.keys()) - set(ws_connections.keys())
+    
+    if admin_only:
+        result["admin_only_dialogs"] = list(admin_only)
+    if site_only:
+        result["site_only_dialogs"] = list(site_only)
+    
+    return result
 
 def get_connection_stats():
     """
