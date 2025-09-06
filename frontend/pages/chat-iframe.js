@@ -23,6 +23,28 @@ const API_URL = getApiUrl();
 console.log('[ReplyX iframe] API_URL:', API_URL);
 console.log('[ReplyX iframe] URL params:', typeof window !== 'undefined' ? window.location.search : 'N/A');
 
+// Security utility: safely logs URLs with tokens
+function safeLogUrl(url, label = "URL") {
+  if (!url) return;
+  try {
+    const urlObj = new URL(url.replace(/^wss?:\/\//, 'https://'));
+    const params = new URLSearchParams(urlObj.search);
+    
+    // Mask sensitive parameters
+    ['site_token', 'token', 'api_key', 'secret'].forEach(param => {
+      const value = params.get(param);
+      if (value && value.length > 10) {
+        params.set(param, `${value.substring(0, 10)}...(${value.length} chars)`);
+      }
+    });
+    
+    const safeUrl = `${urlObj.protocol}//${urlObj.host}${urlObj.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+    console.log(`[ReplyX iframe] ${label}: ${safeUrl}`);
+  } catch (e) {
+    console.log(`[ReplyX iframe] ${label}: [invalid URL format]`);
+  }
+}
+
 // Markdown utility function
 function parseMarkdown(text) {
   // Guard clause: handle null, undefined, or non-string values
@@ -806,7 +828,7 @@ export default function ChatIframe() {
         wsUrl = `${wsApiUrl}/ws/widget/dialogs/${dialogId}?assistant_id=${assistantId}`;
       }
       
-      console.log(`[ReplyX iframe] WebSocket URL: ${wsUrl}`);
+      safeLogUrl(wsUrl, "WebSocket URL");
       console.log(`[ReplyX iframe] Parent origin: ${parentOrigin}`);
       
       const socket = new window.WebSocket(wsUrl);

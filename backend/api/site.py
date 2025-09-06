@@ -221,7 +221,19 @@ async def site_add_dialog_message(
             "text": msg.text,
             "timestamp": msg.timestamp.isoformat() + 'Z'
         }
+        # Диагностическое логирование для отладки доставки в админку
+        from services.websocket_manager import get_connection_stats
+        stats = get_connection_stats()
+        logger.info(
+            f"[MSG_BROADCAST] dialog={dialog_id} sender=user admin_conns={stats['connection_details']['admin_connections']} site_conns={stats['connection_details']['site_connections']}"
+        )
+        
+        # ОСНОВНОЙ broadcast в админку
         await push_dialog_message(dialog_id, user_message_data)
+        
+        # СТРАХОВОЧНЫЙ механизм: если админ не подключён, предупреждаем
+        if stats['connection_details']['admin_connections'] == 0:
+            logger.warning(f"[MSG_BROADCAST] ❌ No admin connections for dialog {dialog_id} - user message may be lost!")
     else:
         # Для сообщений НЕ от пользователя (менеджер, система) отправляем в оба канала
         message_data = {
@@ -583,7 +595,19 @@ async def widget_add_dialog_message(
             "text": msg.text,
             "timestamp": msg.timestamp.isoformat() + 'Z'
         }
+        # Диагностическое логирование для отладки доставки в админку
+        from services.websocket_manager import get_connection_stats
+        stats = get_connection_stats()
+        logger.info(
+            f"[MSG_BROADCAST] dialog={dialog_id} sender=user admin_conns={stats['connection_details']['admin_connections']} site_conns={stats['connection_details']['site_connections']}"
+        )
+        
+        # ОСНОВНОЙ broadcast в админку
         await push_dialog_message(dialog_id, user_message_data)
+        
+        # СТРАХОВОЧНЫЙ механизм: если админ не подключён, предупреждаем
+        if stats['connection_details']['admin_connections'] == 0:
+            logger.warning(f"[MSG_BROADCAST] ❌ No admin connections for dialog {dialog_id} - user message may be lost!")
     else:
         # Для сообщений НЕ от пользователя (менеджер, система) отправляем в оба канала
         message_data = {

@@ -109,6 +109,9 @@ WS_TRUSTED_IFRAME_HOSTS = [
     if host.strip()
 ]
 
+# Требовать валидную JWT подпись в production (рекомендуется)
+WS_REQUIRE_TOKEN_SIGNATURE = os.getenv('WS_REQUIRE_TOKEN_SIGNATURE', 'false').lower() in ('true', '1', 'yes')
+
 
 # RAG / embeddings settings
 RAG_MAX_CONTEXT_TOKENS_BOT = int(os.getenv('RAG_MAX_CONTEXT_TOKENS_BOT', '1500'))

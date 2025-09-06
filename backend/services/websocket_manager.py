@@ -426,6 +426,9 @@ async def site_dialog_websocket_endpoint(websocket: WebSocket, dialog_id: int, s
     
     if site_token and not _is_domain_allowed_by_token(origin, site_token, parent_origin):
         logger.warning(f"Forbidden domain: origin={origin}, parent_origin={parent_origin} for site_token")
+        # Метрика для мониторинга 4003 ошибок
+        from core.app_config import WS_TRUSTED_IFRAME_HOSTS
+        logger.error(f"WEBSOCKET_4003_ERROR: origin={origin}, parent_origin={parent_origin}, trusted_hosts={WS_TRUSTED_IFRAME_HOSTS}")
         await websocket.close(code=WSCloseCodes.FORBIDDEN_DOMAIN, reason="Domain not allowed for this token")
         return
     elif not site_token and not _is_domain_allowed(origin):
