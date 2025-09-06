@@ -212,6 +212,22 @@ async def site_add_dialog_message(
     db.commit()
     db.refresh(msg)
     
+    # 🔥 ПУБЛИКАЦИЯ СОБЫТИЯ В REDIS PUB/SUB ДЛЯ РЕАЛ-ТАЙМ ДОСТАВКИ
+    try:
+        from services.events_pubsub import publish_dialog_event
+        await publish_dialog_event(dialog_id, {
+            "type": "message:new",
+            "message": {
+                "id": msg.id,
+                "sender": msg.sender,
+                "text": msg.text,
+                "timestamp": msg.timestamp.isoformat() + 'Z'
+            }
+        })
+        logger.debug(f"📢 [SITE] Published Redis event for dialog {dialog_id}, message {msg.id}")
+    except Exception as e:
+        logger.error(f"❌ [SITE] Failed to publish Redis event for dialog {dialog_id}: {e}")
+    
     # Для сообщений пользователя отправляем только в админ панель
     # НЕ отправляем в виджет, так как виджет уже добавляет оптимистично
     if msg.sender == 'user':

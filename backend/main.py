@@ -71,11 +71,70 @@ async def lifespan(app: FastAPI):
     finally:
         db.close()
     
+    # 🔥 WS-BRIDGE: Запуск Redis Pub/Sub подписчика для ws-gateway
+    ws_bridge_task = None
+    enable_ws_bridge = os.getenv("ENABLE_WS_BRIDGE", "false").lower() in ("true", "1", "yes")
+    
+    if enable_ws_bridge:
+        logger.info("🔔 ENABLE_WS_BRIDGE=true - запускаем Redis Pub/Sub подписчик")
+        try:
+            from services.events_pubsub import start_ws_bridge_subscriber
+            
+            async def ws_bridge_event_handler(event: dict):
+                """Обработчик событий от Redis - транслирует в WebSocket соединения"""
+                try:
+                    dialog_id = event.get("dialog_id")
+                    event_type = event.get("type")
+                    message = event.get("message")
+                    
+                    if not dialog_id or not message:
+                        logger.warning(f"WS-BRIDGE: Incomplete event data: {event}")
+                        return
+                    
+                    logger.info(f"🔔 WS-BRIDGE received: {event_type} dialog={dialog_id}")
+                    
+                    # Транслируем сообщение во все активные WebSocket соединения
+                    if event_type == "message:new":
+                        from services.websocket_manager import push_dialog_message, push_site_dialog_message
+                        
+                        # Отправляем в админ панель (admin connections)
+                        await push_dialog_message(dialog_id, message)
+                        
+                        # Отправляем в site/widget соединения
+                        await push_site_dialog_message(dialog_id, message)
+                        
+                        logger.debug(f"📡 WS-BRIDGE broadcasted message {message.get('id')} to dialog {dialog_id}")
+                    
+                except Exception as e:
+                    logger.error(f"❌ WS-BRIDGE event handler error: {e}", exc_info=True)
+            
+            # Запускаем подписчик в фоновой задаче
+            import asyncio
+            ws_bridge_task = asyncio.create_task(
+                start_ws_bridge_subscriber(ws_bridge_event_handler)
+            )
+            logger.info("✅ WS-BRIDGE subscriber started successfully")
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to start WS-BRIDGE subscriber: {e}", exc_info=True)
+    else:
+        logger.info("WS-BRIDGE disabled (ENABLE_WS_BRIDGE != true)")
+    
     print("✅ Application startup completed")
     
     yield
     
     # Shutdown
+    if ws_bridge_task and not ws_bridge_task.done():
+        logger.info("🛑 Stopping WS-BRIDGE subscriber...")
+        ws_bridge_task.cancel()
+        try:
+            await ws_bridge_task
+        except asyncio.CancelledError:
+            logger.info("✅ WS-BRIDGE subscriber stopped")
+        except Exception as e:
+            logger.error(f"❌ Error stopping WS-BRIDGE: {e}")
+    
     print("✅ Application shutdown completed")
 
 app = FastAPI(lifespan=lifespan)

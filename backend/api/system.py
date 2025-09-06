@@ -794,3 +794,45 @@ async def websocket_health():
             "timestamp": time.time(),
             "uptime": False
         }
+
+@router.get("/ws/bridge/health")
+async def ws_bridge_health():
+    """
+    WS-BRIDGE health check для диагностики Redis Pub/Sub подписчика
+    Используется для мониторинга состояния реал-тайм системы
+    """
+    try:
+        from services.events_pubsub import get_subscriber_status
+        
+        # Получаем статус подписчика
+        bridge_status = await get_subscriber_status()
+        
+        # Проверяем ENABLE_WS_BRIDGE флаг
+        enable_ws_bridge = os.getenv("ENABLE_WS_BRIDGE", "false").lower() in ("true", "1", "yes")
+        
+        # Определяем health status
+        is_healthy = (
+            bridge_status.get("subscriber") == "running" and
+            bridge_status.get("redis") == "ok" and
+            enable_ws_bridge
+        )
+        
+        status = "healthy" if is_healthy else ("disabled" if not enable_ws_bridge else "unhealthy")
+        
+        return {
+            "status": status,
+            "subscriber": bridge_status.get("subscriber", "unknown"),
+            "redis": bridge_status.get("redis", "unknown"),
+            "channels": bridge_status.get("channels", []),
+            "enabled": enable_ws_bridge,
+            "timestamp": datetime.utcnow().isoformat(),
+            "service": "ws-bridge"
+        }
+        
+    except Exception as e:
+        return {
+            "status": "error", 
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat(),
+            "service": "ws-bridge"
+        }

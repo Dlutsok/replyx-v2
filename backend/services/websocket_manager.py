@@ -492,16 +492,16 @@ async def widget_dialog_websocket_endpoint(websocket: WebSocket, dialog_id: int,
     
     logger.info(f"Widget WebSocket accepted for dialog {dialog_id}")
     
-    ok = await _register_connection(ws_site_connections, ws_site_meta, dialog_id, websocket)
+    ok = await _register_connection(ws_connections, ws_meta, dialog_id, websocket)
     if not ok:
         return
     
     # Безопасная проверка количества соединений
-    conn_count = len(ws_site_connections.get(dialog_id, set()))
+    conn_count = len(ws_connections.get(dialog_id, set()))
     logger.info(f"Total widget connections for dialog {dialog_id}: {conn_count}")
     
-    receive_task = asyncio.create_task(_receive_loop(dialog_id, websocket, ws_site_meta))
-    heartbeat_task = asyncio.create_task(_heartbeat_loop(dialog_id, websocket, ws_site_meta))
+    receive_task = asyncio.create_task(_receive_loop(dialog_id, websocket, ws_meta))
+    heartbeat_task = asyncio.create_task(_heartbeat_loop(dialog_id, websocket, ws_meta))
     
     try:
         await asyncio.wait([receive_task, heartbeat_task], return_when=asyncio.FIRST_COMPLETED)
@@ -509,8 +509,8 @@ async def widget_dialog_websocket_endpoint(websocket: WebSocket, dialog_id: int,
         receive_task.cancel()
         heartbeat_task.cancel()
         logger.info(f"Widget WebSocket disconnected from dialog {dialog_id}")
-        await _unregister_connection(ws_site_connections, ws_site_meta, dialog_id, websocket)
-        logger.info(f"Remaining widget connections for dialog {dialog_id}: {len(ws_site_connections.get(dialog_id, set()))}")
+        await _unregister_connection(ws_connections, ws_meta, dialog_id, websocket)
+        logger.info(f"Remaining widget connections for dialog {dialog_id}: {len(ws_connections.get(dialog_id, set()))}")
 
 async def _get_dialog_lock(dialog_id: int) -> asyncio.Lock:
     """Получает lock для диалога (создаёт при необходимости)"""

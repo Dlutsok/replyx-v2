@@ -474,6 +474,22 @@ async def add_bot_dialog_message(dialog_id: int, data: dict, db: Session = Depen
     db.commit()
     db.refresh(msg)
     
+    # 🔥 ПУБЛИКАЦИЯ СОБЫТИЯ В REDIS PUB/SUB ДЛЯ РЕАЛ-ТАЙМ ДОСТАВКИ
+    try:
+        from services.events_pubsub import publish_dialog_event
+        await publish_dialog_event(dialog_id, {
+            "type": "message:new",
+            "message": {
+                "id": msg.id,
+                "sender": msg.sender,
+                "text": msg.text,
+                "timestamp": msg.timestamp.isoformat() + 'Z'
+            }
+        })
+        logger.debug(f"📢 [TELEGRAM_BOT] Published Redis event for dialog {dialog_id}, message {msg.id}")
+    except Exception as e:
+        logger.error(f"❌ [TELEGRAM_BOT] Failed to publish Redis event for dialog {dialog_id}: {e}")
+    
     # 🔥 ИНТЕГРАЦИЯ С WEBSOCKET СИСТЕМОЙ
     # Отправляем сообщение в админ панель через WebSocket
     try:

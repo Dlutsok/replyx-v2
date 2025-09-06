@@ -67,6 +67,24 @@ def send_message_to_admins(data: dict, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(dialog_message)
         
+        # 🔥 ПУБЛИКАЦИЯ СОБЫТИЯ В REDIS PUB/SUB ДЛЯ РЕАЛ-ТАЙМ ДОСТАВКИ
+        try:
+            from services.events_pubsub import publish_dialog_event
+            import asyncio
+            # Поскольку это sync функция, запускаем async операцию
+            asyncio.create_task(publish_dialog_event(dialog.id, {
+                "type": "message:new",
+                "message": {
+                    "id": dialog_message.id,
+                    "sender": dialog_message.sender,
+                    "text": dialog_message.text,
+                    "timestamp": dialog_message.timestamp.isoformat() + 'Z'
+                }
+            }))
+            logger.debug(f"📢 [SUPPORT] Published Redis event for dialog {dialog.id}, message {dialog_message.id}")
+        except Exception as e:
+            logger.error(f"❌ [SUPPORT] Failed to publish Redis event for dialog {dialog.id}: {e}")
+        
         logger.info(f"Создано сообщение #{dialog_message.id} в диалоге #{dialog.id}")
         
         return {

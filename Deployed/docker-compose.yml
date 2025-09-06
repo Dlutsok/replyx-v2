@@ -5,10 +5,7 @@
 services:
   # Frontend Next.js application
   frontend:
-    image: ghcr.io/yourorg/replyx-frontend:${TAG:-latest}
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: ghcr.io/dlutsok/replyx-frontend:${TAG:-latest}
     container_name: replyx-frontend
     
     # Resource limits
@@ -30,7 +27,7 @@ services:
       - replyx-network
     
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -38,10 +35,7 @@ services:
 
   # Backend FastAPI application
   backend:
-    image: ghcr.io/yourorg/replyx-backend:${TAG:-latest}
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
+    image: ghcr.io/dlutsok/replyx-backend:${TAG:-latest}
     container_name: replyx-backend
     
     # Resource limits
@@ -57,18 +51,18 @@ services:
       - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
       - SKIP_PIP_INSTALL=1
       - UVICORN_WORKERS=4  # Multi-worker for API performance
+      - ENABLE_WS_BRIDGE=false  # Backend only publishes, doesn't subscribe
     depends_on:
       - redis
     volumes:
-      - ../backend/uploads:/app/uploads
-      - ../backend/data/logs:/app/data/logs
       - ./ssl:/app/ssl
+      - uploads-data:/app/uploads
     restart: unless-stopped
     networks:
       - replyx-network
     
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -76,10 +70,7 @@ services:
 
   # WebSocket Gateway - separate service for stable WebSocket connections
   ws-gateway:
-    image: ghcr.io/yourorg/replyx-backend:${TAG:-latest}
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
+    image: ghcr.io/dlutsok/replyx-backend:${TAG:-latest}
     container_name: replyx-ws-gateway
     
     # Resource limits optimized for WebSocket connections
@@ -97,20 +88,20 @@ services:
       - UVICORN_WORKERS=1  # Single worker for WebSocket state consistency
       - UVICORN_PORT=8001
       - SERVICE_MODE=websocket  # Flag to indicate WebSocket-only mode
+      - ENABLE_WS_BRIDGE=true  # Enable Redis Pub/Sub subscriber for real-time
     depends_on:
       - redis
-    # Use WebSocket-optimized entrypoint
-    command: ["python", "ws_main.py"]
+    # Use same main.py but with different port
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001", "--workers", "1"]
     volumes:
-      - ../backend/uploads:/app/uploads
-      - ../backend/data/logs:/app/data/logs
       - ./ssl:/app/ssl
+      - uploads-data:/app/uploads
     restart: unless-stopped
     networks:
       - replyx-network
     
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8001/docs"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -118,10 +109,7 @@ services:
 
   # Workers Node.js for Telegram bots
   workers:
-    image: ghcr.io/yourorg/replyx-workers:${TAG:-latest}
-    build:
-      context: ../workers
-      dockerfile: Dockerfile
+    image: ghcr.io/dlutsok/replyx-workers:${TAG:-latest}
     container_name: replyx-workers
     
     # Resource limits
@@ -201,7 +189,7 @@ services:
       - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/ssl:/etc/nginx/ssl
+      - /etc/letsencrypt:/etc/letsencrypt:ro
       - ./nginx/static:/var/www/static
     depends_on:
       - frontend
@@ -220,6 +208,8 @@ services:
 
 volumes:
   redis-data:
+    driver: local
+  uploads-data:
     driver: local
 
 networks:
