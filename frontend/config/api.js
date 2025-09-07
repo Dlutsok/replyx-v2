@@ -14,8 +14,9 @@ const resolveBaseUrl = () => {
       return `${protocol}//localhost:8000`;
     }
     
-    // Для других хостов используем текущий протокол и хост
-    const protocol = window.location.protocol;
+    // Для других хостов используем HTTPS если это не localhost
+    const protocol = host.includes('localhost') || host.includes('127.0.0.1') ? 
+      window.location.protocol : 'https:';
     return `${protocol}//${host}`;
   }
   
