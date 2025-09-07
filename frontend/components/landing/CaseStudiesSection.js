@@ -83,7 +83,7 @@ const CaseStudiesSection = () => {
         >
           <h2 className={`${DESIGN_TOKENS.typography.h2} mb-4`}>
             Реальные результаты наших{' '}
-            <span className={DESIGN_TOKENS.colors.primary}>клиентов</span>
+            <span className="text-[#6334E5]">клиентов</span>
           </h2>
           <p className={`${DESIGN_TOKENS.typography.sectionSubtitle}`}>
             Узнайте, как компании уже автоматизировали свою поддержку и увеличили эффективность бизнеса
@@ -231,7 +231,7 @@ const CaseStudiesSection = () => {
 
               <button
                 onClick={() => router.push('/register')}
-                className="w-full py-3 px-6 text-base font-bold rounded-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-white/30 bg-white text-purple-600 hover:bg-gray-50 shadow-xl"
+                className="w-full py-3 px-6 text-base font-bold rounded-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-white/30 bg-white text-[#6334E5] hover:bg-gray-50 shadow-xl"
               >
                 <span className="flex items-center justify-center gap-2">
                   <FiCheckCircle className="w-5 h-5" />
@@ -305,7 +305,7 @@ const CaseStudiesSection = () => {
 
               <motion.button
                 onClick={() => router.push('/register')}
-                className="px-10 py-4 text-lg font-bold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-white/30 h-14 relative overflow-hidden bg-white text-purple-600 hover:bg-gray-50 transform hover:scale-105 shadow-2xl"
+                className="px-10 py-4 text-lg font-bold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-white/30 h-14 relative overflow-hidden bg-white text-[#6334E5] hover:bg-gray-50 transform hover:scale-105 shadow-2xl"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >

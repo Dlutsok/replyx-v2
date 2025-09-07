@@ -7,10 +7,16 @@ import os
 import json
 import httpx
 import asyncio
+import time
+import uuid
 from typing import List, Dict, Optional, Any
 from datetime import datetime, timedelta
 import logging
 from enum import Enum
+
+# Импортируем новый ProxyManager и пул запросов
+from .proxy_manager import ProxyManager, get_proxy_manager, ProxyErrorType
+from .async_request_pool import get_request_pool
 
 logger = logging.getLogger(__name__)
 
@@ -76,16 +82,11 @@ class AIProvidersManager:
     def initialize_providers(self):
         """Инициализация доступных AI провайдеров (опционально через HTTP-прокси)"""
         
-        # OpenAI через зарубежный прокси (для обхода блокировок РФ)
+        # OpenAI с отказоустойчивым прокси
         openai_key = os.getenv('OPENAI_API_KEY')
-        openai_proxy_url = os.getenv('OPENAI_PROXY_URL')  # Только из переменных окружения
         if openai_key:
-            self.providers[AIProvider.OPENAI] = OpenAIProvider(openai_key, proxy_url=openai_proxy_url)
-            if openai_proxy_url:
-                masked_proxy = openai_proxy_url.split('@')[1] if '@' in openai_proxy_url else openai_proxy_url
-                logger.info(f"✅ OpenAI провайдер инициализирован с прокси: {masked_proxy}")
-            else:
-                logger.info("✅ OpenAI провайдер инициализирован (без прокси)")
+            self.providers[AIProvider.OPENAI] = OpenAIProvider(openai_key)
+            logger.info("✅ OpenAI провайдер инициализирован с отказоустойчивым прокси")
         else:
             logger.error("❌ OPENAI_API_KEY не настроен!")
         
@@ -161,18 +162,39 @@ class AIProvidersManager:
                 max_retries = int(os.getenv('AI_RETRY_MAX_ATTEMPTS', '3'))
                 base_delay = float(os.getenv('AI_RETRY_BASE_DELAY', '0.5'))
                 import random
+                
                 for attempt in range(max_retries):
                     try:
-                        result = await provider.get_completion(
+                        # Оборачиваем вызов в таск с таймаутом для предотвращения зависания
+                        task = asyncio.create_task(provider.get_completion(
                             messages=messages,
                             model=adapted_model,
                             **kwargs
-                        )
+                        ))
+                        
+                        # Добавляем общий таймаут для запроса
+                        request_timeout = int(os.getenv('AI_REQUEST_TIMEOUT', '120'))  # 2 минуты
+                        result = await asyncio.wait_for(task, timeout=request_timeout)
+                        
                         if breaker:
                             breaker.on_success()
                         logger.info(f"✅ Успешный ответ от {provider_type.value} (попытка {attempt+1}/{max_retries})")
                         result['provider_used'] = provider_type.value
                         return result
+                        
+                    except asyncio.TimeoutError:
+                        last_error = Exception(f"Таймаут запроса к {provider_type.value} ({request_timeout}s)")
+                        if breaker:
+                            breaker.on_failure()
+                        logger.warning(f"⚠️ Таймаут {provider_type.value} на попытке {attempt+1}/{max_retries}")
+                        
+                        if attempt < max_retries - 1:
+                            delay = base_delay * (2 ** attempt) + random.uniform(0, 0.2)
+                            await asyncio.sleep(delay)
+                        else:
+                            logger.warning(f"❌ Провайдер {provider_type.value} не дал ответ после {max_retries} попыток (таймаут)")
+                        continue
+                        
                     except Exception as e:
                         last_error = e
                         if breaker:
@@ -183,7 +205,7 @@ class AIProvidersManager:
                             await asyncio.sleep(delay)
                         else:
                             logger.warning(f"❌ Провайдер {provider_type.value} не дал ответ после {max_retries} попыток")
-                continue
+                        continue
                 
             except Exception as e:
                 last_error = e
@@ -229,32 +251,34 @@ class BaseAIProvider:
 
 
 class OpenAIProvider(BaseAIProvider):
-    """OpenAI провайдер (с поддержкой прокси для обхода блокировок)"""
+    """OpenAI провайдер с отказоустойчивым proxy pool"""
     
     def __init__(self, api_key: str, proxy_url: Optional[str] = None):
         super().__init__("OpenAI")
         self.api_key = api_key
-        self.proxy_url = proxy_url
         self.base_url = "https://api.openai.com/v1"
         
-        # Логирование настройки прокси (без вывода пароля)
-        if self.proxy_url:
-            masked_proxy = self.proxy_url
-            if '@' in masked_proxy:
-                # Маскируем пароль в логах
-                parts = masked_proxy.split('@')
-                if ':' in parts[0]:
-                    auth_part = parts[0].split(':')
-                    auth_part[-1] = '***'
-                    parts[0] = ':'.join(auth_part)
-                masked_proxy = '@'.join(parts)
-            logger.info(f"🔗 OpenAI настроен с прокси: {masked_proxy}")
+        # Используем новый ProxyManager вместо single proxy
+        self.proxy_manager = get_proxy_manager()
+        # Используем пул запросов для предотвращения блокировки сервера
+        self.request_pool = get_request_pool()
+        
+        # Логируем инициализацию
+        metrics = self.proxy_manager.get_proxy_metrics()
+        logger.info(f"🔗 OpenAI инициализирован с {metrics['total_proxies']} прокси, "
+                   f"{metrics['available_proxies']} доступны")
     
     async def get_completion(self, messages: List[Dict], model: str = "gpt-4o-mini", **kwargs) -> Dict:
+        """Получение ответа с отказоустойчивым прокси и идемпотентностью"""
+        
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
         }
+        
+        # Генерируем Idempotency-Key для POST запросов
+        idempotency_key = str(uuid.uuid4())
+        headers["Idempotency-Key"] = idempotency_key
         
         payload = {
             "model": model,
@@ -263,40 +287,132 @@ class OpenAIProvider(BaseAIProvider):
             "max_tokens": kwargs.get('max_tokens', 1000)
         }
         
-        client_kwargs: Dict[str, Any] = {"timeout": 60.0, "trust_env": False}
-        if self.proxy_url:
-            # Для установленной версии httpx используем параметр 'proxy'
-            client_kwargs['proxy'] = self.proxy_url
-            logger.info(f"🔗 Используется прокси: {self.proxy_url.split('@')[1] if '@' in self.proxy_url else self.proxy_url}")
-
-        try:
-            async with httpx.AsyncClient(**client_kwargs) as client:
-                response = await client.post(
-                    f"{self.base_url}/chat/completions",
-                    headers=headers,
-                    json=payload
-                )
-                response.raise_for_status()
-                data = response.json()
-                return {
-                    "content": data["choices"][0]["message"]["content"],
-                    "usage": data.get("usage", {}),
-                    "model": data.get("model", model)
-                }
-        except httpx.HTTPStatusError as e:
-            status = e.response.status_code if e.response else 'N/A'
-            body = e.response.text[:500] if e.response else ''
-            error_msg = f"HTTP {status}: {body}"
-            logger.warning(f"⚠️ OpenAI {error_msg}")
-            raise Exception(error_msg) from e
-        except (httpx.ProxyError, httpx.ConnectError, httpx.ReadTimeout, httpx.RemoteProtocolError) as e:
-            error_msg = f"Сеть/прокси ошибка: {repr(e)} via {self.proxy_url}"
-            logger.warning(f"⚠️ OpenAI {error_msg}")
-            raise Exception(error_msg) from e
-        except Exception as e:
-            error_msg = f"Неожиданная ошибка: {repr(e)}"
-            logger.warning(f"⚠️ OpenAI {error_msg}")
-            raise Exception(error_msg) from e
+        # Определяем тип запроса для правильного timeout
+        is_stream = kwargs.get('stream', False)
+        
+        max_attempts = 3
+        last_error = None
+        
+        for attempt in range(max_attempts):
+            # Получаем доступный прокси для запроса
+            proxy_url, client_kwargs = self.proxy_manager.get_proxy_for_request(is_stream=is_stream)
+            
+            if not proxy_url:
+                # Все прокси недоступны
+                if attempt == 0:  # Первая попытка без прокси
+                    client_kwargs = {"timeout": 30.0, "trust_env": False}
+                    logger.warning("⚠️ Все прокси недоступны, попытка без прокси")
+                else:
+                    raise Exception("Все прокси недоступны и запрос без прокси неуспешен")
+            
+            # Находим текущий прокси для метрик
+            current_proxy = None
+            if proxy_url:
+                for proxy in self.proxy_manager.proxies:
+                    if proxy.url == proxy_url:
+                        current_proxy = proxy
+                        break
+                
+                masked_url = self.proxy_manager._mask_proxy_url(proxy_url)
+                logger.info(f"🔗 Попытка {attempt+1}/{max_attempts} через прокси: {masked_url}")
+            
+            start_time = time.time()
+            
+            try:
+                # Используем пул запросов для предотвращения блокировки сервера
+                async with self.request_pool.acquire_slot():
+                    # Создаем клиент асинхронно с правильными таймаутами
+                    async with httpx.AsyncClient(**client_kwargs) as client:
+                        # Делаем POST запрос асинхронно
+                        response = await client.post(
+                            f"{self.base_url}/chat/completions",
+                            headers=headers,
+                            json=payload
+                        )
+                        
+                        response_time = time.time() - start_time
+                        
+                        # Проверяем статус код
+                        if response.status_code in [500, 502, 503, 504]:
+                            # Upstream ошибка, не проблема с прокси
+                            if current_proxy:
+                                error_type = self.proxy_manager.record_proxy_failure(
+                                    current_proxy, Exception(f"HTTP {response.status_code}"), 
+                                    response.status_code
+                                )
+                                if not self.proxy_manager.should_switch_proxy(error_type):
+                                    # Не переключаем прокси при upstream ошибках
+                                    raise Exception(f"OpenAI API error: HTTP {response.status_code}")
+                        
+                        response.raise_for_status()
+                        data = response.json()
+                        
+                        # Записываем успешное использование прокси
+                        if current_proxy:
+                            self.proxy_manager.record_proxy_success(current_proxy, response_time)
+                            logger.info(f"✅ Успешный запрос через '{current_proxy.name}' за {response_time:.2f}s")
+                        
+                        return {
+                            "content": data["choices"][0]["message"]["content"],
+                            "usage": data.get("usage", {}),
+                            "model": data.get("model", model),
+                            "proxy_used": current_proxy.name if current_proxy else "direct"
+                        }
+                    
+            except httpx.HTTPStatusError as e:
+                response_time = time.time() - start_time
+                status = e.response.status_code if e.response else None
+                body = e.response.text[:500] if e.response else ''
+                
+                last_error = Exception(f"HTTP {status}: {body}")
+                
+                if current_proxy:
+                    error_type = self.proxy_manager.record_proxy_failure(
+                        current_proxy, e, status
+                    )
+                    
+                    if not self.proxy_manager.should_switch_proxy(error_type):
+                        # Не переключаем прокси (например, при 5xx)
+                        raise last_error
+                
+                logger.warning(f"⚠️ HTTP ошибка через прокси (попытка {attempt+1}): {status}")
+                continue
+                
+            except (httpx.ProxyError, httpx.ConnectError, httpx.ReadTimeout, 
+                   httpx.RemoteProtocolError, httpx.ConnectTimeout) as e:
+                
+                response_time = time.time() - start_time
+                last_error = e
+                
+                if current_proxy:
+                    error_type = self.proxy_manager.record_proxy_failure(current_proxy, e)
+                    
+                    # Проверяем нужен ли retry с тем же прокси
+                    if (self.proxy_manager.should_retry_with_same_proxy(error_type) and 
+                        attempt < max_attempts - 1):
+                        
+                        logger.warning(f"⚠️ Retry с тем же прокси '{current_proxy.name}': {error_type.value}")
+                        # Неблокирующая задержка с использованием asyncio
+                        await asyncio.sleep(0.5)
+                        continue
+                
+                logger.warning(f"⚠️ Сетевая ошибка прокси (попытка {attempt+1}): {repr(e)}")
+                continue
+                
+            except Exception as e:
+                response_time = time.time() - start_time
+                last_error = e
+                
+                if current_proxy:
+                    self.proxy_manager.record_proxy_failure(current_proxy, e)
+                
+                logger.warning(f"⚠️ Неожиданная ошибка (попытка {attempt+1}): {repr(e)}")
+                continue
+        
+        # Если все попытки неудачны
+        error_msg = f"OpenAI недоступен после {max_attempts} попыток. Последняя ошибка: {last_error}"
+        logger.error(f"❌ {error_msg}")
+        raise Exception(error_msg)
 
 
 class YandexProvider(BaseAIProvider):

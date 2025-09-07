@@ -176,21 +176,21 @@ const FAQSection = () => {
                   <div className="flex items-center gap-5 flex-1">
                     <div className={`${DESIGN_TOKENS.icons.large} rounded-2xl flex items-center justify-center transition-all duration-300 faq-icon-glow ${
                       openFAQ === index
-                        ? 'bg-purple-100 text-purple-600 shadow-lg'
+                        ? 'bg-purple-100 text-[#6334E5] shadow-lg'
                         : 'bg-white border border-gray-200 text-gray-500 group-hover:bg-purple-50 group-hover:text-purple-500 group-hover:border-purple-200'
                     }`}>
                       <faq.icon size={22} />
                     </div>
                     <h3 className={`${DESIGN_TOKENS.typography.cardTitle} transition-colors ${
-                      openFAQ === index ? 'text-purple-900' : 'text-gray-900'
+                      openFAQ === index ? 'text-[#6334E5]' : 'text-gray-900'
                     }`}>
                       {faq.question}
                     </h3>
                   </div>
                   <div className={`ml-4 transition-all duration-300 ${
                     openFAQ === index
-                      ? 'text-purple-600 rotate-180'
-                      : 'text-gray-400 group-hover:text-purple-500'
+                      ? 'text-[#6334E5] rotate-180'
+                      : 'text-gray-400 group-hover:text-[#6334E5]'
                   }`}>
                     {openFAQ === index ? <FiMinus size={22} /> : <FiPlus size={22} />}
                   </div>
@@ -263,7 +263,7 @@ const FAQSection = () => {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="group px-8 py-4 border-2 border-purple-200 text-purple-600 font-semibold rounded-2xl hover:bg-purple-50 hover:border-purple-300 transition-all duration-300"
+                className="group px-8 py-4 border-2 border-purple-200 text-[#6334E5] font-semibold rounded-2xl hover:bg-purple-50 hover:border-purple-300 transition-all duration-300"
               >
                 <span className="flex items-center gap-2">
                   <FiMessageSquare className="w-5 h-5" />
@@ -455,7 +455,7 @@ const FAQSection = () => {
                     <div className="flex items-center gap-3 flex-1">
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 faq-icon-glow ${
                         openFAQ === index
-                          ? 'bg-purple-100 text-purple-600'
+                          ? 'bg-purple-100 text-[#6334E5]'
                           : 'bg-white border border-gray-200 text-gray-500 group-hover:bg-purple-50 group-hover:text-purple-500 group-hover:border-purple-200'
                       }`}>
                         <faq.icon size={16} />
@@ -466,8 +466,8 @@ const FAQSection = () => {
                     </div>
                     <div className={`ml-3 transition-all duration-300 ${
                       openFAQ === index
-                        ? 'text-purple-600 rotate-180'
-                        : 'text-gray-400 group-hover:text-purple-500'
+                        ? 'text-[#6334E5] rotate-180'
+                        : 'text-gray-400 group-hover:text-[#6334E5]'
                     }`}>
                       {openFAQ === index ? <FiMinus size={18} /> : <FiPlus size={18} />}
                     </div>
@@ -540,7 +540,7 @@ const FAQSection = () => {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="group px-6 py-3 border-2 border-purple-200 text-purple-600 font-semibold rounded-xl hover:bg-purple-50 hover:border-purple-300 transition-all duration-300 text-base w-full max-w-xs"
+                  className="group px-6 py-3 border-2 border-purple-200 text-[#6334E5] font-semibold rounded-xl hover:bg-purple-50 hover:border-purple-300 transition-all duration-300 text-base w-full max-w-xs"
                 >
                   <span className="flex items-center justify-center gap-2">
                     <FiMessageSquare className="w-4 h-4" />

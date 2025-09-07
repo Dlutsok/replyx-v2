@@ -244,6 +244,54 @@ RATE_LIMITS = {
 }
 ```
 
+## Proxy Pool Management (Новая функция)
+
+### Отказоустойчивая система прокси
+
+ChatAI теперь поддерживает отказоустойчивые прокси с автоматическим переключением:
+
+**Основные возможности:**
+- **Приоритизированный фейловер** (Primary → Secondary → Tertiary)
+- **Circuit Breaker с half-open состоянием**
+- **Классификация ошибок** для умного переключения
+- **Идемпотентность запросов** с Idempotency-Key
+- **Детальные метрики** и мониторинг
+
+### Конфигурация прокси
+
+```bash
+# Новый JSON формат с приоритетами
+OPENAI_PROXY_CONFIG='[
+  {"url":"http://user:pass@proxy1.com:8080","priority":1,"name":"primary"},
+  {"url":"socks5://user:pass@proxy2.com:1080","priority":2,"name":"secondary"},
+  {"url":"http://user:pass@proxy3.com:3128","priority":3,"name":"tertiary"}
+]'
+
+# Тайминги для разных типов запросов
+OPENAI_PROXY_CONNECT_TIMEOUT=5     # Быстрое подключение
+OPENAI_PROXY_READ_TIMEOUT=30       # Обычные запросы
+OPENAI_PROXY_STREAM_TIMEOUT=300    # WebSocket/стримы
+
+# Backward compatibility
+OPENAI_PROXY_URL=http://user:pass@fallback-proxy.com:8080
+```
+
+### Классификация ошибок прокси
+
+| Тип ошибки | Действие | Cooldown |
+|------------|----------|----------|
+| **ConnectError, ConnectTimeout** | Немедленное переключение | 60s |
+| **ReadTimeout** | 1 retry → переключение | 30s |
+| **HTTP 407/403** | Долгая блокировка | 15min |
+| **HTTP 429** | Средняя блокировка | 5min |
+| **HTTP 5xx** | Не переключать прокси | 0s |
+
+### Circuit Breaker состояния
+
+- **CLOSED**: Нормальная работа
+- **OPEN**: Прокси заблокирован после ошибок  
+- **HALF_OPEN**: Тестовая проба после cooldown
+
 ## Configuration Management
 
 ### Environment Variables
@@ -401,4 +449,66 @@ GROUP BY atp.id, atp.name
 ORDER BY usage_count DESC;
 ```
 
-This AI routing system provides enterprise-grade reliability, performance optimization, and comprehensive monitoring for the ChatAI platform.
+## Proxy Monitoring & API Endpoints
+
+### Мониторинг прокси
+
+**Health Check (без авторизации):**
+```bash
+GET /api/proxy/health
+# Возвращает: {"status": "healthy|degraded|unhealthy", "available_proxies": 2, "total_proxies": 3}
+```
+
+**Детальные метрики (админ):**
+```bash  
+GET /api/proxy/metrics
+# Возвращает полную статистику по всем прокси
+```
+
+**Prometheus метрики:**
+```bash
+GET /api/proxy/metrics/prometheus
+# Экспорт в формате Prometheus для Grafana
+```
+
+**Алерты:**
+```bash
+GET /api/proxy/alerts
+# Активные алерты по прокси (критичные и предупреждения)
+```
+
+**Управление (админ):**
+```bash
+POST /api/proxy/proxies/{proxy_name}/reset
+# Принудительный сброс circuit breaker
+```
+
+### Chaos Testing
+
+**Запуск теста отказоустойчивости:**
+```bash
+export API_TOKEN=your-admin-token
+./scripts/proxy_chaos_test.sh --duration 60
+
+# Тест блокирует primary прокси на 60 секунд
+# и проверяет автоматическое переключение
+```
+
+**Анализируемые метрики:**
+- Success rate запросов во время блокировки
+- Время переключения на резервный прокси  
+- P95 response time при фейловере
+- Health check статус во время инцидента
+
+### Алерты для мониторинга
+
+**Критичные:**
+- Все прокси недоступны > 30 секунд
+- Success rate < 80% за 5 минут
+
+**Предупреждения:**
+- Прокси в состоянии OPEN (circuit breaker)
+- Success rate < 95% за 5 минут  
+- Высокое время ответа (P95 > 5s)
+
+This enhanced AI routing system provides enterprise-grade reliability, performance optimization, proxy failover resilience, and comprehensive monitoring for the ChatAI platform.

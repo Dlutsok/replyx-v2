@@ -1,6 +1,14 @@
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M9 12l2 2 4-4" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M21 12c.552 0 1-.448 1-1V8c0-.552-.448-1-1-1h-1V6a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v1H3c-.552 0-1 .448-1 1v3c0 .552.448 1 1 1h1v7a4 4 0 0 0 4 4h8a4 4 0 0 0 4-4v-7h1z" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="9" cy="9" r="1" fill="#7C3AED"/>
-  <circle cx="15" cy="9" r="1" fill="#7C3AED"/>
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="200" height="200" fill="#6334E5"/>
+<g clip-path="url(#clip0_127_150)">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M20.2007 36.6552C33.354 36.0829 46.6009 35.8919 59.942 36.0817C70.2606 46.379 80.2417 57.0846 89.8842 68.198C83.5032 75.302 76.9704 82.1841 70.2857 88.8442C53.4914 71.342 36.7962 53.9458 20.2007 36.6552Z" fill="white"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M80.6294 36.6552C93.7827 36.0829 107.03 35.8919 120.371 36.0817C140.495 56.9946 160.547 78.0233 180.527 99.1673C180.89 99.5498 180.89 99.9318 180.527 100.314C173.994 107.196 167.462 114.078 160.929 120.961C134.234 92.7435 107.468 64.6417 80.6294 36.6552Z" fill="white"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M59.942 163.4C46.6009 163.59 33.354 163.399 20.2007 162.826C46.865 134.928 73.5407 107.017 100.228 79.0945C107.178 86.8362 113.722 92.1629 120.098 99.1672C120.462 99.5497 120.462 99.9317 120.098 100.314C100.118 121.458 80.0659 142.487 59.942 163.4Z" fill="white"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M120.371 163.4C107.03 163.59 93.7827 163.399 80.6294 162.826C97.3131 145.442 114.008 128.045 130.714 110.637C137.535 117.344 144.067 124.322 150.313 131.57C140.608 142.463 130.627 153.073 120.371 163.4Z" fill="white"/>
+</g>
+<defs>
+<clipPath id="clip0_127_150">
+<rect width="189" height="189" fill="white" transform="translate(6 6)"/>
+</clipPath>
+</defs>
 </svg>

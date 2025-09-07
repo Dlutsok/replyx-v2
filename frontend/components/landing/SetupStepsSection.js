@@ -67,9 +67,9 @@ const SetupStepsSection = () => {
       current: {
         bg: 'bg-purple-50',
         border: 'border-purple-200',
-        icon: 'text-purple-600',
-        text: 'text-purple-700',
-        accent: 'text-purple-600'
+        icon: 'text-[#6334E5]',
+        text: 'text-[#6334E5]',
+        accent: 'text-[#6334E5]'
       },
       pending: {
         bg: 'bg-gray-50',
@@ -101,7 +101,7 @@ const SetupStepsSection = () => {
         >
           <h2 className={`${DESIGN_TOKENS.typography.h2} mb-4`}>
             4 шага до{' '}
-            <span className={DESIGN_TOKENS.colors.primary}>полной автоматизации</span>
+            <span className="text-[#6334E5]">полной автоматизации</span>
           </h2>
           <p className={`${DESIGN_TOKENS.typography.sectionSubtitle} max-w-3xl`}>
             Простая и интуитивная настройка AI-ассистента без технических навыков
@@ -129,14 +129,14 @@ const SetupStepsSection = () => {
               <div className="relative mb-4">
                 <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
                   <motion.div
-                    className="h-full bg-gradient-to-r from-purple-400 via-purple-500 to-purple-600 rounded-full"
+                    className="h-full bg-gradient-to-r from-[#6334E5] via-[#6334E5] to-[#6334E5] rounded-full"
                     initial={{ width: 0 }}
                     animate={{ width: getProgressWidth() }}
                     transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
                   />
                 </div>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xs font-medium text-purple-600 drop-shadow-sm">
+                  <span className="text-xs font-medium text-[#6334E5] drop-shadow-sm">
                     {getProgressWidth()}
                   </span>
                 </div>
@@ -188,7 +188,7 @@ const SetupStepsSection = () => {
               {/* Фон прогресс-бара */}
               <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                 <motion.div
-                  className="h-full bg-gradient-to-r from-purple-400 via-purple-500 to-purple-600 rounded-full"
+                  className="h-full bg-gradient-to-r from-[#6334E5] via-[#6334E5] to-[#6334E5] rounded-full"
                   initial={{ width: 0 }}
                   animate={{ width: getProgressWidth() }}
                   transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
@@ -205,8 +205,8 @@ const SetupStepsSection = () => {
                   >
                     <div className={`
                       w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300
-                      ${step.status === 'completed' ? 'bg-purple-500 border-purple-500 text-white' :
-                        step.status === 'current' ? 'bg-purple-500 border-purple-500 text-white' :
+                      ${step.status === 'completed' ? 'bg-[#6334E5] border-purple-500 text-white' :
+                        step.status === 'current' ? 'bg-[#6334E5] border-purple-500 text-white' :
                         'bg-white border-gray-300 text-gray-400'}
                     `}>
                       {step.status === 'completed' ? (
@@ -291,7 +291,7 @@ const SetupStepsSection = () => {
                           ${step.status === 'completed'
                             ? 'bg-green-100 text-green-700'
                             : step.status === 'current'
-                            ? 'bg-purple-100 text-purple-700'
+                            ? 'bg-[#6334E5]/10 text-[#6334E5]'
                             : 'bg-gray-100 text-gray-600'
                           }
                         `}>
@@ -313,7 +313,7 @@ const SetupStepsSection = () => {
                             step.id === 1 ? 'text-blue-600' :
                             step.id === 2 ? 'text-green-600' :
                             step.id === 3 ? 'text-orange-600' :
-                            'text-purple-600'
+                            'text-[#6334E5]'
                           }`}
                         />
                       </div>
@@ -323,7 +323,7 @@ const SetupStepsSection = () => {
                     <div className="space-y-2">
                       <h3 className={`text-lg font-bold leading-tight transition-colors duration-300 ${
                         step.status === 'completed' ? 'text-green-900' :
-                        step.status === 'current' ? 'text-purple-900' : 'text-gray-900'
+                        step.status === 'current' ? 'text-[#6334E5]' : 'text-gray-900'
                       }`}>
                         {step.title}
                       </h3>
@@ -339,7 +339,7 @@ const SetupStepsSection = () => {
                         <span className="text-xs text-gray-500">Прогресс</span>
                         <span className={`text-xs font-medium ${
                           step.status === 'completed' ? 'text-green-600' :
-                          step.status === 'current' ? 'text-purple-600' : 'text-gray-400'
+                          step.status === 'current' ? 'text-[#6334E5]' : 'text-gray-400'
                         }`}>
                           {step.status === 'completed' ? '100%' :
                            step.status === 'current' ? '50%' : '0%'}
@@ -383,7 +383,7 @@ const SetupStepsSection = () => {
                   <div className={`absolute top-0 right-0 w-20 h-20 rounded-full opacity-10 ${
                     step.id === 1 ? 'bg-blue-500' :
                     step.id === 2 ? 'bg-green-500' :
-                    step.id === 3 ? 'bg-orange-500' : 'bg-purple-500'
+                    step.id === 3 ? 'bg-orange-500' : 'bg-[#6334E5]'
                   }`} style={{
                     transform: 'translate(10px, -10px)'
                   }} />
@@ -420,7 +420,7 @@ const SetupStepsSection = () => {
                     {step.status === 'completed' ? (
                       <div className="w-3 h-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full" />
                     ) : step.status === 'current' ? (
-                      <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse" />
+                      <div className="w-3 h-3 bg-[#6334E5] rounded-full animate-pulse" />
                     ) : (
                       <div className="w-3 h-3 bg-gray-300 rounded-full" />
                     )}
@@ -434,14 +434,14 @@ const SetupStepsSection = () => {
                       ${step.id === 1 ? 'bg-blue-100' :
                         step.id === 2 ? 'bg-green-100' :
                         step.id === 3 ? 'bg-orange-100' :
-                        'bg-purple-100'}
+                        'bg-[#6334E5]/10'}
                     `}>
                       <step.icon
                         className={`w-6 h-6 transition-colors duration-300 ${
                           step.id === 1 ? 'text-blue-600' :
                           step.id === 2 ? 'text-green-600' :
                           step.id === 3 ? 'text-orange-600' :
-                          'text-purple-600'
+                          'text-[#6334E5]'
                         }`}
                       />
                     </div>
@@ -449,7 +449,7 @@ const SetupStepsSection = () => {
                     {/* Заголовок */}
                     <h3 className={`text-lg font-semibold mb-2 transition-colors duration-300 ${
                       step.status === 'completed' ? 'text-purple-900' :
-                      step.status === 'current' ? 'text-purple-900' : 'text-gray-700'
+                      step.status === 'current' ? 'text-[#6334E5]' : 'text-gray-700'
                     }`}>
                       {step.title}
                     </h3>
@@ -464,7 +464,7 @@ const SetupStepsSection = () => {
                     {/* Стрелка для текущего шага */}
                     {step.status === 'current' && (
                       <motion.div
-                        className="flex items-center gap-2 text-purple-600"
+                        className="flex items-center gap-2 text-[#6334E5]"
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.3 }}
@@ -492,9 +492,9 @@ const SetupStepsSection = () => {
             <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
               <button
                 onClick={() => router.push('/register')}
-                className="w-full bg-gradient-to-r from-purple-500 via-violet-600 to-indigo-600 text-white py-4 px-6 rounded-2xl font-semibold text-base transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200/50 hover:from-purple-600 hover:via-violet-700 hover:to-indigo-700 hover:shadow-lg active:scale-95 relative overflow-hidden"
+                className="w-full bg-gradient-to-r from-[#6334E5] via-[#6334E5] to-[#6334E5] text-white py-4 px-6 rounded-2xl font-semibold text-base transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200/50 hover:from-[#6334E5] hover:via-[#6334E5] hover:to-[#6334E5] hover:shadow-lg active:scale-95 relative overflow-hidden"
               >
-                <span className="absolute inset-0 bg-gradient-to-r from-violet-400 via-fuchsia-500 to-violet-400 opacity-0 hover:opacity-20 transition-opacity duration-300" />
+                <span className="absolute inset-0 bg-gradient-to-r from-[#6334E5] via-[#6334E5] to-[#6334E5] opacity-0 hover:opacity-20 transition-opacity duration-300" />
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   <span>🚀 Начать настройку</span>
                 </span>
@@ -516,7 +516,7 @@ const SetupStepsSection = () => {
               onClick={() => router.push('/register')}
               className="px-8 py-2.5 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200 h-11 relative overflow-hidden bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 hover:from-purple-700 hover:via-violet-700 hover:to-indigo-700"
             >
-              <span className="absolute inset-0 z-0 animate-wave-gradient bg-gradient-to-r from-violet-400 via-fuchsia-500 to-violet-400" />
+              <span className="absolute inset-0 z-0 animate-wave-gradient bg-gradient-to-r from-[#6334E5] via-[#6334E5] to-[#6334E5]" />
               <span className="relative z-10">Начать настройку</span>
             </button>
           </motion.div>

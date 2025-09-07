@@ -57,7 +57,7 @@ const Button = ({
   return (
     <motion.button
       className={combineClasses(
-        variant === 'primary' ? 'relative overflow-hidden' : '',
+        variant === 'primary' ? 'relative overflow-hidden new-button-effect' : '',
         variantStyles[variant],
         sizeStyles[size],
         stateStyles,
@@ -73,7 +73,9 @@ const Button = ({
       {...props}
     >
       {variant === 'primary' && (
-        <span className="absolute inset-0 z-0 animate-wave-gradient bg-gradient-to-r from-violet-400 via-fuchsia-500 to-violet-400" />
+        <span className="absolute inset-0 z-0 hoverEffect">
+          <div></div>
+        </span>
       )}
       <span className={variant === 'primary' ? 'relative z-10 flex items-center' : 'flex items-center'}>
         {loading && <LoadingSpinner />}

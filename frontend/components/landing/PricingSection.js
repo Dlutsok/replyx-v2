@@ -83,13 +83,13 @@ const PricingSection = () => {
         title={
           <>
             Единственная{' '}
-            <span className={DESIGN_TOKENS.colors.primary}>честная цена</span>
+            <span className="text-[#6334E5]">честная цена</span>
             {' '}на рынке AI‑поддержки
           </>
         }
         subtitle={
           <>
-            Всего <span className="font-bold text-purple-600">5₽ за сообщение</span>. Никаких подписок, лимитов и штрафов
+            Всего <span className="font-bold text-[#6334E5]">5₽ за сообщение</span>. Никаких подписок, лимитов и штрафов
           </>
         }
         className="mb-6"
@@ -119,7 +119,7 @@ const PricingSection = () => {
                   {pricingTable.map((row, idx) => (
                     <tr key={idx} className="border-t border-gray-100">
                       <td className="py-3 pr-4 text-gray-900 font-semibold">{row.messages}</td>
-                      <td className="py-3 pr-4 text-purple-600 font-bold">{row.replyx.toLocaleString()}₽</td>
+                      <td className="py-3 pr-4 text-[#6334E5] font-bold">{row.replyx.toLocaleString()}₽</td>
                       <td className="py-3 pr-4 text-gray-700">{row.competitor.toLocaleString()}₽</td>
                       <td className="py-3 text-green-600 font-semibold">{row.savings}</td>
                     </tr>
@@ -162,7 +162,7 @@ const PricingSection = () => {
               <div className="bg-white rounded-xl border border-gray-200 p-3">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-600">ReplyX</span>
-                  <span className="text-purple-600 font-bold">{replyxPrice.toLocaleString()}₽/мес</span>
+                  <span className="text-[#6334E5] font-bold">{replyxPrice.toLocaleString()}₽/мес</span>
                 </div>
                 <div className="flex items-center justify-between text-sm mt-1">
                   <span className="text-gray-600">Конкуренты (от)</span>

@@ -25,7 +25,7 @@ export default function MiniCTASection({
         className="rounded-xl px-4 py-3 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-3 border border-purple-100 bg-gradient-to-r from-purple-50 via-white to-indigo-50"
       >
         <div className="min-w-0 flex items-start md:items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-white/80 ring-1 ring-purple-200 text-purple-600 flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-white/80 ring-1 ring-purple-200 text-[#6334E5] flex items-center justify-center flex-shrink-0">
             <FiZap size={16} />
           </div>
           <div>

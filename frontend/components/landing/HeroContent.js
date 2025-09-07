@@ -92,7 +92,7 @@ const IndustryCarousel = () => {
     { icon: ShoppingBagIcon, name: 'Ритейл', bgColor: 'bg-blue-50', iconColor: 'text-blue-600' },
     { icon: HeartIcon, name: 'Медицина', bgColor: 'bg-red-50', iconColor: 'text-red-600' },
     { icon: BanknotesIcon, name: 'Финансы', bgColor: 'bg-green-50', iconColor: 'text-green-600' },
-    { icon: AcademicCapIcon, name: 'Образование', bgColor: 'bg-purple-50', iconColor: 'text-purple-600' },
+    { icon: AcademicCapIcon, name: 'Образование', bgColor: 'bg-purple-50', iconColor: 'text-[#6334E5]' },
     { icon: CogIcon, name: 'Производство', bgColor: 'bg-orange-50', iconColor: 'text-orange-600' },
     { icon: TruckIcon, name: 'Логистика', bgColor: 'bg-indigo-50', iconColor: 'text-indigo-600' },
     { icon: HomeIcon, name: 'Недвижимость', bgColor: 'bg-teal-50', iconColor: 'text-teal-600' },
@@ -152,7 +152,7 @@ const HeroContent = () => {
         {...DESIGN_TOKENS.animation.withDelay(0.1)}
       >
         Автоматизируйте общение <br/>с клиентами через{' '}
-        <span className={DESIGN_TOKENS.colors.primary}><br/>AI-ассистента</span>
+        <span style={{color: '#6334E5'}}><br/>AI-ассистента</span>
       </motion.h1>
 
       {/* Подзаголовок */}

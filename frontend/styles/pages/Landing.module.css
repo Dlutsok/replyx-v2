@@ -16,8 +16,8 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 100;
-  width: calc(min(100% - 32px, 1200px));
-  max-width: 1200px;
+  width: 1140px;
+  max-width: 1140px;
   background: rgba(255, 255, 255, 0.8);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 16px;
@@ -34,7 +34,7 @@
 }
 
 .headerContainer {
-  max-width: 1200px;
+  max-width: 1140px;
   margin: 0 auto;
   padding: 0 24px;
   display: flex;
@@ -369,6 +369,21 @@
     width: calc(100% - 16px);
     border-radius: 16px;
   }
+}
+
+/* Для экранов шириной менее 1140px + отступы */
+@media (max-width: 1172px) {
+  .header {
+    width: calc(100% - 32px);
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    top: 8px;
+    width: calc(100% - 16px);
+    border-radius: 16px;
+  }
 
   .headerContainer {
     padding: 0 16px;
@@ -411,8 +426,8 @@
   border-radius: 1rem;
   padding: 48px 48px;
   margin: 32px auto;
-  width: calc(min(100% - 32px, 1200px));
-  max-width: 1200px;
+  width: 1140px;
+  max-width: 1140px;
   box-shadow: 0 8px 32px rgba(147, 51, 234, 0.1);
   transition: all 0.3s ease;
 }
@@ -560,6 +575,13 @@
   .whiteFooterLinks {
     grid-template-columns: repeat(2, 1fr);
     gap: 20px 16px;
+  }
+}
+
+/* Для экранов шириной менее 1140px + отступы */
+@media (max-width: 1172px) {
+  .whiteFooter {
+    width: calc(100% - 32px);
   }
 }
 

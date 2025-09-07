@@ -249,13 +249,13 @@ const BenchmarksSection = () => {
   ];
 
   const colorClasses = {
-    purple: { bg: 'bg-purple-50', icon: 'text-[#7C3AED]', text: 'text-purple-600' },
+    purple: { bg: 'bg-[#6334E5]/10', icon: 'text-[#6334E5]', text: 'text-[#6334E5]' },
     blue: { bg: 'bg-blue-50', icon: 'text-blue-600', text: 'text-blue-600' },
     green: { bg: 'bg-green-50', icon: 'text-green-600', text: 'text-green-600' },
     orange: { bg: 'bg-orange-50', icon: 'text-orange-600', text: 'text-orange-600' },
     emerald: { bg: 'bg-emerald-50', icon: 'text-emerald-600', text: 'text-emerald-600' },
     cyan: { bg: 'bg-cyan-50', icon: 'text-cyan-600', text: 'text-cyan-600' },
-    indigo: { bg: 'bg-indigo-50', icon: 'text-indigo-600', text: 'text-indigo-600' }
+    indigo: { bg: 'bg-indigo-50', icon: 'text-[#6334E5]', text: 'text-[#6334E5]' }
   };
 
   const getGradientClasses = (color) => {
@@ -273,7 +273,7 @@ const BenchmarksSection = () => {
       blue: 'text-blue-600',
       green: 'text-green-600',
       orange: 'text-orange-600',
-      purple: 'text-purple-600'
+      purple: 'text-[#6334E5]'
     };
     return icons[color] || 'text-gray-600';
   };
@@ -283,7 +283,7 @@ const BenchmarksSection = () => {
       blue: { title: 'text-blue-900', subtitle: 'text-blue-700', desc: 'text-blue-800' },
       green: { title: 'text-green-900', subtitle: 'text-green-700', desc: 'text-green-800' },
       orange: { title: 'text-orange-900', subtitle: 'text-orange-700', desc: 'text-orange-800' },
-      purple: { title: 'text-purple-900', subtitle: 'text-purple-700', desc: 'text-purple-800' }
+      purple: { title: 'text-[#6334E5]', subtitle: 'text-[#6334E5]', desc: 'text-[#6334E5]' }
     };
     return texts[color] || { title: 'text-gray-900', subtitle: 'text-gray-700', desc: 'text-gray-800' };
   };
@@ -319,7 +319,7 @@ const BenchmarksSection = () => {
                   {...DESIGN_TOKENS.animation.withDelay(0.1 + index * 0.1)}
                   className={`bg-white rounded-xl px-3 py-2 shadow-sm border transition-all duration-300 cursor-pointer flex-shrink-0 min-w-[180px] relative ${
                     activeTab === index
-                      ? 'border-purple-300 shadow-md bg-purple-50/50'
+                      ? 'border-[#6334E5] shadow-md bg-[#6334E5]/10/50'
                       : 'border-gray-200 hover:shadow-md hover:border-purple-200'
                   }`}
                   data-tab-index={index}
@@ -328,13 +328,13 @@ const BenchmarksSection = () => {
                   <div className="flex items-center gap-2">
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
                       activeTab === index
-                        ? 'bg-purple-50'
+                        ? 'bg-[#6334E5]/10'
                         : colorClasses[metric.color].bg
                     }`}>
                       <metric.icon
                         className={`w-5 h-5 transition-colors ${
                           activeTab === index
-                            ? 'text-purple-600'
+                            ? 'text-[#6334E5]'
                             : colorClasses[metric.color].icon
                         }`}
                       />
@@ -345,7 +345,7 @@ const BenchmarksSection = () => {
                     </div>
                   </div>
                   {activeTab === index && (
-                    <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-6 h-1 bg-purple-600 rounded-full"></div>
+                    <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-6 h-1 bg-[#6334E5] rounded-full"></div>
                   )}
                 </motion.div>
               ))}
@@ -364,7 +364,7 @@ const BenchmarksSection = () => {
               <h3 className="text-xl font-bold text-gray-900 mb-2">
                 {tabContent[activeTab].title}
               </h3>
-              <p className="text-purple-600 font-medium mb-3 text-sm">
+              <p className="text-[#6334E5] font-medium mb-3 text-sm">
                 {tabContent[activeTab].subtitle}
               </p>
               <p className="text-gray-600 leading-relaxed text-sm">
@@ -376,8 +376,8 @@ const BenchmarksSection = () => {
               <h4 className="font-semibold text-gray-900 mb-2 text-sm">Ключевые возможности:</h4>
               {tabContent[activeTab].features.map((feature, index) => (
                 <div key={index} className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-purple-50 rounded-full flex items-center justify-center flex-shrink-0">
-                    <FiCheckCircle className="w-2.5 h-2.5 text-purple-600" />
+                  <div className="w-4 h-4 bg-[#6334E5]/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <FiCheckCircle className="w-2.5 h-2.5 text-[#6334E5]" />
                   </div>
                   <span className="text-xs text-gray-700">{feature}</span>
                 </div>
@@ -401,7 +401,7 @@ const BenchmarksSection = () => {
                     {...DESIGN_TOKENS.animation.withDelay(0.1 + index * 0.1)}
                     className={`bg-white rounded-lg px-3 py-2 lg:px-4 lg:py-3 shadow-sm border transition-all duration-300 cursor-pointer ${
                       activeTab === index
-                        ? 'border-purple-300 shadow-md bg-purple-50/50'
+                        ? 'border-[#6334E5] shadow-md bg-[#6334E5]/10/50'
                         : 'border-gray-200 hover:shadow-md hover:border-purple-200'
                     }`}
                     onClick={() => handleTabClick(index)}
@@ -409,13 +409,13 @@ const BenchmarksSection = () => {
                     <div className="flex items-center gap-3">
                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
                         activeTab === index
-                          ? 'bg-purple-50'
+                          ? 'bg-[#6334E5]/10'
                           : colorClasses[metric.color].bg
                       }`}>
                         <metric.icon
                           className={`w-5 h-5 transition-colors ${
                             activeTab === index
-                              ? 'text-purple-600'
+                              ? 'text-[#6334E5]'
                               : colorClasses[metric.color].icon
                           }`}
                         />
@@ -425,7 +425,7 @@ const BenchmarksSection = () => {
                         <p className="text-xs text-gray-600 mt-0.5">{metric.subtitle}</p>
                       </div>
                       {activeTab === index && (
-                        <div className="w-1.5 h-6 bg-purple-600 rounded-full"></div>
+                        <div className="w-1.5 h-6 bg-[#6334E5] rounded-full"></div>
                       )}
                     </div>
                   </motion.div>
@@ -449,7 +449,7 @@ const BenchmarksSection = () => {
                   <h3 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2">
                     {tabContent[activeTab].title}
                   </h3>
-                  <p className="text-purple-600 font-medium mb-3 lg:mb-4 text-sm lg:text-base">
+                  <p className="text-[#6334E5] font-medium mb-3 lg:mb-4 text-sm lg:text-base">
                     {tabContent[activeTab].subtitle}
                   </p>
                   <p className="text-gray-600 leading-relaxed text-sm lg:text-base">
@@ -461,8 +461,8 @@ const BenchmarksSection = () => {
                   <h4 className="font-semibold text-gray-900 mb-2 lg:mb-3 text-sm lg:text-base">Ключевые возможности:</h4>
                   {tabContent[activeTab].features.map((feature, index) => (
                     <div key={index} className="flex items-center gap-2 lg:gap-3">
-                      <div className="w-4 h-4 lg:w-5 lg:h-5 bg-purple-50 rounded-full flex items-center justify-center flex-shrink-0">
-                        <FiCheckCircle className="w-2.5 h-2.5 lg:w-3 lg:h-3 text-purple-600" />
+                      <div className="w-4 h-4 lg:w-5 lg:h-5 bg-[#6334E5]/10 rounded-full flex items-center justify-center flex-shrink-0">
+                        <FiCheckCircle className="w-2.5 h-2.5 lg:w-3 lg:h-3 text-[#6334E5]" />
                       </div>
                       <span className="text-xs lg:text-sm text-gray-700">{feature}</span>
                     </div>

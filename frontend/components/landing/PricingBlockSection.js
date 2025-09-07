@@ -58,7 +58,7 @@ const PricingBlockSection = () => {
         >
           <h2 className={`${DESIGN_TOKENS.typography.h2} mb-4`}>
             Простая и{' '}
-            <span className={DESIGN_TOKENS.colors.primary}>честная цена</span>
+            <span className="text-[#6334E5]">честная цена</span>
           </h2>
           <p className={`${DESIGN_TOKENS.typography.sectionSubtitle} max-w-3xl`}>
             Никаких подписок и лимитов. Платите только за то, что используете
@@ -166,7 +166,7 @@ const PricingBlockSection = () => {
                     <div className="text-5xl font-bold mb-1">
                       5₽
                     </div>
-                    <div className="text-lg font-medium text-purple-100">
+                    <div className="text-lg font-medium text-white">
                       за одно сообщение
                     </div>
                   </motion.div>
@@ -213,7 +213,7 @@ const PricingBlockSection = () => {
                   {/* CTA кнопка */}
                   <motion.button
                     onClick={() => router.push('/register')}
-                    className="w-full bg-white text-purple-600 font-bold py-3 px-4 rounded-xl hover:bg-gray-50 transition-all duration-300 flex items-center justify-center gap-2 shadow-xl"
+                    className="w-full bg-white text-[#6334E5] font-bold py-3 px-4 rounded-xl hover:bg-gray-50 transition-all duration-300 flex items-center justify-center gap-2 shadow-xl"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     initial={{ opacity: 0, y: 20 }}
@@ -325,7 +325,7 @@ const PricingBlockSection = () => {
                   <div className="text-6xl md:text-7xl font-bold mb-2">
                     5₽
                   </div>
-                  <div className="text-xl font-medium text-purple-100">
+                  <div className="text-xl font-medium text-white">
                     за одно сообщение
                   </div>
                 </motion.div>
@@ -372,7 +372,7 @@ const PricingBlockSection = () => {
                 {/* CTA кнопка */}
                 <motion.button
                   onClick={() => router.push('/register')}
-                  className="w-full bg-white text-purple-600 font-bold py-4 px-6 rounded-[0.9rem] hover:bg-gray-50 transition-all duration-300 flex items-center justify-center gap-3 shadow-xl"
+                  className="w-full bg-white text-[#6334E5] font-bold py-4 px-6 rounded-[0.9rem] hover:bg-gray-50 transition-all duration-300 flex items-center justify-center gap-3 shadow-xl"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   initial={{ opacity: 0, y: 20 }}

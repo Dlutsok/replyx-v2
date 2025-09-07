@@ -173,6 +173,7 @@ from api.start_analytics import router as start_analytics_router
 from api.tinkoff_payments import router as tinkoff_payments_router
 from api.debug_sse import router as debug_sse_router  # Renamed from debug_websocket
 from api.sse import router as sse_router
+from api.proxy_monitoring import router as proxy_monitoring_router
 app.include_router(system_router, prefix="/api")
 app.include_router(auth_router, prefix="/api")
 app.include_router(users_router, prefix="/api")
@@ -196,6 +197,7 @@ app.include_router(database_admin_router, prefix="/api")
 app.include_router(start_analytics_router, prefix="/api/start")
 app.include_router(tinkoff_payments_router)
 app.include_router(debug_sse_router, prefix="/api")
+app.include_router(proxy_monitoring_router, prefix="/api")
 app.include_router(sse_router)
 
 # Static files для загруженных файлов (аватары, документы)

@@ -127,7 +127,7 @@ const TestimonialsSection = () => {
         {/* Заголовок секции */}
         <div className="text-left mb-16">
           <h2 className={`${DESIGN_TOKENS.typography.h2} mb-4`}>
-            Что говорят наши <span className={DESIGN_TOKENS.colors.primary}>клиенты</span>
+            Что говорят наши <span className="text-[#6334E5]">клиенты</span>
           </h2>
           <p className={`${DESIGN_TOKENS.typography.sectionSubtitle}`}>
             Реальные отзывы компаний, которые уже используют ReplyX для автоматизации поддержки
@@ -184,7 +184,7 @@ const TestimonialsSection = () => {
 
                   {/* Автор */}
                   <div className="flex items-center gap-3 mt-auto pt-2 border-t border-gray-100">
-                    <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                    <div className="w-10 h-10 bg-gradient-to-br from-[#6334E5] to-[#6334E5] rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
                       {testimonial.avatar}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -194,7 +194,7 @@ const TestimonialsSection = () => {
                       <p className="text-xs text-gray-600 truncate">
                         {testimonial.position}
                       </p>
-                      <p className="text-xs text-purple-600 font-medium truncate">
+                      <p className="text-xs text-[#6334E5] font-medium truncate">
                         {testimonial.company}
                       </p>
                     </div>
@@ -207,10 +207,10 @@ const TestimonialsSection = () => {
           {/* Навигация внизу */}
           <div className="flex justify-end mt-6">
             <div className="flex gap-3">
-              <button className="testimonial-prev w-10 h-10 bg-white border border-gray-200 rounded-[0.9rem] flex items-center justify-center hover:bg-purple-50 hover:border-purple-300 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+              <button className="testimonial-prev w-10 h-10 bg-white border border-gray-200 rounded-[0.9rem] flex items-center justify-center hover:bg-[#6334E5]/10 hover:border-[#6334E5] transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
                 <FiChevronLeft className="w-5 h-5 text-gray-600" />
               </button>
-              <button className="testimonial-next w-10 h-10 bg-white border border-gray-200 rounded-[0.9rem] flex items-center justify-center hover:bg-purple-50 hover:border-purple-300 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+              <button className="testimonial-next w-10 h-10 bg-white border border-gray-200 rounded-[0.9rem] flex items-center justify-center hover:bg-[#6334E5]/10 hover:border-[#6334E5] transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
                 <FiChevronRight className="w-5 h-5 text-gray-600" />
               </button>
             </div>
@@ -244,17 +244,17 @@ const TestimonialsSection = () => {
 
                 {/* Плавающие иконки */}
                 <div className="absolute top-8 sm:top-12 xl:top-8 right-8 sm:right-12 xl:right-8 w-4 sm:w-6 xl:w-4 h-4 sm:h-6 xl:h-4 opacity-20 animate-float" style={{animationDelay: '0s'}}>
-                  <svg className="w-full h-full text-purple-400" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-full h-full text-[#6334E5]" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
                   </svg>
                 </div>
                 <div className="absolute bottom-8 sm:bottom-12 xl:bottom-8 left-8 sm:left-12 xl:left-8 w-3 sm:w-5 xl:w-3 h-3 sm:h-5 xl:h-3 opacity-15 animate-float" style={{animationDelay: '2s'}}>
-                  <svg className="w-full h-full text-purple-400" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-full h-full text-[#6334E5]" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                   </svg>
                 </div>
                 <div className="absolute top-1/3 left-6 sm:left-8 xl:left-6 w-3 sm:w-4 xl:w-3 h-3 sm:h-4 xl:h-3 opacity-25 animate-float" style={{animationDelay: '1s'}}>
-                  <svg className="w-full h-full text-purple-400" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-full h-full text-[#6334E5]" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                   </svg>
                 </div>
@@ -336,17 +336,17 @@ const TestimonialsSection = () => {
 
                 {/* Плавающие иконки */}
                 <div className="absolute top-6 right-6 w-3 h-3 opacity-20 animate-float" style={{animationDelay: '0s'}}>
-                  <svg className="w-full h-full text-purple-400" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-full h-full text-[#6334E5]" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
                   </svg>
                 </div>
                 <div className="absolute bottom-6 left-6 w-2 h-2 opacity-15 animate-float" style={{animationDelay: '2s'}}>
-                  <svg className="w-full h-full text-purple-400" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-full h-full text-[#6334E5]" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                   </svg>
                 </div>
                 <div className="absolute top-1/3 left-4 w-2 h-2 opacity-25 animate-float" style={{animationDelay: '1s'}}>
-                  <svg className="w-full h-full text-purple-400" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-full h-full text-[#6334E5]" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                   </svg>
                 </div>

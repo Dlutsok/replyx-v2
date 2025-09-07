@@ -112,14 +112,6 @@ const ProblemSection = () => {
       left: { icon: DollarIcon, title: 'Высокие затраты на поддержку', description: 'Зарплаты операторов, обучение' },
       right: { icon: SavingsIcon, title: 'Экономия до 70%', description: 'Снижение операционных расходов' }
     },
-    {
-      left: { icon: TrendingDownIcon, title: 'Упущенные продажи', description: 'Из-за медленной обработки запросов' },
-      right: { icon: TrendingUpIcon, title: 'Конверсия +30%', description: 'Благодаря быстрой поддержке' }
-    },
-    {
-      left: { icon: ScaleIcon, title: 'Ограниченная масштабируемость', description: 'Зависит от количества операторов' },
-      right: { icon: ExpandIcon, title: 'Неограниченная масштабируемость', description: 'Без дополнительных затрат' }
-    },
 
   ];
 
@@ -163,7 +155,7 @@ const ProblemSection = () => {
         className="mt-20"
         title={
           <>
-            Каждое обращение — быстрый и точный ответ с <span className={DESIGN_TOKENS.colors.primary}>ReplyX</span>
+            Каждое обращение — быстрый и точный ответ с <span className="text-[#6334E5]">ReplyX</span>
           </>
         }
         subtitle="Полная автоматизация поддержки без потери качества"
@@ -280,7 +272,7 @@ const ProblemSection = () => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-50px' }}
         transition={{ duration: 0.5, delay: 0.15, ease: 'easeOut' }}
-        className="mt-6 rounded-xl py-8 px-6 bg-gradient-to-r from-violet-400 via-fuchsia-500 to-violet-400 border border-purple-300"
+        className="mt-6 rounded-xl py-8 px-6 bg-gradient-to-r from-[#6334E5] via-[#6334E5] to-[#6334E5] border border-[#6334E5]"
       >
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 lg:gap-8">
           {metrics.map((metric, index) => (

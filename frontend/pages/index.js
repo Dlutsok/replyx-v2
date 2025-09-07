@@ -25,22 +25,13 @@ function LandingHeader() {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Close mobile menu when clicking outside or on a link
-  const closeMobileMenu = () => setIsMobileMenuOpen(false);
-
   return (
-    <header className={landingStyles.header}>
-      {/* Десктопная версия */}
-      <div className="hidden lg:block">
+    <>
+      {/* Десктопная версия хедера */}
+      <header className={`hidden lg:block ${landingStyles.header}`}>
         <div className={landingStyles.headerContainer}>
           <Link href="/" className={landingStyles.logo}>
-            <svg className={landingStyles.logoIcon} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 12l2 2 4-4"></path>
-              <path d="M21 12c.552 0 1-.448 1-1V8c0-.552-.448-1-1-1h-1V6a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v1H3c-.552 0-1 .448-1 1v3c0 .552.448 1 1 1h1v7a4 4 0 0 0 4 4h8a4 4 0 0 0 4-4v-7h1z"></path>
-              <circle cx="9" cy="9" r="1"></circle>
-              <circle cx="15" cy="9" r="1"></circle>
-            </svg>
-            <span className={landingStyles.logoText}>ReplyX</span>
+            <img src="/Logo.svg" alt="Logo" className={landingStyles.logoIcon} style={{width: '130px', height: '60px'}} />
           </Link>
 
           <nav className={landingStyles.nav}>
@@ -58,116 +49,186 @@ function LandingHeader() {
               Войти
             </button>
             <button
-              className="px-6 py-2.5 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200 h-11 relative overflow-hidden"
+              className="px-6 py-2.5 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200 h-11"
               onClick={() => router.push('/register')}
-              style={{background: 'linear-gradient(90deg, #7c3aed, #6366f1)'}}
+              style={{backgroundColor: '#6334E5'}}
             >
-              <span className="absolute inset-0 z-0 animate-wave-gradient" style={{background: 'linear-gradient(90deg, #a855f7, #7c3aed)'}} />
-              <span className="relative z-10">Начать бесплатно</span>
+              Зарегистрироваться
             </button>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Мобильная версия */}
-      <div className="block lg:hidden">
-        <div className="px-4 sm:px-6 lg:px-8 py-2">
+      {/* Мобильная версия хедера */}
+      <header className={`block lg:hidden ${landingStyles.header}`}>
+        <div className="px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             {/* Логотип */}
-            <Link href="/" className={landingStyles.logo} onClick={closeMobileMenu}>
-              <svg className={landingStyles.logoIcon} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 12l2 2 4-4"></path>
-                <path d="M21 12c.552 0 1-.448 1-1V8c0-.552-.448-1-1-1h-1V6a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v1H3c-.552 0-1 .448-1 1v3c0 .552.448 1 1 1h1v7a4 4 0 0 0 4 4h8a4 4 0 0 0 4-4v-7h1z"></path>
-                <circle cx="9" cy="9" r="1"></circle>
-                <circle cx="15" cy="9" r="1"></circle>
-              </svg>
-              <span className={landingStyles.logoText}>ReplyX</span>
+            <Link href="/" className={landingStyles.logo}>
+              <img src="/Logo.svg" alt="Logo" className={landingStyles.logoIcon} style={{width: '120px', height: '60px'}} />
             </Link>
 
-            {/* Гамбургер меню */}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
-              aria-label="Toggle mobile menu"
-            >
-              <svg
-                className={`w-6 h-6 transition-transform duration-200 ${isMobileMenuOpen ? 'rotate-90' : ''}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                {isMobileMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
-            </button>
-          </div>
-
-          {/* Мобильное меню */}
-          <div
-            className={`mt-3 pb-3 border-t border-gray-200 transition-all duration-300 overflow-hidden ${
-              isMobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-            }`}
-          >
-            <nav className="flex flex-col gap-2 pt-3">
-              <a
-                href="#features"
-                className="text-gray-600 hover:text-purple-600 transition-colors duration-200 py-1.5 px-3 rounded-lg hover:bg-purple-50"
-                onClick={closeMobileMenu}
-              >
-                Возможности
-              </a>
-              <a
-                href="#solutions"
-                className="text-gray-600 hover:text-purple-600 transition-colors duration-200 py-1.5 px-3 rounded-lg hover:bg-purple-50"
-                onClick={closeMobileMenu}
-              >
-                Решения
-              </a>
-              <a
-                href="#pricing"
-                className="text-gray-600 hover:text-purple-600 transition-colors duration-200 py-1.5 px-3 rounded-lg hover:bg-purple-50"
-                onClick={closeMobileMenu}
-              >
-                Тарифы
-              </a>
-              <Link
-                href="/blog"
-                className="text-gray-600 hover:text-purple-600 transition-colors duration-200 py-1.5 px-3 rounded-lg hover:bg-purple-50"
-                onClick={closeMobileMenu}
-              >
-                Блог
-              </Link>
-            </nav>
-
-            <div className="flex flex-col gap-2 mt-4 pt-3 border-t border-gray-200">
+            {/* Мобильное меню и кнопки */}
+            <div className="flex items-center gap-3">
+              {/* Кнопка "Начать бесплатно" для мобильных */}
               <button
-                className="w-full text-center py-2.5 px-4 text-gray-600 hover:text-purple-600 transition-colors duration-200 border border-gray-200 rounded-lg hover:border-purple-300"
-                onClick={() => {
-                  closeMobileMenu();
-                  router.push('/login');
-                }}
-              >
-                Войти
-              </button>
-              <button
-                className="w-full text-center py-2.5 px-4 text-white font-semibold rounded-lg transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200 relative overflow-hidden"
-                onClick={() => {
-                  closeMobileMenu();
-                  router.push('/register');
-                }}
+                className="px-4 py-2 text-white font-semibold rounded-lg transition-all duration-300 text-sm"
+                onClick={() => router.push('/register')}
                 style={{background: 'linear-gradient(90deg, #7c3aed, #6366f1)'}}
               >
-                <span className="absolute inset-0 z-0 animate-wave-gradient" style={{background: 'linear-gradient(90deg, #a855f7, #7c3aed)'}} />
-                <span className="relative z-10">Начать бесплатно</span>
+                Начать
+              </button>
+
+              {/* Гамбургер меню */}
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                aria-label="Меню"
+              >
+                <div className="w-5 h-5 flex flex-col justify-center items-center">
+                  <span className={`block w-4 h-0.5 bg-gray-600 transition-all duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-1' : '-translate-y-1'}`}></span>
+                  <span className={`block w-4 h-0.5 bg-gray-600 transition-all duration-300 ${isMobileMenuOpen ? 'opacity-0' : 'opacity-100'}`}></span>
+                  <span className={`block w-4 h-0.5 bg-gray-600 transition-all duration-300 ${isMobileMenuOpen ? '-rotate-45 -translate-y-1' : 'translate-y-1'}`}></span>
+                </div>
               </button>
             </div>
           </div>
         </div>
-      </div>
-    </header>
+
+        {/* Мобильное выдвигающееся меню */}
+        <div className={`lg:hidden fixed inset-0 z-[200] transform transition-all duration-500 ease-out ${isMobileMenuOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}>
+          {/* Фон с blur эффектом */}
+          <div
+            className="absolute inset-0 backdrop-blur-md bg-gradient-to-br from-purple-900/20 via-blue-900/15 to-indigo-900/20"
+            onClick={() => setIsMobileMenuOpen(false)}
+          ></div>
+
+          {/* Декоративные элементы фона */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-purple-400/10 to-transparent rounded-full blur-xl animate-pulse" style={{animationDuration: '4s'}}></div>
+            <div className="absolute bottom-40 right-20 w-24 h-24 bg-gradient-to-br from-blue-400/10 to-transparent rounded-full blur-lg animate-pulse" style={{animationDuration: '6s', animationDelay: '1s'}}></div>
+            <div className="absolute top-1/2 left-1/3 w-16 h-16 bg-gradient-to-br from-indigo-400/10 to-transparent rounded-full blur-md animate-pulse" style={{animationDuration: '5s', animationDelay: '2s'}}></div>
+          </div>
+
+          {/* Меню с glassmorphism эффектом */}
+          <div className="absolute right-0 top-0 h-full w-80 max-w-[90vw] bg-white backdrop-blur-xl border-l border-white/20 shadow-2xl">
+            <div className="relative h-full bg-white">
+              {/* Градиентный overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-purple-50/30 to-blue-50/30"></div>
+
+              <div className="relative p-6 h-full flex flex-col">
+                {/* Заголовок меню */}
+                <div className="flex items-center justify-between mb-8">
+                  <div>
+                    <h2 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                      Меню
+                    </h2>
+                    <p className="text-sm text-gray-500 mt-1">Навигация по сайту</p>
+                  </div>
+                  <button
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="p-2 rounded-xl hover:bg-white/50 transition-all duration-200 group"
+                  >
+                    <svg className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Навигационные ссылки */}
+                <nav className="space-y-2 mb-8 flex-1">
+                  <a
+                    href="#features"
+                    className="group flex items-center px-4 py-4 text-gray-700 hover:text-white rounded-xl transition-all duration-300 hover:bg-gradient-to-r hover:from-purple-500 hover:to-blue-500 hover:shadow-lg hover:shadow-purple-500/25"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-purple-100 group-hover:bg-white/20 flex items-center justify-center mr-4 transition-colors duration-300">
+                      <svg className="w-4 h-4 text-purple-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </div>
+                    <span className="font-medium">Возможности</span>
+                  </a>
+                  <a
+                    href="#solutions"
+                    className="group flex items-center px-4 py-4 text-gray-700 hover:text-white rounded-xl transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-500 hover:to-indigo-500 hover:shadow-lg hover:shadow-blue-500/25"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-blue-100 group-hover:bg-white/20 flex items-center justify-center mr-4 transition-colors duration-300">
+                      <svg className="w-4 h-4 text-blue-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                    </div>
+                    <span className="font-medium">Решения</span>
+                  </a>
+                  <a
+                    href="#pricing"
+                    className="group flex items-center px-4 py-4 text-gray-700 hover:text-white rounded-xl transition-all duration-300 hover:bg-gradient-to-r hover:from-green-500 hover:to-emerald-500 hover:shadow-lg hover:shadow-green-500/25"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-green-100 group-hover:bg-white/20 flex items-center justify-center mr-4 transition-colors duration-300">
+                      <svg className="w-4 h-4 text-green-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                      </svg>
+                    </div>
+                    <span className="font-medium">Тарифы</span>
+                  </a>
+                  <Link
+                    href="/blog"
+                    className="group flex items-center px-4 py-4 text-gray-700 hover:text-white rounded-xl transition-all duration-300 hover:bg-gradient-to-r hover:from-orange-500 hover:to-red-500 hover:shadow-lg hover:shadow-orange-500/25"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-orange-100 group-hover:bg-white/20 flex items-center justify-center mr-4 transition-colors duration-300">
+                      <svg className="w-4 h-4 text-orange-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                      </svg>
+                    </div>
+                    <span className="font-medium">Блог</span>
+                  </Link>
+                </nav>
+
+                {/* Кнопки действий */}
+                <div className="space-y-3 mt-auto">
+                  <button
+                    className="w-full px-4 py-3 text-purple-600 border-2 border-purple-200 font-semibold rounded-xl hover:bg-purple-50 hover:border-purple-300 transition-all duration-300 shadow-lg hover:shadow-purple-500/25"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      router.push('/login');
+                    }}
+                  >
+                    Войти
+                  </button>
+                  <button
+                    className="w-full px-4 py-3 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-purple-500/30 relative overflow-hidden group new-button-effect"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      router.push('/register');
+                    }}
+                  >
+                    <span className="absolute inset-0 z-0 hoverEffect">
+                      <div></div>
+                    </span>
+                    <span className="relative flex items-center justify-center gap-2 z-10">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      Зарегистрироваться
+                    </span>
+                  </button>
+                </div>
+
+                {/* Нижний декоративный элемент */}
+                <div className="mt-6 pt-4 border-t border-gray-200/50">
+                  <div className="flex items-center justify-center">
+                    <div className="w-12 h-1 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full opacity-30"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+    </>
   );
 }
 
@@ -195,13 +256,7 @@ function LandingFooter() {
         <div className={landingStyles.whiteFooterContent}>
           <div className={landingStyles.whiteFooterLeft}>
             <Link href="/" className={landingStyles.whiteFooterBrand}>
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 12l2 2 4-4"></path>
-                <path d="M21 12c.552 0 1-.448 1-1V8c0-.552-.448-1-1-1h-1V6a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v1H3c-.552 0-1 .448-1 1v3c0 .552.448 1 1 1h1v7a4 4 0 0 0 4 4h8a4 4 0 0 0 4-4v-7h1z"></path>
-                <circle cx="9" cy="9" r="1"></circle>
-                <circle cx="15" cy="9" r="1"></circle>
-              </svg>
-              <span>ReplyX</span>
+              <img src="/Logo.svg" alt="Logo" className={landingStyles.logoIcon} style={{width: '130px', height: '60px'}} />
             </Link>
             <p className={landingStyles.whiteFooterSlogan}>
               Помогаем человечеству <br />
@@ -298,13 +353,7 @@ function LandingFooter() {
           {/* Логотип и слоган */}
           <div className="text-center mb-6">
             <Link href="/" className={landingStyles.whiteFooterBrand}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 12l2 2 4-4"></path>
-                <path d="M21 12c.552 0 1-.448 1-1V8c0-.552-.448-1-1-1h-1V6a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v1H3c-.552 0-1 .448-1 1v3c0 .552.448 1 1 1h1v7a4 4 0 0 0 4 4h8a4 4 0 0 0 4-4v-7h1z"></path>
-                <circle cx="9" cy="9" r="1"></circle>
-                <circle cx="15" cy="9" r="1"></circle>
-              </svg>
-              <span>ReplyX</span>
+              <img src="/Logo.svg" alt="Logo" className={landingStyles.logoIcon} style={{width: '130px', height: '60px'}} />
             </Link>
             <p className={landingStyles.whiteFooterSlogan}>
               Помогаем человечеству <br />
