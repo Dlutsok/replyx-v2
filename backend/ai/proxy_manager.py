@@ -315,9 +315,13 @@ class ProxyManager:
         """Определяет, нужно ли переключиться на другой прокси"""
         return ProxyErrorClassifier.should_switch_proxy(error_type)
     
-    def get_proxy_for_request(self, is_stream: bool = False) -> Tuple[Optional[str], Dict[str, Any]]:
+    def get_proxy_for_request(self, is_stream: bool = False, is_async: bool = True) -> Tuple[Optional[str], Dict[str, Any]]:
         """
         Возвращает URL прокси и httpx client kwargs для запроса
+        
+        Args:
+            is_stream: Нужен ли длительный timeout для streaming
+            is_async: Используется ли AsyncClient (True) или синхронный Client (False)
         
         Returns:
             Tuple[proxy_url, client_kwargs]
@@ -342,6 +346,9 @@ class ProxyManager:
         # Выбираем правильный timeout для прокси
         timeout = self.stream_timeout if is_stream else self.read_timeout
         
+        # Выбираем правильный transport в зависимости от типа клиента
+        transport = httpx.AsyncHTTPTransport(retries=0) if is_async else httpx.HTTPTransport(retries=0)
+        
         # Оптимизированные настройки для прокси
         client_kwargs = {
             "proxy": proxy.url,
@@ -355,7 +362,7 @@ class ProxyManager:
             "follow_redirects": True,
             "limits": httpx.Limits(max_keepalive_connections=10, max_connections=50),
             # Предотвращаем зависание на DNS
-            "transport": httpx.HTTPTransport(retries=0)
+            "transport": transport
         }
         
         return proxy.url, client_kwargs

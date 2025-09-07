@@ -294,8 +294,8 @@ class OpenAIProvider(BaseAIProvider):
         last_error = None
         
         for attempt in range(max_attempts):
-            # Получаем доступный прокси для запроса
-            proxy_url, client_kwargs = self.proxy_manager.get_proxy_for_request(is_stream=is_stream)
+            # Получаем доступный прокси для запроса (асинхронный клиент)
+            proxy_url, client_kwargs = self.proxy_manager.get_proxy_for_request(is_stream=is_stream, is_async=True)
             
             if not proxy_url:
                 # Все прокси недоступны

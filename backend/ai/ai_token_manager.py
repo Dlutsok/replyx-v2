@@ -193,7 +193,7 @@ class AITokenManager:
             db.close()
     
     def _make_embedding_request(self, text: str, model: str, user_id: int, assistant_id: int = None):
-        """Генерирует embedding для текста через OpenAI API"""
+        """Генерирует embedding для текста через OpenAI API с поддержкой прокси"""
         start_time = time.time()
         
         # Получаем лучший токен (embeddings работают только с OpenAI)
@@ -204,53 +204,178 @@ class AITokenManager:
             if not openai_token:
                 raise Exception("Нет доступных токенов для генерации embeddings")
         
-        try:
-            client = openai.OpenAI(api_key=(token.token if token else openai_token))
+        api_key = token.token if token else openai_token
+        embedding_model = model if model.startswith('text-embedding') else 'text-embedding-3-small'
+        
+        # Используем прокси систему для embeddings
+        from .proxy_manager import get_proxy_manager
+        proxy_manager = get_proxy_manager()
+        
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "model": embedding_model,
+            "input": text,
+            "encoding_format": "float"
+        }
+        
+        max_attempts = 3
+        last_error = None
+        
+        for attempt in range(max_attempts):
+            # Получаем прокси для запроса (синхронный клиент)
+            proxy_url, client_kwargs = proxy_manager.get_proxy_for_request(is_stream=False, is_async=False)
             
-            # Используем более дешевую модель для embeddings
-            embedding_model = model if model.startswith('text-embedding') else 'text-embedding-3-small'
+            if not proxy_url and attempt == 0:
+                # Все прокси недоступны, пробуем без прокси
+                client_kwargs = {"timeout": 30.0, "trust_env": False}
+                print("⚠️ [EMBEDDINGS] Все прокси недоступны, попытка без прокси")
             
-            response = client.embeddings.create(
-                model=embedding_model,
-                input=text,
-                encoding_format="float"
-            )
+            # Находим текущий прокси для метрик
+            current_proxy = None
+            if proxy_url:
+                for proxy in proxy_manager.proxies:
+                    if proxy.url == proxy_url:
+                        current_proxy = proxy
+                        break
+                
+                masked_url = proxy_manager._mask_proxy_url(proxy_url)
+                print(f"🔗 [EMBEDDINGS] Попытка {attempt+1}/{max_attempts} через прокси: {masked_url}")
             
-            response_time = time.time() - start_time
-            
-            # Логируем использование embedding
-            self.log_usage(
-                token_id=(token.id if token else None),
-                user_id=user_id,
-                assistant_id=assistant_id,
-                model_used=embedding_model,
-                prompt_tokens=getattr(getattr(response, 'usage', None), 'prompt_tokens', 0),
-                completion_tokens=0,  # У embeddings нет completion tokens
-                response_time=response_time,
-                success=True,
-                provider_used="openai_embedding"
-            )
-            
-            return response
-            
-        except Exception as e:
-            response_time = time.time() - start_time
-            
-            # Логируем ошибку
-            self.log_usage(
-                token_id=(token.id if token else None),
-                user_id=user_id,
-                assistant_id=assistant_id,
-                model_used=model,
-                prompt_tokens=0,
-                completion_tokens=0,
-                response_time=response_time,
-                success=False,
-                provider_used="openai_embedding",
-                error_message=str(e)
-            )
-            
-            raise Exception(f"Ошибка генерации embedding: {e}")
+            try:
+                import httpx
+                
+                with httpx.Client(**client_kwargs) as client:
+                    response = client.post(
+                        "https://api.openai.com/v1/embeddings",
+                        headers=headers,
+                        json=payload
+                    )
+                    
+                    response_time = time.time() - start_time
+                    
+                    # Проверяем статус код
+                    if response.status_code in [500, 502, 503, 504]:
+                        # Upstream ошибка, не проблема с прокси
+                        if current_proxy:
+                            error_type = proxy_manager.record_proxy_failure(
+                                current_proxy, Exception(f"HTTP {response.status_code}"), 
+                                response.status_code
+                            )
+                            if not proxy_manager.should_switch_proxy(error_type):
+                                raise Exception(f"OpenAI API error: HTTP {response.status_code}")
+                    
+                    response.raise_for_status()
+                    data = response.json()
+                    
+                    # Записываем успешное использование прокси
+                    if current_proxy:
+                        proxy_manager.record_proxy_success(current_proxy, response_time)
+                        print(f"✅ [EMBEDDINGS] Успешный запрос через '{current_proxy.name}' за {response_time:.2f}s")
+                    
+                    # Логируем использование embedding
+                    usage_data = data.get('usage', {})
+                    self.log_usage(
+                        token_id=(token.id if token else None),
+                        user_id=user_id,
+                        assistant_id=assistant_id,
+                        model_used=embedding_model,
+                        prompt_tokens=usage_data.get('prompt_tokens', 0),
+                        completion_tokens=0,  # У embeddings нет completion tokens
+                        response_time=response_time,
+                        success=True,
+                        provider_used=f"openai_embedding_via_proxy_{current_proxy.name if current_proxy else 'direct'}"
+                    )
+                    
+                    # Создаем mock объект response в формате OpenAI
+                    class MockEmbeddingResponse:
+                        def __init__(self, data):
+                            self.data = [MockEmbeddingData(item) for item in data.get('data', [])]
+                            self.usage = MockUsage(data.get('usage', {}))
+                    
+                    class MockEmbeddingData:
+                        def __init__(self, item):
+                            self.embedding = item.get('embedding', [])
+                    
+                    class MockUsage:
+                        def __init__(self, usage_dict):
+                            self.prompt_tokens = usage_dict.get('prompt_tokens', 0)
+                            self.total_tokens = usage_dict.get('total_tokens', 0)
+                    
+                    return MockEmbeddingResponse(data)
+                    
+            except httpx.HTTPStatusError as e:
+                response_time = time.time() - start_time
+                status = e.response.status_code if e.response else None
+                body = e.response.text[:500] if e.response else ''
+                
+                last_error = Exception(f"HTTP {status}: {body}")
+                
+                if current_proxy:
+                    error_type = proxy_manager.record_proxy_failure(
+                        current_proxy, e, status
+                    )
+                    
+                    if not proxy_manager.should_switch_proxy(error_type):
+                        # Не переключаем прокси (например, при 5xx)
+                        break
+                
+                print(f"⚠️ [EMBEDDINGS] HTTP ошибка через прокси (попытка {attempt+1}): {status}")
+                continue
+                
+            except (httpx.ProxyError, httpx.ConnectError, httpx.ReadTimeout, 
+                   httpx.RemoteProtocolError, httpx.ConnectTimeout) as e:
+                
+                response_time = time.time() - start_time
+                last_error = e
+                
+                if current_proxy:
+                    error_type = proxy_manager.record_proxy_failure(current_proxy, e)
+                    
+                    # Проверяем нужен ли retry с тем же прокси
+                    if (proxy_manager.should_retry_with_same_proxy(error_type) and 
+                        attempt < max_attempts - 1):
+                        
+                        print(f"⚠️ [EMBEDDINGS] Retry с тем же прокси '{current_proxy.name}': {error_type.value}")
+                        time.sleep(0.5)
+                        continue
+                
+                print(f"⚠️ [EMBEDDINGS] Сетевая ошибка прокси (попытка {attempt+1}): {repr(e)}")
+                continue
+                
+            except Exception as e:
+                response_time = time.time() - start_time
+                last_error = e
+                
+                if current_proxy:
+                    proxy_manager.record_proxy_failure(current_proxy, e)
+                
+                print(f"⚠️ [EMBEDDINGS] Неожиданная ошибка (попытка {attempt+1}): {repr(e)}")
+                continue
+        
+        # Если все попытки неудачны
+        response_time = time.time() - start_time
+        error_msg = f"Embeddings недоступны после {max_attempts} попыток. Последняя ошибка: {last_error}"
+        print(f"❌ [EMBEDDINGS] {error_msg}")
+        
+        # Логируем ошибку
+        self.log_usage(
+            token_id=(token.id if token else None),
+            user_id=user_id,
+            assistant_id=assistant_id,
+            model_used=embedding_model,
+            prompt_tokens=0,
+            completion_tokens=0,
+            response_time=response_time,
+            success=False,
+            provider_used="openai_embedding_failed",
+            error_message=str(last_error)
+        )
+        
+        raise Exception(f"Ошибка генерации embedding: {last_error}")
     
     def make_openai_request(self, messages: List[dict], model: str = "gpt-4", 
                            user_id: int = None, assistant_id: int = None,
@@ -548,63 +673,3 @@ def count_tokens(text: str) -> int:
     token_count += max(1, spaces_and_punctuation // 2)
     
     return max(1, token_count)  # Минимум 1 токен
-
-    def _make_embedding_request(self, text: str, model: str, user_id: int, assistant_id: int = None):
-        """Генерирует embedding для текста через OpenAI API"""
-        start_time = time.time()
-        
-        # Получаем лучший токен (embeddings работают только с OpenAI)
-        token = self.get_best_token("gpt-4o-mini", user_id)  # Используем любую модель для получения токена
-        if not token:
-            # fallback на переменную окружения
-            openai_token = os.getenv('OPENAI_API_KEY')
-            if not openai_token:
-                raise Exception("Нет доступных токенов для генерации embeddings")
-        
-        try:
-            client = openai.OpenAI(api_key=(token.token if token else openai_token))
-            
-            # Используем более дешевую модель для embeddings
-            embedding_model = model if model.startswith('text-embedding') else 'text-embedding-3-small'
-            
-            response = client.embeddings.create(
-                model=embedding_model,
-                input=text,
-                encoding_format="float"
-            )
-            
-            response_time = time.time() - start_time
-            
-            # Логируем использование embedding
-            self.log_usage(
-                token_id=(token.id if token else None),
-                user_id=user_id,
-                assistant_id=assistant_id,
-                model_used=embedding_model,
-                prompt_tokens=getattr(response, 'usage', None).prompt_tokens if getattr(response, 'usage', None) else 0,
-                completion_tokens=0,  # У embeddings нет completion tokens
-                response_time=response_time,
-                success=True,
-                provider_used="openai_embedding"
-            )
-            
-            return response
-            
-        except Exception as e:
-            response_time = time.time() - start_time
-            
-            # Логируем ошибку
-            self.log_usage(
-                token_id=(token.id if token else None),
-                user_id=user_id,
-                assistant_id=assistant_id,
-                model_used=model,
-                prompt_tokens=0,
-                completion_tokens=0,
-                response_time=response_time,
-                success=False,
-                provider_used="openai_embedding",
-                error_message=str(e)
-            )
-            
-            raise Exception(f"Ошибка генерации embedding: {e}")
