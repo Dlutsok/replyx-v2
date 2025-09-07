@@ -31,7 +31,7 @@ function LandingHeader() {
       <header className={`hidden lg:block ${landingStyles.header}`}>
         <div className={landingStyles.headerContainer}>
           <Link href="/" className={landingStyles.logo}>
-            <img src="/Logo.svg" alt="Logo" className={landingStyles.logoIcon} style={{width: '130px', height: '60px'}} />
+            <img src="/logo.svg" alt="Logo" className={landingStyles.logoIcon} style={{width: '130px', height: '60px'}} />
           </Link>
 
           <nav className={landingStyles.nav}>
@@ -65,7 +65,7 @@ function LandingHeader() {
           <div className="flex items-center justify-between">
             {/* Логотип */}
             <Link href="/" className={landingStyles.logo}>
-              <img src="/Logo.svg" alt="Logo" className={landingStyles.logoIcon} style={{width: '120px', height: '60px'}} />
+              <img src="/logo.svg" alt="Logo" className={landingStyles.logoIcon} style={{width: '120px', height: '60px'}} />
             </Link>
 
             {/* Мобильное меню и кнопки */}
@@ -256,7 +256,7 @@ function LandingFooter() {
         <div className={landingStyles.whiteFooterContent}>
           <div className={landingStyles.whiteFooterLeft}>
             <Link href="/" className={landingStyles.whiteFooterBrand}>
-              <img src="/Logo.svg" alt="Logo" className={landingStyles.logoIcon} style={{width: '130px', height: '60px'}} />
+              <img src="/logo.svg" alt="Logo" className={landingStyles.logoIcon} style={{width: '130px', height: '60px'}} />
             </Link>
             <p className={landingStyles.whiteFooterSlogan}>
               Помогаем человечеству <br />
@@ -353,7 +353,7 @@ function LandingFooter() {
           {/* Логотип и слоган */}
           <div className="text-center mb-6">
             <Link href="/" className={landingStyles.whiteFooterBrand}>
-              <img src="/Logo.svg" alt="Logo" className={landingStyles.logoIcon} style={{width: '130px', height: '60px'}} />
+              <img src="/logo.svg" alt="Logo" className={landingStyles.logoIcon} style={{width: '130px', height: '60px'}} />
             </Link>
             <p className={landingStyles.whiteFooterSlogan}>
               Помогаем человечеству <br />

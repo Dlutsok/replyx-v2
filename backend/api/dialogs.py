@@ -718,12 +718,8 @@ async def add_dialog_message(dialog_id: int, data: dict, db: Session = Depends(g
                     
                     print(f"🔍 CACHE MISS: Генерируем новый AI ответ для пользователя {current_user.id}")
                     
-                    # Получаем доступный AI токен
-                    ai_token_info = get_available_token(db, assistant.ai_model or 'gpt-4o-mini')
-                    if not ai_token_info:
-                        raise Exception("Нет доступных AI токенов")
-                    
-                    client = openai.OpenAI(api_key=ai_token_info['token'])
+                    # Используем ai_token_manager для запросов через прокси
+                    from ai.ai_token_manager import ai_token_manager
                     
                     messages = []
                     
@@ -822,14 +818,16 @@ async def add_dialog_message(dialog_id: int, data: dict, db: Session = Depends(g
                     # 5) Текущее сообщение пользователя
                     messages.append({"role": "user", "content": text})
                 
-                    # Генерируем ответ
-                    response = client.chat.completions.create(
-                    model=assistant.ai_model or 'gpt-4o-mini',
-                    messages=messages,
-                    temperature=0.2,  # Низкая температура для точности в чате
-                    max_tokens=1000,
-                    presence_penalty=0.0,
-                    frequency_penalty=0.0
+                    # Генерируем ответ через прокси
+                    response = ai_token_manager.make_openai_request(
+                        messages=messages,
+                        model=assistant.ai_model or 'gpt-4o-mini',
+                        user_id=current_user.id,
+                        assistant_id=assistant.id,
+                        temperature=0.2,  # Низкая температура для точности в чате
+                        max_tokens=1000,
+                        presence_penalty=0.0,
+                        frequency_penalty=0.0
                     )
                 
                     ai_response = response.choices[0].message.content

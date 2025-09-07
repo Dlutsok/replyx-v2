@@ -500,17 +500,53 @@ class AITokenManager:
             raise Exception("Нет доступных AI токенов для модели " + model)
         
         try:
-            request_params = {
-                "model": model,
-                "messages": messages,
-                "temperature": temperature
-            }
+            # Используем новую систему провайдеров как fallback (она уже поддерживает прокси)
+            from ai.ai_providers import get_ai_completion
+            import asyncio
+            import concurrent.futures
             
-            if max_tokens:
-                request_params["max_tokens"] = max_tokens
+            def run_async_ai_request():
+                """Запуск асинхронного запроса в отдельном потоке"""
+                new_loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(new_loop)
+                try:
+                    return new_loop.run_until_complete(get_ai_completion(
+                        messages=messages,
+                        model=model,
+                        temperature=temperature,
+                        max_tokens=max_tokens
+                    ))
+                finally:
+                    new_loop.close()
             
-            client = openai.OpenAI(api_key=token.token)
-            response = client.chat.completions.create(**request_params)
+            # Выполняем через thread pool чтобы избежать блокировки
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(run_async_ai_request)
+                result = future.result(timeout=60)  # 60 секунд таймаут
+            
+            # Создаем совместимый response объект
+            class CompatibleResponse:
+                def __init__(self, ai_result):
+                    self.choices = [CompatibleChoice(ai_result.get('content', ''))]
+                    self.usage = CompatibleUsage(ai_result.get('usage', {}))
+                    self.model = ai_result.get('model', model)
+                    
+            class CompatibleChoice:
+                def __init__(self, content):
+                    self.message = CompatibleMessage(content)
+                    
+            class CompatibleMessage:
+                def __init__(self, content):
+                    self.content = content
+                    
+            class CompatibleUsage:
+                def __init__(self, usage_dict):
+                    self.prompt_tokens = usage_dict.get('prompt_tokens', 0)
+                    self.completion_tokens = usage_dict.get('completion_tokens', 0)
+                    self.total_tokens = usage_dict.get('total_tokens', 
+                        self.prompt_tokens + self.completion_tokens)
+            
+            response = CompatibleResponse(result)
             
             response_time = time.time() - start_time
             
