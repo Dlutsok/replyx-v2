@@ -26,7 +26,7 @@ class SecurityHeadersMiddleware:
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; "
                 "font-src 'self' https://fonts.gstatic.com; "
                 "img-src 'self' data: blob: https:; "
-                "connect-src 'self' https: wss: ws:; "
+                "connect-src 'self' https://replyx.ru https://www.replyx.ru wss://replyx.ru wss://www.replyx.ru https: wss: ws:; "
                 "frame-ancestors 'self'; "
                 "base-uri 'self'; "
                 "form-action 'self'"
