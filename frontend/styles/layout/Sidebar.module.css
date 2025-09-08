@@ -565,7 +565,7 @@
   }
 
   [data-theme="dark"] .menuLink.active .menuText {
-    color: #7c3aed !important;
+    color: #6334E5 !important;
   }
 
   [data-theme="dark"] .menuLink:hover {
@@ -676,7 +676,7 @@
 
   [data-theme="dark"] .menuLink.active {
     background: #f3e8ff !important;
-    color: #7c3aed !important;
+    color: #6334E5 !important;
   }
 
   [data-theme="dark"] .toggleButton,

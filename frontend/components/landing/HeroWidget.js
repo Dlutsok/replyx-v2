@@ -134,7 +134,6 @@ const HeroWidget = () => {
       width: 32px;
       height: 32px;
       border-radius: 50%;
-      background: ${currentTheme.gradient};
       display: flex;
       align-items: center;
       justify-content: center;

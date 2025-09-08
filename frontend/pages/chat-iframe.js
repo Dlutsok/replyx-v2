@@ -583,10 +583,10 @@ export default function ChatIframe() {
       light: '#f0fdf4'
     },
     purple: { 
-      primary: '#7c3aed', 
+      primary: '#6334E5', 
       secondary: '#e9d5ff', 
       accent: '#6d28d9',
-      gradient: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)',
+      gradient: 'linear-gradient(135deg, #6334E5 0%, #6d28d9 100%)',
       light: '#faf5ff'
     },
     orange: { 

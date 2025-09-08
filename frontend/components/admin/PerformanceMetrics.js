@@ -13,7 +13,7 @@ const MetricCard = ({
   value, 
   percentage, 
   icon: IconComponent, 
-  color = '#6366f1',
+  color = '#6334E5',
   details = [],
   isLoading = false,
   trend = null
@@ -158,7 +158,7 @@ const PerformanceMetrics = ({ autoRefresh = true }) => {
       id: 'cpu',
       title: 'Процессор',
       icon: FiCpu,
-      color: '#6366f1',
+      color: '#6334E5',
       ...performanceData.cpu
     },
     {

@@ -60,7 +60,7 @@ export default function Login() {
         alignItems: 'center',
         height: '100vh',
         fontSize: '18px',
-        color: '#6366f1'
+        color: '#6334E5'
       }}>
         Проверка авторизации...
       </div>

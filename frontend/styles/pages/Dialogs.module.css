@@ -2182,7 +2182,7 @@
   gap: 6px;
   padding: 8px 16px;
   background: white;
-  color: #6366f1;
+  color: #6334E5;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   font-size: 14px;
@@ -2193,7 +2193,7 @@
 
 .pageBtn:hover:not(.disabled) {
   background: #f8fafc;
-  border-color: #6366f1;
+  border-color: #6334E5;
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
 }
@@ -2229,12 +2229,12 @@
 
 .pageNumber:hover {
   background: #f8fafc;
-  border-color: #6366f1;
-  color: #6366f1;
+  border-color: #6334E5;
+  color: #6334E5;
 }
 
 .pageNumber.active {
-  background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+  background: linear-gradient(135deg, #6334E5 0%, #6334E5 100%);
   color: white;
   border-color: #8b5cf6;
   box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);

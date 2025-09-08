@@ -39,9 +39,9 @@ function LegalHeader() {
           <button
             className="px-6 py-2.5 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200 h-11 relative overflow-hidden"
             onClick={() => router.push('/register')}
-            style={{background: 'linear-gradient(90deg, #7c3aed, #6366f1)'}}
+            style={{background: 'linear-gradient(90deg, #6334E5, #6334E5)'}}
           >
-            <span className="absolute inset-0 z-0 animate-wave-gradient" style={{background: 'linear-gradient(90deg, #a855f7, #7c3aed)'}} />
+            <span className="absolute inset-0 z-0 animate-wave-gradient" style={{background: 'linear-gradient(90deg, #6334E5, #6334E5)'}} />
             <span className="relative z-10">Начать бесплатно</span>
           </button>
         </div>
@@ -266,7 +266,7 @@ export default function LegalPage() {
                     <div style={{
                       width: '60px',
                       height: '60px',
-                      background: 'linear-gradient(135deg, #7c3aed, #6366f1)',
+                      background: 'linear-gradient(135deg, #6334E5, #6334E5)',
                       borderRadius: '50%',
                       display: 'flex',
                       alignItems: 'center',
@@ -343,7 +343,7 @@ export default function LegalPage() {
                     <div style={{
                       width: '60px',
                       height: '60px',
-                      background: 'linear-gradient(135deg, #7c3aed, #6366f1)',
+                      background: 'linear-gradient(135deg, #6334E5, #6334E5)',
                       borderRadius: '50%',
                       display: 'flex',
                       alignItems: 'center',
@@ -420,7 +420,7 @@ export default function LegalPage() {
                     <div style={{
                       width: '60px',
                       height: '60px',
-                      background: 'linear-gradient(135deg, #7c3aed, #6366f1)',
+                      background: 'linear-gradient(135deg, #6334E5, #6334E5)',
                       borderRadius: '50%',
                       display: 'flex',
                       alignItems: 'center',
@@ -501,7 +501,7 @@ export default function LegalPage() {
                     <div style={{
                       width: '60px',
                       height: '60px',
-                      background: 'linear-gradient(135deg, #7c3aed, #6366f1)',
+                      background: 'linear-gradient(135deg, #6334E5, #6334E5)',
                       borderRadius: '50%',
                       display: 'flex',
                       alignItems: 'center',

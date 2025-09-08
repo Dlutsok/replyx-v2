@@ -426,7 +426,7 @@ const WidgetSettingsModal = ({ isOpen, onClose, onSave, selectedAssistant, isNew
                           disableAlpha={true}
                           presetColors={[
                             '#ff6b35', '#f7931e', '#ffd23f', '#6b7280',
-                            '#10b981', '#8b5cf6', '#7c3aed', '#3b82f6',
+                            '#10b981', '#8b5cf6', '#6334E5', '#3b82f6',
                             '#06b6d4', '#14b8a6', '#84cc16', '#374151',
                             '#6b7280', '#9ca3af', '#d1d5db', '#f3f4f6'
                           ]}

@@ -39,9 +39,9 @@ function CookiesHeader() {
           <button
             className="px-6 py-2.5 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200 h-11 relative overflow-hidden"
             onClick={() => router.push('/register')}
-            style={{background: 'linear-gradient(90deg, #7c3aed, #6366f1)'}}
+            style={{background: 'linear-gradient(90deg, #6334E5, #6334E5)'}}
           >
-            <span className="absolute inset-0 z-0 animate-wave-gradient" style={{background: 'linear-gradient(90deg, #a855f7, #7c3aed)'}} />
+            <span className="absolute inset-0 z-0 animate-wave-gradient" style={{background: 'linear-gradient(90deg, #6334E5, #6334E5)'}} />
             <span className="relative z-10">Начать бесплатно</span>
           </button>
         </div>
@@ -194,7 +194,7 @@ export default function LegalCookiesPage() {
             <h1 style={{
               fontSize: '2rem',
               fontWeight: '700',
-              color: 'rgb(147 51 234)',
+              color: '#6334E5',
               textAlign: 'center',
               marginBottom: '2rem'
             }}>
@@ -216,21 +216,21 @@ export default function LegalCookiesPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   1. Общие сведения
                 </h2>
                 <p style={{marginBottom: '1rem'}}>
-                  1.1. Настоящий документ регулирует использование файлов cookie на сайте <a href="https://replyx.ru" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}} target="_blank" rel="noopener noreferrer">https://replyx.ru</a> и в веб-приложениях платформы ReplyX.
+                  1.1. Настоящий документ регулирует использование файлов cookie на сайте <a href="https://replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}} target="_blank" rel="noopener noreferrer">https://replyx.ru</a> и в веб-приложениях платформы ReplyX.
                 </p>
                 <p style={{marginBottom: '1rem'}}>
                   1.2. Оператор персональных данных: Индивидуальный предприниматель Луцок Дан, ОГРНИП 325508100484721, ИНН 330303450398.
                   Адрес: 141107, Россия, Московская область, г. Щёлково, ул. Неделина, д. 26, кв. 104.
-                  E-mail: <a href="mailto:support@replyx.ru" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a>, Телефон: <a href="tel:+79933349913" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}}>+7 (993) 334-99-13</a>.
+                  E-mail: <a href="mailto:support@replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a>, Телефон: <a href="tel:+79933349913" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>+7 (993) 334-99-13</a>.
                 </p>
                 <p>
-                  1.3. Настоящая Политика является приложением к <a href="/legal/privacy" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}}>Политике конфиденциальности</a>.
+                  1.3. Настоящая Политика является приложением к <a href="/legal/privacy" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>Политике конфиденциальности</a>.
                 </p>
               </section>
 
@@ -238,7 +238,7 @@ export default function LegalCookiesPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   2. Определение и правовое основание
@@ -257,7 +257,7 @@ export default function LegalCookiesPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   3. Категории файлов cookie
@@ -275,7 +275,7 @@ export default function LegalCookiesPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   4. Получение и отзыв согласия
@@ -298,7 +298,7 @@ export default function LegalCookiesPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   5. Управление cookie
@@ -318,7 +318,7 @@ export default function LegalCookiesPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   6. Права Пользователя
@@ -327,7 +327,7 @@ export default function LegalCookiesPage() {
                   6.1. Пользователь вправе запросить сведения об обработке cookie-данных, потребовать их исправления, блокирования или удаления.
                 </p>
                 <p>
-                  6.2. Запрос направляется на <a href="mailto:support@replyx.ru" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a>. Срок ответа — до 10 рабочих дней.
+                  6.2. Запрос направляется на <a href="mailto:support@replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a>. Срок ответа — до 10 рабочих дней.
                 </p>
               </section>
 
@@ -335,7 +335,7 @@ export default function LegalCookiesPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   7. Обновление Политики
@@ -344,7 +344,7 @@ export default function LegalCookiesPage() {
                   7.1. ReplyX вправе изменять настоящую Политику в любой момент.
                 </p>
                 <p>
-                  7.2. Новая редакция публикуется на <a href="/legal" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}}>сайте</a> и вступает в силу со дня размещения.
+                  7.2. Новая редакция публикуется на <a href="/legal" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>сайте</a> и вступает в силу со дня размещения.
                 </p>
               </section>
 
@@ -352,7 +352,7 @@ export default function LegalCookiesPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   8. Контакты
@@ -370,10 +370,10 @@ export default function LegalCookiesPage() {
                     <strong>Адрес:</strong> 141107, Россия, Московская область, г. Щёлково, ул. Неделина, д. 26, кв. 104
                   </p>
                   <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
-                    <strong>E-mail:</strong> <a href="mailto:support@replyx.ru" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a>
+                    <strong>E-mail:</strong> <a href="mailto:support@replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a>
                   </p>
                   <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
-                    <strong>Телефон:</strong> <a href="tel:+79933349913" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}}>+7 (993) 334-99-13</a>
+                    <strong>Телефон:</strong> <a href="tel:+79933349913" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>+7 (993) 334-99-13</a>
                   </p>
                 </div>
               </section>

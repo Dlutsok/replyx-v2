@@ -74,7 +74,7 @@ function LandingHeader() {
               <button
                 className="px-4 py-2 text-white font-semibold rounded-lg transition-all duration-300 text-sm"
                 onClick={() => router.push('/register')}
-                style={{background: 'linear-gradient(90deg, #7c3aed, #6366f1)'}}
+                style={{background: 'linear-gradient(90deg, #6334E5, #6334E5)'}}
               >
                 Начать
               </button>
@@ -292,9 +292,22 @@ function LandingFooter() {
             <div className={landingStyles.whiteFooterLinks}>
               {/* Колонка 1: Продукт */}
               <div className={landingStyles.footerColumn}>
-                <div className={landingStyles.footerColumnTitle}>
+                <button
+                  className={landingStyles.footerColumnTitle}
+                  style={{
+                    cursor: 'pointer',
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    fontSize: 'inherit',
+                    fontWeight: 'bold',
+                    color: '#6334E5',
+                    textAlign: 'left',
+                    width: '100%'
+                  }}
+                >
                   Продукт
-                </div>
+                </button>
                 <a href="#features" className={landingStyles.whiteFooterLink}>
                   Возможности
                 </a>
@@ -308,9 +321,22 @@ function LandingFooter() {
 
               {/* Колонка 2: Компания */}
               <div className={landingStyles.footerColumn}>
-                <div className={landingStyles.footerColumnTitle}>
+                <button
+                  className={landingStyles.footerColumnTitle}
+                  style={{
+                    cursor: 'pointer',
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    fontSize: 'inherit',
+                    fontWeight: 'bold',
+                    color: '#6334E5',
+                    textAlign: 'left',
+                    width: '100%'
+                  }}
+                >
                   Компания
-                </div>
+                </button>
                 <Link href="/blog" className={landingStyles.whiteFooterLink} style={{display: 'none'}}>
                   Блог
                 </Link>
@@ -327,17 +353,22 @@ function LandingFooter() {
 
               {/* Колонка 4: Правовая информация */}
               <div className={landingStyles.footerColumn}>
-                <div className={landingStyles.footerColumnTitle}>
+                <button
+                  onClick={() => router.push('/legal')}
+                  className={landingStyles.footerColumnTitle}
+                  style={{
+                    cursor: 'pointer',
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    fontSize: 'inherit',
+                    fontWeight: 'bold',
+                    color: '#6334E5',
+                    textAlign: 'left',
+                    width: '100%'
+                  }}
+                >
                   Правовая информация
-                </div>
-                <button onClick={() => router.push('/legal/privacy')} className={landingStyles.whiteFooterLink}>
-                  Конфиденциальность
-                </button>
-                <button onClick={() => router.push('/legal/terms')} className={landingStyles.whiteFooterLink}>
-                  Условия использования
-                </button>
-                <button onClick={() => router.push('/legal/offer')} className={landingStyles.whiteFooterLink}>
-                  Публичная оферта
                 </button>
               </div>
             </div>
@@ -389,9 +420,22 @@ function LandingFooter() {
           <div className="grid grid-cols-2 gap-6 mb-8">
             {/* Колонка 1: Продукт */}
             <div className={landingStyles.footerColumn}>
-              <div className={landingStyles.footerColumnTitle}>
+              <button
+                className={landingStyles.footerColumnTitle}
+                style={{
+                  cursor: 'pointer',
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  fontSize: 'inherit',
+                  fontWeight: 'bold',
+                  color: '#6334E5',
+                  textAlign: 'left',
+                  width: '100%'
+                }}
+              >
                 Продукт
-              </div>
+              </button>
               <a href="#features" className={landingStyles.whiteFooterLink}>
                 Возможности
               </a>
@@ -405,9 +449,22 @@ function LandingFooter() {
 
             {/* Колонка 2: Компания */}
             <div className={landingStyles.footerColumn}>
-              <div className={landingStyles.footerColumnTitle}>
+              <button
+                className={landingStyles.footerColumnTitle}
+                style={{
+                  cursor: 'pointer',
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  fontSize: 'inherit',
+                  fontWeight: 'bold',
+                  color: '#6334E5',
+                  textAlign: 'left',
+                  width: '100%'
+                }}
+              >
                 Компания
-              </div>
+              </button>
               <Link href="/blog" className={landingStyles.whiteFooterLink} style={{display: 'none'}}>
                 Блог
               </Link>
@@ -424,9 +481,23 @@ function LandingFooter() {
 
             {/* Колонка 3: Правовая информация */}
             <div className={`${landingStyles.footerColumn} col-span-2`}>
-              <div className={landingStyles.footerColumnTitle}>
+              <button
+                onClick={() => router.push('/legal')}
+                className={landingStyles.footerColumnTitle}
+                style={{
+                  cursor: 'pointer',
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  fontSize: 'inherit',
+                  fontWeight: 'bold',
+                  color: '#6334E5',
+                  textAlign: 'left',
+                  width: '100%'
+                }}
+              >
                 Правовая информация
-              </div>
+              </button>
               <div className="flex flex-col gap-2">
                 <button onClick={() => router.push('/legal/privacy')} className={landingStyles.whiteFooterLink}>
                   Конфиденциальность

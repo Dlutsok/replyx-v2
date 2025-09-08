@@ -39,9 +39,9 @@ function PrivacyHeader() {
           <button
             className="px-6 py-2.5 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200 h-11 relative overflow-hidden"
             onClick={() => router.push('/register')}
-            style={{background: 'linear-gradient(90deg, #7c3aed, #6366f1)'}}
+            style={{background: 'linear-gradient(90deg, #6334E5, #6334E5)'}}
           >
-            <span className="absolute inset-0 z-0 animate-wave-gradient" style={{background: 'linear-gradient(90deg, #a855f7, #7c3aed)'}} />
+            <span className="absolute inset-0 z-0 animate-wave-gradient" style={{background: 'linear-gradient(90deg, #6334E5, #6334E5)'}} />
             <span className="relative z-10">Начать бесплатно</span>
           </button>
         </div>
@@ -194,7 +194,7 @@ export default function LegalPrivacyPage() {
             <h1 style={{
               fontSize: '2rem',
               fontWeight: '700',
-              color: 'rgb(147 51 234)',
+              color: '#6334E5',
               textAlign: 'center',
               marginBottom: '2rem'
             }}>
@@ -216,7 +216,7 @@ export default function LegalPrivacyPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   1. Общие положения
@@ -236,7 +236,7 @@ export default function LegalPrivacyPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   2. Состав обрабатываемых данных
@@ -253,7 +253,7 @@ export default function LegalPrivacyPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   3. Цели обработки
@@ -267,7 +267,7 @@ export default function LegalPrivacyPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   4. Правовые основания
@@ -281,7 +281,7 @@ export default function LegalPrivacyPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   5. Условия и меры защиты
@@ -301,7 +301,7 @@ export default function LegalPrivacyPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   6. Передача третьим лицам
@@ -321,7 +321,7 @@ export default function LegalPrivacyPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   7. Хранение и сроки
@@ -341,7 +341,7 @@ export default function LegalPrivacyPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   8. Cookie и техническая информация
@@ -361,7 +361,7 @@ export default function LegalPrivacyPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   9. Права Пользователя
@@ -375,7 +375,7 @@ export default function LegalPrivacyPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   10. Уведомления об инцидентах
@@ -392,13 +392,13 @@ export default function LegalPrivacyPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   11. Изменение Политики
                 </h2>
                 <p style={{marginBottom: '1rem'}}>
-                  11.1. Новая редакция публикуется на сайте <a href="/legal" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}}>replyx.ru/legal</a>.
+                  11.1. Новая редакция публикуется на сайте <a href="/legal" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>replyx.ru/legal</a>.
                 </p>
                 <p style={{marginBottom: '1rem'}}>
                   11.2. Уведомления об изменениях направляются Пользователям через Личный кабинет и/или по email.
@@ -412,7 +412,7 @@ export default function LegalPrivacyPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   12. Согласие на обработку данных
@@ -424,7 +424,7 @@ export default function LegalPrivacyPage() {
                   12.2. Согласие действует до достижения целей обработки или его отзыва.
                 </p>
                 <p style={{marginBottom: '1rem'}}>
-                  12.3. Отзыв согласия возможен через запрос на <a href="mailto:support@replyx.ru" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a>; срок рассмотрения — до 10 рабочих дней.
+                  12.3. Отзыв согласия возможен через запрос на <a href="mailto:support@replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a>; срок рассмотрения — до 10 рабочих дней.
                 </p>
                 <p>
                   12.4. Отзыв согласия может ограничить или сделать невозможным использование отдельных функций Сервиса.
@@ -435,7 +435,7 @@ export default function LegalPrivacyPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   13. Контакты
@@ -453,10 +453,10 @@ export default function LegalPrivacyPage() {
                     <strong>Адрес:</strong> 141107, Россия, Московская область, г. Щёлково, ул. Неделина, д. 26, кв. 104
                   </p>
                   <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
-                    <strong>E-mail:</strong> <a href="mailto:support@replyx.ru" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a>
+                    <strong>E-mail:</strong> <a href="mailto:support@replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a>
                   </p>
                   <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
-                    <strong>Телефон:</strong> <a href="tel:+79933349913" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}}>+7 (993) 334-99-13</a>
+                    <strong>Телефон:</strong> <a href="tel:+79933349913" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>+7 (993) 334-99-13</a>
                   </p>
                 </div>
               </section>

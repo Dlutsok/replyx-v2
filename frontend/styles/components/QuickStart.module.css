@@ -28,7 +28,7 @@
 /* Отключаем темную тему на мобильных устройствах */
 @media (max-width: 768px) {
   [data-theme="dark"] .quickStart {
-    background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%) !important;
+    background: linear-gradient(135deg, #6334E5 0%, #8b5cf6 100%) !important;
   }
 }
 

@@ -39,9 +39,9 @@ function OfferHeader() {
           <button
             className="px-6 py-2.5 text-white font-semibold rounded-lg transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200 h-11 relative overflow-hidden"
             onClick={() => router.push('/register')}
-            style={{background: 'linear-gradient(90deg, #7c3aed, #6366f1)'}}
+            style={{background: 'linear-gradient(90deg, #6334E5, #6334E5)'}}
           >
-            <span className="absolute inset-0 z-0 animate-wave-gradient" style={{background: 'linear-gradient(90deg, #a855f7, #7c3aed)'}} />
+            <span className="absolute inset-0 z-0 animate-wave-gradient" style={{background: 'linear-gradient(90deg, #6334E5, #6334E5)'}} />
             <span className="relative z-10">Начать бесплатно</span>
           </button>
         </div>
@@ -203,7 +203,7 @@ export default function LegalOfferPage() {
             <h1 style={{
               fontSize: isMobile ? '1.5rem' : isTablet ? '1.75rem' : '2rem',
               fontWeight: '700',
-              color: 'rgb(147 51 234)',
+              color: '#6334E5',
               textAlign: 'center',
               marginBottom: isMobile ? '1.5rem' : '2rem',
               lineHeight: isMobile ? '1.3' : '1.2'
@@ -259,29 +259,29 @@ export default function LegalOfferPage() {
                 <p style={{
                   margin: '0.25rem 0',
                   fontSize: isMobile ? '0.85rem' : '0.9rem'
-                }}><strong>Официальный сайт:</strong> <a href="https://replyx.ru" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}} target="_blank" rel="noopener noreferrer">https://replyx.ru</a></p>
+                }}><strong>Официальный сайт:</strong> <a href="https://replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}} target="_blank" rel="noopener noreferrer">https://replyx.ru</a></p>
                 <p style={{
                   margin: '0.25rem 0',
                   fontSize: isMobile ? '0.85rem' : '0.9rem'
-                }}><strong>Email поддержки:</strong> <a href="mailto:support@replyx.ru" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a></p>
+                }}><strong>Email поддержки:</strong> <a href="mailto:support@replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a></p>
                 <p style={{
                   margin: '0.25rem 0',
                   fontSize: isMobile ? '0.85rem' : '0.9rem'
-                }}><strong>Контакты:</strong> <a href="mailto:info@replyx.ru" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}}>info@replyx.ru</a>, <a href="tel:+79933349913" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}}>+7 (993) 334-99-13</a></p>
+                }}><strong>Контакты:</strong> <a href="mailto:info@replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>info@replyx.ru</a>, <a href="tel:+79933349913" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>+7 (993) 334-99-13</a></p>
               </div>
 
               <section style={{marginBottom: isMobile ? '1.5rem' : '2rem'}}>
                 <h2 style={{
                   fontSize: isMobile ? '1rem' : isTablet ? '1.1rem' : '1.2rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: isMobile ? '0.75rem' : '1rem',
                   lineHeight: isMobile ? '1.3' : '1.2'
                 }}>
                   1. Общие положения. Термины
                 </h2>
-                <p style={{marginBottom: '0.8rem'}}><strong>1.1.</strong> ReplyX — наименование Сервиса (Платформы), предоставляемого Исполнителем. <a href="https://replyx.ru" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}} target="_blank" rel="noopener noreferrer">replyx.ru</a> — официальный сайт Сервиса.</p>
-                <p style={{marginBottom: '0.8rem'}}><strong>1.2.</strong> Оферта — настоящий документ, размещённый на сайте <a href="https://replyx.ru" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}} target="_blank" rel="noopener noreferrer">replyx.ru</a>.</p>
+                <p style={{marginBottom: '0.8rem'}}><strong>1.1.</strong> ReplyX — наименование Сервиса (Платформы), предоставляемого Исполнителем. <a href="https://replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}} target="_blank" rel="noopener noreferrer">replyx.ru</a> — официальный сайт Сервиса.</p>
+                <p style={{marginBottom: '0.8rem'}}><strong>1.2.</strong> Оферта — настоящий документ, размещённый на сайте <a href="https://replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}} target="_blank" rel="noopener noreferrer">replyx.ru</a>.</p>
                 <p style={{marginBottom: '0.8rem'}}><strong>1.3.</strong> Акцепт — полное и безоговорочное принятие условий Оферты, выраженное любым из действий: регистрацией на Сайте, фактическим использованием Сервиса, пополнением Баланса/оплатой.</p>
                 <p style={{marginBottom: '0.8rem'}}><strong>1.4.</strong> Сервис / Платформа / Система ReplyX — программно-аппаратный комплекс Исполнителя (SaaS), предоставляющий доступ к функциям создания/обучения AI-ассистентов, веб-виджетов, интеграций и API.</p>
                 <p style={{marginBottom: '0.8rem'}}><strong>1.5.</strong> Личный кабинет (ЛК) — раздел Сервиса с учётной записью Пользователя.</p>
@@ -299,7 +299,7 @@ export default function LegalOfferPage() {
                 <h2 style={{
                   fontSize: isMobile ? '1rem' : isTablet ? '1.1rem' : '1.2rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: isMobile ? '0.75rem' : '1rem',
                   lineHeight: isMobile ? '1.3' : '1.2'
                 }}>
@@ -314,7 +314,7 @@ export default function LegalOfferPage() {
                 <h2 style={{
                   fontSize: isMobile ? '1rem' : isTablet ? '1.1rem' : '1.2rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: isMobile ? '0.75rem' : '1rem',
                   lineHeight: isMobile ? '1.3' : '1.2'
                 }}>
@@ -336,7 +336,7 @@ export default function LegalOfferPage() {
                 <h2 style={{
                   fontSize: isMobile ? '1rem' : isTablet ? '1.1rem' : '1.2rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: isMobile ? '0.75rem' : '1rem',
                   lineHeight: isMobile ? '1.3' : '1.2'
                 }}>
@@ -352,7 +352,7 @@ export default function LegalOfferPage() {
                 <h2 style={{
                   fontSize: isMobile ? '1rem' : isTablet ? '1.1rem' : '1.2rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: isMobile ? '0.75rem' : '1rem',
                   lineHeight: isMobile ? '1.3' : '1.2'
                 }}>
@@ -370,7 +370,7 @@ export default function LegalOfferPage() {
                 <h2 style={{
                   fontSize: isMobile ? '1rem' : isTablet ? '1.1rem' : '1.2rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: isMobile ? '0.75rem' : '1rem',
                   lineHeight: isMobile ? '1.3' : '1.2'
                 }}>
@@ -390,7 +390,7 @@ export default function LegalOfferPage() {
                 <h2 style={{
                   fontSize: isMobile ? '1rem' : isTablet ? '1.1rem' : '1.2rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: isMobile ? '0.75rem' : '1rem',
                   lineHeight: isMobile ? '1.3' : '1.2'
                 }}>
@@ -416,7 +416,7 @@ export default function LegalOfferPage() {
                 <h2 style={{
                   fontSize: isMobile ? '1rem' : isTablet ? '1.1rem' : '1.2rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: isMobile ? '0.75rem' : '1rem',
                   lineHeight: isMobile ? '1.3' : '1.2'
                 }}>
@@ -436,7 +436,7 @@ export default function LegalOfferPage() {
               </section>
 
               <section style={{marginBottom: '2rem'}}>
-                <h2 style={{fontSize: '1.2rem', fontWeight: '600', color: 'rgb(147 51 234)', marginBottom: '1rem'}}>
+                <h2 style={{fontSize: '1.2rem', fontWeight: '600', color: '#6334E5', marginBottom: '1rem'}}>
                   9. Интеллектуальная собственность
                 </h2>
                 <p style={{marginBottom: '0.8rem'}}><strong>9.1.</strong> Исключительные права на Сервис, исходный/объектный код, базы данных, дизайн, интерфейсы и иные ОИС принадлежат Исполнителю.</p>
@@ -445,7 +445,7 @@ export default function LegalOfferPage() {
               </section>
 
               <section style={{marginBottom: '2rem'}}>
-                <h2 style={{fontSize: '1.2rem', fontWeight: '600', color: 'rgb(147 51 234)', marginBottom: '1rem'}}>
+                <h2 style={{fontSize: '1.2rem', fontWeight: '600', color: '#6334E5', marginBottom: '1rem'}}>
                   10. Персональные данные и конфиденциальность
                 </h2>
                 <p style={{marginBottom: '0.8rem'}}><strong>10.1.</strong> Обработка персональных данных осуществляется в соответствии с 152-ФЗ и Политикой конфиденциальности. Акцепт Оферты означает согласие на обработку ПДн.</p>
@@ -456,7 +456,7 @@ export default function LegalOfferPage() {
               </section>
 
               <section style={{marginBottom: '2rem'}}>
-                <h2 style={{fontSize: '1.2rem', fontWeight: '600', color: 'rgb(147 51 234)', marginBottom: '1rem'}}>
+                <h2 style={{fontSize: '1.2rem', fontWeight: '600', color: '#6334E5', marginBottom: '1rem'}}>
                   11. Ответственность. Форс-мажор
                 </h2>
                 <p style={{marginBottom: '0.8rem'}}><strong>11.1.</strong> Сервис предоставляется «как есть» и «как доступно». Исполнитель не гарантирует 100% доступности, отсутствия ошибок, полной совместимости с ПО/оборудованием Пользователя, а также точности и применимости ответов, генерируемых AI-ассистентами.</p>
@@ -466,20 +466,20 @@ export default function LegalOfferPage() {
               </section>
 
               <section style={{marginBottom: '2rem'}}>
-                <h2 style={{fontSize: '1.2rem', fontWeight: '600', color: 'rgb(147 51 234)', marginBottom: '1rem'}}>
+                <h2 style={{fontSize: '1.2rem', fontWeight: '600', color: '#6334E5', marginBottom: '1rem'}}>
                   12. Претензионный порядок и подсудность
                 </h2>
-                <p style={{marginBottom: '0.8rem'}}><strong>12.1.</strong> Споры подлежат досудебному урегулированию: претензия направляется на <a href="mailto:info@replyx.ru" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}}>info@replyx.ru</a> или через ЛК. Срок ответа — 14 календарных дней с даты получения.</p>
+                <p style={{marginBottom: '0.8rem'}}><strong>12.1.</strong> Споры подлежат досудебному урегулированию: претензия направляется на <a href="mailto:info@replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>info@replyx.ru</a> или через ЛК. Срок ответа — 14 календарных дней с даты получения.</p>
                 <p style={{marginBottom: '0.8rem'}}><strong>12.2.</strong> При недостижении согласия спор подлежит рассмотрению в суде по месту регистрации ИП Луцок Дан (Московская область, г. Щёлково), если иное не установлено императивными нормами процессуального законодательства РФ.</p>
                 <p><strong>12.3.</strong> Применимое право — материальное право Российской Федерации.</p>
               </section>
 
               <section style={{marginBottom: '2rem'}}>
-                <h2 style={{fontSize: '1.2rem', fontWeight: '600', color: 'rgb(147 51 234)', marginBottom: '1rem'}}>
+                <h2 style={{fontSize: '1.2rem', fontWeight: '600', color: '#6334E5', marginBottom: '1rem'}}>
                   13. Срок действия, изменения и расторжение
                 </h2>
                 <p style={{marginBottom: '0.8rem'}}><strong>13.1.</strong> Оферта действует бессрочно до её отзыва/замены. Договор вступает в силу с момента Акцепта и действует до прекращения сторонами.</p>
-                <p style={{marginBottom: '0.8rem'}}><strong>13.2.</strong> Исполнитель вправе изменять Оферту и тарифные условия, публикуя новую редакцию на <a href="https://replyx.ru" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}} target="_blank" rel="noopener noreferrer">replyx.ru</a>. Если изменения затрагивают цену — уведомление направляется Пользователю путём размещения информации на Сайте, а также посредством уведомлений в Личном кабинете и/или по электронной почте, указанной Пользователем при регистрации, не менее чем за 3 календарных дня до вступления в силу. Уже оплаченные объёмы услуг действуют на прежних условиях до конца оплаченного периода/остатка.</p>
+                <p style={{marginBottom: '0.8rem'}}><strong>13.2.</strong> Исполнитель вправе изменять Оферту и тарифные условия, публикуя новую редакцию на <a href="https://replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}} target="_blank" rel="noopener noreferrer">replyx.ru</a>. Если изменения затрагивают цену — уведомление направляется Пользователю путём размещения информации на Сайте, а также посредством уведомлений в Личном кабинете и/или по электронной почте, указанной Пользователем при регистрации, не менее чем за 3 календарных дня до вступления в силу. Уже оплаченные объёмы услуг действуют на прежних условиях до конца оплаченного периода/остатка.</p>
                 <p style={{marginBottom: '0.8rem'}}><strong>13.3.</strong> Пользователь вправе в любой момент прекратить использование Сервиса и запросить расторжение; при этом возврат средств — по правилам разд. 6.</p>
                 <p><strong>13.4.</strong> Исполнитель вправе расторгнуть договор при нарушениях Пользователя условий Оферты, законодательства РФ, неоплате, попытках компрометации безопасности.</p>
               </section>
@@ -488,7 +488,7 @@ export default function LegalOfferPage() {
                 <h2 style={{
                   fontSize: isMobile ? '1rem' : isTablet ? '1.1rem' : '1.2rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: isMobile ? '0.75rem' : '1rem',
                   lineHeight: isMobile ? '1.3' : '1.2'
                 }}>
@@ -511,8 +511,8 @@ export default function LegalOfferPage() {
                   <p style={{margin: '0.4rem 0'}}><strong>БИК:</strong> 044525974</p>
                   <p style={{margin: '0.4rem 0'}}><strong>Корр. счёт:</strong> 30101810145250000974</p>
                   <p style={{margin: '0.4rem 0'}}><strong>Адрес банка:</strong> 127287, г. Москва, ул. Хуторская 2-я, д. 38А, стр. 26</p>
-                  <p style={{margin: '0.4rem 0'}}><strong>Поддержка:</strong> <a href="mailto:support@replyx.ru" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a></p>
-                  <p style={{margin: '0.4rem 0'}}><strong>Контакты:</strong> <a href="mailto:info@replyx.ru" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}}>info@replyx.ru</a>, <a href="tel:+79933349913" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}}>+7 (993) 334-99-13</a></p>
+                  <p style={{margin: '0.4rem 0'}}><strong>Поддержка:</strong> <a href="mailto:support@replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a></p>
+                  <p style={{margin: '0.4rem 0'}}><strong>Контакты:</strong> <a href="mailto:info@replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>info@replyx.ru</a>, <a href="tel:+79933349913" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>+7 (993) 334-99-13</a></p>
                 </div>
               </section>
 
@@ -520,7 +520,7 @@ export default function LegalOfferPage() {
                 <h2 style={{
                   fontSize: isMobile ? '1rem' : isTablet ? '1.1rem' : '1.2rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: isMobile ? '0.75rem' : '1rem',
                   lineHeight: isMobile ? '1.3' : '1.2'
                 }}>

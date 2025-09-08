@@ -140,8 +140,8 @@ const PricingBlockSection = () => {
               <div className="bg-gradient-to-br from-purple-600 via-violet-600 to-indigo-700 rounded-2xl p-6 text-white relative overflow-hidden">
                 {/* Декоративные элементы */}
                 <div className="absolute top-0 left-0 w-full h-full">
-                  <div className="absolute top-2 left-2 w-16 h-16 rounded-full blur-lg opacity-10" style={{background: 'linear-gradient(90deg, #7c3aed, #6366f1)'}}></div>
-                  <div className="absolute bottom-2 right-2 w-20 h-20 rounded-full blur-xl opacity-5" style={{background: 'linear-gradient(90deg, #7c3aed, #6366f1)'}}></div>
+                  <div className="absolute top-2 left-2 w-16 h-16 rounded-full blur-lg opacity-10" style={{background: 'linear-gradient(90deg, #6334E5, #6334E5)'}}></div>
+                  <div className="absolute bottom-2 right-2 w-20 h-20 rounded-full blur-xl opacity-5" style={{background: 'linear-gradient(90deg, #6334E5, #6334E5)'}}></div>
                 </div>
 
                 <div className="relative z-10 text-center">
@@ -298,9 +298,9 @@ const PricingBlockSection = () => {
             <div className="bg-gradient-to-br from-purple-600 via-violet-600 to-indigo-700 rounded-3xl p-8 text-white relative overflow-hidden">
               {/* Декоративные элементы */}
               <div className="absolute top-0 left-0 w-full h-full">
-                <div className="absolute top-4 left-4 w-20 h-20 rounded-full blur-xl opacity-10" style={{background: 'linear-gradient(90deg, #7c3aed, #6366f1)'}}></div>
-                <div className="absolute bottom-4 right-4 w-32 h-32 rounded-full blur-2xl opacity-5" style={{background: 'linear-gradient(90deg, #7c3aed, #6366f1)'}}></div>
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full blur-3xl opacity-5" style={{background: 'linear-gradient(90deg, #7c3aed, #6366f1)'}}></div>
+                <div className="absolute top-4 left-4 w-20 h-20 rounded-full blur-xl opacity-10" style={{background: 'linear-gradient(90deg, #6334E5, #6334E5)'}}></div>
+                <div className="absolute bottom-4 right-4 w-32 h-32 rounded-full blur-2xl opacity-5" style={{background: 'linear-gradient(90deg, #6334E5, #6334E5)'}}></div>
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full blur-3xl opacity-5" style={{background: 'linear-gradient(90deg, #6334E5, #6334E5)'}}></div>
               </div>
 
               <div className="relative z-10 text-center">

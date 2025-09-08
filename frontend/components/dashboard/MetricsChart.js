@@ -11,7 +11,7 @@ const MetricsChart = ({ metrics, loading, onRefresh, period, onPeriodChange }) =
     const data = {
       messages: {
         title: 'Сообщения по времени',
-        color: '#6366f1',
+        color: '#6334E5',
         values: [],
         labels: []
       },
@@ -186,7 +186,7 @@ const MetricsChart = ({ metrics, loading, onRefresh, period, onPeriodChange }) =
   }, [metrics, chartType, period, loading]);
 
   const chartTypes = [
-    { id: 'messages', label: 'Сообщения', icon: FiBarChart, color: '#6366f1' },
+    { id: 'messages', label: 'Сообщения', icon: FiBarChart, color: '#6334E5' },
     { id: 'response_time', label: 'Время ответа', icon: FiActivity, color: '#f59e0b' },
     { id: 'satisfaction', label: 'Удовлетворенность', icon: FiTrendingUp, color: '#ec4899' }
   ];

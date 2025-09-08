@@ -232,7 +232,7 @@
 }
 
 .progressStep.active .stepTitle {
-  color: #7c3aed; /* violet-600 */
+  color: #6334E5; /* violet-600 */
   font-weight: 600;
 }
 
@@ -338,7 +338,7 @@
 
 .input:focus {
   outline: none;
-  border-color: #7c3aed;
+  border-color: #6334E5;
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.16);
 }
 
@@ -362,7 +362,7 @@
 
 .textarea:focus {
   outline: none;
-  border-color: #7c3aed;
+  border-color: #6334E5;
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.16);
 }
 
@@ -436,7 +436,7 @@
   justify-content: center;
   width: 18px;
   height: 18px;
-  color: #7c3aed;
+  color: #6334E5;
 }
 
 .infoWrap {
@@ -620,13 +620,13 @@
 }
 
 .integrationIcon {
-  color: #7c3aed;
+  color: #6334E5;
   display: inline-flex;
   align-items: center;
 }
 
 .integrationCard.selected svg {
-  color: #7c3aed;
+  color: #6334E5;
 }
 
 .integrationTitle {
@@ -829,7 +829,7 @@
 }
 
 .nextButton {
-  background: #7c3aed;
+  background: #6334E5;
   border: none;
   border-radius: 0.75rem;
   color: white;
@@ -851,7 +851,7 @@
 .nextButton:disabled {
   opacity: 0.7;
   cursor: not-allowed;
-  background: #7c3aed;
+  background: #6334E5;
 }
 
 .finalButtons {
@@ -883,7 +883,7 @@
 }
 
 .testButton {
-  background: #7c3aed;
+  background: #6334E5;
   border: 1px solid #7c3aed;
   border-radius: 0.75rem;
   color: white;
@@ -904,7 +904,7 @@
 }
 
 .completeButton {
-  background: linear-gradient(135deg, #7c3aed 0%, #9333ea 100%);
+  background: linear-gradient(135deg, #6334E5 0%, #6334E5 100%);
   border: none;
   border-radius: 0.75rem;
   color: white;

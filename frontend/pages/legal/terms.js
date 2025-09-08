@@ -39,9 +39,9 @@ function TermsHeader() {
           <button
             className="px-6 py-2.5 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200 h-11 relative overflow-hidden"
             onClick={() => router.push('/register')}
-            style={{background: 'linear-gradient(90deg, #7c3aed, #6366f1)'}}
+            style={{background: 'linear-gradient(90deg, #6334E5, #6334E5)'}}
           >
-            <span className="absolute inset-0 z-0 animate-wave-gradient" style={{background: 'linear-gradient(90deg, #a855f7, #7c3aed)'}} />
+            <span className="absolute inset-0 z-0 animate-wave-gradient" style={{background: 'linear-gradient(90deg, #6334E5, #6334E5)'}} />
             <span className="relative z-10">Начать бесплатно</span>
           </button>
         </div>
@@ -194,7 +194,7 @@ export default function LegalTermsPage() {
             <h1 style={{
               fontSize: '2rem',
               fontWeight: '700',
-              color: 'rgb(147 51 234)',
+              color: '#6334E5',
               textAlign: 'center',
               marginBottom: '2rem'
             }}>
@@ -216,13 +216,13 @@ export default function LegalTermsPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   Введение
                 </h2>
                 <p>
-                  Настоящее Пользовательское соглашение (далее — «Соглашение») регулирует использование онлайн-сервиса ReplyX (<a href="https://replyx.ru" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}} target="_blank" rel="noopener noreferrer">https://replyx.ru</a>) и одновременно подтверждает согласие Пользователя на обработку его персональных данных в соответствии с ФЗ № 152-ФЗ «О персональных данных».
+                  Настоящее Пользовательское соглашение (далее — «Соглашение») регулирует использование онлайн-сервиса ReplyX (<a href="https://replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}} target="_blank" rel="noopener noreferrer">https://replyx.ru</a>) и одновременно подтверждает согласие Пользователя на обработку его персональных данных в соответствии с ФЗ № 152-ФЗ «О персональных данных».
                 </p>
                 <p style={{marginBottom: '1rem'}}>
                   Акцепт настоящего Соглашения (регистрация, оплата, использование функций) означает согласие с условиями Публичной оферты, Политики конфиденциальности и Политики использования cookie.
@@ -233,7 +233,7 @@ export default function LegalTermsPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   1. Регистрация и аккаунт
@@ -256,7 +256,7 @@ export default function LegalTermsPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   2. Состав обрабатываемых данных
@@ -279,7 +279,7 @@ export default function LegalTermsPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   3. Цели обработки данных
@@ -298,7 +298,7 @@ export default function LegalTermsPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   4. Действия с данными
@@ -313,7 +313,7 @@ export default function LegalTermsPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   5. Хранение данных
@@ -330,7 +330,7 @@ export default function LegalTermsPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   6. Права Пользователя
@@ -339,7 +339,7 @@ export default function LegalTermsPage() {
                   Пользователь вправе:
                   <br />- получать сведения об обработке своих данных;
                   <br />- требовать исправления или удаления;
-                  <br />- отзывать согласие (<a href="mailto:support@replyx.ru" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a>);
+                  <br />- отзывать согласие (<a href="mailto:support@replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a>);
                   <br />- обжаловать действия Исполнителя в Роскомнадзор или суд.
                 </p>
                 <p style={{marginBottom: '1rem'}}>
@@ -351,13 +351,13 @@ export default function LegalTermsPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   7. Отзыв согласия
                 </h2>
                 <p style={{marginBottom: '1rem'}}>
-                  7.1. Отзыв возможен письменно или по e-mail на <a href="mailto:support@replyx.ru" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a>.
+                  7.1. Отзыв возможен письменно или по e-mail на <a href="mailto:support@replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a>.
                 </p>
                 <p>
                   7.2. После отзыва обработка прекращается, но часть функций Сервиса может быть недоступна.
@@ -368,7 +368,7 @@ export default function LegalTermsPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   8. Подтверждение согласия
@@ -385,7 +385,7 @@ export default function LegalTermsPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   9. Ограничение ответственности
@@ -405,7 +405,7 @@ export default function LegalTermsPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   10. Применимое право и споры
@@ -422,7 +422,7 @@ export default function LegalTermsPage() {
                 <h2 style={{
                   fontSize: '1.3rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   marginBottom: '1rem'
                 }}>
                   11. Контакты
@@ -446,10 +446,10 @@ export default function LegalTermsPage() {
                     <strong>Адрес:</strong> 141107, Россия, Московская область, г. Щёлково, ул. Неделина, д. 26, кв. 104
                   </p>
                   <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
-                    <strong>E-mail:</strong> <a href="mailto:support@replyx.ru" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a>
+                    <strong>E-mail:</strong> <a href="mailto:support@replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a>
                   </p>
                   <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
-                    <strong>Телефон:</strong> <a href="tel:+79933349913" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}}>+7 (993) 334-99-13</a>
+                    <strong>Телефон:</strong> <a href="tel:+79933349913" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>+7 (993) 334-99-13</a>
                   </p>
                 </div>
               </section>
