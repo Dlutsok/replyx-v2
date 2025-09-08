@@ -188,7 +188,7 @@ const DialogCard = ({ dialog, isExpanded, onToggleExpanded, onTakeDialog, onCanc
         {/* Actions */}
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
-            className="px-2.5 py-1 bg-purple-600 text-white text-xs font-medium rounded-md border border-purple-600"
+            className="px-2.5 py-1 bg-[#6334E5] text-white text-xs font-medium rounded-md border border-[#6334E5]"
             onClick={() => onTakeDialog(dialog.id)}
             disabled={isLoading}
           >

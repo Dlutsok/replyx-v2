@@ -278,10 +278,10 @@ export default function Register() {
 
             <div className="mt-4 text-center text-xs text-gray-500">
               Регистрируясь, вы соглашаетесь с{' '}
-              <Link href="/terms" className="text-gray-600 underline-offset-2 hover:underline">
+              <Link href="/legal/terms" className="text-gray-600 underline-offset-2 hover:underline">
                 Условиями использования
               </Link>{' '}и{' '}
-              <Link href="/privacy" className="text-gray-600 underline-offset-2 hover:underline">
+              <Link href="/legal/privacy" className="text-gray-600 underline-offset-2 hover:underline">
                 Политикой конфиденциальности
               </Link>
             </div>

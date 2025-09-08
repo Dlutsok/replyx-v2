@@ -101,7 +101,13 @@ const SetupStepsSection = () => {
         >
           <h2 className={`${DESIGN_TOKENS.typography.h2} mb-4`}>
             4 шага до{' '}
-            <span className="text-[#6334E5]">полной автоматизации</span>
+            <span style={{
+              background: 'linear-gradient(269deg, rgb(99, 52, 229) 28.67%, rgb(117, 197, 237) 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              display: 'inline-block'
+            }}>полной автоматизации</span>
           </h2>
           <p className={`${DESIGN_TOKENS.typography.sectionSubtitle} max-w-3xl`}>
             Простая и интуитивная настройка AI-ассистента без технических навыков
@@ -372,7 +378,7 @@ const SetupStepsSection = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: 0.2 }}
                       >
-                        <button className="w-full bg-gradient-to-r from-purple-500 to-violet-600 text-white py-2.5 px-4 rounded-xl font-medium text-sm transition-all duration-200 hover:from-purple-600 hover:to-violet-700 hover:shadow-md active:scale-95">
+                        <button className="w-full bg-gradient-to-r from-purple-500 to-violet-600 text-white py-2.5 px-4 rounded-xl font-medium text-sm transition-all duration-200 active:scale-95">
                           Продолжить шаг {step.id}
                         </button>
                       </motion.div>
@@ -406,11 +412,11 @@ const SetupStepsSection = () => {
                 <motion.div
                   key={step.id}
                   className={`
-                    relative bg-white rounded-2xl border transition-all duration-300 cursor-pointer
+                    relative bg-white rounded-2xl border transition-all duration-300
                     ${statusColors.border} ${statusColors.bg}
-                    ${step.status === 'current' ? 'shadow-lg hover:shadow-xl border-purple-300' :
-                      step.status === 'completed' ? 'shadow-md hover:shadow-lg' :
-                      'shadow-sm hover:shadow-md border-gray-200'}
+                    ${step.status === 'current' ? 'shadow-lg border-purple-300' :
+                      step.status === 'completed' ? 'shadow-md' :
+                      'shadow-sm border-gray-200'}
                   `}
                   {...DESIGN_TOKENS.animation.withDelay(0.5 + index * 0.1)}
                   onClick={() => setActiveStep(index)}
@@ -516,7 +522,7 @@ const SetupStepsSection = () => {
               onClick={() => router.push('/register')}
               className="px-8 py-2.5 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200 h-11 relative overflow-hidden bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 hover:from-purple-700 hover:via-violet-700 hover:to-indigo-700"
             >
-              <span className="absolute inset-0 z-0 animate-wave-gradient bg-gradient-to-r from-[#6334E5] via-[#6334E5] to-[#6334E5]" />
+              <span className="absolute inset-0 z-0 animate-wave-gradient bg-gradient-to-r from-[#6334E5] via-[#6334E5] to-[#6334E5] opacity-30 hover:opacity-60 transition-opacity duration-300" />
               <span className="relative z-10">Начать настройку</span>
             </button>
           </motion.div>

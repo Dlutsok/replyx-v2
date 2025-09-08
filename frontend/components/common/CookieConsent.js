@@ -73,7 +73,7 @@ export default function CookieConsent() {
             <div className="text-sm font-semibold text-gray-900">Мы используем cookies</div>
             <div className="mt-1 text-xs text-gray-600">
               Cookies помогают улучшать сайт и анализировать трафик.{' '}
-              <a className="underline hover:text-purple-600" href="/privacy">Политика конфиденциальности</a>.
+              <a className="underline hover:text-purple-600" href="/legal/privacy">Политика конфиденциальности</a>.
             </div>
           </div>
 

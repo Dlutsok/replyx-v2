@@ -97,7 +97,7 @@
   margin-bottom: 16px;
   text-align: center;
   letter-spacing: -0.01em;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
 }
 
 .verifySubtitle {
@@ -107,7 +107,7 @@
   margin-bottom: 32px;
   text-align: center;
   line-height: 1.5;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
   max-width: 300px;
 }
 
@@ -124,7 +124,7 @@
   border-radius: 0.75rem;
   border: 1px solid #E5E7EB;
   background: #FFFFFF;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
   font-weight: 500;
   font-size: 18px;
   text-align: center;
@@ -163,7 +163,7 @@
   border-radius: 0.75rem;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
   letter-spacing: -0.01em;
   backdrop-filter: blur(10px);
   margin-bottom: 20px;
@@ -198,7 +198,7 @@
   color: #9CA3AF;
   text-align: center;
   margin-bottom: 24px;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
   font-weight: 400;
   letter-spacing: -0.01em;
 }
@@ -216,7 +216,7 @@
   font-weight: 600;
   color: #1F2937;
   letter-spacing: -0.02em;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
 }
 
 /* Title Styles */
@@ -227,7 +227,7 @@
   margin-bottom: 36px;
   text-align: center;
   letter-spacing: -0.01em;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
 }
 
 /* Title with subtitle - for forgot password page */
@@ -243,7 +243,7 @@
   margin-bottom: 32px;
   text-align: center;
   line-height: 1.5;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
   max-width: 280px;
 }
 
@@ -273,7 +273,7 @@
   color: #1F2937;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   font-weight: 400;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
   letter-spacing: -0.01em;
   backdrop-filter: blur(10px);
 }
@@ -342,7 +342,7 @@
   font-size: 13px;
   font-weight: 400;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
   letter-spacing: -0.01em;
 }
 
@@ -364,7 +364,7 @@
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   margin-bottom: 20px;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
   letter-spacing: -0.01em;
   box-shadow: 0 2px 4px rgba(124, 77, 255, 0.15);
   position: relative;
@@ -439,7 +439,7 @@
   font-size: 13px;
   color: #9CA3AF;
   text-align: center;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
   letter-spacing: -0.01em;
   font-weight: 400;
 }
@@ -464,7 +464,7 @@
   color: #9CA3AF;
   text-align: center;
   line-height: 1.6;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
   font-weight: 400;
   letter-spacing: -0.01em;
 }

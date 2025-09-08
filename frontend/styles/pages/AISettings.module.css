@@ -6,7 +6,7 @@
   min-height: 100vh;
   background: #ffffff;
   padding: 32px;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
 
 /* Адаптивность для мобильных */

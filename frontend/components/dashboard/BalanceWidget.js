@@ -60,8 +60,8 @@ const BalanceWidget = React.memo(({ balance, loading, onRefresh }) => {
       {/* Заголовок */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-purple-50 border border-purple-200 rounded-lg flex items-center justify-center">
-            <FiCreditCard className="text-purple-600" size={18} />
+          <div className="w-8 h-8 bg-[#6334E5]/10 border border-[#6334E5]/20 rounded-lg flex items-center justify-center">
+            <FiCreditCard className="text-[#6334E5]" size={18} />
           </div>
           <h3 className="text-lg font-semibold text-gray-900">Баланс</h3>
         </div>
@@ -85,7 +85,7 @@ const BalanceWidget = React.memo(({ balance, loading, onRefresh }) => {
       {/* Кнопка пополнения */}
       <button
         onClick={handleTopUp}
-        className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-3 rounded-xl font-medium transition-all duration-150 flex items-center justify-center gap-2"
+        className="w-full bg-[#6334E5] hover:bg-[#5228CC] text-white px-4 py-3 rounded-xl font-medium transition-all duration-150 flex items-center justify-center gap-2"
       >
         <FiCreditCard size={18} />
         Пополнить баланс

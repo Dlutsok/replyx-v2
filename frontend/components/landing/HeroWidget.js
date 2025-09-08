@@ -11,10 +11,10 @@ const HeroWidget = () => {
 
   const themes = {
     purple: {
-      primary: '#7c3aed',
+      primary: '#4b5563',
       secondary: '#e9d5ff',
       accent: '#6d28d9',
-      gradient: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)',
+      gradient: 'linear-gradient(135deg, #4b5563 0%, #374151 100%)',
       light: '#faf5ff'
     }
   };
@@ -154,12 +154,15 @@ const HeroWidget = () => {
     .hero-header-info p {
       margin: 2px 0 0 0;
       font-size: 13px;
-      color: #6b7280;
+      color: #10b981;
     }
 
     .hero-ai-badge {
       margin-left: auto;
-      color: #6b7280;
+      background: linear-gradient(269deg, rgb(99, 52, 229) 28.67%, rgb(117, 197, 237) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
       padding: 4px 8px;
       font-size: 12px;
       font-weight: 600;
@@ -343,7 +346,7 @@ const HeroWidget = () => {
     }
 
     .hero-brand-name {
-      color: ${currentTheme.primary};
+      color: #6334E5;
       font-weight: 700;
     }
   `;
@@ -355,33 +358,33 @@ const HeroWidget = () => {
         {/* Dynamic animated background */}
         <div className="absolute inset-0 -m-8">
           <motion.div
-            className="absolute -top-16 -right-10 w-48 h-48 rounded-full blur-2xl opacity-70"
+            className="absolute -top-16 -right-10 w-52 h-52 rounded-full blur-2xl opacity-85"
             style={{
-              background: 'radial-gradient(circle, rgba(147,51,234,0.4) 0%, rgba(168,85,247,0.3) 35%, rgba(192,132,252,0.2) 70%, transparent 100%)'
+              background: 'radial-gradient(circle, rgba(147,51,234,0.6) 0%, rgba(168,85,247,0.5) 35%, rgba(192,132,252,0.4) 70%, transparent 100%)'
             }}
             animate={{
-              scale: [1, 1.2, 1],
-              x: [0, 10, 0],
-              y: [0, -5, 0]
+              scale: [1, 1.3, 1],
+              x: [0, 15, 0],
+              y: [0, -8, 0]
             }}
             transition={{
-              duration: 8,
+              duration: 7,
               repeat: Infinity,
               ease: "easeInOut"
             }}
           />
           <motion.div
-            className="absolute -bottom-12 -left-8 w-40 h-40 rounded-full blur-2xl opacity-60"
+            className="absolute -bottom-12 -left-8 w-44 h-44 rounded-full blur-2xl opacity-75"
             style={{
-              background: 'radial-gradient(circle, rgba(59,130,246,0.4) 0%, rgba(147,51,234,0.3) 50%, rgba(168,85,247,0.2) 80%, transparent 100%)'
+              background: 'radial-gradient(circle, rgba(59,130,246,0.6) 0%, rgba(147,51,234,0.5) 50%, rgba(168,85,247,0.4) 80%, transparent 100%)'
             }}
             animate={{
-              scale: [1.1, 0.9, 1.1],
-              x: [0, -8, 0],
-              y: [0, 8, 0]
+              scale: [1.2, 0.8, 1.2],
+              x: [0, -12, 0],
+              y: [0, 12, 0]
             }}
             transition={{
-              duration: 6,
+              duration: 5.5,
               repeat: Infinity,
               ease: "easeInOut",
               delay: 1
@@ -398,7 +401,18 @@ const HeroWidget = () => {
           {/* Chat Header */}
           <div className="hero-chat-header">
             <div className="hero-avatar">
-              R
+              <img
+                alt="ReplyX"
+                loading="lazy"
+                width="32"
+                height="32"
+                decoding="async"
+                src="/favicon.svg"
+                style={{
+                  color: 'transparent',
+                  borderRadius: '50%'
+                }}
+              />
             </div>
             <div className="hero-header-info">
               <h3>ReplyX</h3>

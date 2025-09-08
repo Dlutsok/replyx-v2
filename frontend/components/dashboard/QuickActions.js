@@ -43,8 +43,8 @@ const QuickActions = React.memo(({ assistants, onRefresh }) => {
       title: 'Создать ассистента',
       description: 'AI-помощник',
       icon: FiMessageSquare,
-      iconBg: 'bg-purple-100',
-      iconColor: 'text-purple-700',
+      iconBg: 'bg-[#6334E5]/10',
+      iconColor: 'text-[#6334E5]',
       action: handleCreateAssistant
     },
     {
@@ -52,8 +52,8 @@ const QuickActions = React.memo(({ assistants, onRefresh }) => {
       title: 'Загрузить документы',
       description: 'База знаний',
       icon: FiUpload,
-      iconBg: 'bg-emerald-100',
-      iconColor: 'text-emerald-700',
+      iconBg: 'bg-[#6334E5]/10',
+      iconColor: 'text-[#6334E5]',
       action: handleUploadDocuments
     },
     {
@@ -61,8 +61,8 @@ const QuickActions = React.memo(({ assistants, onRefresh }) => {
       title: 'Аналитика',
       description: 'Статистика',
       icon: FiBarChart,
-      iconBg: 'bg-blue-100',
-      iconColor: 'text-blue-700',
+      iconBg: 'bg-[#6334E5]/10',
+      iconColor: 'text-[#6334E5]',
       action: handleViewAnalytics
     },
     {
@@ -111,8 +111,8 @@ const QuickActions = React.memo(({ assistants, onRefresh }) => {
     <div className="bg-white rounded-xl border border-gray-200 p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
       {/* Заголовок */}
       <div className="flex items-center gap-2 sm:gap-3 md:gap-3 lg:gap-3 xl:gap-4 mb-3 sm:mb-4 md:mb-4 lg:mb-5 xl:mb-6">
-        <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-7 md:h-7 lg:w-8 lg:h-8 xl:w-9 xl:h-9 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
-          <FiZap className="text-blue-600" size={12} />
+        <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-7 md:h-7 lg:w-8 lg:h-8 xl:w-9 xl:h-9 bg-[#6334E5]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+          <FiZap className="text-[#6334E5]" size={12} />
         </div>
         <h3 className="text-base sm:text-base md:text-lg lg:text-lg xl:text-xl font-semibold text-gray-900">Быстрые действия</h3>
       </div>
@@ -122,18 +122,18 @@ const QuickActions = React.memo(({ assistants, onRefresh }) => {
         {/* Создать ассистента */}
         <div
           onClick={handleCreateAssistant}
-          className="bg-gray-50 rounded-xl p-2 sm:p-3 md:p-3 lg:p-4 xl:p-5 border border-gray-200 hover:border-purple-300 hover:bg-purple-50/50 transition-all duration-200 cursor-pointer group active:scale-[0.98] sm:active:scale-100"
+          className="bg-gray-50 rounded-xl p-2 sm:p-3 md:p-3 lg:p-4 xl:p-5 border border-gray-200 hover:border-[#6334E5]/30 hover:bg-[#6334E5]/5 transition-all duration-200 cursor-pointer group active:scale-[0.98] sm:active:scale-100"
         >
           <div className="flex items-center gap-2 sm:gap-2 md:gap-3 lg:gap-3 xl:gap-3 mb-1 sm:mb-1 md:mb-2 lg:mb-2 xl:mb-2">
-            <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-7 md:h-7 lg:w-8 lg:h-8 xl:w-9 xl:h-9 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors flex-shrink-0">
-              <FiMessageSquare className="text-purple-600" size={12} />
+            <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-7 md:h-7 lg:w-8 lg:h-8 xl:w-9 xl:h-9 bg-[#6334E5]/10 rounded-lg flex items-center justify-center group-hover:bg-[#6334E5]/20 transition-colors flex-shrink-0">
+              <FiMessageSquare className="text-[#6334E5]" size={12} />
             </div>
             <div className="min-w-0 flex-1">
               <h3 className="font-semibold text-gray-900 text-sm truncate">Создать ассистента</h3>
               <p className="text-sm text-gray-500 leading-tight">Новый AI-помощник</p>
             </div>
           </div>
-          <div className="flex items-center text-sm text-purple-600 font-medium">
+          <div className="flex items-center text-sm text-[#6334E5] font-medium">
             Начать <FiChevronRight className="ml-1" size={10} />
           </div>
         </div>
@@ -176,18 +176,18 @@ const QuickActions = React.memo(({ assistants, onRefresh }) => {
         {/* Аналитика */}
         <div
           onClick={handleViewAnalytics}
-          className="bg-gray-50 rounded-xl p-2 sm:p-3 md:p-3 lg:p-4 xl:p-5 border border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 transition-all duration-200 cursor-pointer group active:scale-[0.98] sm:active:scale-100"
+          className="bg-gray-50 rounded-xl p-2 sm:p-3 md:p-3 lg:p-4 xl:p-5 border border-gray-200 hover:border-[#6334E5]/30 hover:bg-[#6334E5]/5 transition-all duration-200 cursor-pointer group active:scale-[0.98] sm:active:scale-100"
         >
           <div className="flex items-center gap-2 sm:gap-2 md:gap-3 lg:gap-3 xl:gap-3 mb-1 sm:mb-1 md:mb-2 lg:mb-2 xl:mb-2">
-            <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-7 md:h-7 lg:w-8 lg:h-8 xl:w-9 xl:h-9 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors flex-shrink-0">
-              <FiBarChart className="text-blue-600" size={12} />
+            <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-7 md:h-7 lg:w-8 lg:h-8 xl:w-9 xl:h-9 bg-[#6334E5]/10 rounded-lg flex items-center justify-center group-hover:bg-[#6334E5]/20 transition-colors flex-shrink-0">
+              <FiBarChart className="text-[#6334E5]" size={12} />
             </div>
             <div className="min-w-0 flex-1">
               <h3 className="font-semibold text-gray-900 text-sm truncate">Аналитика</h3>
               <p className="text-sm text-gray-500 leading-tight">Статистика работы</p>
             </div>
           </div>
-          <div className="flex items-center text-sm text-blue-600 font-medium">
+          <div className="flex items-center text-sm text-[#6334E5] font-medium">
             Посмотреть <FiChevronRight className="ml-1" size={10} />
           </div>
         </div>
@@ -197,14 +197,14 @@ const QuickActions = React.memo(({ assistants, onRefresh }) => {
           onClick={handleGetEmbedCode}
           className={`bg-gray-50 rounded-xl p-2 sm:p-3 md:p-3 lg:p-4 xl:p-5 border transition-all duration-200 cursor-pointer group active:scale-[0.98] sm:active:scale-100 ${
             assistants.length > 0
-              ? 'border-gray-200 hover:border-blue-300 hover:bg-blue-50/50'
+              ? 'border-gray-200 hover:border-[#6334E5]/30 hover:bg-[#6334E5]/5'
               : 'border-gray-100 opacity-60'
           }`}
         >
           <div className="flex items-center gap-2 sm:gap-2 md:gap-3 lg:gap-3 xl:gap-3 mb-1 sm:mb-1 md:mb-2 lg:mb-2 xl:mb-2">
             <div className={`w-6 h-6 sm:w-7 sm:h-7 md:w-7 md:h-7 lg:w-8 lg:h-8 xl:w-9 xl:h-9 rounded-lg flex items-center justify-center transition-colors flex-shrink-0 ${
               assistants.length > 0
-                ? 'bg-blue-100 group-hover:bg-blue-200 text-blue-600'
+                ? 'bg-[#6334E5]/10 group-hover:bg-[#6334E5]/20 text-[#6334E5]'
                 : 'bg-gray-100 text-gray-400'
             }`}>
               <FiZap size={12} />
@@ -221,7 +221,7 @@ const QuickActions = React.memo(({ assistants, onRefresh }) => {
             </div>
           </div>
           <div className={`flex items-center text-sm font-medium ${
-            assistants.length > 0 ? 'text-blue-600' : 'text-gray-400'
+            assistants.length > 0 ? 'text-[#6334E5]' : 'text-gray-400'
           }`}>
             {assistants.length > 0 ? 'Получить' : 'Недоступно'} <FiChevronRight className="ml-1" size={10} />
           </div>

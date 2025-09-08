@@ -116,7 +116,7 @@ function BlogHeader() {
           <Link href="/" className={blogStyles.navLink}>Главная</Link>
           <Link href="#features" className={blogStyles.navLink}>Возможности</Link>
           <Link href="#pricing" className={blogStyles.navLink}>Тарифы</Link>
-          <Link href="/blog" className={`${blogStyles.navLink} ${blogStyles.active}`}>Блог</Link>
+          <Link href="/blog" className={`${blogStyles.navLink} ${blogStyles.active}`} style={{display: 'none'}}>Блог</Link>
         </nav>
 
         <div className={blogStyles.headerActions}>
@@ -258,7 +258,13 @@ function BlogSidebar({ selectedCategory, onCategoryChange }) {
 }
 
 export default function Blog() {
+  const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState('Все');
+
+  // Редирект на главную страницу - блог временно недоступен
+  useEffect(() => {
+    router.push('/');
+  }, [router]);
 
   const filteredPosts = selectedCategory === 'Все'
     ? blogPosts
@@ -273,6 +279,7 @@ export default function Blog() {
         <title>Блог ReplyX | Инсайты и кейсы мира AI</title>
         <meta name="description" content="Профессиональные статьи о внедрении искусственного интеллекта, реальные кейсы и практические руководства для бизнеса." />
         <meta name="keywords" content="AI, искусственный интеллект, бизнес, кейсы, аналитика, руководства" />
+        <meta name="robots" content="noindex, nofollow" />
         <link rel="canonical" href="https://replyx.ru/blog" />
 
         <meta property="og:title" content="Блог ReplyX | Инсайты и кейсы мира AI" />
@@ -348,7 +355,7 @@ export default function Blog() {
           <div className={blogStyles.footerRight}>
             <div className={blogStyles.footerColumn}>
               <div className={blogStyles.footerColumnTitle}>Компания</div>
-              <Link href="/blog" className={blogStyles.footerLink}>Блог</Link>
+              <Link href="/blog" className={blogStyles.footerLink} style={{display: 'none'}}>Блог</Link>
               <a href="mailto:support@replyx.ru" className={blogStyles.footerLink}>Поддержка</a>
             </div>
             <div className={blogStyles.footerCopyright}>

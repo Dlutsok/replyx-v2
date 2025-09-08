@@ -124,7 +124,7 @@ const styles = `
     bottom: 0px;
     right: 0px;
     pointer-events: none;
-    font-family: 'Intel One Mono', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-size: 14px;
   }
 

@@ -36,7 +36,7 @@ class BalanceService:
             raise ValueError("Сумма пополнения должна быть положительной")
         
         balance = self.get_or_create_balance(user_id)
-        balance_before = balance.balance
+        balance_before = float(balance.balance)
         balance_after = balance_before + amount
         
         # Создаем транзакцию
@@ -51,7 +51,7 @@ class BalanceService:
         
         # Обновляем баланс
         balance.balance = balance_after
-        balance.total_topped_up += amount
+        balance.total_topped_up = float(balance.total_topped_up) + amount
         balance.updated_at = datetime.utcnow()
         
         # Добавляем измененные объекты в сессию
@@ -84,7 +84,7 @@ class BalanceService:
             logger.warning(f"Недостаточно средств у пользователя {user_id}. Баланс: {balance.balance}, требуется: {amount}")
             raise ValueError(f"Недостаточно средств. Баланс: {balance.balance} руб., требуется: {amount} руб.")
         
-        balance_before = balance.balance
+        balance_before = float(balance.balance)
         balance_after = balance_before - amount
         
         # Создаем транзакцию
@@ -100,7 +100,7 @@ class BalanceService:
         
         # Обновляем баланс
         balance.balance = balance_after
-        balance.total_spent += amount
+        balance.total_spent = float(balance.total_spent) + amount
         balance.updated_at = datetime.utcnow()
         
         # Добавляем измененные объекты в сессию

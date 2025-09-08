@@ -291,7 +291,7 @@ const BenchmarksSection = () => {
 
 
   return (
-    <section className="relative min-h-[600px] md:min-h-[700px] flex items-center overflow-hidden pb-20">
+    <section className="relative min-h-[600px] md:min-h-[700px] flex items-center overflow-hidden pb-20 lg:pt-20">
       {/* Hero-style gradient background */}
       <div className="absolute inset-0 bg-gradient-to-b from-white via-white to-purple-50/30 pointer-events-none" />
 

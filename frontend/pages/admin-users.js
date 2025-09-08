@@ -4,7 +4,7 @@ import { useNotifications } from '../hooks/useNotifications';
 import AdminDashboard from '../components/layout/AdminDashboard';
 import { 
   FiUsers, FiSearch, FiFilter, FiDollarSign, FiCalendar, FiMail, 
-  FiEdit, FiTrash2, FiUserCheck, FiUserX
+  FiEdit, FiTrash2, FiUserCheck, FiUserX, FiPlus, FiUserPlus
 } from 'react-icons/fi';
 import styles from '../styles/pages/AdminUsers.module.css';
 
@@ -26,6 +26,14 @@ const AdminUsersPage = () => {
     first_name: '',
     role: '',
     status: ''
+  });
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createUserData, setCreateUserData] = useState({
+    email: '',
+    password: '',
+    first_name: '',
+    role: 'user',
+    status: 'active'
   });
 
   useEffect(() => {
@@ -251,11 +259,68 @@ const AdminUsersPage = () => {
     setErrorMessage('');
   };
 
+  const handleCreateUser = async () => {
+    if (!createUserData.email || !createUserData.password) {
+      setErrorMessage('Email и пароль обязательны для заполнения');
+      return;
+    }
+
+    // Простая валидация email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(createUserData.email)) {
+      setErrorMessage('Введите корректный email адрес');
+      return;
+    }
+
+    if (createUserData.password.length < 6) {
+      setErrorMessage('Пароль должен содержать минимум 6 символов');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMessage('');
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/admin/users/create', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(createUserData)
+      });
+
+      if (response.ok) {
+        const newUser = await response.json();
+        await fetchUsers();
+        setShowCreateModal(false);
+        setCreateUserData({
+          email: '',
+          password: '',
+          first_name: '',
+          role: 'user',
+          status: 'active'
+        });
+        setErrorMessage('');
+        showSuccess(`Пользователь ${newUser.email} успешно создан!`);
+      } else {
+        const error = await response.json();
+        setErrorMessage(error.detail || 'Не удалось создать пользователя');
+      }
+    } catch (error) {
+      console.error('Error creating user:', error);
+      setErrorMessage('Ошибка сети. Проверьте подключение и попробуйте снова.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
 
   if (isLoading) {
     return (
       <AdminDashboard activeSection="users">
-        <div className="bg-white px-4 sm:px-6 xl:px-8 pt-4 sm:pt-6 xl:pt-8 pb-4 sm:pb-6 xl:pb-8">
+        <div className="bg-white px-4 sm:px-6 xl:px-8 pt-4 sm:pt-6 xl:pt-8 pb-4 sm:pb-6 xl:pb-8 rounded-2xl">
           <div className="flex flex-col items-center justify-center py-12">
             <div className="w-8 h-8 border-2 border-gray-300 border-t-purple-600 rounded-full animate-spin mb-4"></div>
             <p className="text-sm text-gray-600 font-medium">Загрузка пользователей...</p>
@@ -286,6 +351,20 @@ const AdminUsersPage = () => {
                   </p>
                 </div>
               </div>
+            </div>
+
+            {/* Правая часть - кнопка добавления */}
+            <div className="flex-shrink-0">
+              <button
+                className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-xl transition-all duration-150"
+                onClick={() => {
+                  setShowCreateModal(true);
+                  setErrorMessage('');
+                }}
+              >
+                <FiUserPlus size={16} />
+                Добавить пользователя
+              </button>
             </div>
           </div>
         </div>
@@ -637,6 +716,139 @@ const AdminUsersPage = () => {
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? '⏳ Сохранение...' : 'Сохранить'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Create User Modal */}
+        {showCreateModal && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-xl border border-gray-200 max-w-md w-full max-h-[90vh] overflow-hidden">
+              <div className="flex items-center justify-between p-4 sm:p-5 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900">Добавить нового пользователя</h3>
+                <button
+                  className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors duration-150"
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    setCreateUserData({
+                      email: '',
+                      password: '',
+                      first_name: '',
+                      role: 'user',
+                      status: 'active'
+                    });
+                    setErrorMessage('');
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="p-4 sm:p-5 space-y-4">
+                {/* Error Message */}
+                {errorMessage && (
+                  <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-lg p-3">
+                    <span className="text-red-600 mt-0.5">⚠️</span>
+                    <p className="text-sm text-red-800">{errorMessage}</p>
+                  </div>
+                )}
+
+                {/* Email Input */}
+                <div className="space-y-2">
+                  <label htmlFor="create_email" className="text-sm font-medium text-gray-700">Email <span className="text-red-500">*</span></label>
+                  <input
+                    id="create_email"
+                    type="email"
+                    value={createUserData.email}
+                    onChange={(e) => setCreateUserData({...createUserData, email: e.target.value})}
+                    placeholder="user@example.com"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150"
+                    required
+                  />
+                </div>
+
+                {/* Password Input */}
+                <div className="space-y-2">
+                  <label htmlFor="create_password" className="text-sm font-medium text-gray-700">Пароль <span className="text-red-500">*</span></label>
+                  <input
+                    id="create_password"
+                    type="password"
+                    value={createUserData.password}
+                    onChange={(e) => setCreateUserData({...createUserData, password: e.target.value})}
+                    placeholder="Минимум 6 символов"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150"
+                    required
+                  />
+                  <p className="text-xs text-gray-500">Пароль должен содержать минимум 6 символов</p>
+                </div>
+
+                {/* Name Input */}
+                <div className="space-y-2">
+                  <label htmlFor="create_first_name" className="text-sm font-medium text-gray-700">Имя</label>
+                  <input
+                    id="create_first_name"
+                    type="text"
+                    value={createUserData.first_name}
+                    onChange={(e) => setCreateUserData({...createUserData, first_name: e.target.value})}
+                    placeholder="Введите имя пользователя"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150"
+                  />
+                </div>
+
+                {/* Role Select */}
+                <div className="space-y-2">
+                  <label htmlFor="create_role" className="text-sm font-medium text-gray-700">Роль</label>
+                  <select
+                    id="create_role"
+                    value={createUserData.role}
+                    onChange={(e) => setCreateUserData({...createUserData, role: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150"
+                  >
+                    <option value="user">Пользователь</option>
+                    <option value="admin">Администратор</option>
+                  </select>
+                </div>
+
+                {/* Status Select */}
+                <div className="space-y-2">
+                  <label htmlFor="create_status" className="text-sm font-medium text-gray-700">Статус</label>
+                  <select
+                    id="create_status"
+                    value={createUserData.status}
+                    onChange={(e) => setCreateUserData({...createUserData, status: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150"
+                  >
+                    <option value="active">Активен</option>
+                    <option value="inactive">Неактивен</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex gap-3 p-4 sm:p-5 border-t border-gray-200 justify-end">
+                <button
+                  className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-all duration-150"
+                  onClick={() => {
+                    setShowCreateModal(false);
+                    setCreateUserData({
+                      email: '',
+                      password: '',
+                      first_name: '',
+                      role: 'user',
+                      status: 'active'
+                    });
+                    setErrorMessage('');
+                  }}
+                >
+                  Отмена
+                </button>
+                <button
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleCreateUser}
+                  disabled={!createUserData.email || !createUserData.password || isSubmitting}
+                >
+                  {isSubmitting ? '⏳ Создание...' : 'Создать пользователя'}
                 </button>
               </div>
             </div>

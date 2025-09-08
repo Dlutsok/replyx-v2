@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 
-export default function TermsRedirect() {
+export default function CookiesRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/legal/terms');
+    router.replace('/legal/cookies');
   }, [router]);
 
   return null;

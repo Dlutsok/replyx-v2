@@ -173,9 +173,9 @@
   justify-content: center;
   width: 36px;
   height: 36px;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
   cursor: pointer;
   transition: all 0.15s ease;
   color: #6b7280;
@@ -183,9 +183,9 @@
 }
 
 .notificationButton:hover {
-  background: #f9fafb;
-  border-color: #d1d5db;
-  color: #374151;
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #334155;
 }
 
 .notificationIcon {
@@ -343,16 +343,18 @@
   justify-content: center;
   width: 36px;
   height: 36px;
-  background: #6b7280;
-  border: none;
-  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
   cursor: pointer;
   transition: all 0.15s ease;
-  color: white;
+  color: #6b7280;
 }
 
 .profileButton:hover {
-  background: #4b5563;
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #334155;
 }
 
 .profileIcon {

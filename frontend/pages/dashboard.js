@@ -43,7 +43,7 @@ function WidgetToggleBar({ availableWidgets, hiddenWidgets, toggleWidget }) {
           className={`flex items-center px-3 py-2 rounded-xl text-sm font-semibold transition-all duration-150 ${
             hiddenWidgets.has(widget.id)
               ? 'bg-white border border-gray-300 text-gray-600 hover:border-gray-400'
-              : 'bg-purple-600 text-white border border-purple-600 hover:bg-purple-700'
+              : 'bg-[#6334E5] text-white border border-[#6334E5] hover:bg-[#5228CC]'
           }`}
         >
           {hiddenWidgets.has(widget.id) ? <FiEyeOff className="w-3 h-3 mr-1" /> : <FiEye className="w-3 h-3 mr-1" />}
@@ -238,7 +238,7 @@ const Dashboard = React.memo(function Dashboard() {
         <meta name="description" content="Управление AI-ассистентами, диалогами и настройками аккаунта в ReplyX." />
         <meta name="robots" content="noindex, nofollow" />
       </Head>
-      <div className="bg-white px-4 sm:px-6 xl:px-8 pt-4 sm:pt-6 xl:pt-8 pb-4 sm:pb-6 xl:pb-8">
+      <div className="bg-white px-4 sm:px-6 xl:px-8 pt-4 sm:pt-6 xl:pt-8 pb-4 sm:pb-6 xl:pb-8 rounded-2xl">
         {/* Error Alert */}
       {error && (
         <div className={dashStyles.errorAlert}>
@@ -254,7 +254,7 @@ const Dashboard = React.memo(function Dashboard() {
           <div className="flex-1 min-w-0">
             <div className="flex items-start sm:items-center gap-3 mb-3 sm:mb-4">
               <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 lg:w-11 lg:h-11 xl:w-12 xl:h-12 bg-gray-50 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
-                <FiUser className="text-gray-600" size={12} />
+                <FiUser className="text-gray-600" size={28} />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-col gap-1 sm:gap-2 mb-2">

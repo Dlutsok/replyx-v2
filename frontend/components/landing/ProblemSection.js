@@ -155,7 +155,13 @@ const ProblemSection = () => {
         className="mt-20"
         title={
           <>
-            Каждое обращение — быстрый и точный ответ с <span className="text-[#6334E5]">ReplyX</span>
+            Каждое обращение — быстрый и точный ответ с <span style={{
+              background: 'linear-gradient(269deg, rgb(99, 52, 229) 28.67%, rgb(117, 197, 237) 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              display: 'inline-block'
+            }}>ReplyX</span>
           </>
         }
         subtitle="Полная автоматизация поддержки без потери качества"
@@ -272,8 +278,8 @@ const ProblemSection = () => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-50px' }}
         transition={{ duration: 0.5, delay: 0.15, ease: 'easeOut' }}
-        className="mt-6 rounded-xl py-8 px-6 bg-gradient-to-r from-[#6334E5] via-[#6334E5] to-[#6334E5] border border-[#6334E5]"
-      >
+        className="mt-6 rounded-xl py-8 px-6"
+        style={{background: 'linear-gradient(269deg,#6334E5 28.67%,#75c5ed 112.22%)'}}>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 lg:gap-8">
           {metrics.map((metric, index) => (
             <div key={index} className="flex items-center gap-2 text-sm">

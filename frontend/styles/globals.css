@@ -640,8 +640,8 @@ a {
 }
 
 .new-button-effect:hover {
-  background: rgb(193, 228, 248);
-  color: rgb(33, 0, 85);
+  background: #6C2BD9;
+  color: white;
 }
 
 .new-button-effect:active {
@@ -661,12 +661,10 @@ a {
 }
 
 .hoverEffect div {
-  background: rgb(222, 0, 75);
   background: linear-gradient(
     90deg,
-    rgba(222, 0, 75, 1) 0%,
-    rgba(191, 70, 255, 1) 49%,
-    rgba(0, 212, 255, 1) 100%
+    #6334E5 0%,
+    #75c5ed 100%
   );
   border-radius: 40rem;
   width: 10rem;

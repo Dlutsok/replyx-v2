@@ -12,7 +12,7 @@
   top: 0;
   left: 0;
   z-index: 101;
-  padding: 16px 0;
+  padding: 0px 0 16px 0;
 }
 
 .sidebar.collapsed {
@@ -25,6 +25,49 @@
   align-items: center;
   justify-content: center;
   margin-bottom: 24px;
+}
+
+/* Фавиконка приложения */
+.faviconContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  padding: 4px 0 8px 0;
+}
+
+.faviconLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.faviconLink:hover {
+  transform: scale(1.05);
+}
+
+.faviconIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.faviconIcon:hover {
+  transform: scale(1.1);
+}
+
+.faviconIcon svg {
+  width: 32px;
+  height: 32px;
+  filter: none;
 }
 
 .logo {
@@ -47,7 +90,7 @@
 }
 
 .logoIcon:hover {
-  background: #7C3AED;
+  background: #6334E5;
   transform: scale(1.05);
 }
 
@@ -103,7 +146,7 @@
 }
 
 .logoIcon:hover {
-  background: #7C3AED;
+  background: #6334E5;
   transform: scale(1.05);
 }
 
@@ -141,6 +184,11 @@
   .menuLink {
     justify-content: flex-start;
     text-align: left;
+  }
+
+  /* Скрываем фавиконку на мобильных устройствах, так как там уже есть логотип */
+  .faviconContainer {
+    display: none;
   }
 }
 
@@ -197,12 +245,12 @@
 }
 
 .menuLink.active {
-  background: #7C3AED;
+  background: #6334E5;
   color: #ffffff;
 }
 
 .menuLink.active:hover {
-  background: #6C2BD9;
+  background: #5228CC;
   color: #ffffff;
   transform: scale(1.05);
 }
@@ -383,9 +431,15 @@
     transform: translateX(0);
   }
 
+  /* Мобильная адаптация favicon */
+  .faviconContainer {
+    margin-bottom: 16px;
+    padding: 8px 0 4px 0;
+  }
+
   /* Стили для активных пунктов на мобильных */
   .menuLink.active .menuText {
-    color: #7C3AED;
+    color: #6334E5;
     font-weight: 500;
   }
 
@@ -486,6 +540,15 @@
   border-right-color: #4b5563;
 }
 
+/* Фавиконка в темной теме */
+[data-theme="dark"] .faviconIcon svg {
+  filter: brightness(0.8);
+}
+
+[data-theme="dark"] .faviconIcon:hover svg {
+  filter: brightness(1);
+}
+
 /* Отключаем темную тему на мобильных устройствах */
 @media (max-width: 768px) {
   [data-theme="dark"] .sidebar {
@@ -564,7 +627,7 @@
   }
 
   [data-theme="dark"] .logoIcon:hover {
-    background: #7C3AED !important;
+    background: #6334E5 !important;
     transform: scale(1.05) !important;
   }
 
@@ -660,7 +723,7 @@
   }
 
   [data-theme="dark"] .menuLink.active {
-    background: #7C3AED;
+    background: #6334E5;
     color: #ffffff;
   }
 
@@ -719,12 +782,551 @@
   }
 }
 
+/* Попап о компании */
+.popupOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.2s ease;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.popupContent {
+  background: #ffffff;
+  border-radius: 16px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  animation: slideUp 0.3s ease;
+  position: relative;
+}
+
+.popupClose {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #6b7280;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.popupClose:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.popupHeader {
+  display: flex;
+  align-items: center;
+  gap: 0px;
+  padding: 24px 24px 16px 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.popupIcon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.popupTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+  letter-spacing: -0.025em;
+}
+
+.popupBody {
+  padding: 24px;
+}
+
+.popupDescription {
+  font-size: 16px;
+  color: #6b7280;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.popupStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.statItem {
+  text-align: center;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 8px;
+  position: relative;
+}
+
+.statIcon {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #6334E5;
+  border-radius: 8px;
+  color: white;
+  margin: 0 auto 12px auto;
+}
+
+.statIcon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.statNumber {
+  font-size: 20px;
+  font-weight: 700;
+  color: #6334E5;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.statLabel {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+  line-height: 1.4;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.popupMission {
+  margin-bottom: 24px;
+}
+
+.popupMission h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 8px 0;
+}
+
+.popupMission p {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.6;
+  margin: 0;
+  font-weight: 400;
+}
+
+.popupFeatures h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 12px 0;
+}
+
+.popupFeatures ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.popupFeatures li {
+  font-size: 14px;
+  color: #4b5563;
+  padding: 8px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.popupFeatures li:last-child {
+  border-bottom: none;
+}
+
+.popupCallToAction {
+  margin-bottom: 24px;
+  padding: 12px 0;
+  text-align: center;
+}
+
+.popupCallToAction p {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.5;
+  margin: 0;
+  font-weight: 400;
+  font-style: normal;
+  position: relative;
+}
+
+.popupCallToAction p::before {
+  content: '"';
+  position: absolute;
+  left: -12px;
+  top: -2px;
+  font-size: 24px;
+  color: #e5e7eb;
+  font-family: serif;
+}
+
+.popupCallToAction p::after {
+  content: '"';
+  position: absolute;
+  right: -12px;
+  bottom: -2px;
+  font-size: 24px;
+  color: #e5e7eb;
+  font-family: serif;
+}
+
+.popupFooter {
+  padding: 16px 24px 24px 24px;
+  border-top: 1px solid #e5e7eb;
+  text-align: center;
+}
+
+.popupContact {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.popupContact a {
+  color: #6334E5;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.popupContact a:hover {
+  text-decoration: underline;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Темная тема для попапа */
+[data-theme="dark"] .popupContent {
+  background: #1f2937;
+  color: #f9fafb;
+}
+
+[data-theme="dark"] .popupHeader {
+  border-bottom-color: #374151;
+}
+
+[data-theme="dark"] .popupClose {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .popupClose:hover {
+  background: #374151;
+  color: #f9fafb;
+}
+
+[data-theme="dark"] .popupTitle {
+  color: #f9fafb;
+}
+
+[data-theme="dark"] .popupDescription {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .statItem {
+  background: #111827;
+}
+
+[data-theme="dark"] .statIcon {
+  background: #a78bfa;
+  color: #1f2937;
+}
+
+[data-theme="dark"] .statNumber {
+  color: #a78bfa;
+}
+
+[data-theme="dark"] .statLabel {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .popupMission h4 {
+  color: #f9fafb;
+}
+
+[data-theme="dark"] .popupMission p {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .popupCallToAction p {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .popupCallToAction p::before,
+[data-theme="dark"] .popupCallToAction p::after {
+  color: #4b5563;
+}
+
+[data-theme="dark"] .popupMission h3 {
+  color: #f9fafb;
+}
+
+[data-theme="dark"] .popupMission p {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .popupFeatures h4 {
+  color: #f9fafb;
+}
+
+[data-theme="dark"] .popupFeatures li {
+  color: #d1d5db;
+  border-bottom-color: #374151;
+}
+
+[data-theme="dark"] .popupFooter {
+  border-top-color: #374151;
+}
+
+[data-theme="dark"] .popupContact {
+  color: #9ca3af;
+}
+
+[data-theme="dark"] .popupContact a {
+  color: #a78bfa;
+}
+
+/* Адаптация для очень больших экранов */
+@media (min-width: 1440px) {
+  .popupContent {
+    max-width: 600px;
+  }
+
+  .popupTitle {
+    font-size: 28px;
+  }
+
+  .popupIcon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .popupIcon svg {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Адаптация для больших десктопов */
+@media (min-width: 1024px) {
+  .popupContent {
+    max-width: 550px;
+  }
+
+  .popupTitle {
+    font-size: 26px;
+  }
+
+  .popupIcon {
+    width: 52px;
+    height: 52px;
+  }
+
+  .popupIcon svg {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* Адаптация для планшетов */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .popupContent {
+    width: 100%;
+    max-width: 500px;
+  }
+
+  .popupTitle {
+    font-size: 22px;
+  }
+
+  .popupIcon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .popupIcon svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .popupStats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+}
+
+/* Мобильная адаптация попапа */
+@media (max-width: 767px) {
+  .popupOverlay {
+    padding: 15px;
+  }
+
+  .popupContent {
+    width: 100%;
+    max-height: calc(100vh - 30px);
+  }
+
+  .popupHeader {
+    padding: 20px 20px 12px 20px;
+  }
+
+  .popupTitle {
+    font-size: 20px;
+  }
+
+  .popupBody {
+    padding: 20px;
+  }
+
+  .popupStats {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .statItem {
+    padding: 12px;
+  }
+
+  .popupFeatures ul {
+    gap: 12px;
+  }
+
+  .popupFeatures li {
+    padding: 12px 0;
+  }
+
+  .popupMission {
+    margin-bottom: 20px;
+  }
+
+  .popupMission h4 {
+    font-size: 15px;
+  }
+
+  .popupCallToAction {
+    margin-bottom: 20px;
+    padding: 8px 0;
+  }
+
+  .popupCallToAction p::before,
+  .popupCallToAction p::after {
+    display: none;
+  }
+}
+
+/* Адаптация для очень маленьких экранов */
+@media (max-width: 480px) {
+  .popupOverlay {
+    padding: 10px;
+  }
+
+  .popupContent {
+    width: 100%;
+    max-height: calc(100vh - 20px);
+  }
+
+  .popupHeader {
+    padding: 16px 16px 10px 16px;
+  }
+
+  .popupTitle {
+    font-size: 18px;
+  }
+
+  .popupBody {
+    padding: 16px;
+  }
+
+  .popupIcon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .popupIcon svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .statItem {
+    padding: 10px;
+  }
+
+  .statIcon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .statIcon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .statNumber {
+    font-size: 18px;
+  }
+
+  .statLabel {
+    font-size: 11px;
+  }
+}
+
 /* Accessibility */
 @media (prefers-reduced-motion: reduce) {
   .sidebar,
   .menuLink,
   .toggleButton,
-  .logoIcon {
+  .logoIcon,
+  .popupOverlay,
+  .popupContent {
     transition: none;
+    animation: none;
   }
 }

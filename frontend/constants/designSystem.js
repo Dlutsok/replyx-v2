@@ -151,7 +151,7 @@ export const DESIGN_TOKENS = {
 
   // Кнопки (минималистичный стиль)
   buttons: {
-    primary: 'bg-[#7C3AED] hover:bg-[#6C2BD9] text-white px-6 py-2.5 font-medium transition-all duration-150 focus:outline-none h-11',
+    primary: 'bg-[#6334E5] hover:bg-[#6334E5] text-white px-6 py-2.5 font-medium transition-all duration-150 focus:outline-none h-11',
     secondary: 'bg-white border border-gray-300 text-gray-700 hover:border-purple-600 hover:text-purple-600 px-6 py-2.5 font-medium transition-all duration-150 h-11',
     headerButton: 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 px-4 py-2 font-medium transition-all duration-150 h-9',
     small: 'px-4 py-2 text-sm h-9',

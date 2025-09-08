@@ -1,6 +1,6 @@
 import type { AppProps } from 'next/app';
 import { useEffect } from 'react';
-import { Montserrat } from 'next/font/google';
+import { Manrope } from 'next/font/google';
 import { useRouter } from 'next/router';
 import Script from 'next/script';
 import { DashboardLayout } from '@/components/layout';
@@ -13,7 +13,7 @@ import '../styles/globals.css';
 // Import global styles for specific pages
 import '../styles/pages/AssistantPage.global.css';
 
-const montserrat = Montserrat({ subsets: ['latin', 'cyrillic'] });
+const manrope = Manrope({ subsets: ['latin', 'cyrillic'] });
 
 // Публичные маршруты (не показываем Layout)
 const PUBLIC_ROUTES = [
@@ -28,8 +28,15 @@ const PUBLIC_ROUTES = [
 // Правовые и контент-маркетинговые страницы (доступны всем, включая авторизованных пользователей)
 const LEGAL_ROUTES = [
   '/privacy',
+  '/cookies',
+  '/legal',
+  '/legal/privacy',
+  '/legal/cookies',
+  '/legal/terms',
+  '/legal/offer',
   '/terms',
   '/offer',
+  '/help-center',
   '/blog'
 ];
 
@@ -148,7 +155,7 @@ export default function App(props: AppProps) {
           `,
         }}
       />
-      <main className={montserrat.className}>
+      <main className={manrope.className}>
         <ThemeProvider>
           <GlobalLoadingProvider>
             <AuthProvider>

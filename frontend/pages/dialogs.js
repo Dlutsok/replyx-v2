@@ -148,7 +148,7 @@ export default function Dialogs() {
   }, []);
 
   return (
-    <div className="bg-white px-4 sm:px-6 xl:px-8 pt-4 sm:pt-6 xl:pt-8 pb-4 sm:pb-6 xl:pb-8">
+    <div className="bg-white px-4 sm:px-6 xl:px-8 pt-4 sm:pt-6 xl:pt-8 pb-4 sm:pb-6 xl:pb-8 rounded-2xl">
       {/* Заголовок раздела - унифицированный стиль dashboard */}
       <div className={dashStyles.welcomeSection}>
         <div className={dashStyles.welcomeContent}>

@@ -184,9 +184,9 @@ const HelpCenter = ({ user }) => {
               </div>
               <div className={styles.channelInfo}>
                 <h3>Телефон</h3>
-                <p>+7 (495) 000-00-00</p>
+                <p>+7(993)334-99-13</p>
               </div>
-              <a href="tel:+74950000000" className={styles.channelLink}>
+              <a href="tel:+79933349913" className={styles.channelLink}>
                 Позвонить
               </a>
             </div>

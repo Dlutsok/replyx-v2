@@ -490,6 +490,86 @@ def delete_user_admin(
             detail=f"Error deleting user: {str(e)}"
         )
 
+@router.post("/admin/users/create")
+def create_user_admin(
+    data: dict = Body(...),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_admin)
+):
+    """Создать нового пользователя через админ панель"""
+    try:
+        email = data.get("email")
+        password = data.get("password")
+        first_name = data.get("first_name")
+        role = data.get("role", "user")
+        status = data.get("status", "active")
+        
+        # Валидация обязательных полей
+        if not email or not password:
+            raise HTTPException(status_code=400, detail="Email и пароль обязательны")
+        
+        # Проверяем, что пользователь с таким email не существует
+        existing_user = db.query(models.User).filter(models.User.email == email).first()
+        if existing_user:
+            raise HTTPException(status_code=400, detail="Пользователь с таким email уже существует")
+        
+        # Валидируем роль
+        if role not in ["user", "admin"]:
+            raise HTTPException(status_code=400, detail="Недопустимая роль")
+        
+        # Валидируем статус
+        if status not in ["active", "inactive"]:
+            raise HTTPException(status_code=400, detail="Недопустимый статус")
+        
+        # Создаем нового пользователя
+        from core.auth import get_password_hash
+        hashed_password = get_password_hash(password)
+        
+        new_user = models.User(
+            email=email,
+            hashed_password=hashed_password,
+            first_name=first_name,
+            role=role,
+            status=status,
+            is_email_confirmed=True  # Пользователи, созданные админом, автоматически подтверждены
+        )
+        
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+        
+        # Создаем начальный баланс пользователя
+        user_balance = models.UserBalance(
+            user_id=new_user.id,
+            balance=0.0
+        )
+        db.add(user_balance)
+        db.commit()
+        
+        # Логируем создание пользователя
+        logger.info(f"Admin {current_user.email} created new user {email} with role {role}")
+        
+        return {
+            "id": new_user.id,
+            "email": new_user.email,
+            "first_name": new_user.first_name,
+            "role": new_user.role,
+            "status": new_user.status,
+            "is_email_confirmed": new_user.is_email_confirmed,
+            "created_at": new_user.created_at.isoformat(),
+            "message": f"Пользователь {email} успешно создан"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating user by admin {current_user.email}: {str(e)}")
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Ошибка при создании пользователя: {str(e)}"
+        )
+
 @router.post("/admin/users/{user_id}/balance/topup")
 def adjust_user_balance(
     user_id: int,

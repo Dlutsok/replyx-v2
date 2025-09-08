@@ -136,9 +136,9 @@ const RealtimeMetrics = ({ metrics, loading, onRefresh }) => {
 
   const getActivityColor = (type) => {
     switch (type) {
-      case 'new_dialog': return 'text-blue-600 bg-blue-100';
+      case 'new_dialog': return 'text-[#6334E5] bg-[#6334E5]/10';
       case 'message_sent': return 'text-green-600 bg-green-100';
-      case 'bot_response': return 'text-purple-600 bg-purple-100';
+      case 'bot_response': return 'text-[#6334E5] bg-[#6334E5]/10';
       case 'dialog_closed': return 'text-gray-600 bg-gray-100';
       default: return 'text-gray-600 bg-gray-100';
     }
@@ -156,7 +156,7 @@ const RealtimeMetrics = ({ metrics, loading, onRefresh }) => {
       title: 'Активных пользователей',
       value: realtimeData.activeUsers,
       icon: FiUsers,
-      color: 'text-blue-600 bg-blue-100',
+      color: 'text-[#6334E5] bg-[#6334E5]/10',
       suffix: ''
     },
     {

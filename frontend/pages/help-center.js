@@ -228,7 +228,7 @@ export default function HelpCenterPage() {
                 <FiMail className="text-blue-600" size={16} />
                 <div>
                   <p className="text-sm font-medium text-gray-900">Электронная почта</p>
-                  <p className="text-xs text-gray-600">support@replyx.com</p>
+                  <p className="text-xs text-gray-600">support@replyx.ru</p>
                 </div>
               </div>
 
@@ -236,7 +236,7 @@ export default function HelpCenterPage() {
                 <FiPhone className="text-orange-600" size={16} />
                 <div>
                   <p className="text-sm font-medium text-gray-900">Телефон</p>
-                  <p className="text-xs text-gray-600">+7 (495) 000-00-00</p>
+                  <p className="text-xs text-gray-600">+7(993)334-99-13</p>
                 </div>
               </div>
             </div>

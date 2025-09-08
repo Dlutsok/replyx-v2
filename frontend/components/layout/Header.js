@@ -2,14 +2,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import styles from '../../styles/layout/Header.module.css';
 import { FiUser, FiBell, FiMenu, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
-import { MdAccountBalanceWallet } from 'react-icons/md';
-import BalanceDropdown from '../ui/BalanceDropdown';
 import ProfileDropdown from '../ui/ProfileDropdown';
 import ChangePasswordModal from '../ui/ChangePasswordModal';
 
 export default function Header({ isMobile, sidebarOpen, setSidebarOpen }) {
-  const [userBalance, setUserBalance] = useState(0);
-  const [showBalanceDropdown, setShowBalanceDropdown] = useState(false);
   const [userName, setUserName] = useState('');
   const [userEmail, setUserEmail] = useState('');
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
@@ -34,12 +30,6 @@ export default function Header({ isMobile, sidebarOpen, setSidebarOpen }) {
     return pathMap[path] || { title: 'ReplyX', breadcrumbs: [] };
   };
 
-  // Определение статуса баланса для цветовой индикации
-  const getBalanceStatus = () => {
-    if (userBalance < 100) return 'low'; // Меньше чем на 1 день (5₽ * 20 запросов)
-    if (userBalance < 500) return 'medium'; // Меньше чем на 5 дней
-    return 'good'; // Больше 5 дней
-  };
 
   useEffect(() => {
     // Получаем данные пользователя
@@ -59,36 +49,12 @@ export default function Header({ isMobile, sidebarOpen, setSidebarOpen }) {
           console.error('Error fetching user data:', err);
         });
 
-      // Получаем баланс отдельно
-      fetch('/api/balance/current', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.error) return;
-          setUserBalance(data.balance || 0);
-        })
-        .catch(err => {
-          console.error('Error fetching balance:', err);
-        });
     }
-    
-    // Слушаем обновления баланса
-    const handleBalanceUpdate = (event) => {
-      setUserBalance(event.detail.newBalance);
-    };
-    
-    window.addEventListener('balanceUpdated', handleBalanceUpdate);
-    
-    return () => {
-      window.removeEventListener('balanceUpdated', handleBalanceUpdate);
-    };
   }, []);
 
   const handleProfileClick = (e) => {
     e.stopPropagation();
     // Закрываем другие dropdown перед открытием профиля
-    setShowBalanceDropdown(false);
     setShowNotifications(false);
     setShowProfileDropdown(!showProfileDropdown);
   };
@@ -102,20 +68,10 @@ export default function Header({ isMobile, sidebarOpen, setSidebarOpen }) {
     router.push('/login');
   };
 
-  const handleBalanceClick = (e) => {
-    e.stopPropagation();
-    // Закрываем другие dropdown перед открытием баланса
-    setShowProfileDropdown(false);
-    setShowNotifications(false);
-    setShowBalanceDropdown(!showBalanceDropdown);
-  };
-
-
   const handleNotificationClick = (e) => {
     e.stopPropagation();
     // Закрываем другие dropdown перед открытием уведомлений
     setShowProfileDropdown(false);
-    setShowBalanceDropdown(false);
     setShowNotifications(!showNotifications);
   };
 
@@ -128,9 +84,6 @@ export default function Header({ isMobile, sidebarOpen, setSidebarOpen }) {
   // Закрытие dropdown при клике вне
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (!e.target.closest(`.${styles.balanceContainer}`)) {
-        setShowBalanceDropdown(false);
-      }
       if (!e.target.closest(`.${styles.profileContainer}`)) {
         setShowProfileDropdown(false);
       }
@@ -139,14 +92,14 @@ export default function Header({ isMobile, sidebarOpen, setSidebarOpen }) {
       }
     };
 
-    if (showBalanceDropdown || showProfileDropdown || showNotifications) {
+    if (showProfileDropdown || showNotifications) {
       document.addEventListener('click', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('click', handleClickOutside);
     };
-  }, [showBalanceDropdown, showProfileDropdown, showNotifications]);
+  }, [showProfileDropdown, showNotifications]);
 
   const pageInfo = getPageInfo();
 
@@ -171,27 +124,9 @@ export default function Header({ isMobile, sidebarOpen, setSidebarOpen }) {
           </h1>
         </div>
 
-        
-        {/* Правая часть - баланс, уведомления и профиль */}
+
+        {/* Правая часть - уведомления и профиль */}
         <div className={styles.rightSection}>
-          {/* Баланс */}
-          <div className={styles.balanceContainer}>
-            <button 
-              className={`${styles.balanceButton} ${styles[getBalanceStatus()]}`}
-              onClick={handleBalanceClick}
-            >
-              <span className={styles.balanceAmount}>
-                {userBalance.toLocaleString('ru-RU')} ₽
-              </span>
-            </button>
-            
-            {showBalanceDropdown && (
-              <BalanceDropdown 
-                balance={userBalance}
-                onClose={() => setShowBalanceDropdown(false)}
-              />
-            )}
-          </div>
 
           {/* Уведомления */}
           <div className={styles.notificationsContainer}>

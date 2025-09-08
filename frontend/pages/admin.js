@@ -188,7 +188,7 @@ const AdminPanel = () => {
   if (isLoading) {
     return (
       <AdminDashboard activeSection="overview">
-        <div className="bg-white px-4 sm:px-6 xl:px-8 pt-4 sm:pt-6 xl:pt-8 pb-4 sm:pb-6 xl:pb-8">
+        <div className="bg-white px-4 sm:px-6 xl:px-8 pt-4 sm:pt-6 xl:pt-8 pb-4 sm:pb-6 xl:pb-8 rounded-2xl">
           <div className="flex flex-col items-center justify-center py-12">
             <div className="w-8 h-8 border-2 border-gray-300 border-t-purple-600 rounded-full animate-spin mb-4"></div>
             <p className="text-sm text-gray-600 font-medium">Загрузка данных...</p>

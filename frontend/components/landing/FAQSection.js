@@ -356,7 +356,7 @@ const FAQSection = () => {
                       onChange={handleInputChange}
                       required
                       className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white"
-                      placeholder="+7 (999) 123-45-67"
+                      placeholder="+7(993)334-99-13"
                     />
                   </div>
 
@@ -631,7 +631,7 @@ const FAQSection = () => {
                           onChange={handleInputChange}
                           required
                           className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white"
-                          placeholder="+7 (999) 123-45-67"
+                          placeholder="+7(993)334-99-13"
                         />
                       </div>
 

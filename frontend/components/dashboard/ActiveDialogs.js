@@ -197,7 +197,7 @@ const ActiveDialogs = React.memo(({ dialogs: initialDialogs, loading, onRefresh 
             </p>
             <button
               onClick={() => window.location.href = '/ai-assistant'}
-              className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 md:px-5 md:py-3 lg:px-6 lg:py-3 xl:px-6 xl:py-3 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg text-sm font-medium transition-colors duration-150"
+              className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 md:px-5 md:py-3 lg:px-6 lg:py-3 xl:px-6 xl:py-3 bg-[#6334E5]/10 hover:bg-[#6334E5]/20 text-[#6334E5] rounded-lg text-sm font-medium transition-colors duration-150"
             >
               <FiMessageCircle className="w-3 h-3 sm:w-4 sm:h-4" />
               Создать ассистента

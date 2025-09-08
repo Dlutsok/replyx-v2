@@ -38,7 +38,7 @@ function LandingHeader() {
             <a href="#features" className={landingStyles.navLink}>Возможности</a>
             <a href="#solutions" className={landingStyles.navLink}>Решения</a>
             <a href="#pricing" className={landingStyles.navLink}>Тарифы</a>
-            <Link href="/blog" className={landingStyles.navLink}>Блог</Link>
+            <Link href="/blog" className={landingStyles.navLink} style={{display: 'none'}}>Блог</Link>
           </nav>
 
           <div className={landingStyles.headerActions}>
@@ -177,6 +177,7 @@ function LandingHeader() {
                     href="/blog"
                     className="group flex items-center px-4 py-4 text-gray-700 hover:text-white rounded-xl transition-all duration-300 hover:bg-gradient-to-r hover:from-orange-500 hover:to-red-500 hover:shadow-lg hover:shadow-orange-500/25"
                     onClick={() => setIsMobileMenuOpen(false)}
+                    style={{display: 'none'}}
                   >
                     <div className="w-8 h-8 rounded-lg bg-orange-100 group-hover:bg-white/20 flex items-center justify-center mr-4 transition-colors duration-300">
                       <svg className="w-4 h-4 text-orange-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -310,7 +311,7 @@ function LandingFooter() {
                 <div className={landingStyles.footerColumnTitle}>
                   Компания
                 </div>
-                <Link href="/blog" className={landingStyles.whiteFooterLink}>
+                <Link href="/blog" className={landingStyles.whiteFooterLink} style={{display: 'none'}}>
                   Блог
                 </Link>
                 <button className={landingStyles.whiteFooterLink}>
@@ -329,13 +330,13 @@ function LandingFooter() {
                 <div className={landingStyles.footerColumnTitle}>
                   Правовая информация
                 </div>
-                <button onClick={() => router.push('/privacy')} className={landingStyles.whiteFooterLink}>
+                <button onClick={() => router.push('/legal/privacy')} className={landingStyles.whiteFooterLink}>
                   Конфиденциальность
                 </button>
-                <button onClick={() => router.push('/terms')} className={landingStyles.whiteFooterLink}>
+                <button onClick={() => router.push('/legal/terms')} className={landingStyles.whiteFooterLink}>
                   Условия использования
                 </button>
-                <button onClick={() => router.push('/offer')} className={landingStyles.whiteFooterLink}>
+                <button onClick={() => router.push('/legal/offer')} className={landingStyles.whiteFooterLink}>
                   Публичная оферта
                 </button>
               </div>
@@ -407,7 +408,7 @@ function LandingFooter() {
               <div className={landingStyles.footerColumnTitle}>
                 Компания
               </div>
-              <Link href="/blog" className={landingStyles.whiteFooterLink}>
+              <Link href="/blog" className={landingStyles.whiteFooterLink} style={{display: 'none'}}>
                 Блог
               </Link>
               <button className={landingStyles.whiteFooterLink}>
@@ -427,13 +428,13 @@ function LandingFooter() {
                 Правовая информация
               </div>
               <div className="flex flex-col gap-2">
-                <button onClick={() => router.push('/privacy')} className={landingStyles.whiteFooterLink}>
+                <button onClick={() => router.push('/legal/privacy')} className={landingStyles.whiteFooterLink}>
                   Конфиденциальность
                 </button>
-                <button onClick={() => router.push('/terms')} className={landingStyles.whiteFooterLink}>
+                <button onClick={() => router.push('/legal/terms')} className={landingStyles.whiteFooterLink}>
                   Условия использования
                 </button>
-                <button onClick={() => router.push('/offer')} className={landingStyles.whiteFooterLink}>
+                <button onClick={() => router.push('/legal/offer')} className={landingStyles.whiteFooterLink}>
                   Публичная оферта
                 </button>
               </div>

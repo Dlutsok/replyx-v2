@@ -133,7 +133,7 @@ const SystemStatus = ({ bots, loading, onRefresh, onUpdate }) => {
     switch (type) {
       case 'error': return 'border-red-200 bg-red-50 text-red-800';
       case 'warning': return 'border-yellow-200 bg-yellow-50 text-yellow-800';
-      case 'info': return 'border-blue-200 bg-blue-50 text-blue-800';
+      case 'info': return 'border-[#6334E5]/20 bg-[#6334E5]/10 text-[#6334E5]';
       default: return 'border-gray-200 bg-gray-50 text-gray-800';
     }
   };

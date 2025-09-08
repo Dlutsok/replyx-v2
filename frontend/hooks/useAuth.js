@@ -16,7 +16,14 @@ const PUBLIC_ROUTES = [
   '/accept-invitation',
   '/terms',
   '/privacy',
+  '/cookies',
+  '/legal',
+  '/legal/privacy',
+  '/legal/cookies',
+  '/legal/terms',
+  '/legal/offer',
   '/offer',
+  '/help-center',
   '/blog',  // Добавляем блог как публичный маршрут
   '/chat-iframe'  // Добавляем iframe чат как публичный маршрут
 ];
