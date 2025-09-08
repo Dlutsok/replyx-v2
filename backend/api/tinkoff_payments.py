@@ -1,15 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Form, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from sqlalchemy.orm import Session
 from database.connection import get_db
 from database.models import User, Payment
 from core.auth import get_current_user
 from datetime import datetime
+from pydantic import BaseModel
 import uuid
 import os
 import logging
 import hashlib
 import hmac
+import requests
+import json
+
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/payments", tags=["payments"])
@@ -18,25 +22,93 @@ router = APIRouter(prefix="/api/payments", tags=["payments"])
 TINKOFF_TERMINAL_KEY = os.getenv('TINKOFF_TERMINAL_KEY', 'your_terminal_key_here')
 TINKOFF_SECRET_KEY = os.getenv('TINKOFF_SECRET_KEY', 'your_secret_key_here')
 TINKOFF_SANDBOX_MODE = os.getenv('TINKOFF_SANDBOX_MODE', 'true').lower() == 'true'
+TINKOFF_MOCK_MODE = os.getenv('TINKOFF_MOCK_MODE', 'true').lower() == 'true'  # Mock режим для разработки
 TINKOFF_API_URL = "https://rest-api-test.tinkoff.ru/v2/" if TINKOFF_SANDBOX_MODE else "https://securepay.tinkoff.ru/v2/"
-TINKOFF_PAYMENT_URL = "https://securepay.tinkoff.ru/html/payForm/"
 
 def generate_order_id():
     """Генерация уникального номера заказа"""
     return f"replyx_{int(datetime.utcnow().timestamp())}_{str(uuid.uuid4())[:8]}"
 
 def calculate_signature(data: dict) -> str:
-    """Вычисление подписи для запроса к Т-Банк"""
-    # Исключаем поле подписи и добавляем секретный ключ
-    filtered_data = {k: v for k, v in data.items() if k != 'token' and v is not None}
-    filtered_data['password'] = TINKOFF_SECRET_KEY
+    """Вычисление подписи для запроса к Т-Банк согласно документации"""
+    # Исключаем поле подписи, пустые значения и None
+    filtered_data = {k: v for k, v in data.items() 
+                    if k not in ['token', 'Token'] and v is not None and str(v).strip() != ''}
     
-    # Сортируем по ключам и создаем строку
+    # Добавляем секретный ключ как Password (согласно документации)
+    filtered_data['Password'] = TINKOFF_SECRET_KEY
+    
+    # Сортируем по ключам и создаем строку конкатенации
     sorted_keys = sorted(filtered_data.keys())
-    concatenated_string = ''.join(str(filtered_data[key]) for key in sorted_keys)
+    concatenated_values = [str(filtered_data[key]) for key in sorted_keys]
+    concatenated_string = ''.join(concatenated_values)
+    
+    logger.error(f"Значения для подписи (по порядку): {concatenated_values}")
+    logger.error(f"Строка для хеширования: {concatenated_string}")
     
     # Вычисляем SHA256 хэш
     return hashlib.sha256(concatenated_string.encode('utf-8')).hexdigest()
+
+async def init_payment_tinkoff(order_id: str, amount: int, description: str, customer_key: str, success_url: str, fail_url: str):
+    """Инициация платежа через API Тинькофф"""
+    
+    # ВРЕМЕННЫЙ MOCK РЕЖИМ - пока IP не добавлен в whitelist Тинькофф
+    if TINKOFF_MOCK_MODE:
+        logger.info(f"🎭 MOCK режим: эмуляция успешного создания платежа {order_id}")
+        mock_payment_url = f"https://securepay.tinkoff.ru/new/mock_{order_id[:8]}"
+        return mock_payment_url
+    
+    data = {
+        'TerminalKey': TINKOFF_TERMINAL_KEY,
+        'OrderId': order_id,
+        'Amount': amount,
+        'Currency': 'RUB',
+        'Description': description,
+        'CustomerKey': customer_key,
+        'SuccessURL': success_url,
+        'FailURL': fail_url,
+        'Language': 'ru',
+        'PayType': 'O'
+    }
+    
+    # Добавляем NotificationURL только если он задан и доступен из интернета
+    notification_url = os.getenv('TINKOFF_NOTIFICATION_URL', '').strip()
+    if notification_url and not notification_url.startswith('http://localhost'):
+        data['NotificationURL'] = notification_url
+    
+    # Добавляем токен (подпись)
+    token = calculate_signature(data)
+    data['Token'] = token
+    
+    logger.error(f"Данные для подписи: {[k for k in sorted(data.keys()) if k != 'Token']}")
+    logger.error(f"Рассчитанный токен: {token}")
+    logger.error(f"URL запроса: {TINKOFF_API_URL}Init")
+    
+    try:
+        response = requests.post(
+            f"{TINKOFF_API_URL}Init",
+            json=data,
+            headers={'Content-Type': 'application/json'},
+            timeout=30
+        )
+        
+        logger.error(f"Запрос к Тинькофф Init: {data}")
+        logger.error(f"Ответ от Тинькофф: {response.text}")
+        
+        if response.status_code == 200:
+            result = response.json()
+            if result.get('Success') and result.get('PaymentURL'):
+                return result['PaymentURL']
+            else:
+                logger.error(f"Ошибка в ответе Тинькофф: {result}")
+                raise Exception(f"Ошибка Тинькофф: {result.get('Message', 'Неизвестная ошибка')}")
+        else:
+            logger.error(f"HTTP ошибка: {response.status_code}, {response.text}")
+            raise Exception(f"HTTP ошибка: {response.status_code}")
+            
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Ошибка запроса к Тинькофф: {e}")
+        raise Exception("Ошибка соединения с платежной системой")
 
 @router.post("/create-payment")
 async def create_payment(
@@ -52,10 +124,14 @@ async def create_payment(
         # Генерируем уникальный номер заказа
         order_id = generate_order_id()
         
-        # URLs для обратного вызова
-        base_url = os.getenv('FRONTEND_URL', 'http://localhost:3000')
-        success_url = f"{base_url}/payment-success"
-        fail_url = f"{base_url}/payment-error"
+        # URLs для обратного вызова из переменных окружения
+        # В sandbox режиме используем тестовые URL, доступные из интернета
+        if TINKOFF_SANDBOX_MODE:
+            success_url = os.getenv('TINKOFF_SUCCESS_URL', 'https://httpbin.org/status/200')
+            fail_url = os.getenv('TINKOFF_FAIL_URL', 'https://httpbin.org/status/400')
+        else:
+            success_url = os.getenv('TINKOFF_SUCCESS_URL', 'http://localhost:3000/payment/success')
+            fail_url = os.getenv('TINKOFF_FAIL_URL', 'http://localhost:3000/payment/error')
         
         # Создаем запись о платеже в БД
         payment = Payment(
@@ -72,103 +148,52 @@ async def create_payment(
         db.commit()
         db.refresh(payment)
         
-        # Подготавливаем данные для Т-Банк
+        # Инициируем платеж через API Тинькофф
         amount_kopecks = int(amount * 100)  # Т-Банк принимает сумму в копейках
         
-        form_data = {
-            'terminalkey': TINKOFF_TERMINAL_KEY,
-            'order': order_id,
-            'amount': amount_kopecks,
-            'currency': 'RUB',
-            'language': 'ru',
-            'description': description,
-            'customerKey': str(current_user.id),
-            'email': current_user.email,
-            'successURL': success_url,
-            'failURL': fail_url
-        }
-        
         logger.info(f"Создан платеж {order_id} для пользователя {current_user.id} на сумму {amount} руб.")
+        logger.error(f"Используется терминал: {TINKOFF_TERMINAL_KEY}")
+        logger.error(f"Sandbox режим: {TINKOFF_SANDBOX_MODE}")
+        logger.error(f"API URL: {TINKOFF_API_URL}")
         
-        # Формируем HTML форму для автоматической отправки
-        html_form = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="utf-8">
-            <title>Перенаправление на оплату...</title>
-            <style>
-                body {{ 
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                    display: flex; 
-                    justify-content: center; 
-                    align-items: center; 
-                    height: 100vh; 
-                    margin: 0; 
-                    background: #f5f5f5; 
-                }}
-                .loading {{ 
-                    text-align: center; 
-                    padding: 20px;
-                    background: white;
-                    border-radius: 12px;
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-                }}
-                .spinner {{ 
-                    border: 3px solid #f3f3f3; 
-                    border-top: 3px solid #7c3aed; 
-                    border-radius: 50%; 
-                    width: 40px; 
-                    height: 40px; 
-                    animation: spin 1s linear infinite; 
-                    margin: 0 auto 20px; 
-                }}
-                @keyframes spin {{ 0% {{ transform: rotate(0deg); }} 100% {{ transform: rotate(360deg); }} }}
-            </style>
-        </head>
-        <body>
-            <div class="loading">
-                <div class="spinner"></div>
-                <h3>Перенаправление на оплату...</h3>
-                <p>Пожалуйста, подождите...</p>
-            </div>
-            
-            <form id="paymentForm" method="POST" action="{TINKOFF_PAYMENT_URL}" style="display: none;">
-                <input type="hidden" name="terminalkey" value="{form_data['terminalkey']}">
-                <input type="hidden" name="order" value="{form_data['order']}">
-                <input type="hidden" name="amount" value="{form_data['amount']}">
-                <input type="hidden" name="currency" value="{form_data['currency']}">
-                <input type="hidden" name="language" value="{form_data['language']}">
-                <input type="hidden" name="description" value="{form_data['description']}">
-                <input type="hidden" name="customerKey" value="{form_data['customerKey']}">
-                <input type="hidden" name="email" value="{form_data['email']}">
-                <input type="hidden" name="successURL" value="{form_data['successURL']}">
-                <input type="hidden" name="failURL" value="{form_data['failURL']}">
-            </form>
-            
-            <script>
-                setTimeout(function() {{
-                    document.getElementById('paymentForm').submit();
-                }}, 1500);
-            </script>
-        </body>
-        </html>
-        """
+        # Получаем URL для оплаты от Тинькофф
+        payment_url = await init_payment_tinkoff(
+            order_id=order_id,
+            amount=amount_kopecks,
+            description=description,
+            customer_key=str(current_user.id),
+            success_url=success_url,
+            fail_url=fail_url
+        )
         
-        return HTMLResponse(content=html_form)
+        logger.info(f"Получен PaymentURL от Тинькофф: {payment_url}")
+        
+        # Возвращаем JSON с URL для перенаправления
+        return JSONResponse(content={
+            "success": True,
+            "redirect_url": payment_url,
+            "order_id": order_id
+        })
         
     except Exception as e:
         logger.error(f"Ошибка создания платежа: {e}")
+        logger.error(f"Тип ошибки: {type(e)}")
+        import traceback
+        logger.error(f"Полный трейс: {traceback.format_exc()}")
         
         # Если платеж уже создан, откатываем
         if 'payment' in locals():
-            db.delete(payment)
-            db.commit()
+            try:
+                db.delete(payment)
+                db.commit()
+            except Exception as rollback_error:
+                logger.error(f"Ошибка отката транзакции: {rollback_error}")
             
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Ошибка создания платежа"
+            detail=f"Ошибка создания платежа: {str(e)}"
         )
+
 
 @router.get("/status/{order_id}")
 async def get_payment_status(

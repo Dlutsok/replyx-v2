@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import { useNotifications } from '../../hooks/useNotifications';
+import { sanitizeTechnicalError } from '../../utils/apiErrorHandler';
 import { 
   FiArrowLeft,
   FiSettings,
@@ -53,7 +54,10 @@ export default function AssistantDetails({
   // Простой Markdown рендерер
   const MarkdownRenderer = ({ content }) => {
     const renderMarkdown = (text) => {
-      return text
+      // Сначала очищаем технические ошибки из контента
+      const cleanContent = sanitizeTechnicalError(text);
+      
+      return cleanContent
         // Заголовки
         .replace(/^### (.*$)/gm, '<h3 style="color: #1e293b; margin: 24px 0 12px 0; font-size: 18px; font-weight: 600;">$1</h3>')
         .replace(/^## (.*$)/gm, '<h2 style="color: #1e293b; margin: 28px 0 16px 0; font-size: 22px; font-weight: 600;">$1</h2>')

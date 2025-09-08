@@ -49,7 +49,7 @@ function LandingHeader() {
               Войти
             </button>
             <button
-              className="px-6 py-2.5 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200 h-11"
+              className="px-6 py-2.5 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-primary-200 h-11"
               onClick={() => router.push('/register')}
               style={{backgroundColor: '#6334E5'}}
             >
@@ -191,7 +191,7 @@ function LandingHeader() {
                 {/* Кнопки действий */}
                 <div className="space-y-3 mt-auto">
                   <button
-                    className="w-full px-4 py-3 text-purple-600 border-2 border-purple-200 font-semibold rounded-xl hover:bg-purple-50 hover:border-purple-300 transition-all duration-300 shadow-lg hover:shadow-purple-500/25"
+                    className="w-full px-4 py-3 text-primary-700 border-2 border-primary-200 font-semibold rounded-xl hover:bg-primary-50 hover:border-primary-300 transition-all duration-300 shadow-lg hover:shadow-primary-500/25"
                     onClick={() => {
                       setIsMobileMenuOpen(false);
                       router.push('/login');
@@ -200,7 +200,7 @@ function LandingHeader() {
                     Войти
                   </button>
                   <button
-                    className="w-full px-4 py-3 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-purple-500/30 relative overflow-hidden group new-button-effect"
+                    className="w-full px-4 py-3 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-primary-500/30 relative overflow-hidden group new-button-effect"
                     onClick={() => {
                       setIsMobileMenuOpen(false);
                       router.push('/register');

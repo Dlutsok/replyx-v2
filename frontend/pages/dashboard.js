@@ -238,7 +238,7 @@ const Dashboard = React.memo(function Dashboard() {
         <meta name="description" content="Управление AI-ассистентами, диалогами и настройками аккаунта в ReplyX." />
         <meta name="robots" content="noindex, nofollow" />
       </Head>
-      <div className="bg-white px-4 sm:px-6 xl:px-8 pt-4 sm:pt-6 xl:pt-8 pb-4 sm:pb-6 xl:pb-8 rounded-2xl">
+      <div className="bg-white px-4 sm:px-6 xl:px-8 pt-4 sm:pt-6 xl:pt-8 pb-4 sm:pb-6 xl:pb-8 rounded-2xl min-h-[90vh] flex flex-col">
         {/* Error Alert */}
       {error && (
         <div className={dashStyles.errorAlert}>

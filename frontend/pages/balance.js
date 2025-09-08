@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import { useAuth } from '../hooks/useAuth';
 import { useNotifications } from '../hooks/useNotifications';
 import LoadingSpinner, { LoadingButton } from '../components/common/LoadingSpinner';
 import {
-  FiCheck, FiShield, FiZap, FiMessageSquare, FiBarChart
+  FiCheck, FiShield, FiZap, FiMessageSquare, FiBarChart, FiCreditCard
 } from 'react-icons/fi';
 import { API_URL } from '../config/api';
 
@@ -45,6 +45,7 @@ export default function Balance() {
     return () => window.removeEventListener('balanceUpdated', handleBalanceUpdate);
   }, []);
 
+
   const loadBalanceData = async () => {
     if (!user) return;
 
@@ -83,6 +84,7 @@ export default function Balance() {
     }
   };
 
+  // Метод оплаты - перенаправление на Т-Банк или виджеты 
   const handleRecharge = async (rechargeAmount) => {
     if (!rechargeAmount || parseFloat(rechargeAmount) <= 0) {
       setMessage('Введите корректную сумму');
@@ -103,18 +105,17 @@ export default function Balance() {
     }
 
     setLoading(true);
-    setMessage('Создание платежа...');
+    setMessage('Перенаправление на страницу оплаты...');
     setMessageType('info');
 
     try {
       const token = localStorage.getItem('token');
       
-      // Создаем форму для отправки данных на создание платежа
+      // Используем метод с перенаправлением на сайт Тинькофф
       const formData = new FormData();
       formData.append('amount', parseFloat(rechargeAmount));
       formData.append('description', `Пополнение баланса ReplyX на ${rechargeAmount}₽`);
 
-      // Отправляем запрос на создание платежа
       const response = await fetch(`${API_URL}/api/payments/create-payment`, {
         method: 'POST',
         headers: {
@@ -124,24 +125,17 @@ export default function Balance() {
       });
 
       if (response.ok) {
-        // Если ответ в HTML формате, заменяем содержимое страницы
-        if (response.headers.get('content-type')?.includes('text/html')) {
-          const html = await response.text();
-          document.open();
-          document.write(html);
-          document.close();
+        const data = await response.json();
+        if (data.success && data.redirect_url) {
+          // Перенаправляем на страницу оплаты Тинькофф
+          window.location.href = data.redirect_url;
         } else {
-          // Если JSON ответ, обрабатываем как обычно
-          const data = await response.json();
-          if (data.payment_url) {
-            window.location.href = data.payment_url;
-          }
+          throw new Error(data.error || 'Ошибка создания платежа');
         }
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Ошибка создания платежа');
+        throw new Error('Ошибка создания платежа');
       }
-
+      
     } catch (error) {
       console.error('Ошибка создания платежа:', error);
       setMessage(error.message || 'Произошла ошибка при создании платежа');
@@ -149,7 +143,6 @@ export default function Balance() {
       setLoading(false);
     }
   };
-
 
   // Функция для форматирования типа транзакции
   const formatTransactionType = (transactionType) => {
@@ -384,9 +377,10 @@ export default function Balance() {
                       onClick={() => handleRecharge(amount)}
                       loading={loading}
                       disabled={!amount || parseFloat(amount) < 100}
-                      className="w-full py-3.5 text-base font-semibold bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 text-white rounded-xl transition-colors"
+                      className="w-full py-3.5 text-base font-semibold bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 text-white rounded-xl transition-colors flex items-center justify-center gap-2"
                     >
-                      {loading ? 'Создание платежа...' : 'Пополнить баланс'}
+                      <FiCreditCard size={18} />
+                      {loading ? 'Подготовка к оплате...' : 'Пополнить баланс'}
                     </LoadingButton>
                     
                     {amount && parseFloat(amount) >= 100 && (
@@ -401,11 +395,14 @@ export default function Balance() {
                     <div className={`p-4 rounded-xl text-sm border ${
                       messageType === 'success'
                         ? 'bg-green-50 text-green-800 border-green-200'
+                        : messageType === 'info' 
+                        ? 'bg-blue-50 text-blue-800 border-blue-200'
                         : 'bg-red-50 text-red-800 border-red-200'
                     }`}>
                       {message}
                     </div>
                   )}
+
                 </div>
                 
                 {/* Боковая информация */}

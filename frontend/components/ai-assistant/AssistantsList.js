@@ -1,77 +1,10 @@
-import { useState } from 'react';
 import { useRouter } from 'next/router';
-import { 
-  FiCpu, 
-  FiEdit, 
-  FiTrash2, 
-  FiPlus,
-  FiMoreVertical,
-  FiBarChart2
+import {
+  FiCpu,
+  FiPlus
 } from 'react-icons/fi';
 import styles from '../../styles/pages/AISettings.module.css';
 
-const DropdownMenu = ({ assistant, onEdit, onDelete }) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div className="relative">
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setIsOpen(!isOpen);
-        }}
-        className="w-6 h-6 rounded-lg border border-gray-200/50 bg-white hover:bg-gray-50 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-all duration-150"
-        title="Дополнительно"
-      >
-        <FiMoreVertical size={12} />
-      </button>
-
-      {isOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-10"
-            onClick={() => setIsOpen(false)}
-          />
-          <div className="absolute bottom-full right-0 mb-2 w-44 bg-white rounded-xl shadow-lg border border-gray-200/50 py-2 z-20">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit(assistant);
-                setIsOpen(false);
-              }}
-              className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors duration-150"
-            >
-              <FiEdit size={14} className="text-gray-400" />
-              Редактировать
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                // TODO: Добавить функцию аналитики
-                setIsOpen(false);
-              }}
-              className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors duration-150"
-            >
-              <FiBarChart2 size={14} className="text-gray-400" />
-              Аналитика
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(assistant);
-                setIsOpen(false);
-              }}
-              className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors duration-150"
-            >
-              <FiTrash2 size={14} className="text-red-500" />
-              Удалить
-            </button>
-          </div>
-        </>
-      )}
-    </div>
-  );
-};
 
 
 
@@ -103,11 +36,6 @@ const AssistantCard = ({ assistant, onSelect, onEdit, onDelete }) => {
         </div>
       </div>
 
-      <DropdownMenu
-        assistant={assistant}
-        onEdit={onEdit}
-        onDelete={onDelete}
-      />
     </div>
 
     {/* Статус */}
@@ -127,7 +55,7 @@ const AssistantCard = ({ assistant, onSelect, onEdit, onDelete }) => {
     {/* Техническая информация */}
     <div className="text-xs text-gray-400">
       <span className="hidden sm:inline">Модель: </span>
-      <span className="text-gray-500">{assistant.ai_model || 'gpt-4o-mini'}</span>
+      <span className="text-gray-500">OpenAI</span>
     </div>
     </div>
   );

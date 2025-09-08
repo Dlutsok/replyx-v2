@@ -72,12 +72,11 @@ export default function AssistantPage() {
   // Обработка URL параметров для автоматического переключения табов
   useEffect(() => {
     if (!router.isReady) return;
-    
+
     const { tab } = router.query;
     if (tab && tabs.some(t => t.id === tab)) {
       setActiveTab(tab);
-      // Очищаем URL параметр после обработки
-      router.replace(`/assistant/${id}`, undefined, { shallow: true });
+      // Не очищаем URL параметр, чтобы вкладка сохранялась при обновлении
     }
   }, [router.isReady, router.query, id, tabs]);
 
@@ -422,7 +421,11 @@ export default function AssistantPage() {
                 return (
                   <li key={tab.id} className={styles.assistantNavItem}>
                     <button
-                      onClick={() => setActiveTab(tab.id)}
+                      onClick={() => {
+                        setActiveTab(tab.id);
+                        // Обновляем URL с параметром активной вкладки
+                        router.push(`/assistant/${id}?tab=${tab.id}`, undefined, { shallow: true });
+                      }}
                       className={`${styles.assistantNavButton} ${
                         isActive ? styles.assistantNavButtonActive : styles.assistantNavButtonInactive
                       }`}
@@ -466,29 +469,15 @@ export default function AssistantPage() {
               </div>
               
               <div className="flex items-center gap-3">
-                <button className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-solid border-gray-200/60 rounded-2xl hover:bg-gray-50 hover:border-gray-200/70 transition-all duration-150">
+                <button
+                  onClick={() => {
+                    setActiveTab('settings');
+                    router.push(`/assistant/${id}?tab=settings`, undefined, { shallow: true });
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-solid border-gray-200/60 rounded-[16px] hover:bg-gray-50 hover:border-gray-200/70 transition-all duration-150"
+                >
                   <FiEdit3 size={16} className="inline mr-2" />
                   Редактировать
-                </button>
-
-                <button
-                  className={`px-4 py-2 text-sm font-medium rounded-2xl transition-all duration-150 border ${
-                    assistant.is_active
-                      ? 'text-red-600 bg-red-50 border-red-200/60 hover:bg-red-50/80 hover:border-red-200/70'
-                      : 'text-green-600 bg-green-50 border-green-200/60 hover:bg-green-50/80 hover:border-green-200/70'
-                  }`}
-                >
-                  {assistant.is_active ? (
-                    <>
-                      <FiPause size={16} className="inline mr-2" />
-                      Приостановить
-                    </>
-                  ) : (
-                    <>
-                      <FiPlay size={16} className="inline mr-2" />
-                      Запустить
-                    </>
-                  )}
                 </button>
               </div>
             </div>
@@ -698,7 +687,6 @@ const OverviewTab = ({ assistant, stats, documents, bots, channels }) => {
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Модель ИИ</label>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-gray-900">{assistant.ai_model || 'gpt-4o-mini'}</span>
                     <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200">
                       <FiCpu size={10} className="mr-1" />
                       OpenAI

@@ -172,7 +172,14 @@ const WidgetSettingsModal = ({ isOpen, onClose, onSave, selectedAssistant, isNew
       if (response.ok) {
         onSave?.(settings);
         showNotification('Настройки сохранены!', 'success');
-        setTimeout(() => onClose?.(), 500);
+        // Перезагружаем страницу после сохранения для генерации нового токена
+        setTimeout(() => {
+          onClose?.();
+          // Небольшая задержка перед перезагрузкой страницы
+          setTimeout(() => {
+            window.location.reload();
+          }, 300);
+        }, 500);
       } else {
         const error = await response.json();
         showNotification(`Ошибка: ${error.detail || 'Неизвестная ошибка'}`, 'error');
@@ -434,6 +441,23 @@ const WidgetSettingsModal = ({ isOpen, onClose, onSave, selectedAssistant, isNew
                       </div>
                     )}
                   </div>
+                </div>
+              </div>
+
+              {/* Warning about iframe update */}
+              <div className={styles.infoBlock}>
+                <div className={styles.infoIcon}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.infoSvg}>
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                    <path d="M12 17h.01"></path>
+                  </svg>
+                </div>
+                <div className={styles.infoContent}>
+                  <p className={styles.infoText}>
+                    <strong>Важно:</strong> После изменения цветовой схемы необходимо обновить код виджета на вашем сайте.
+                    Скопируйте новый iframe-код из раздела "Интеграции" и замените старый на всех страницах сайта.
+                  </p>
                 </div>
               </div>
 

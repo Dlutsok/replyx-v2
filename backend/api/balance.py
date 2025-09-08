@@ -28,7 +28,7 @@ async def get_welcome_bonus_status(
     """Проверить статус приветственного бонуса"""
     return {
         "welcome_bonus_received": current_user.welcome_bonus_received,
-        "bonus_amount": 100.0
+        "bonus_amount": 500.0
     }
 
 @router.post("/claim-welcome-bonus")
@@ -44,7 +44,7 @@ async def claim_welcome_bonus(
         if transaction:
             return {
                 "success": True,
-                "message": "Приветственный бонус 100 рублей начислен!",
+                "message": "Приветственный бонус 500 рублей начислен!",
                 "transaction_id": transaction.id,
                 "new_balance": transaction.balance_after
             }

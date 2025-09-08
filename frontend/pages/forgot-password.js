@@ -60,19 +60,19 @@ export default function ForgotPassword() {
 
         {/* Анимированные пузырьки по всей левой половине - едва заметные */}
         <div className="absolute top-10 left-10 w-96 h-96 rounded-full opacity-5 blur-3xl animate-pulse"
-             style={{background: 'radial-gradient(circle, #7C3AED, transparent)'}} />
+             style={{background: 'radial-gradient(circle, #6334E5, transparent)'}} />
         <div className="absolute top-1/4 right-20 w-80 h-80 rounded-full opacity-8 blur-3xl animate-pulse"
-             style={{background: 'radial-gradient(circle, #8B5CF6, transparent)', animationDelay: '1s'}} />
+             style={{background: 'radial-gradient(circle, #6b5aff, transparent)', animationDelay: '1s'}} />
         <div className="absolute bottom-1/4 left-1/4 w-64 h-64 rounded-full opacity-6 blur-3xl animate-pulse"
-             style={{background: 'radial-gradient(circle, #A855F7, transparent)', animationDelay: '2s'}} />
+             style={{background: 'radial-gradient(circle, #8f7bff, transparent)', animationDelay: '2s'}} />
         <div className="absolute top-1/2 right-10 w-72 h-72 rounded-full opacity-7 blur-3xl animate-pulse"
-             style={{background: 'radial-gradient(circle, #7C3AED, transparent)', animationDelay: '3s'}} />
+             style={{background: 'radial-gradient(circle, #6334E5, transparent)', animationDelay: '3s'}} />
         <div className="absolute bottom-20 left-20 w-80 h-80 rounded-full opacity-5 blur-3xl animate-pulse"
-             style={{background: 'radial-gradient(circle, #9333EA, transparent)', animationDelay: '4s'}} />
+             style={{background: 'radial-gradient(circle, #5a2ed4, transparent)', animationDelay: '4s'}} />
         <div className="absolute top-3/4 right-1/3 w-56 h-56 rounded-full opacity-6 blur-3xl animate-pulse"
-             style={{background: 'radial-gradient(circle, #8B5CF6, transparent)', animationDelay: '5s'}} />
+             style={{background: 'radial-gradient(circle, #6b5aff, transparent)', animationDelay: '5s'}} />
         <div className="absolute bottom-1/3 left-1/2 w-68 h-68 rounded-full opacity-7 blur-3xl animate-pulse"
-             style={{background: 'radial-gradient(circle, #A855F7, transparent)', animationDelay: '6s'}} />
+             style={{background: 'radial-gradient(circle, #8f7bff, transparent)', animationDelay: '6s'}} />
 
         {/* Логотип в верхнем левом углу */}
         <div className="absolute top-8 left-8 z-10">
@@ -81,13 +81,16 @@ export default function ForgotPassword() {
           </Link>
         </div>
 
+        {/* Эффект зеркала для затемнения спецэффектов */}
+        <div className="absolute inset-0 bg-white/30 backdrop-blur-[2px] pointer-events-none" />
+
         {/* Центральный контент - только текст */}
         <div className="relative h-full w-full flex items-center justify-center">
           <div className="max-w-lg text-center">
             <div className="space-y-6">
               {/* Основной заголовок */}
               <div>
-                <div className="text-6xl sm:text-7xl font-extrabold leading-tight tracking-tight bg-gradient-to-r from-[#8B5CF6] to-[#7C3AED] bg-clip-text text-transparent mb-3">
+                <div className="text-6xl sm:text-7xl font-extrabold leading-tight tracking-tight bg-gradient-to-r from-[#6b5aff] to-[#6334E5] bg-clip-text text-transparent mb-3">
                   ReplyX
                 </div>
                 <div className="text-lg sm:text-xl text-gray-600 font-medium">
@@ -108,8 +111,8 @@ export default function ForgotPassword() {
             {/* Welcome Section в стиле дашборда */}
             <div className="text-center mb-6">
               <div className="flex items-center justify-center gap-3 mb-3">
-                <div className="w-8 h-8 bg-purple-50 rounded-xl flex items-center justify-center">
-                  <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-8 h-8 bg-primary-50 rounded-xl flex items-center justify-center">
+                  <svg className="w-4 h-4 text-primary-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H7l5 4 4-4H13l-1.757-3.257A6 6 0 0115 5z" />
                   </svg>
                 </div>
@@ -132,7 +135,7 @@ export default function ForgotPassword() {
                   required
                   disabled={isLoading}
                   autoComplete="email"
-                  className="w-full rounded-xl border border-gray-200 bg-white text-gray-900 px-4 py-3 outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200"
+                  className="w-full rounded-xl border border-gray-200 bg-white text-gray-900 px-4 py-3 outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
                 />
               </div>
 
@@ -151,10 +154,10 @@ export default function ForgotPassword() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className={`w-full rounded-xl px-6 py-3 text-white font-semibold transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-purple-200 ${
+                className={`w-full rounded-xl px-6 py-3 text-white font-semibold transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-primary-200 ${
                   isLoading
-                    ? 'bg-purple-300 cursor-not-allowed'
-                    : 'bg-purple-600 hover:bg-purple-700 shadow-lg hover:shadow-xl'
+                    ? 'bg-primary-300 cursor-not-allowed'
+                    : 'bg-primary-700 hover:bg-primary-800 shadow-lg hover:shadow-xl'
                 }`}
               >
                 {isLoading ? 'Отправляем...' : 'Отправить инструкции'}
@@ -164,7 +167,7 @@ export default function ForgotPassword() {
 
             {/* Ссылка на вход */}
             <div className="mt-6 text-center">
-              <Link href="/login" className="text-sm text-purple-600 hover:text-purple-700 font-medium transition-colors">
+              <Link href="/login" style={{color: '#6334E5'}} className="text-sm font-medium transition-colors hover:opacity-80">
                 ← Назад ко входу
               </Link>
             </div>

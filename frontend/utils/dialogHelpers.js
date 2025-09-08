@@ -2,33 +2,46 @@ import { FiMessageCircle, FiSmartphone, FiSmile, FiFrown, FiMeh } from 'react-ic
 import { CHANNEL_TELEGRAM, CHANNEL_WEBSITE, CHANNEL_WHATSAPP } from '../constants/dialogStatus';
 
 /**
- * Агрессивная очистка имени от лишних "0" в конце
+ * Очистка имени от лишних цифр в конце только для Telegram пользователей
+ * @param {string} str - Исходное имя
+ * @param {boolean} isTelegram - Является ли пользователь из Telegram
  */
-export const cleanName = (str) => {
+export const cleanName = (str, isTelegram = false) => {
   if (!str || typeof str !== 'string') return str;
-  // Удаляем все символы "0" в конце строки и пробелы
-  const cleaned = str.replace(/0+\s*$/, '').trim();
-  return cleaned || str; // Если после очистки остается пустая строка, возвращаем оригинал
+  
+  // Удаляем цифры в конце только для Telegram пользователей (например "Дан0" -> "Дан")
+  if (isTelegram) {
+    const cleaned = str
+      .replace(/\d+\s*$/, '') // Удаляем все цифры в конце строки
+      .trim();
+    
+    return cleaned || str; // Если после очистки остается пустая строка, возвращаем оригинал
+  }
+  
+  // Для пользователей сайта возвращаем имя как есть, только убираем лишние пробелы
+  return str.trim();
 };
 
 /**
  * Получение инициалов пользователя
  */
 export const getInitials = (dialog) => {
+  const isTelegram = getChannelType(dialog) === CHANNEL_TELEGRAM;
+  
   // Если есть имя из профиля пользователя
   if (dialog.name && dialog.name !== 'Неизвестно') {
-    const cleaned = cleanName(dialog.name);
+    const cleaned = cleanName(dialog.name, isTelegram);
     return cleaned ? cleaned.charAt(0).toUpperCase() : 'U';
   }
   
   // Если есть Telegram данные
   if (dialog.first_name) {
-    const cleaned = cleanName(dialog.first_name);
+    const cleaned = cleanName(dialog.first_name, isTelegram);
     return cleaned ? cleaned.charAt(0).toUpperCase() : 'U';
   }
   
   if (dialog.telegram_username) {
-    const cleaned = cleanName(dialog.telegram_username);
+    const cleaned = cleanName(dialog.telegram_username, isTelegram);
     return cleaned ? cleaned.charAt(0).toUpperCase() : 'U';
   }
   
@@ -110,23 +123,24 @@ export const toLocal = (timestamp) => {
  * Получение отображаемого имени пользователя
  */
 export const getUserDisplayName = (dialog) => {
+  const isTelegram = getChannelType(dialog) === CHANNEL_TELEGRAM;
   let userName = dialog.name;
   
   if (!userName) {
     if (dialog.first_name && dialog.last_name) {
-      userName = `${cleanName(dialog.first_name)} ${cleanName(dialog.last_name)}`;
+      userName = `${cleanName(dialog.first_name, isTelegram)} ${cleanName(dialog.last_name, isTelegram)}`;
     } else if (dialog.first_name) {
-      userName = cleanName(dialog.first_name);
+      userName = cleanName(dialog.first_name, isTelegram);
     } else if (dialog.telegram_username) {
-      userName = `@${cleanName(dialog.telegram_username)}`;
+      userName = `@${cleanName(dialog.telegram_username, isTelegram)}`;
     } else if (dialog.guest_id) {
       userName = `Пользователь#${dialog.id}`;
     } else {
       userName = 'Неизвестно';
     }
   } else {
-    // Очищаем name от "0" в конце
-    userName = cleanName(userName);
+    // Очищаем name от цифр в конце только для Telegram
+    userName = cleanName(userName, isTelegram);
   }
   
   return userName;

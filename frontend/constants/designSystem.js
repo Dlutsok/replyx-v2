@@ -62,16 +62,16 @@ export const DESIGN_TOKENS = {
     // Специальные стили
     sectionSubtitle: 'text-lg text-gray-600 max-w-2xl',
     cardDescription: 'text-sm text-gray-600',
-    metricValue: 'text-3xl font-bold bg-gradient-to-r from-purple-600 to-purple-700 bg-clip-text text-transparent',
+    metricValue: 'text-3xl font-bold bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent',
     metricLabel: 'font-semibold text-gray-900',
   },
 
   // Цвета
   colors: {
     // Основная цветовая схема
-    primary: 'text-purple-600',
-    primaryBg: 'bg-[#7C3AED]',
-    primaryHover: 'hover:bg-[#6C2BD9]',
+    primary: 'text-primary-700',
+    primaryBg: 'bg-[#6334E5]',
+    primaryHover: 'hover:bg-primary-700',
     
     // Фоны
     background: 'bg-white',
@@ -106,7 +106,7 @@ export const DESIGN_TOKENS = {
     thinStroke: 1.5,
     
     // Цвета
-    primary: 'text-purple-600',
+    primary: 'text-primary-700',
     secondary: 'text-gray-600',
     success: 'text-green-600',
     error: 'text-red-500',
@@ -151,7 +151,7 @@ export const DESIGN_TOKENS = {
 
   // Кнопки (минималистичный стиль)
   buttons: {
-    primary: 'bg-[#6334E5] hover:bg-[#6334E5] text-white px-6 py-2.5 font-medium transition-all duration-150 focus:outline-none h-11',
+    primary: 'bg-[#6334E5] hover:bg-primary-700 text-white px-6 py-2.5 font-medium transition-all duration-150 focus:outline-none h-11',
     secondary: 'bg-white border border-gray-300 text-gray-700 hover:border-purple-600 hover:text-purple-600 px-6 py-2.5 font-medium transition-all duration-150 h-11',
     headerButton: 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 px-4 py-2 font-medium transition-all duration-150 h-9',
     small: 'px-4 py-2 text-sm h-9',
@@ -172,8 +172,8 @@ export const DESIGN_TOKENS = {
     modal: 'bg-white rounded-xl border border-gray-200 shadow-sm',
     
     // Элементы интерфейса
-    avatar: 'w-12 h-12 bg-purple-50 border border-purple-200 rounded-xl flex items-center justify-center',
-    iconContainer: 'w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600',
+    avatar: 'w-12 h-12 bg-primary-50 border border-primary-200 rounded-xl flex items-center justify-center',
+    iconContainer: 'w-10 h-10 bg-primary-50 rounded-xl flex items-center justify-center text-primary-600',
     
     // Специальные карточки
     dropdown: 'bg-white rounded-xl border border-gray-200 shadow-sm',

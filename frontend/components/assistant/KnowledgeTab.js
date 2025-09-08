@@ -3,11 +3,89 @@ import { createPortal } from 'react-dom';
 import { LoadingIndicator } from '@/components/common/LoadingComponents';
 import { API_URL } from '@/config/api';
 import { useNotifications } from '@/hooks/useNotifications';
+import { sanitizeTechnicalError } from '@/utils/apiErrorHandler';
 import { 
   FiFileText, FiTrash2, FiUpload, FiBook, FiEye, FiRefreshCw,
   FiHelpCircle, FiGlobe, FiDatabase, FiChevronDown, FiChevronRight, FiSettings,
   FiPlus, FiEdit3, FiX
 } from 'react-icons/fi';
+
+// Компонент спиннера с таймером для выжимки
+function ExtractionSpinner() {
+  const [timeLeft, setTimeLeft] = useState(15);
+  const [showExtended, setShowExtended] = useState(false);
+
+  useEffect(() => {
+    if (timeLeft > 0) {
+      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (!showExtended) {
+      setShowExtended(true);
+    }
+  }, [timeLeft, showExtended]);
+
+  const radius = 45;
+  const circumference = 2 * Math.PI * radius;
+  
+  // Если время истекло, показываем пульсирующий круг
+  const strokeDashoffset = timeLeft > 0 
+    ? circumference - (timeLeft / 15) * circumference 
+    : 0;
+
+  return (
+    <div className="flex flex-col items-center justify-center py-8 space-y-4">
+      <div className="relative w-24 h-24">
+        {/* Фоновый круг */}
+        <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 100 100">
+          <circle
+            cx="50"
+            cy="50"
+            r={radius}
+            stroke="#e5e7eb"
+            strokeWidth="8"
+            fill="none"
+          />
+          <circle
+            cx="50"
+            cy="50"
+            r={radius}
+            stroke="#8b5cf6"
+            strokeWidth="8"
+            fill="none"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            className={timeLeft > 0 
+              ? "transition-all duration-1000 ease-in-out" 
+              : "animate-pulse"
+            }
+          />
+        </svg>
+        
+        {/* Центральный счётчик */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          {timeLeft > 0 ? (
+            <span className="text-xl font-bold text-purple-600">{timeLeft}</span>
+          ) : (
+            <span className="text-lg font-bold text-purple-600">∞</span>
+          )}
+        </div>
+      </div>
+      
+      <div className="text-center">
+        <p className="text-gray-900 font-medium">Создание выжимки...</p>
+        {showExtended ? (
+          <div className="space-y-1">
+            <p className="text-sm text-amber-600 font-medium">Нам потребуется немножко больше времени</p>
+            <p className="text-sm text-gray-500">Документ оказался сложнее обычного</p>
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500 mt-1">Анализируем документ</p>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function KnowledgeTab({ 
   documents, 
@@ -19,7 +97,7 @@ export default function KnowledgeTab({
   assistant 
 }) {
   const { showSuccess, showError, showWarning, showInfo } = useNotifications();
-  const [docPreview, setDocPreview] = useState({ isOpen: false, title: '', content: '', loading: false, isMarkdown: false });
+  const [docPreview, setDocPreview] = useState({ isOpen: false, title: '', content: '', loading: false, isMarkdown: false, isExtracting: false });
   const [summaryStatuses, setSummaryStatuses] = useState({}); // {docId: {status: 'processing'|'completed', loading: boolean}}
   const [expandedCategories, setExpandedCategories] = useState({ documents: true }); // {categoryId: boolean} - документы открыты по умолчанию
   const [uploadModal, setUploadModal] = useState(false);
@@ -266,7 +344,7 @@ export default function KnowledgeTab({
   const handleDocumentPreview = async (doc) => {
     try {
       const isMarkdown = doc.filename.endsWith('.md') || doc.filename.includes('информация с сайта');
-      setDocPreview({ isOpen: true, title: doc.filename, content: '', loading: true, isMarkdown });
+      setDocPreview({ isOpen: true, title: doc.filename, content: '', loading: true, isMarkdown, isExtracting: false });
       
       const resp = await fetch(`${API_URL}/api/documents/${doc.id}/text`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
@@ -274,18 +352,18 @@ export default function KnowledgeTab({
       
       if (resp.ok) {
         const data = await resp.json();
-        setDocPreview({ isOpen: true, title: doc.filename, content: data.text || '', loading: false, isMarkdown });
+        setDocPreview({ isOpen: true, title: doc.filename, content: data.text || '', loading: false, isMarkdown, isExtracting: false });
       } else {
-        setDocPreview({ isOpen: true, title: doc.filename, content: 'Не удалось получить текст документа', loading: false, isMarkdown });
+        setDocPreview({ isOpen: true, title: doc.filename, content: 'Не удалось получить текст документа', loading: false, isMarkdown, isExtracting: false });
       }
     } catch {
-      setDocPreview({ isOpen: true, title: doc.filename, content: 'Ошибка загрузки текста документа', loading: false, isMarkdown: false });
+      setDocPreview({ isOpen: true, title: doc.filename, content: 'Ошибка загрузки текста документа', loading: false, isMarkdown: false, isExtracting: false });
     }
   };
 
   const handleDocumentSummary = async (doc) => {
     try {
-      setDocPreview({ isOpen: true, title: `Выжимка: ${doc.filename}`, content: '', loading: true, isMarkdown: true });
+      setDocPreview({ isOpen: true, title: `Выжимка: ${doc.filename}`, content: '', loading: true, isMarkdown: true, isExtracting: true });
       
       const resp = await fetch(`${API_URL}/api/documents/${doc.id}/summary`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
@@ -294,14 +372,18 @@ export default function KnowledgeTab({
       if (resp.ok) {
         const data = await resp.json();
         const summaries = (data.summaries || [])
-          .map(s => `# Часть ${s.chunk}${s.is_overall ? ' (итог)' : ''}\n\n${s.summary}`)
+          .map(s => {
+            // Используем централизованную функцию для очистки технических ошибок
+            const cleanSummary = sanitizeTechnicalError(s.summary);
+            return `# Часть ${s.chunk}${s.is_overall ? ' (итог)' : ''}\n\n${cleanSummary}`;
+          })
           .join('\n\n');
-        setDocPreview({ isOpen: true, title: `Выжимка: ${doc.filename}`, content: summaries || 'Пусто', loading: false, isMarkdown: true });
+        setDocPreview({ isOpen: true, title: `Выжимка: ${doc.filename}`, content: summaries || 'Пусто', loading: false, isMarkdown: true, isExtracting: false });
       } else {
-        setDocPreview({ isOpen: true, title: `Выжимка: ${doc.filename}`, content: 'Не удалось выполнить анализ документа', loading: false, isMarkdown: true });
+        setDocPreview({ isOpen: true, title: `Выжимка: ${doc.filename}`, content: 'У нас возникли небольшие технические проблемы. Пожалуйста, попробуйте позже.', loading: false, isMarkdown: true, isExtracting: false });
       }
     } catch {
-      setDocPreview({ isOpen: true, title: `Выжимка: ${doc.filename}`, content: 'Ошибка анализа документа', loading: false, isMarkdown: true });
+      setDocPreview({ isOpen: true, title: `Выжимка: ${doc.filename}`, content: 'У нас возникли небольшие технические проблемы. Пожалуйста, попробуйте позже.', loading: false, isMarkdown: true, isExtracting: false });
     }
   };
 
@@ -336,7 +418,10 @@ export default function KnowledgeTab({
 
   const MarkdownRenderer = ({ content }) => {
     const renderMarkdown = (text) => {
-      return text
+      // Сначала очищаем технические ошибки из контента
+      const cleanContent = sanitizeTechnicalError(text);
+      
+      return cleanContent
         .replace(/^### (.*$)/gm, '<h3 style="color: #1e293b; margin: 24px 0 12px 0; font-size: 18px; font-weight: 600;">$1</h3>')
         .replace(/^## (.*$)/gm, '<h2 style="color: #1e293b; margin: 28px 0 16px 0; font-size: 22px; font-weight: 600;">$1</h2>')
         .replace(/^# (.*$)/gm, '<h1 style="color: #1e293b; margin: 32px 0 20px 0; font-size: 26px; font-weight: 700;">$1</h1>')
@@ -485,16 +570,20 @@ export default function KnowledgeTab({
                 <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate pr-2">{docPreview.title}</h3>
                 <button
                   className="text-gray-400 hover:text-gray-600 text-xl sm:text-2xl font-light flex-shrink-0 w-8 h-8 sm:w-auto sm:h-auto flex items-center justify-center"
-                  onClick={() => setDocPreview({ isOpen: false, title: '', content: '', loading: false })}
+                  onClick={() => setDocPreview({ isOpen: false, title: '', content: '', loading: false, isMarkdown: false, isExtracting: false })}
                 >
                   ×
                 </button>
               </div>
               <div className="p-4 sm:p-6 overflow-auto max-h-[calc(85vh-120px)] sm:max-h-[60vh]">
                 {docPreview.loading ? (
-                  <div className="flex items-center justify-center py-8 sm:py-12">
-                    <LoadingIndicator message="Загрузка..." size="medium" />
-                  </div>
+                  docPreview.isExtracting ? (
+                    <ExtractionSpinner />
+                  ) : (
+                    <div className="flex items-center justify-center py-8 sm:py-12">
+                      <LoadingIndicator message="Загрузка..." size="medium" />
+                    </div>
+                  )
                 ) : (
                   docPreview.isMarkdown ? (
                     <div className="prose prose-sm sm:prose-base max-w-none">

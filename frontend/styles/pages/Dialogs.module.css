@@ -319,13 +319,19 @@
 
 /* FILTERS PANEL */
 .filtersPanelOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.3);
-  z-index: 1000001; /* выше плавающего AI-чата */
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  z-index: 999999 !important;
+  overflow-y: auto;
+  isolation: isolate;
 }
 
 .filtersPanel {
@@ -385,7 +391,7 @@
 .filtersPanelContent {
   flex: 1;
   overflow-y: auto;
-  padding: 0 20px;
+  padding: 20px 20px 0 20px;
 }
 
 .filterSection {
@@ -495,6 +501,54 @@
 .clearFiltersBtn:hover {
   background: rgb(245, 247, 249);
   color: #1a1a1a;
+}
+
+/* Кнопка "Применить" для мобильных */
+.applyFiltersBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background: #16a34a;
+  border: 1px solid #16a34a;
+  border-radius: 0.75rem;
+  padding: 12px 16px;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.applyFiltersBtn:hover:not(:disabled) {
+  background: #15803d;
+  border-color: #15803d;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+}
+
+.applyFiltersBtn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.applyFiltersBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Мобильный класс - скрывает элемент на десктопе */
+.mobileOnly {
+  display: none !important;
+}
+
+/* Показываем мобильные элементы на планшетах и мобильных */
+@media (max-width: 1024px) {
+  .mobileOnly {
+    display: flex !important;
+  }
 }
 
 /* REAL TIME INDICATOR */
@@ -1718,12 +1772,75 @@
     right: 0;
   }
 
+  /* Показываем кнопку "Применить" на планшетах и мобильных */
+  .mobileOnly {
+    display: flex !important;
+  }
+
   .filtersPanelHeader {
     padding: 16px;
   }
 
   .filtersPanelContent {
-    padding: 0 16px;
+    padding: 16px 16px 0 16px;
+  }
+
+  /* Улучшенные стили для мобильной фильтровой панели */
+  .filtersPanelHeader h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .closePanelBtn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .filterSection h4 {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 20px 0;
+    color: #1f2937;
+  }
+
+  .filterOption {
+    padding: 16px 20px;
+    font-size: 16px;
+    border-radius: 12px;
+    margin-bottom: 4px;
+  }
+
+  .filterOptionIcon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .filterOptionLabel {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .filterOptionCount {
+    font-size: 14px;
+    padding: 4px 10px;
+    min-width: 28px;
+  }
+
+  .filtersPanelFooter {
+    padding: 20px 16px;
+    gap: 12px;
+  }
+
+  .applyFiltersBtn {
+    font-size: 16px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+  }
+
+  .clearFiltersBtn {
+    font-size: 16px;
+    padding: 16px 20px;
   }
 
   .botCardsGrid {
@@ -1869,6 +1986,66 @@
   .tooltip {
     display: none; /* Скрываем tooltip на мобильных для лучшего UX */
   }
+
+  /* Дополнительные стили для фильтровой панели на очень маленьких экранах */
+  .filtersPanelHeader {
+    padding: 12px;
+  }
+
+  .filtersPanelHeader h3 {
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .closePanelBtn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .filtersPanelContent {
+    padding: 12px 12px 0 12px;
+  }
+
+  .filterSection h4 {
+    font-size: 14px;
+    margin: 0 0 16px 0;
+  }
+
+  .filterOption {
+    padding: 14px 16px;
+    font-size: 15px;
+    margin-bottom: 2px;
+  }
+
+  .filterOptionIcon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .filterOptionLabel {
+    font-size: 15px;
+  }
+
+  .filterOptionCount {
+    font-size: 13px;
+    padding: 3px 8px;
+    min-width: 24px;
+  }
+
+  .filtersPanelFooter {
+    padding: 16px 12px;
+  }
+
+  .applyFiltersBtn {
+    font-size: 15px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+  }
+
+  .clearFiltersBtn {
+    font-size: 15px;
+    padding: 14px 16px;
+  }
 }
 
 /* Дополнительная адаптация для экранов ниже 1025px */
@@ -1904,6 +2081,36 @@
     width: 34px;
     height: 34px;
     font-size: 15px;
+  }
+
+  /* Показываем кнопку "Применить" и адаптируем фильтры для планшетов */
+  .mobileOnly {
+    display: flex !important;
+  }
+
+  .filtersPanelHeader h3 {
+    font-size: 17px;
+    font-weight: 700;
+  }
+
+  .filterSection h4 {
+    font-size: 15px;
+    margin: 0 0 18px 0;
+  }
+
+  .filterOption {
+    padding: 14px 18px;
+    font-size: 15px;
+  }
+
+  .applyFiltersBtn {
+    font-size: 15px;
+    padding: 14px 18px;
+  }
+
+  .clearFiltersBtn {
+    font-size: 15px;
+    padding: 14px 18px;
   }
 
   /* Показываем карточки вместо таблицы для планшетов */

@@ -395,7 +395,9 @@ class EmbeddingsService:
                 from core.app_config import DATABASE_URL
                 
                 try:
-                    conn = psycopg2.connect(DATABASE_URL)
+                    # Убираем префикс postgresql+psycopg2:// для psycopg2
+                    psycopg2_url = DATABASE_URL.replace('postgresql+psycopg2://', 'postgresql://')
+                    conn = psycopg2.connect(psycopg2_url)
                     cursor = conn.cursor()
                     
                     # Конвертируем embedding в строку pgvector формата
@@ -706,7 +708,9 @@ class EmbeddingsService:
                 from core.app_config import DATABASE_URL
                 
                 try:
-                    conn = psycopg2.connect(DATABASE_URL)
+                    # Убираем префикс postgresql+psycopg2:// для psycopg2
+                    psycopg2_url = DATABASE_URL.replace('postgresql+psycopg2://', 'postgresql://')
+                    conn = psycopg2.connect(psycopg2_url)
                     cursor = conn.cursor()
                     
                     # Конвертируем embedding в строку pgvector формата

@@ -85,7 +85,7 @@ class BalanceService:
             raise ValueError(f"Недостаточно средств. Баланс: {balance.balance} руб., требуется: {amount} руб.")
         
         balance_before = float(balance.balance)
-        balance_after = balance_before - amount
+        balance_after = balance_before - float(amount)
         
         # Создаем транзакцию
         transaction = BalanceTransaction(
@@ -100,7 +100,7 @@ class BalanceService:
         
         # Обновляем баланс
         balance.balance = balance_after
-        balance.total_spent = float(balance.total_spent) + amount
+        balance.total_spent = float(balance.total_spent) + float(amount)
         balance.updated_at = datetime.utcnow()
         
         # Добавляем измененные объекты в сессию
@@ -164,7 +164,7 @@ class BalanceService:
         balance = self.get_balance(user_id)
         return balance >= service_price.price
     
-    def give_welcome_bonus(self, user_id: int, amount: float = 100.0) -> Optional[BalanceTransaction]:
+    def give_welcome_bonus(self, user_id: int, amount: float = 500.0) -> Optional[BalanceTransaction]:
         """Начислить приветственный бонус новому пользователю"""
         user = self.db.query(User).filter(User.id == user_id).first()
         if not user:

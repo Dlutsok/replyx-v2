@@ -5,6 +5,7 @@ import { useNotifications } from '../hooks/useNotifications';
 import { AssistantsList, AssistantDetails, ModalManager } from '@/components/ai-assistant';
 import { PageHeader, MetricCard, StandardCard } from '@/components/common';
 import { DESIGN_TOKENS } from '@/constants';
+import { sanitizeTechnicalError } from '@/utils/apiErrorHandler';
 import styles from '../styles/pages/AISettings.module.css';
 import dashStyles from '../styles/pages/Dashboard.module.css';
 import { 
@@ -136,7 +137,8 @@ export default function AIAssistant() {
       }
     } catch (error) {
       console.error('Ошибка загрузки ассистентов:', error);
-      showError('Ошибка загрузки ассистентов', 'ASSISTANTS_LOAD_ERROR');
+      const cleanMessage = sanitizeTechnicalError(error.message || 'Ошибка загрузки ассистентов');
+      showError(cleanMessage, 'ASSISTANTS_LOAD_ERROR');
     } finally {
       setLoading(false);
     }
@@ -340,7 +342,8 @@ export default function AIAssistant() {
       }
     } catch (error) {
       console.error('Ошибка загрузки документа:', error);
-      showError('Ошибка загрузки документа', 'DOCUMENT_UPLOAD_ERROR');
+      const cleanMessage = sanitizeTechnicalError(error.message || 'Ошибка загрузки документа');
+      showError(cleanMessage, 'DOCUMENT_UPLOAD_ERROR');
     } finally {
       setUploading(false);
     }
@@ -393,7 +396,8 @@ export default function AIAssistant() {
       }
     } catch (error) {
       console.error('Ошибка создания бота:', error);
-      showError('Ошибка создания бота', 'BOT_CREATE_ERROR');
+      const cleanMessage = sanitizeTechnicalError(error.message || 'Ошибка создания бота');
+      showError(cleanMessage, 'BOT_CREATE_ERROR');
     } finally {
       setCreatingBot(false);
     }
@@ -588,7 +592,7 @@ export default function AIAssistant() {
 
   return (
     <div>
-      <div className="bg-white px-4 sm:px-6 xl:px-8 pt-4 sm:pt-6 xl:pt-8 pb-4 sm:pb-6 xl:pb-8 animate-fade-in rounded-2xl">
+      <div className="bg-white px-4 sm:px-6 xl:px-8 pt-4 sm:pt-6 xl:pt-8 pb-4 sm:pb-6 xl:pb-8 animate-fade-in rounded-2xl min-h-[90vh] flex flex-col">
         <AssistantsList
           assistants={assistants}
           onSelectAssistant={handleSelectAssistant}

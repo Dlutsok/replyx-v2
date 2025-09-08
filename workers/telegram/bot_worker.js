@@ -544,6 +544,8 @@ class BotWorker {
             // Получаем ответ от AI
             const aiResponse = await this.getAIResponse(userId, text, this.assistant, dialog.id);
             
+            this.sendLog('info', `🤖 AI Response received: "${aiResponse.substring(0, 100)}..."`);
+            
             // 🔥 ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА HANDOFF ПЕРЕД ОТПРАВКОЙ ОТВЕТА
             const finalDialogStatus = await this.getFreshDialogStatus(dialog.id);
             if (finalDialogStatus.handoff_status === 'requested' || finalDialogStatus.handoff_status === 'active') {
@@ -563,7 +565,9 @@ class BotWorker {
             
             // Конвертируем markdown для Telegram и отправляем ответ пользователю
             const telegramResponse = this.convertMarkdownForTelegram(aiResponse);
+            this.sendLog('info', `📤 Sending message to Telegram chat ${chatId}: "${telegramResponse.substring(0, 100)}..."`);
             await this.bot.sendMessage(chatId, telegramResponse, { parse_mode: 'HTML' });
+            this.sendLog('info', `✅ Message successfully sent to Telegram chat ${chatId}`);
             
 
             

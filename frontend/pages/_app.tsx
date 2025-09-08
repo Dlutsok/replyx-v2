@@ -51,6 +51,12 @@ const ADMIN_ROUTES = [
   '/admin-settings'
 ];
 
+// Страницы платежей (доступны только авторизованным пользователям)
+const PAYMENT_ROUTES = [
+  '/payment/success',
+  '/payment/error'
+];
+
 function AppContent({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const { isAuthenticated, isLoading } = useAuth();
@@ -58,8 +64,9 @@ function AppContent({ Component, pageProps }: AppProps) {
   const isPublicRoute = PUBLIC_ROUTES.includes(router.pathname);
   const isLegalRoute = LEGAL_ROUTES.includes(router.pathname);
   const isAdminRoute = ADMIN_ROUTES.includes(router.pathname);
+  const isPaymentRoute = PAYMENT_ROUTES.includes(router.pathname);
   const isChatIframe = router.pathname === '/chat-iframe';
-  const shouldShowLayout = isAuthenticated && !isPublicRoute && !isLegalRoute && !isAdminRoute;
+  const shouldShowLayout = isAuthenticated && !isPublicRoute && !isLegalRoute && !isAdminRoute && !isPaymentRoute;
 
   // Принудительное перенаправление неавторизованных пользователей
   useEffect(() => {
@@ -136,6 +143,7 @@ function AppContent({ Component, pageProps }: AppProps) {
   return null;
 }
 
+
 export default function App(props: AppProps) {
   return (
     <>
@@ -155,6 +163,8 @@ export default function App(props: AppProps) {
           `,
         }}
       />
+      
+      
       <main className={manrope.className}>
         <ThemeProvider>
           <GlobalLoadingProvider>

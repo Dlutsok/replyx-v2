@@ -3,44 +3,160 @@
  */
 
 /**
+ * Очищает технические ошибки и заменяет их понятными пользователю
+ * @param {string} message - Исходное сообщение об ошибке
+ * @returns {string} Очищенное сообщение
+ */
+export function sanitizeTechnicalError(message) {
+  if (!message || typeof message !== 'string') {
+    return 'У нас возникли небольшие технические проблемы. Пожалуйста, попробуйте позже.';
+  }
+
+  const technicalPatterns = [
+    // AI/Provider related errors
+    /legacy fallback disabled/i,
+    /new provider system/i,
+    /check ai_providers_available/i,
+    /\[ошибка анализа:/i,
+    /model gpt-4o/i,
+    /provider system should handle/i,
+    
+    // Database/SQL errors
+    /postgresql/i,
+    /sqlite/i,
+    /mysql/i,
+    /database connection/i,
+    /sql error/i,
+    /foreign key constraint/i,
+    /unique constraint/i,
+    
+    // Python/Backend errors
+    /traceback \(most recent call last\)/i,
+    /file ".*\.py"/i,
+    /python/i,
+    /exception:/i,
+    /attributeerror/i,
+    /keyerror/i,
+    /valueerror/i,
+    /typeerror/i,
+    /indexerror/i,
+    /nameerror/i,
+    
+    // API/Network errors
+    /internal server error/i,
+    /500 internal/i,
+    /502 bad gateway/i,
+    /503 service/i,
+    /504 gateway timeout/i,
+    /connection refused/i,
+    /connection timeout/i,
+    /network error/i,
+    /cors error/i,
+    
+    // Generic technical patterns
+    /error:/i,
+    /exception in/i,
+    /stack trace/i,
+    /at \w+\./i,
+    /line \d+/i,
+    /module '\w+'/i,
+    /function \w+/i,
+    /\w+\.\w+\(\)/i,
+  ];
+
+  // Проверяем, содержит ли сообщение технические паттерны
+  const hasTechnicalError = technicalPatterns.some(pattern => pattern.test(message));
+  
+  if (hasTechnicalError) {
+    return 'У нас возникли небольшие технические проблемы. Пожалуйста, попробуйте позже.';
+  }
+
+  // Специфические замены для частых случаев
+  const replacements = [
+    {
+      pattern: /failed to fetch/i,
+      replacement: 'Проблема с подключением. Проверьте интернет-соединение.'
+    },
+    {
+      pattern: /timeout/i,
+      replacement: 'Время ожидания истекло. Попробуйте позже.'
+    },
+    {
+      pattern: /unauthorized/i,
+      replacement: 'Необходима повторная авторизация.'
+    },
+    {
+      pattern: /forbidden/i,
+      replacement: 'Недостаточно прав доступа.'
+    },
+    {
+      pattern: /not found/i,
+      replacement: 'Запрашиваемый ресурс не найден.'
+    },
+    {
+      pattern: /rate limit/i,
+      replacement: 'Слишком много запросов. Попробуйте через минуту.'
+    }
+  ];
+
+  let cleanMessage = message;
+  
+  for (const { pattern, replacement } of replacements) {
+    if (pattern.test(cleanMessage)) {
+      cleanMessage = replacement;
+      break;
+    }
+  }
+
+  return cleanMessage;
+}
+
+/**
  * Парсит ошибку API и возвращает человекочитаемое сообщение
  * @param {Object} data - Данные ответа от API
  * @param {string} defaultMessage - Сообщение по умолчанию
  * @returns {string} Сообщение об ошибке
  */
 export function parseApiError(data, defaultMessage = 'Неизвестная ошибка') {
-  if (!data) return defaultMessage;
+  if (!data) return sanitizeTechnicalError(defaultMessage);
+  
+  let rawMessage = '';
   
   // Если есть прямое поле message
   if (data.message && typeof data.message === 'string') {
-    return data.message;
+    rawMessage = data.message;
   }
   
   // Если есть поле detail
-  if (data.detail) {
+  else if (data.detail) {
     // Если detail это строка
     if (typeof data.detail === 'string') {
-      return data.detail;
+      rawMessage = data.detail;
     }
     
     // Если detail это объект (например, rate limiting)
-    if (typeof data.detail === 'object') {
+    else if (typeof data.detail === 'object') {
       // Проверяем различные поля в объекте detail
       if (data.detail.message) {
-        return data.detail.message;
-      }
-      if (data.detail.error) {
-        return data.detail.error;
+        rawMessage = data.detail.message;
+      } else if (data.detail.error) {
+        rawMessage = data.detail.error;
       }
     }
   }
   
   // Если есть поле error
-  if (data.error && typeof data.error === 'string') {
-    return data.error;
+  else if (data.error && typeof data.error === 'string') {
+    rawMessage = data.error;
   }
   
-  return defaultMessage;
+  // Если ничего не найдено, используем сообщение по умолчанию
+  if (!rawMessage) {
+    rawMessage = defaultMessage;
+  }
+  
+  // Очищаем техническое сообщение
+  return sanitizeTechnicalError(rawMessage);
 }
 
 /**
@@ -267,6 +383,7 @@ export function isRecoverableError(error) {
 }
 
 export default {
+  sanitizeTechnicalError,
   parseApiError,
   handleApiResponse,
   apiRequest,

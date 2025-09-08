@@ -187,7 +187,7 @@ const EmbedCodeModal = React.memo(({
                           {assistant.name}
                         </h4>
                         <p className={styles.assistantModel}>
-                          Модель: {assistant.ai_model || 'gpt-4o-mini'}
+                          Модель: OpenAI
                         </p>
                       </div>
                     </div>

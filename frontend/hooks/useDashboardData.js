@@ -247,29 +247,9 @@ export const useDashboardData = () => {
     return () => clearTimeout(timer);
   }, []); // Пустой массив зависимостей
 
-  // Автообновление каждые 10 минут (отдельный useEffect)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchDataRef.current();
-    }, 600000); // 10 минут
-    
-    return () => {
-      clearInterval(interval);
-    };
-  }, []); // Пустой массив зависимостей!
+  // Автообновление отключено - обновление только по запросу пользователя
 
-  // Обновление при фокусе (отдельный useEffect)
-  useEffect(() => {
-    const handleFocus = () => {
-      fetchDataRef.current();
-    };
-    
-    window.addEventListener('focus', handleFocus);
-    
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-    };
-  }, []); // Пустой массив зависимостей!
+  // Обновление при фокусе отключено - обновление только по кнопке пользователя
 
   return { ...data, refetch: fetchData, formatters };
 };

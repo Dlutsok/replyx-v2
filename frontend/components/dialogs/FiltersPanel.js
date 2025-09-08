@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
+import { createPortal } from 'react-dom';
 import { FiX, FiRefreshCw, FiMessageSquare, FiCheckCircle, FiUserCheck, FiMessageCircle, FiSmartphone, FiHeadphones, FiUser } from 'react-icons/fi';
 import styles from '../../styles/pages/Dialogs.module.css';
 import { STATUS_ALL, STATUS_ACTIVE, STATUS_TAKEN_OVER, STATUS_HANDOFF_REQUESTED, STATUS_HANDOFF_ACTIVE } from '../../constants/dialogStatus';
@@ -48,7 +49,7 @@ const FiltersPanel = ({
     return dialogs.filter(dialog => dialog.assistant_id === botAssistantId).length;
   };
 
-  return (
+  const filtersPanelContent = (
     <>
       <AnimatePresence>
         {isOpen && (
@@ -62,12 +63,12 @@ const FiltersPanel = ({
           />
         )}
       </AnimatePresence>
-      
+
       <motion.div
         className={`${styles.filtersPanel} ${isOpen ? styles.open : ''}`}
         initial={{ transform: 'translateX(100%)' }}
         animate={{ transform: isOpen ? 'translateX(0%)' : 'translateX(100%)' }}
-        transition={{ 
+        transition={{
           type: 'tween',
           duration: 0.3,
           ease: 'easeInOut'
@@ -163,7 +164,16 @@ const FiltersPanel = ({
         </div>
         
         <div className={styles.filtersPanelFooter}>
-          <button 
+          {/* Кнопка "Применить" для мобильных устройств */}
+          <button
+            className={`${styles.applyFiltersBtn} ${styles.mobileOnly}`}
+            onClick={onClose}
+          >
+            <FiCheckCircle />
+            Применить
+          </button>
+
+          <button
             className={styles.clearFiltersBtn}
             onClick={onClearFilters}
           >
@@ -174,6 +184,10 @@ const FiltersPanel = ({
       </motion.div>
     </>
   );
+
+  return typeof document !== 'undefined'
+    ? createPortal(filtersPanelContent, document.body)
+    : null;
 };
 
 export default FiltersPanel;
