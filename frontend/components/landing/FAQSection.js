@@ -134,7 +134,7 @@ const FAQSection = () => {
   ];
 
   return (
-    <SectionWrapper bg="white" className="pt-20 pb-20 relative">
+    <SectionWrapper bg="white" className="pt-16 pb-20 relative">
       {/* Десктопная версия */}
       <div className="hidden lg:block">
         {/* Фоновые декоративные элементы */}

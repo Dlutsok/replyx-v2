@@ -90,7 +90,7 @@ const SetupStepsSection = () => {
 
   return (
     <motion.section
-      className={`${DESIGN_TOKENS.spacing.sectionPadding} ${DESIGN_TOKENS.colors.sectionBg} pb-20`}
+      className={`${DESIGN_TOKENS.spacing.sectionPadding} ${DESIGN_TOKENS.colors.sectionBg} pb-20 pb-0 lg:pb-6`}
       {...DESIGN_TOKENS.animation.default}
     >
       <div className={`${DESIGN_TOKENS.spacing.maxWidth} ${DESIGN_TOKENS.spacing.containerPadding}`}>
@@ -291,19 +291,6 @@ const SetupStepsSection = () => {
                           )}
                         </div>
 
-                        {/* Статус бейдж */}
-                        <div className={`
-                          px-3 py-1 rounded-full text-xs font-medium transition-all duration-300
-                          ${step.status === 'completed'
-                            ? 'bg-green-100 text-green-700'
-                            : step.status === 'current'
-                            ? 'bg-[#6334E5]/10 text-[#6334E5]'
-                            : 'bg-gray-100 text-gray-600'
-                          }
-                        `}>
-                          {step.status === 'completed' ? 'Готово' :
-                           step.status === 'current' ? 'В процессе' : 'Ожидает'}
-                        </div>
                       </div>
 
                       {/* Иконка шага */}
@@ -385,14 +372,6 @@ const SetupStepsSection = () => {
                     )}
                   </div>
 
-                  {/* Декоративный элемент */}
-                  <div className={`absolute top-0 right-0 w-20 h-20 rounded-full opacity-10 ${
-                    step.id === 1 ? 'bg-blue-500' :
-                    step.id === 2 ? 'bg-green-500' :
-                    step.id === 3 ? 'bg-orange-500' : 'bg-[#6334E5]'
-                  }`} style={{
-                    transform: 'translate(10px, -10px)'
-                  }} />
                 </motion.div>
               );
             })}
@@ -506,7 +485,7 @@ const SetupStepsSection = () => {
                 </span>
               </button>
               <p className="text-xs text-gray-500 text-center mt-3">
-                7 дней бесплатно • Без кредитной карты
+                Первые 100 сообщений бесплатно
               </p>
             </div>
           </motion.div>

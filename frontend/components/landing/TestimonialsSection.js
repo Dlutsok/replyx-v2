@@ -122,12 +122,20 @@ const TestimonialsSection = () => {
   ];
 
   return (
-    <section className={`${DESIGN_TOKENS.spacing.sectionPadding} ${DESIGN_TOKENS.colors.sectionBg} pt-20 pb-20`}>
+    <section className={`${DESIGN_TOKENS.colors.sectionBg} pt-16`}>
+      {/* Адаптивный отступ: мобильные без отступа (pb-0), десктоп с отступом (pb-6) */}
+      <div className="pb-0 md:pb-6"></div>
       <div className={`${DESIGN_TOKENS.spacing.maxWidth} ${DESIGN_TOKENS.spacing.containerPadding}`}>
         {/* Заголовок секции */}
         <div className="text-left mb-16">
           <h2 className={`${DESIGN_TOKENS.typography.h2} mb-4`}>
-            Что говорят наши <span className="text-[#6334E5]">клиенты</span>
+            Что говорят наши <span style={{
+              background: 'linear-gradient(269deg, rgb(99, 52, 229) 28.67%, rgb(117, 197, 237) 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              display: 'inline-block'
+            }}>клиенты</span>
           </h2>
           <p className={`${DESIGN_TOKENS.typography.sectionSubtitle}`}>
             Реальные отзывы компаний, которые уже используют ReplyX для автоматизации поддержки
@@ -218,7 +226,7 @@ const TestimonialsSection = () => {
         </div>
 
         {/* Профессиональный CTA блок */}
-        <div className="mt-20">
+        <div className="mt-16 md:mt-20">
           {/* Десктопная версия */}
           <div className="hidden lg:block max-w-4xl xl:max-w-[1200px] mx-auto px-4 sm:px-6 xl:px-0">
             {/* Центральный CTA элемент */}

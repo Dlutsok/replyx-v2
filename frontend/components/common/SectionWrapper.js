@@ -16,14 +16,15 @@ const SectionWrapper = ({
   return (
     <motion.section
       className={combineClasses(
-        DESIGN_TOKENS.spacing.sectionPadding,
+        // Адаптивные отступы: мобильные больше (pb-16 = 4rem), десктоп без изменений
+        props.id === 'solutions' ? 'pb-16 md:pb-6' : DESIGN_TOKENS.spacing.sectionPadding,
         backgroundClass,
         className
       )}
       {...DESIGN_TOKENS.animation.default}
-      transition={{ 
-        ...DESIGN_TOKENS.animation.default.transition, 
-        delay: animationDelay 
+      transition={{
+        ...DESIGN_TOKENS.animation.default.transition,
+        delay: animationDelay
       }}
       {...props}
     >

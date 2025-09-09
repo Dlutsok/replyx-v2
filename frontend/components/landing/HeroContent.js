@@ -199,7 +199,7 @@ const HeroContent = () => {
         </Button>
 
         {/* Зеленая надпись под кнопкой */}
-        <p className="text-center text-green-500 text-sm font-normal mt-4">
+        <p className="text-center md:text-left text-green-500 text-sm font-normal mt-4">
           Первые 100 сообщений бесплатно
         </p>
       </motion.div>

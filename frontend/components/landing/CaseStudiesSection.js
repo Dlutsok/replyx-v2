@@ -45,7 +45,7 @@ const CaseStudiesSection = () => {
       results: [
         { metric: 'Продажи', value: '+65%', icon: FiBarChart },
         { metric: 'Поддержка', value: '24/7', icon: FiUsers },
-        { metric: 'Удовлетворенность', value: '4.9/5', icon: FiStar }
+        { metric: 'Оценка', value: '4.9/5', icon: FiStar }
       ],
       description: 'Интернет-магазин внедрил AI-ассистента для обработки заказов и консультаций. Результат - рост продаж на 65%.',
       testimonial: '"Клиенты довольны мгновенными ответами. Мы обработали на 200% больше запросов"',
@@ -72,7 +72,7 @@ const CaseStudiesSection = () => {
 
   return (
     <motion.section
-      className={`${DESIGN_TOKENS.spacing.sectionPadding} ${DESIGN_TOKENS.colors.sectionBg} pt-20 pb-20`}
+      className={`${DESIGN_TOKENS.colors.sectionBg} pt-16 pb-8 md:pb-6`}
       {...DESIGN_TOKENS.animation.default}
     >
       <div className={`${DESIGN_TOKENS.spacing.maxWidth} ${DESIGN_TOKENS.spacing.containerPadding}`}>

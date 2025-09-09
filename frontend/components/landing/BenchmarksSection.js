@@ -291,7 +291,7 @@ const BenchmarksSection = () => {
 
 
   return (
-    <section className="relative min-h-[600px] md:min-h-[700px] flex items-center overflow-hidden pb-20 lg:pt-20">
+    <section className="relative min-h-[600px] md:min-h-[700px] flex items-center overflow-hidden pb-20 lg:pt-16" style={{paddingBottom: '4rem'}}>
       {/* White background */}
       <div className="absolute inset-0 bg-white pointer-events-none" />
 

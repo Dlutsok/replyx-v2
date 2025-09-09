@@ -47,9 +47,11 @@ const PricingBlockSection = () => {
 
   return (
     <motion.section
-      className={`mt-20 ${DESIGN_TOKENS.spacing.sectionPadding} ${DESIGN_TOKENS.colors.sectionBg} pb-20`}
+      className={`lg:mt-20 ${DESIGN_TOKENS.colors.sectionBg} pb-0 md:pb-20`}
       {...DESIGN_TOKENS.animation.default}
     >
+      {/* Адаптивные отступы: мобильные без отступа (pb-0), десктоп с отступом (pb-6) */}
+      <div className="pb-0 md:pb-6"></div>
       <div className={`${DESIGN_TOKENS.spacing.maxWidth} ${DESIGN_TOKENS.spacing.containerPadding}`}>
         {/* Заголовок секции */}
         <motion.div
@@ -58,7 +60,13 @@ const PricingBlockSection = () => {
         >
           <h2 className={`${DESIGN_TOKENS.typography.h2} mb-4`}>
             Простая и{' '}
-            <span className="text-[#6334E5]">честная цена</span>
+            <span style={{
+              background: 'linear-gradient(269deg, rgb(99, 52, 229) 28.67%, rgb(117, 197, 237) 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              display: 'inline-block'
+            }}>честная цена</span>
           </h2>
           <p className={`${DESIGN_TOKENS.typography.sectionSubtitle} max-w-3xl`}>
             Никаких подписок и лимитов. Платите только за то, что используете
