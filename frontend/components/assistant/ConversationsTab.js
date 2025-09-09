@@ -28,13 +28,13 @@ export default function ConversationsTab({ dialogs, loading, onDialogOpen }) {
             placeholder="Поиск по диалогам..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6334E5] focus:border-transparent"
           />
         </div>
         <select
           value={selectedChannel || ''}
           onChange={(e) => setSelectedChannel(e.target.value || null)}
-          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6334E5] focus:border-transparent"
         >
           <option value="">Все каналы</option>
           <option value="telegram">Telegram</option>
@@ -98,8 +98,8 @@ export default function ConversationsTab({ dialogs, loading, onDialogOpen }) {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-8 w-8">
-                            <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
-                              <span className="text-sm font-medium text-purple-600">
+                            <div className="h-8 w-8 rounded-full bg-[#6334E5]/10 flex items-center justify-center">
+                              <span className="text-sm font-medium text-[#6334E5]">
                                 {(dialog.user_name || dialog.telegram_chat_id || 'G').charAt(0).toUpperCase()}
                               </span>
                             </div>
@@ -149,7 +149,7 @@ export default function ConversationsTab({ dialogs, loading, onDialogOpen }) {
                             e.stopPropagation();
                             onDialogOpen && onDialogOpen(dialog);
                           }}
-                          className="text-purple-600 hover:text-purple-900 transition-colors"
+                          className="text-[#6334E5] hover:text-[#4c1d95] transition-colors"
                         >
                           Открыть
                         </button>
@@ -183,8 +183,8 @@ export default function ConversationsTab({ dialogs, loading, onDialogOpen }) {
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <div className="flex-shrink-0">
-                      <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
-                        <span className="text-sm font-medium text-purple-600">
+                      <div className="h-10 w-10 rounded-full bg-[#6334E5]/10 flex items-center justify-center">
+                        <span className="text-sm font-medium text-[#6334E5]">
                           {(dialog.user_name || dialog.telegram_chat_id || 'G').charAt(0).toUpperCase()}
                         </span>
                       </div>
@@ -236,7 +236,7 @@ export default function ConversationsTab({ dialogs, loading, onDialogOpen }) {
                       e.stopPropagation();
                       onDialogOpen && onDialogOpen(dialog);
                     }}
-                    className="px-3 py-1.5 bg-purple-50 text-purple-700 text-xs font-medium rounded-lg hover:bg-purple-100 transition-colors"
+                    className="px-3 py-1.5 bg-[#6334E5]/10 text-[#6334E5] text-xs font-medium rounded-lg hover:bg-[#6334E5]/20 transition-colors"
                   >
                     Открыть
                   </button>

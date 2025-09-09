@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { withAuth } from '../hooks/useAuth';
 import { useAdminSettings } from '../hooks/useAdminSettings';
-import AdminDashboard from '../components/layout/AdminDashboard';
+import AdminDashboard from '@/components/layout/AdminDashboard';
 import { 
   FiSettings, FiCpu, FiMail, FiShield, FiBarChart, FiTool,
   FiSave, FiRefreshCw, FiAlertTriangle, FiCheckCircle, FiLock

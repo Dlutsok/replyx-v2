@@ -170,7 +170,7 @@ const ConfirmDeleteModal = ({ isOpen, onClose, onConfirm, title, description, it
               value={confirmationText}
               onChange={(e) => setConfirmationText(e.target.value)}
               placeholder="Я понимаю"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6334E5]/100 focus:border-transparent"
               autoComplete="off"
             />
             <p className="text-xs text-gray-500">

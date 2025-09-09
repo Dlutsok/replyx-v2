@@ -44,10 +44,10 @@ const customNavigationStyles = `
 
   @keyframes pulse-glow {
     0%, 100% {
-      box-shadow: 0 0 5px rgba(147, 51, 234, 0.3);
+      box-shadow: 0 0 5px rgba(99, 52, 229, 0.3);
     }
     50% {
-      box-shadow: 0 0 20px rgba(147, 51, 234, 0.6), 0 0 30px rgba(139, 69, 229, 0.4);
+      box-shadow: 0 0 20px rgba(99, 52, 229, 0.6), 0 0 30px rgba(99, 52, 229, 0.4);
     }
   }
 `;
@@ -226,21 +226,21 @@ const TestimonialsSection = () => {
               {/* Декоративные элементы фона */}
               <div className="absolute inset-0 overflow-hidden">
                 {/* Основной градиентный круг */}
-                <div className="absolute top-0 right-0 w-32 sm:w-40 xl:w-32 h-32 sm:h-40 xl:h-32 bg-gradient-to-br from-purple-100/40 via-purple-200/30 to-transparent rounded-full blur-3xl transform translate-x-16 sm:translate-x-20 xl:translate-x-16 -translate-y-8 sm:-translate-y-10 xl:-translate-y-8"></div>
+                <div className="absolute top-0 right-0 w-32 sm:w-40 xl:w-32 h-32 sm:h-40 xl:h-32 bg-gradient-to-br from-[#6334E5]/20 via-[#6334E5]/30 to-transparent rounded-full blur-3xl transform translate-x-16 sm:translate-x-20 xl:translate-x-16 -translate-y-8 sm:-translate-y-10 xl:-translate-y-8"></div>
 
                 {/* Маленькие декоративные круги */}
-                <div className="absolute top-12 sm:top-16 xl:top-12 left-12 sm:left-16 xl:left-12 w-6 sm:w-8 xl:w-6 h-6 sm:h-8 xl:h-6 bg-gradient-to-br from-purple-200/60 to-purple-300/40 rounded-full blur-sm animate-pulse" style={{animationDelay: '1s'}}></div>
-                <div className="absolute bottom-16 sm:bottom-20 xl:bottom-16 right-16 sm:right-20 xl:right-16 w-8 sm:w-12 xl:w-8 h-8 sm:h-12 xl:h-8 bg-gradient-to-br from-purple-200/50 to-purple-300/30 rounded-full blur-md animate-pulse" style={{animationDelay: '2s'}}></div>
-                <div className="absolute top-1/2 left-1/4 sm:left-1/3 xl:left-1/4 w-5 sm:w-6 xl:w-5 h-5 sm:h-6 xl:h-5 bg-gradient-to-br from-purple-200/70 to-purple-300/50 rounded-full blur-sm animate-pulse" style={{animationDelay: '0.5s'}}></div>
+                <div className="absolute top-12 sm:top-16 xl:top-12 left-12 sm:left-16 xl:left-12 w-6 sm:w-8 xl:w-6 h-6 sm:h-8 xl:h-6 bg-gradient-to-br from-[#6334E5]/30 to-[#6334E5]/40 rounded-full blur-sm animate-pulse" style={{animationDelay: '1s'}}></div>
+                <div className="absolute bottom-16 sm:bottom-20 xl:bottom-16 right-16 sm:right-20 xl:right-16 w-8 sm:w-12 xl:w-8 h-8 sm:h-12 xl:h-8 bg-gradient-to-br from-[#6334E5]/30 to-[#6334E5]/30 rounded-full blur-md animate-pulse" style={{animationDelay: '2s'}}></div>
+                <div className="absolute top-1/2 left-1/4 sm:left-1/3 xl:left-1/4 w-5 sm:w-6 xl:w-5 h-5 sm:h-6 xl:h-5 bg-gradient-to-br from-[#6334E5]/30 to-[#6334E5]/40 rounded-full blur-sm animate-pulse" style={{animationDelay: '0.5s'}}></div>
 
                 {/* Геометрические элементы */}
-                <div className="absolute top-6 sm:top-8 xl:top-6 left-6 sm:left-8 xl:left-6 w-1.5 sm:w-2 xl:w-1.5 h-1.5 sm:h-2 xl:h-1.5 bg-purple-300/60 rotate-45 animate-bounce" style={{animationDelay: '3s'}}></div>
-                <div className="absolute bottom-6 sm:bottom-8 xl:bottom-6 right-6 sm:right-8 xl:right-6 w-2 sm:w-3 xl:w-2 h-2 sm:h-3 xl:h-2 bg-purple-300/50 rotate-12 animate-bounce" style={{animationDelay: '1.5s'}}></div>
-                <div className="absolute top-1/4 right-1/3 sm:right-1/4 xl:right-1/3 w-1 h-1 sm:w-1.5 sm:h-1.5 xl:w-1 xl:h-1 bg-purple-300/70 rounded-full animate-ping" style={{animationDelay: '4s'}}></div>
+                <div className="absolute top-6 sm:top-8 xl:top-6 left-6 sm:left-8 xl:left-6 w-1.5 sm:w-2 xl:w-1.5 h-1.5 sm:h-2 xl:h-1.5 bg-[#6334E5]/40 rotate-45 animate-bounce" style={{animationDelay: '3s'}}></div>
+                <div className="absolute bottom-6 sm:bottom-8 xl:bottom-6 right-6 sm:right-8 xl:right-6 w-2 sm:w-3 xl:w-2 h-2 sm:h-3 xl:h-2 bg-[#6334E5]/40 rotate-12 animate-bounce" style={{animationDelay: '1.5s'}}></div>
+                <div className="absolute top-1/4 right-1/3 sm:right-1/4 xl:right-1/3 w-1 h-1 sm:w-1.5 sm:h-1.5 xl:w-1 xl:h-1 bg-[#6334E5]/40 rounded-full animate-ping" style={{animationDelay: '4s'}}></div>
 
                 {/* Тонкие линии */}
-                <div className="absolute top-16 sm:top-20 xl:top-16 left-0 w-px h-12 sm:h-16 xl:h-12 bg-gradient-to-b from-transparent via-purple-200/40 to-transparent"></div>
-                <div className="absolute bottom-12 sm:bottom-16 xl:bottom-12 right-0 w-px h-8 sm:h-12 xl:h-8 bg-gradient-to-b from-transparent via-purple-200/40 to-transparent"></div>
+                <div className="absolute top-16 sm:top-20 xl:top-16 left-0 w-px h-12 sm:h-16 xl:h-12 bg-gradient-to-b from-transparent via-[#6334E5]/30 to-transparent"></div>
+                <div className="absolute bottom-12 sm:bottom-16 xl:bottom-12 right-0 w-px h-8 sm:h-12 xl:h-8 bg-gradient-to-b from-transparent via-[#6334E5]/30 to-transparent"></div>
 
                 {/* Плавающие иконки */}
                 <div className="absolute top-8 sm:top-12 xl:top-8 right-8 sm:right-12 xl:right-8 w-4 sm:w-6 xl:w-4 h-4 sm:h-6 xl:h-4 opacity-20 animate-float" style={{animationDelay: '0s'}}>
@@ -264,7 +264,7 @@ const TestimonialsSection = () => {
                 {/* Заголовок */}
                 <h3 className="text-2xl sm:text-3xl md:text-4xl xl:text-3xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight">
                   Масштабируйте бизнес с{' '}
-                  <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-[#6334E5] to-blue-600 bg-clip-text text-transparent">
                     ReplyX
                   </span>
                 </h3>
@@ -276,7 +276,7 @@ const TestimonialsSection = () => {
 
                 {/* CTA кнопка */}
                 <div className="flex justify-center mb-6 sm:mb-8 xl:mb-6">
-                  <button className="px-6 sm:px-8 xl:px-6 py-3 sm:py-4 xl:py-3 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200 h-12 sm:h-14 xl:h-12 relative overflow-hidden bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 hover:from-purple-700 hover:via-violet-700 hover:to-indigo-700 text-base sm:text-lg xl:text-base">
+                  <button className="px-6 sm:px-8 xl:px-6 py-3 sm:py-4 xl:py-3 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#6334E5]/20 h-12 sm:h-14 xl:h-12 relative overflow-hidden bg-gradient-to-r from-[#6334E5] via-violet-600 to-indigo-600 hover:from-[#5028c2] hover:via-violet-700 hover:to-indigo-700 text-base sm:text-lg xl:text-base">
                     <span className="absolute inset-0 z-0 animate-wave-gradient bg-gradient-to-r from-violet-400 via-fuchsia-500 to-violet-400" />
                     <span className="relative z-10 flex items-center gap-3">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -302,7 +302,7 @@ const TestimonialsSection = () => {
                       <span className="font-medium">4.9/5 рейтинг</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                      <div className="w-2 h-2 bg-[#6334E5] rounded-full"></div>
                       <span className="font-medium">14 дней бесплатно</span>
                     </div>
                   </div>
@@ -318,21 +318,21 @@ const TestimonialsSection = () => {
               {/* Декоративные элементы фона */}
               <div className="absolute inset-0 overflow-hidden">
                 {/* Основной градиентный круг */}
-                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-100/40 via-purple-200/30 to-transparent rounded-full blur-3xl transform translate-x-12 -translate-y-6"></div>
+                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#6334E5]/20/40 via-[#6334E5]/30/30 to-transparent rounded-full blur-3xl transform translate-x-12 -translate-y-6"></div>
 
                 {/* Маленькие декоративные круги */}
-                <div className="absolute top-8 left-8 w-4 h-4 bg-gradient-to-br from-purple-200/60 to-purple-300/40 rounded-full blur-sm animate-pulse" style={{animationDelay: '1s'}}></div>
-                <div className="absolute bottom-12 right-12 w-6 h-6 bg-gradient-to-br from-purple-200/50 to-purple-300/30 rounded-full blur-md animate-pulse" style={{animationDelay: '2s'}}></div>
-                <div className="absolute top-1/2 left-1/3 w-3 h-3 bg-gradient-to-br from-purple-200/70 to-purple-300/50 rounded-full blur-sm animate-pulse" style={{animationDelay: '0.5s'}}></div>
+                <div className="absolute top-8 left-8 w-4 h-4 bg-gradient-to-br from-[#6334E5]/30 to-[#6334E5]/40 rounded-full blur-sm animate-pulse" style={{animationDelay: '1s'}}></div>
+                <div className="absolute bottom-12 right-12 w-6 h-6 bg-gradient-to-br from-[#6334E5]/30 to-[#6334E5]/30 rounded-full blur-md animate-pulse" style={{animationDelay: '2s'}}></div>
+                <div className="absolute top-1/2 left-1/3 w-3 h-3 bg-gradient-to-br from-[#6334E5]/30 to-[#6334E5]/40 rounded-full blur-sm animate-pulse" style={{animationDelay: '0.5s'}}></div>
 
                 {/* Геометрические элементы */}
-                <div className="absolute top-4 left-4 w-1 h-1 bg-purple-300/60 rotate-45 animate-bounce" style={{animationDelay: '3s'}}></div>
-                <div className="absolute bottom-4 right-4 w-1.5 h-1.5 bg-purple-300/50 rotate-12 animate-bounce" style={{animationDelay: '1.5s'}}></div>
-                <div className="absolute top-1/4 right-1/3 w-0.5 h-0.5 bg-purple-300/70 rounded-full animate-ping" style={{animationDelay: '4s'}}></div>
+                <div className="absolute top-4 left-4 w-1 h-1 bg-[#6334E5]/40 rotate-45 animate-bounce" style={{animationDelay: '3s'}}></div>
+                <div className="absolute bottom-4 right-4 w-1.5 h-1.5 bg-[#6334E5]/40 rotate-12 animate-bounce" style={{animationDelay: '1.5s'}}></div>
+                <div className="absolute top-1/4 right-1/3 w-0.5 h-0.5 bg-[#6334E5]/40 rounded-full animate-ping" style={{animationDelay: '4s'}}></div>
 
                 {/* Тонкие линии */}
-                <div className="absolute top-12 left-0 w-px h-8 bg-gradient-to-b from-transparent via-purple-200/40 to-transparent"></div>
-                <div className="absolute bottom-8 right-0 w-px h-6 bg-gradient-to-b from-transparent via-purple-200/40 to-transparent"></div>
+                <div className="absolute top-12 left-0 w-px h-8 bg-gradient-to-b from-transparent via-[#6334E5]/30 to-transparent"></div>
+                <div className="absolute bottom-8 right-0 w-px h-6 bg-gradient-to-b from-transparent via-[#6334E5]/30 to-transparent"></div>
 
                 {/* Плавающие иконки */}
                 <div className="absolute top-6 right-6 w-3 h-3 opacity-20 animate-float" style={{animationDelay: '0s'}}>
@@ -356,7 +356,7 @@ const TestimonialsSection = () => {
                 {/* Заголовок */}
                 <h3 className="text-xl font-bold text-gray-900 mb-3 leading-tight">
                   Масштабируйте бизнес с{' '}
-                  <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-[#6334E5] to-blue-600 bg-clip-text text-transparent">
                     ReplyX
                   </span>
                 </h3>
@@ -368,7 +368,7 @@ const TestimonialsSection = () => {
 
                 {/* CTA кнопка */}
                 <div className="flex justify-center mb-4">
-                  <button className="px-6 py-3 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200 h-12 relative overflow-hidden bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 hover:from-purple-700 hover:via-violet-700 hover:to-indigo-700 text-base">
+                  <button className="px-6 py-3 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#6334E5]/20 h-12 relative overflow-hidden bg-gradient-to-r from-[#6334E5] via-violet-600 to-indigo-600 hover:from-[#5028c2] hover:via-violet-700 hover:to-indigo-700 text-base">
                     <span className="absolute inset-0 z-0 animate-wave-gradient bg-gradient-to-r from-violet-400 via-fuchsia-500 to-violet-400" />
                     <span className="relative z-10 flex items-center gap-2">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -394,7 +394,7 @@ const TestimonialsSection = () => {
                       <span className="font-medium">4.9/5 рейтинг</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                      <div className="w-2 h-2 bg-[#6334E5] rounded-full"></div>
                       <span className="font-medium">14 дней бесплатно</span>
                     </div>
                   </div>

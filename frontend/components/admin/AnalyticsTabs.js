@@ -57,7 +57,7 @@ const AnalyticsTabs = ({ activeTab, onTabChange, isLoading = false }) => {
               className={`
                 p-4 border rounded-lg transition-all duration-150 text-left
                 ${isActive
-                  ? 'border-purple-300 bg-purple-50 text-purple-700'
+                  ? 'border-[#6334E5]/40 bg-[#6334E5]/10 text-[#5028c2]'
                   : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 text-gray-700'
                 }
                 ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
@@ -65,11 +65,11 @@ const AnalyticsTabs = ({ activeTab, onTabChange, isLoading = false }) => {
             >
               <div className="flex items-center gap-3 mb-2">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                  isActive ? 'bg-purple-100' : 'bg-gray-100'
+                  isActive ? 'bg-[#6334E5]/20' : 'bg-gray-100'
                 }`}>
                   <Icon
                     size={16}
-                    className={isActive ? 'text-purple-600' : 'text-gray-600'}
+                    className={isActive ? 'text-[#6334E5]' : 'text-gray-600'}
                   />
                 </div>
                 <span className="font-medium text-sm">{tab.label}</span>
@@ -94,7 +94,7 @@ const AnalyticsTabs = ({ activeTab, onTabChange, isLoading = false }) => {
               className={`
                 w-full p-4 border rounded-lg transition-all duration-150 text-left
                 ${isActive
-                  ? 'border-purple-300 bg-purple-50 text-purple-700'
+                  ? 'border-[#6334E5]/40 bg-[#6334E5]/10 text-[#5028c2]'
                   : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 text-gray-700'
                 }
                 ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
@@ -102,11 +102,11 @@ const AnalyticsTabs = ({ activeTab, onTabChange, isLoading = false }) => {
             >
               <div className="flex items-center gap-3 mb-2">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                  isActive ? 'bg-purple-100' : 'bg-gray-100'
+                  isActive ? 'bg-[#6334E5]/20' : 'bg-gray-100'
                 }`}>
                   <Icon
                     size={16}
-                    className={isActive ? 'text-purple-600' : 'text-gray-600'}
+                    className={isActive ? 'text-[#6334E5]' : 'text-gray-600'}
                   />
                 </div>
                 <span className="font-medium text-sm">{tab.label}</span>

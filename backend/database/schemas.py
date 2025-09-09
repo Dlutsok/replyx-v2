@@ -249,6 +249,14 @@ class AdminDialogAnalytics(BaseModel):
     ai_usage: Dict[str, Any]
     popular_assistants: List[Dict[str, Any]]
     response_times: Dict[str, float]
+    hourly_stats: Optional[List[Dict[str, Any]]] = []
+    user_activity: Optional[List[Dict[str, Any]]] = []
+
+class UsersAIMessagesStats(BaseModel):
+    """Статистика AI сообщений для всех пользователей за всё время"""
+    users: List[Dict[str, Any]]
+    total_users: int
+    total_ai_messages: int
 
 class AdminRevenueAnalytics(BaseModel):
     """Финансовая аналитика"""
@@ -258,6 +266,8 @@ class AdminRevenueAnalytics(BaseModel):
     transaction_stats: Dict[str, int]
     top_paying_users: List[Dict[str, Any]]
     revenue_growth: Dict[str, float]
+    daily_revenue: Optional[List[Dict[str, Any]]] = []
+    payment_methods: Optional[List[Dict[str, Any]]] = []
 
 class AnalyticsDateRange(BaseModel):
     """Модель для фильтрации по датам"""

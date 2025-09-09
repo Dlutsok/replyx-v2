@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { withAuth } from '../hooks/useAuth';
-import AdminDashboard from '../components/layout/AdminDashboard';
+import AdminDashboard from '@/components/layout/AdminDashboard';
 import { 
   FiUsers, FiDollarSign, FiActivity, FiMessageSquare,
   FiTrendingUp, FiTrendingDown, FiAlertCircle, FiCheckCircle,
@@ -190,7 +190,7 @@ const AdminPanel = () => {
       <AdminDashboard activeSection="overview">
         <div className="bg-white px-4 sm:px-6 xl:px-8 pt-4 sm:pt-6 xl:pt-8 pb-4 sm:pb-6 xl:pb-8 rounded-2xl">
           <div className="flex flex-col items-center justify-center py-12">
-            <div className="w-8 h-8 border-2 border-gray-300 border-t-purple-600 rounded-full animate-spin mb-4"></div>
+            <div className="w-8 h-8 border-2 border-gray-300 border-t-[#6334E5] rounded-full animate-spin mb-4"></div>
             <p className="text-sm text-gray-600 font-medium">Загрузка данных...</p>
           </div>
         </div>
@@ -232,8 +232,8 @@ const AdminPanel = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 mb-6">
           <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-5 transition-all duration-150 hover:border-gray-300">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
-                <FiUsers className="text-purple-600" size={20} />
+              <div className="w-10 h-10 bg-[#6334E5]/10 rounded-lg flex items-center justify-center">
+                <FiUsers className="text-[#6334E5]" size={20} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Активных пользователей</p>
@@ -287,10 +287,10 @@ const AdminPanel = () => {
               <div className="text-xl sm:text-2xl font-semibold text-gray-900">
                 {formatCurrency(realtimeStats?.revenue || 0)}
               </div>
-              {dashboardData?.requestsChange && (
+              {realtimeStats?.revenueGrowth && realtimeStats.revenueGrowth > 0 && (
                 <div className="flex items-center gap-1 text-sm">
                   <FiTrendingUp className="text-green-600" size={12} />
-                  <span className="text-green-600 font-medium">+{dashboardData.requestsChange}%</span>
+                  <span className="text-green-600 font-medium">+{realtimeStats.revenueGrowth}%</span>
                 </div>
               )}
             </div>
@@ -377,8 +377,8 @@ const AdminPanel = () => {
 
             <div className="p-4 border border-gray-200 rounded-lg transition-all duration-150 hover:border-gray-300">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
-                  <FiMessageSquare className="text-purple-600" size={20} />
+                <div className="w-10 h-10 bg-[#6334E5]/10 rounded-lg flex items-center justify-center">
+                  <FiMessageSquare className="text-[#6334E5]" size={20} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h4 className="text-sm font-semibold text-gray-900">Сообщений за час</h4>
@@ -411,50 +411,62 @@ const AdminPanel = () => {
             </div>
             <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Быстрые действия</h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
             <button
-              className="p-4 border border-gray-200 rounded-lg transition-all duration-150 hover:border-purple-300 hover:bg-purple-50 group"
+              className="p-4 border border-gray-200 rounded-lg transition-all duration-150 hover:border-[#6334E5]/30 hover:bg-[#6334E5]/10 group"
               onClick={() => window.open('/admin-users', '_self')}
             >
               <div className="flex flex-col items-center gap-3 text-center">
-                <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center group-hover:bg-purple-100 transition-colors duration-150">
-                  <FiUsers className="text-purple-600" size={24} />
+                <div className="w-12 h-12 bg-[#6334E5]/10 rounded-lg flex items-center justify-center group-hover:bg-[#6334E5]/20 transition-colors duration-150">
+                  <FiUsers className="text-[#6334E5]" size={24} />
                 </div>
                 <span className="text-sm font-medium text-gray-900">Управление пользователями</span>
               </div>
             </button>
 
             <button
-              className="p-4 border border-gray-200 rounded-lg transition-all duration-150 hover:border-purple-300 hover:bg-purple-50 group"
+              className="p-4 border border-gray-200 rounded-lg transition-all duration-150 hover:border-[#6334E5]/30 hover:bg-[#6334E5]/10 group"
+              onClick={() => window.open('/admin-payments', '_self')}
+            >
+              <div className="flex flex-col items-center gap-3 text-center">
+                <div className="w-12 h-12 bg-[#6334E5]/10 rounded-lg flex items-center justify-center group-hover:bg-[#6334E5]/20 transition-colors duration-150">
+                  <FiDollarSign className="text-[#6334E5]" size={24} />
+                </div>
+                <span className="text-sm font-medium text-gray-900">Финансовые операции</span>
+              </div>
+            </button>
+
+            <button
+              className="p-4 border border-gray-200 rounded-lg transition-all duration-150 hover:border-[#6334E5]/30 hover:bg-[#6334E5]/10 group"
               onClick={() => window.open('/admin-ai-tokens', '_self')}
             >
               <div className="flex flex-col items-center gap-3 text-center">
-                <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center group-hover:bg-purple-100 transition-colors duration-150">
-                  <FiCpu className="text-purple-600" size={24} />
+                <div className="w-12 h-12 bg-[#6334E5]/10 rounded-lg flex items-center justify-center group-hover:bg-[#6334E5]/20 transition-colors duration-150">
+                  <FiCpu className="text-[#6334E5]" size={24} />
                 </div>
                 <span className="text-sm font-medium text-gray-900">AI Токены</span>
               </div>
             </button>
 
             <button
-              className="p-4 border border-gray-200 rounded-lg transition-all duration-150 hover:border-purple-300 hover:bg-purple-50 group"
+              className="p-4 border border-gray-200 rounded-lg transition-all duration-150 hover:border-[#6334E5]/30 hover:bg-[#6334E5]/10 group"
               onClick={() => window.open('/admin-system', '_self')}
             >
               <div className="flex flex-col items-center gap-3 text-center">
-                <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center group-hover:bg-purple-100 transition-colors duration-150">
-                  <FiDatabase className="text-purple-600" size={24} />
+                <div className="w-12 h-12 bg-[#6334E5]/10 rounded-lg flex items-center justify-center group-hover:bg-[#6334E5]/20 transition-colors duration-150">
+                  <FiDatabase className="text-[#6334E5]" size={24} />
                 </div>
                 <span className="text-sm font-medium text-gray-900">Системные логи</span>
               </div>
             </button>
 
             <button
-              className="p-4 border border-gray-200 rounded-lg transition-all duration-150 hover:border-purple-300 hover:bg-purple-50 group"
+              className="p-4 border border-gray-200 rounded-lg transition-all duration-150 hover:border-[#6334E5]/30 hover:bg-[#6334E5]/10 group"
               onClick={() => window.open('/admin-analytics', '_self')}
             >
               <div className="flex flex-col items-center gap-3 text-center">
-                <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center group-hover:bg-purple-100 transition-colors duration-150">
-                  <FiTrendingUp className="text-purple-600" size={24} />
+                <div className="w-12 h-12 bg-[#6334E5]/10 rounded-lg flex items-center justify-center group-hover:bg-[#6334E5]/20 transition-colors duration-150">
+                  <FiTrendingUp className="text-[#6334E5]" size={24} />
                 </div>
                 <span className="text-sm font-medium text-gray-900">Подробная аналитика</span>
               </div>

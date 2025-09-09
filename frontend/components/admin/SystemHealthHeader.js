@@ -103,7 +103,7 @@ const SystemHealthHeader = ({
         <div className={styles.headerLeft}>
           <div className={styles.titleSection}>
             <div className={styles.titleIcon}>
-              <FiActivity size={32} className="text-purple-600" />
+              <FiActivity size={32} className="text-[#6334E5]" />
             </div>
             <div>
               <h1 className={styles.heading1}>Мониторинг системы</h1>

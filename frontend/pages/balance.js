@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '@/hooks';
 import { useNotifications } from '../hooks/useNotifications';
 import LoadingSpinner, { LoadingButton } from '../components/common/LoadingSpinner';
 import {
-  FiCheck, FiShield, FiZap, FiMessageSquare, FiBarChart, FiCreditCard
+  FiCheck, FiShield, FiDollarSign, FiMessageSquare, FiActivity, FiCreditCard, FiBriefcase, FiTrendingUp, FiSettings
 } from 'react-icons/fi';
+
 import { API_URL } from '../config/api';
 
 
@@ -212,12 +213,12 @@ export default function Balance() {
       </Head>
 
       <div className="bg-white px-4 sm:px-6 xl:px-8 pt-4 sm:pt-6 xl:pt-8 pb-4 sm:pb-6 xl:pb-8 rounded-2xl">
-        <div className="max-w-7xl mx-auto">
+        <div>
           {/* Заголовок страницы */}
           <div className="bg-white rounded-xl border border-gray-200 p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8 mb-4 sm:mb-6">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-center">
-                <FiZap className="text-purple-600" size={18} />
+                <FiDollarSign className="text-[#6334E5]" size={18} />
               </div>
               <div>
                 <h1 className="text-xl font-semibold text-gray-900 mb-1">Баланс</h1>
@@ -232,7 +233,7 @@ export default function Balance() {
             <div className="bg-white border border-gray-200 rounded-xl p-5 sm:p-6 transition-all hover:border-gray-300">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-center">
-                  <FiZap className="text-purple-600" size={18} />
+                  <FiBriefcase className="text-[#6334E5]" size={18} />
                 </div>
                 <div>
                   <div className="text-lg font-semibold text-gray-900">Ваш баланс</div>
@@ -244,10 +245,6 @@ export default function Balance() {
               <div className="text-center mb-6">
                 <div className="text-4xl font-bold text-gray-900 mb-2">
                   {(userBalance || 0).toLocaleString('ru-RU')}₽
-                </div>
-                <div className="flex items-center justify-center gap-2 text-gray-600">
-                  <FiMessageSquare size={16} />
-                  <span className="font-medium">{Math.floor((userBalance || 0) / 5)} сообщений</span>
                 </div>
               </div>
 
@@ -283,10 +280,8 @@ export default function Balance() {
                     {userBalance > 0 && (
                       <div className="flex justify-between items-center pt-2 border-t border-gray-200">
                         <span className="text-gray-600">Хватит примерно на</span>
-                        <span className="font-semibold text-purple-600">
-                          {Math.floor((userBalance || 0) / 5) < 10 ? 'несколько дней' :
-                           Math.floor((userBalance || 0) / 5) < 50 ? '1-2 недели' :
-                           Math.floor((userBalance || 0) / 5) < 200 ? '1 месяц' : '2+ месяца'}
+                        <span className="font-semibold text-[#6334E5]">
+                          {Math.floor((userBalance || 0) / 2500)} месяцев
                         </span>
                       </div>
                     )}
@@ -302,9 +297,9 @@ export default function Balance() {
                         historyElement.scrollIntoView({ behavior: 'smooth' });
                       }
                     }}
-                    className="w-full flex items-center justify-center gap-2 p-2.5 text-sm font-medium text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                    className="w-full flex items-center justify-center gap-2 p-2.5 text-sm font-medium text-gray-600 hover:text-[#6334E5] hover:bg-[#6334E5]/10 rounded-lg transition-colors"
                   >
-                    <FiBarChart size={14} />
+                    <FiActivity size={14} />
                     <span>Смотреть историю операций</span>
                   </button>
                 </div>
@@ -315,7 +310,7 @@ export default function Balance() {
             <div className="lg:col-span-2 bg-white border border-gray-200 rounded-xl p-5 sm:p-6 transition-all hover:border-gray-300">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-center">
-                  <FiZap className="text-purple-600" size={18} />
+                  <FiTrendingUp className="text-[#6334E5]" size={18} />
                 </div>
                 <div>
                   <div className="text-lg font-semibold text-gray-900">Пополнение баланса</div>
@@ -339,7 +334,7 @@ export default function Balance() {
                         placeholder="1000"
                         min="100"
                         max="50000"
-                        className="w-full px-4 py-3 text-xl font-medium border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition-all text-center"
+                        className="w-full px-4 py-3 text-xl font-medium border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent transition-all text-center"
                       />
                       <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg">₽</div>
                     </div>
@@ -353,19 +348,18 @@ export default function Balance() {
                     <label className="block text-sm font-medium text-gray-700 mb-3">
                       Популярные суммы
                     </label>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-4 gap-3">
                       {[500, 1000, 2500, 5000].map((sum) => (
                         <button
                           key={sum}
                           onClick={() => setAmount(sum.toString())}
                           className={`p-3 rounded-xl text-center transition-all border ${
                             amount === sum.toString()
-                              ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
+                              ? 'bg-[#6334E5] text-white border-[#6334E5] shadow-sm'
                               : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50'
                           }`}
                         >
                           <div className="text-lg font-semibold">{sum}₽</div>
-                          <div className="text-xs opacity-75">≈ {Math.floor(sum / 5)} сообщений</div>
                         </button>
                       ))}
                     </div>
@@ -377,7 +371,7 @@ export default function Balance() {
                       onClick={() => handleRecharge(amount)}
                       loading={loading}
                       disabled={!amount || parseFloat(amount) < 100}
-                      className="w-full py-3.5 text-base font-semibold bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 text-white rounded-xl transition-colors flex items-center justify-center gap-2"
+                      className="w-full py-3.5 text-base font-semibold bg-[#6334E5] hover:bg-[#5028c2] disabled:bg-gray-300 text-white rounded-xl transition-colors flex items-center justify-center gap-2"
                     >
                       <FiCreditCard size={18} />
                       {loading ? 'Подготовка к оплате...' : 'Пополнить баланс'}
@@ -410,7 +404,7 @@ export default function Balance() {
                   {/* Безопасность */}
                   <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
-                      <FiShield className="text-purple-600" size={16} />
+                      <FiShield className="text-[#6334E5]" size={16} />
                       <h4 className="font-medium text-gray-900">Безопасность</h4>
                     </div>
                     <div className="space-y-2 text-sm text-gray-600">
@@ -432,7 +426,7 @@ export default function Balance() {
                   {/* Тарификация */}
                   <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
-                      <FiZap className="text-purple-600" size={16} />
+                      <FiSettings className="text-[#6334E5]" size={16} />
                       <h4 className="font-medium text-gray-900">Тарифы</h4>
                     </div>
                     <div className="space-y-2 text-sm">
@@ -460,7 +454,7 @@ export default function Balance() {
           <div id="transaction-history" className="bg-white border border-gray-200 rounded-xl p-5 sm:p-6 mb-6 transition-all hover:border-gray-300">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-center">
-                <FiBarChart className="text-purple-600" size={18} />
+                <FiActivity className="text-[#6334E5]" size={18} />
               </div>
               <h3 className="text-lg font-semibold text-gray-900">История операций</h3>
             </div>
@@ -471,15 +465,15 @@ export default function Balance() {
             ) : transactions.length === 0 ? (
               <div className="text-center py-16">
                 <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <FiBarChart size={24} className="text-gray-400" />
+                  <FiActivity size={24} className="text-gray-400" />
                 </div>
                 <p className="text-gray-600 mb-2">История транзакций пуста</p>
                 <p className="text-sm text-gray-500">Совершите первое пополнение баланса</p>
               </div>
             ) : (
               <div className="overflow-hidden">
-                {/* Заголовки таблицы */}
-                <div className="grid grid-cols-4 gap-4 pb-4 mb-6 border-b border-gray-200">
+                {/* Заголовки таблицы - только для десктопа */}
+                <div className="hidden md:grid md:grid-cols-4 gap-4 pb-4 mb-6 border-b border-gray-200">
                   <div className="text-sm font-medium text-gray-500 uppercase tracking-wider">
                     Дата
                   </div>
@@ -493,26 +487,61 @@ export default function Balance() {
                     Статус
                   </div>
                 </div>
-                
+
                 {/* Строки транзакций */}
                 <div className="space-y-4">
                   {transactions.map((transaction) => {
                     const status = getTransactionStatus(transaction);
                     return (
-                      <div key={transaction.id} className="grid grid-cols-4 gap-4 py-3 hover:bg-gray-50 rounded-lg transition-colors">
-                        <div className="text-sm text-gray-900">
-                          {formatDate(transaction.created_at)}
+                      <div key={transaction.id}>
+                        {/* Мобильная версия */}
+                        <div className="md:hidden bg-gray-50 border border-gray-200 rounded-lg p-4 hover:bg-gray-100 transition-colors">
+                          <div className="space-y-3">
+                            <div className="flex justify-between items-start">
+                              <div className="text-sm text-gray-500">Дата</div>
+                              <div className="text-sm text-gray-900 font-medium">
+                                {formatDate(transaction.created_at)}
+                              </div>
+                            </div>
+                            <div className="flex justify-between items-start">
+                              <div className="text-sm text-gray-500">Тип</div>
+                              <div className="text-sm text-gray-900 font-medium">
+                                {formatTransactionType(transaction.transaction_type)}
+                              </div>
+                            </div>
+                            <div className="flex justify-between items-start">
+                              <div className="text-sm text-gray-500">Сумма</div>
+                              <div className={`text-sm font-semibold ${
+                                transaction.amount > 0 ? 'text-green-600' : 'text-gray-600'
+                              }`}>
+                                {transaction.amount > 0 ? '+' : ''}{Math.abs(transaction.amount).toLocaleString('ru-RU')}₽
+                              </div>
+                            </div>
+                            <div className="flex justify-between items-start">
+                              <div className="text-sm text-gray-500">Статус</div>
+                              <div className="text-sm text-gray-900 font-medium">
+                                {status.text}
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-sm text-gray-900">
-                          {formatTransactionType(transaction.transaction_type)}
-                        </div>
-                        <div className={`text-sm font-medium text-right ${
-                          transaction.amount > 0 ? 'text-green-600' : 'text-gray-600'
-                        }`}>
-                          {transaction.amount > 0 ? '+' : ''}{Math.abs(transaction.amount).toLocaleString('ru-RU')}₽
-                        </div>
-                        <div className="text-sm text-gray-500 text-right">
-                          {status.text}
+
+                        {/* Десктопная версия */}
+                        <div className="hidden md:grid md:grid-cols-4 gap-4 py-3 hover:bg-gray-50 rounded-lg transition-colors">
+                          <div className="text-sm text-gray-900">
+                            {formatDate(transaction.created_at)}
+                          </div>
+                          <div className="text-sm text-gray-900">
+                            {formatTransactionType(transaction.transaction_type)}
+                          </div>
+                          <div className={`text-sm font-medium text-right ${
+                            transaction.amount > 0 ? 'text-green-600' : 'text-gray-600'
+                          }`}>
+                            {transaction.amount > 0 ? '+' : ''}{Math.abs(transaction.amount).toLocaleString('ru-RU')}₽
+                          </div>
+                          <div className="text-sm text-gray-500 text-right">
+                            {status.text}
+                          </div>
                         </div>
                       </div>
                     );

@@ -171,7 +171,7 @@ export default function IntegrationsTab({
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="px-4 py-2 bg-purple-600 text-white rounded-2xl hover:bg-purple-700 transition-all duration-150 flex items-center gap-2 font-medium"
+            className="px-4 py-2 bg-[#6334E5] text-white rounded-2xl hover:bg-[#5028c2] transition-all duration-150 flex items-center gap-2 font-medium"
             onClick={() => setShowIntegrationsModal(true)}
           >
             <FiPlus size={16} />
@@ -238,7 +238,7 @@ export default function IntegrationsTab({
                       className={`px-3 py-1 text-xs font-medium rounded-2xl transition-all duration-150 flex items-center gap-1 border ${
                         !assistant.allowed_domains || assistant.allowed_domains.trim() === ''
                           ? 'bg-gray-50 hover:bg-gray-100 text-gray-600 cursor-help border-gray-200/60'
-                          : 'bg-purple-600 hover:bg-purple-700 text-white border-purple-600'
+                          : 'bg-[#6334E5] hover:bg-[#5028c2] text-white border-[#6334E5]'
                       }`}
                       title={!assistant.allowed_domains || assistant.allowed_domains.trim() === ''
                         ? 'Сначала настройте разрешенные домены'
@@ -323,8 +323,8 @@ export default function IntegrationsTab({
             <div key={`bot-${bot.id}`} className="bg-white p-6 rounded-2xl border border-solid border-gray-200/60 hover:border-gray-200/70 transition-all duration-150">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center border border-solid border-purple-200/60">
-                    <FiMessageCircle size={20} className="text-purple-600" />
+                  <div className="w-12 h-12 bg-[#6334E5]/10 rounded-2xl flex items-center justify-center border border-solid border-[#6334E5]/30">
+                    <FiMessageCircle size={20} className="text-[#6334E5]" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900">
@@ -467,7 +467,7 @@ export default function IntegrationsTab({
                       setShowHintModal(false);
                       handleShowWidgetSettings();
                     }}
-                    className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-2xl transition-all duration-150 flex items-center justify-center gap-2 border border-solid border-purple-600"
+                    className="flex-1 px-4 py-2 bg-[#6334E5] hover:bg-[#5028c2] text-white font-medium rounded-2xl transition-all duration-150 flex items-center justify-center gap-2 border border-solid border-[#6334E5]"
                   >
                     <FiSettings size={16} />
                     Настроить
@@ -534,13 +534,9 @@ export default function IntegrationsTab({
                     }}
                   >
                     <div className="flex flex-col items-center text-center gap-3">
-                      <div className={`w-14 h-14 rounded-full flex items-center justify-center border border-solid shadow-md transition-colors duration-300 overflow-hidden ${
-                        hasTelegramBot 
-                          ? 'bg-gray-100 border-gray-200/60' 
-                          : 'bg-blue-500 border-blue-300 group-hover:bg-blue-600'
-                      }`}>
+                      <div className="w-14 h-14 rounded-full flex items-center justify-center border border-solid shadow-md transition-colors duration-300 overflow-hidden">
                         <img
-                          src="https://cdn1.telesco.pe/file/Pa3wyqwzUENlDaKQppGu6_NiPO4yv5h4UJmb8jZ3E2zX-JPj2rXhVDfcA82nuxTFJaDdACG3kS_mVsrWdHXgKRnjECZNIKitk7wMa9qwU5QTZNh9kVhpEf1G5Pd46ZBv28BEfh5Kidhoy3aM36Cl2tKARmKqKss3cMV5kdcmmRnas6gZy-RT35BxshHZ4nDeXhB8hVj8j2AA4LstIOtGbfOt6fFMKm1nDlqWdHHq2Knfm-icbIWjpKk6_nnKv0Lws4ZKcD3yfol9FV6crANYIKRHu_5vidxlwT65ONJo2LPg49f9aBG71yv-RbSVEvuaJNUeOY0AxDZXV0tgRHe1JQ.jpg"
+                          src="/telegram-svgrepo-com.svg"
                           alt="Telegram"
                           className={`w-full h-full object-cover ${hasTelegramBot ? 'grayscale' : ''}`}
                         />
@@ -712,7 +708,7 @@ export default function IntegrationsTab({
                       value={telegramBotToken}
                       onChange={(e) => setTelegramBotToken(e.target.value)}
                       placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent transition-all duration-150"
                       disabled={creatingBot}
                     />
                   </div>
@@ -752,7 +748,7 @@ export default function IntegrationsTab({
                     className={`px-6 py-2 text-white rounded-2xl font-medium transition-all duration-150 flex items-center gap-2 ${
                       creatingBot || !telegramBotToken.trim()
                         ? 'bg-gray-400 cursor-not-allowed'
-                        : 'bg-purple-600 hover:bg-purple-700 hover:shadow-md'
+                        : 'bg-[#6334E5] hover:bg-[#5028c2] hover:shadow-md'
                     }`}
                   >
                     {creatingBot ? (

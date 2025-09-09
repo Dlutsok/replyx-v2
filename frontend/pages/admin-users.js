@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { withAuth } from '../hooks/useAuth';
 import { useNotifications } from '../hooks/useNotifications';
-import AdminDashboard from '../components/layout/AdminDashboard';
+import AdminDashboard from '@/components/layout/AdminDashboard';
 import { 
   FiUsers, FiSearch, FiFilter, FiDollarSign, FiCalendar, FiMail, 
   FiEdit, FiTrash2, FiUserCheck, FiUserX, FiPlus, FiUserPlus
@@ -322,7 +322,7 @@ const AdminUsersPage = () => {
       <AdminDashboard activeSection="users">
         <div className="bg-white px-4 sm:px-6 xl:px-8 pt-4 sm:pt-6 xl:pt-8 pb-4 sm:pb-6 xl:pb-8 rounded-2xl">
           <div className="flex flex-col items-center justify-center py-12">
-            <div className="w-8 h-8 border-2 border-gray-300 border-t-purple-600 rounded-full animate-spin mb-4"></div>
+            <div className="w-8 h-8 border-2 border-gray-300 border-t-[#6334E5] rounded-full animate-spin mb-4"></div>
             <p className="text-sm text-gray-600 font-medium">Загрузка пользователей...</p>
           </div>
         </div>
@@ -356,7 +356,7 @@ const AdminUsersPage = () => {
             {/* Правая часть - кнопка добавления */}
             <div className="flex-shrink-0">
               <button
-                className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-xl transition-all duration-150"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#6334E5] hover:bg-[#5028c2] text-white text-sm font-medium rounded-xl transition-all duration-150"
                 onClick={() => {
                   setShowCreateModal(true);
                   setErrorMessage('');
@@ -381,7 +381,7 @@ const AdminUsersPage = () => {
                   placeholder="Поиск по email или имени..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent transition-all duration-150"
                 />
               </div>
             </div>
@@ -395,7 +395,7 @@ const AdminUsersPage = () => {
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150 min-w-[140px]"
+                    className="pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent transition-all duration-150 min-w-[140px]"
                   >
                     <option value="all">Все статусы</option>
                     <option value="active">Активные</option>
@@ -424,8 +424,8 @@ const AdminUsersPage = () => {
                   <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                     {/* User Info */}
                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <span className="text-purple-600 font-semibold text-sm">
+                      <div className="w-10 h-10 bg-[#6334E5]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <span className="text-[#6334E5] font-semibold text-sm">
                           {(user.first_name?.[0] || user.email[0]).toUpperCase()}
                         </span>
                       </div>
@@ -436,7 +436,7 @@ const AdminUsersPage = () => {
                           </h4>
                           <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
                             user.role === 'admin'
-                              ? 'bg-purple-100 text-purple-800'
+                              ? 'bg-[#6334E5]/10 text-[#6334E5]'
                               : 'bg-gray-100 text-gray-800'
                           }`}>
                             {user.role === 'admin' ? 'Админ' : 'Пользователь'}
@@ -479,48 +479,53 @@ const AdminUsersPage = () => {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex gap-2 lg:flex-shrink-0">
-                      <button
-                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium rounded-lg transition-all duration-150"
-                        onClick={() => {
-                          setSelectedUser(user);
-                          setShowBalanceModal(true);
-                        }}
-                        title="Пополнить баланс"
-                      >
-                        <FiDollarSign size={12} />
-                        Баланс
-                      </button>
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-1 lg:flex-shrink-0 lg:flex-row lg:gap-2">
+                      <div className="flex gap-1 sm:gap-2">
+                        <button
+                          className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 bg-[#6334E5] hover:bg-[#5028c2] text-white text-xs font-medium rounded-lg transition-all duration-150 min-w-[36px] sm:min-w-0 justify-center"
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setShowBalanceModal(true);
+                          }}
+                          title="Пополнить баланс"
+                        >
+                          <FiDollarSign size={12} />
+                          <span className="hidden sm:inline">Баланс</span>
+                        </button>
 
-                      <button
-                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 text-xs font-medium rounded-lg transition-all duration-150"
-                        onClick={() => openEditModal(user)}
-                        title="Редактировать пользователя"
-                      >
-                        <FiEdit size={12} />
-                        Изменить
-                      </button>
+                        <button
+                          className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 text-xs font-medium rounded-lg transition-all duration-150 min-w-[36px] sm:min-w-0 justify-center"
+                          onClick={() => openEditModal(user)}
+                          title="Редактировать пользователя"
+                        >
+                          <FiEdit size={12} />
+                          <span className="hidden sm:inline">Изменить</span>
+                        </button>
+                      </div>
 
-                      <button
-                        className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-150 ${
-                          user.status === 'active'
-                            ? 'bg-red-50 border border-red-200 text-red-700 hover:bg-red-100'
-                            : 'bg-green-50 border border-green-200 text-green-700 hover:bg-green-100'
-                        }`}
-                        onClick={() => toggleUserStatus(user)}
-                        title={user.status === 'active' ? 'Заморозить' : 'Активировать'}
-                      >
-                        {user.status === 'active' ? <FiUserX size={12} /> : <FiUserCheck size={12} />}
-                        {user.status === 'active' ? 'Заморозить' : 'Активировать'}
-                      </button>
+                      <div className="flex gap-1 sm:gap-2">
+                        <button
+                          className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-150 min-w-[36px] sm:min-w-0 justify-center ${
+                            user.status === 'active'
+                              ? 'bg-red-50 border border-red-200 text-red-700 hover:bg-red-100'
+                              : 'bg-green-50 border border-green-200 text-green-700 hover:bg-green-100'
+                          }`}
+                          onClick={() => toggleUserStatus(user)}
+                          title={user.status === 'active' ? 'Заморозить' : 'Активировать'}
+                        >
+                          {user.status === 'active' ? <FiUserX size={12} /> : <FiUserCheck size={12} />}
+                          <span className="hidden sm:inline">{user.status === 'active' ? 'Заморозить' : 'Активировать'}</span>
+                        </button>
 
-                      <button
-                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 text-xs font-medium rounded-lg transition-all duration-150"
-                        onClick={() => handleDeleteUser(user)}
-                        title="Удалить пользователя"
-                      >
-                        <FiTrash2 size={12} />
-                      </button>
+                        <button
+                          className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 text-xs font-medium rounded-lg transition-all duration-150 min-w-[36px] sm:min-w-0 justify-center"
+                          onClick={() => handleDeleteUser(user)}
+                          title="Удалить пользователя"
+                        >
+                          <FiTrash2 size={12} />
+                          <span className="hidden sm:inline">Удалить</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -569,7 +574,7 @@ const AdminUsersPage = () => {
                     value={balanceAmount}
                     onChange={(e) => setBalanceAmount(e.target.value)}
                     placeholder="Введите сумму (+ для пополнения, - для списания)"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent transition-all duration-150"
                   />
                   <p className="text-xs text-gray-500">Положительное число - пополнение, отрицательное - списание</p>
                 </div>
@@ -583,7 +588,7 @@ const AdminUsersPage = () => {
                     value={balanceDescription}
                     onChange={(e) => setBalanceDescription(e.target.value)}
                     placeholder="Причина корректировки баланса"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent transition-all duration-150"
                   />
                 </div>
 
@@ -610,7 +615,7 @@ const AdminUsersPage = () => {
                   Отмена
                 </button>
                 <button
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-[#6334E5] hover:bg-[#5028c2] text-white rounded-lg text-sm font-medium transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleBalanceAdjustment}
                   disabled={!balanceAmount || isSubmitting}
                 >
@@ -665,7 +670,7 @@ const AdminUsersPage = () => {
                     value={editUserData.first_name}
                     onChange={(e) => setEditUserData({...editUserData, first_name: e.target.value})}
                     placeholder="Введите имя пользователя"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent transition-all duration-150"
                   />
                 </div>
 
@@ -676,7 +681,7 @@ const AdminUsersPage = () => {
                     id="edit_role"
                     value={editUserData.role}
                     onChange={(e) => setEditUserData({...editUserData, role: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent transition-all duration-150"
                   >
                     <option value="user">Пользователь</option>
                     <option value="admin">Администратор</option>
@@ -690,7 +695,7 @@ const AdminUsersPage = () => {
                     id="edit_status"
                     value={editUserData.status}
                     onChange={(e) => setEditUserData({...editUserData, status: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent transition-all duration-150"
                   >
                     <option value="active">Активен</option>
                     <option value="inactive">Неактивен</option>
@@ -711,7 +716,7 @@ const AdminUsersPage = () => {
                   Отмена
                 </button>
                 <button
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-[#6334E5] hover:bg-[#5028c2] text-white rounded-lg text-sm font-medium transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleEditUser}
                   disabled={isSubmitting}
                 >
@@ -764,7 +769,7 @@ const AdminUsersPage = () => {
                     value={createUserData.email}
                     onChange={(e) => setCreateUserData({...createUserData, email: e.target.value})}
                     placeholder="user@example.com"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent transition-all duration-150"
                     required
                   />
                 </div>
@@ -778,7 +783,7 @@ const AdminUsersPage = () => {
                     value={createUserData.password}
                     onChange={(e) => setCreateUserData({...createUserData, password: e.target.value})}
                     placeholder="Минимум 6 символов"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent transition-all duration-150"
                     required
                   />
                   <p className="text-xs text-gray-500">Пароль должен содержать минимум 6 символов</p>
@@ -793,7 +798,7 @@ const AdminUsersPage = () => {
                     value={createUserData.first_name}
                     onChange={(e) => setCreateUserData({...createUserData, first_name: e.target.value})}
                     placeholder="Введите имя пользователя"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent transition-all duration-150"
                   />
                 </div>
 
@@ -804,7 +809,7 @@ const AdminUsersPage = () => {
                     id="create_role"
                     value={createUserData.role}
                     onChange={(e) => setCreateUserData({...createUserData, role: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent transition-all duration-150"
                   >
                     <option value="user">Пользователь</option>
                     <option value="admin">Администратор</option>
@@ -818,7 +823,7 @@ const AdminUsersPage = () => {
                     id="create_status"
                     value={createUserData.status}
                     onChange={(e) => setCreateUserData({...createUserData, status: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent transition-all duration-150"
                   >
                     <option value="active">Активен</option>
                     <option value="inactive">Неактивен</option>
@@ -844,7 +849,7 @@ const AdminUsersPage = () => {
                   Отмена
                 </button>
                 <button
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-[#6334E5] hover:bg-[#5028c2] text-white rounded-lg text-sm font-medium transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleCreateUser}
                   disabled={!createUserData.email || !createUserData.password || isSubmitting}
                 >

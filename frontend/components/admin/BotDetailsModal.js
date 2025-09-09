@@ -59,7 +59,7 @@ const BotDetailsModal = ({
             return (
               <div
                 key={index}
-                className="bg-purple-200 rounded-t-sm min-w-[8px] transition-all duration-200 hover:bg-purple-300"
+                className="bg-[#6334E5]/30 rounded-t-sm min-w-[8px] transition-all duration-200 hover:bg-[#6334E5]/40"
                 style={{ height: `${height}%` }}
                 title={`${index}:00 - ${value} сообщений`}
               />
@@ -115,9 +115,9 @@ const BotDetailsModal = ({
               </div>
             </div>
             
-            <div className="bg-purple-50 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-purple-600 mb-1">{bot.uptime || 'N/A'}</div>
-              <div className="text-sm text-purple-700 flex items-center justify-center gap-1">
+            <div className="bg-[#6334E5]/10 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-[#6334E5] mb-1">{bot.uptime || 'N/A'}</div>
+              <div className="text-sm text-[#5028c2] flex items-center justify-center gap-1">
                 <FiClock size={14} />
                 Время работы
               </div>

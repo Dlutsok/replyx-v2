@@ -45,6 +45,7 @@ const ADMIN_ROUTES = [
   '/admin',
   '/admin-users',
   '/admin-analytics',
+  '/admin-payments',
   '/admin-bots-monitoring',
   '/admin-ai-tokens',
   '/admin-system',
@@ -83,10 +84,10 @@ function AppContent({ Component, pageProps }: AppProps) {
   // Если загружается авторизация - показываем loading
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#6334E5]/10 to-blue-50">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-lg text-purple-600 font-medium">Загрузка приложения...</p>
+          <div className="w-12 h-12 border-4 border-gray-200 border-t-[#6334E5] rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg text-[#6334E5] font-medium">Загрузка приложения...</p>
           <p className="text-sm text-gray-500 mt-2">Пожалуйста, подождите</p>
         </div>
       </div>
@@ -130,10 +131,10 @@ function AppContent({ Component, pageProps }: AppProps) {
     window.location.replace('/');
     
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#6334E5]/10 to-blue-50">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-lg text-purple-600 font-medium">Перенаправление...</p>
+          <div className="w-12 h-12 border-4 border-gray-200 border-t-[#6334E5] rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-lg text-[#6334E5] font-medium">Перенаправление...</p>
           <p className="text-sm text-gray-500 mt-2">Пожалуйста, подождите</p>
         </div>
       </div>

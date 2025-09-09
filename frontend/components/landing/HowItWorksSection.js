@@ -10,7 +10,7 @@ const steps = [
     title: 'Загрузите знания',
     description: 'Импортируйте FAQ, документы и страницы сайта. ReplyX сам построит базу знаний.',
     Icon: FiUpload,
-    accent: 'bg-purple-50 border-purple-200 text-[#6334E5]'
+    accent: 'bg-[#6334E5]/10 border-[#6334E5]/30 text-[#6334E5]'
   },
   {
     num: 2,

@@ -46,6 +46,11 @@ export const DESIGN_TOKENS = {
     h2: 'text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight',
     h3: 'text-2xl sm:text-3xl font-bold text-gray-900',
     h4: 'text-xl font-semibold text-gray-900',
+
+    // Специальные стили заголовков с градиентом для ReplyX
+    h1Gradient: 'text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight',
+    h2Gradient: 'text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight',
+    replyXGradient: 'bg-gradient-to-r from-[#6334E5] to-[#75C5ED] bg-clip-text text-transparent',
     
     // Dashboard заголовки
     pageTitle: 'text-2xl sm:text-3xl font-bold text-gray-900',
@@ -152,7 +157,7 @@ export const DESIGN_TOKENS = {
   // Кнопки (минималистичный стиль)
   buttons: {
     primary: 'bg-[#6334E5] hover:bg-primary-700 text-white px-6 py-2.5 font-medium transition-all duration-150 focus:outline-none h-11',
-    secondary: 'bg-white border border-gray-300 text-gray-700 hover:border-purple-600 hover:text-purple-600 px-6 py-2.5 font-medium transition-all duration-150 h-11',
+    secondary: 'bg-white border border-gray-300 text-gray-700 hover:border-[#6334E5] hover:text-[#6334E5] px-6 py-2.5 font-medium transition-all duration-150 h-11',
     headerButton: 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 px-4 py-2 font-medium transition-all duration-150 h-9',
     small: 'px-4 py-2 text-sm h-9',
     large: 'px-8 py-3 text-lg h-12',

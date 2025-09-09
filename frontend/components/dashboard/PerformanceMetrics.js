@@ -85,7 +85,7 @@ const PerformanceMetrics = ({ metrics, loading, onRefresh }) => {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-          <FiBarChart className="mr-2 text-purple-600 w-5 h-5" />
+          <FiBarChart className="mr-2 text-[#6334E5] w-5 h-5" />
           Производительность
         </h3>
         <button
@@ -100,11 +100,11 @@ const PerformanceMetrics = ({ metrics, loading, onRefresh }) => {
       {/* Main Metric - Messages per hour */}
       <div className="mb-6">
         <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-purple-100 to-indigo-100 flex items-center justify-center">
-            <FiMessageSquare className="w-6 h-6 text-purple-600" />
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-[#6334E5]/10 to-indigo-100 flex items-center justify-center">
+            <FiMessageSquare className="w-6 h-6 text-[#6334E5]" />
           </div>
           <div className="flex-1">
-            <div className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            <div className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-[#6334E5] to-indigo-600 bg-clip-text text-transparent">
               {formatNumber(metrics?.messages_per_hour || 0)}
             </div>
             <div className="text-sm text-gray-500">сообщений/час</div>

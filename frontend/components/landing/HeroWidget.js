@@ -359,7 +359,7 @@ const HeroWidget = () => {
           <motion.div
             className="absolute -top-16 -right-10 w-52 h-52 rounded-full blur-2xl opacity-85"
             style={{
-              background: 'radial-gradient(circle, rgba(147,51,234,0.6) 0%, rgba(168,85,247,0.5) 35%, rgba(192,132,252,0.4) 70%, transparent 100%)'
+              background: 'radial-gradient(circle, rgba(99,52,229,0.6) 0%, rgba(168,85,247,0.5) 35%, rgba(192,132,252,0.4) 70%, transparent 100%)'
             }}
             animate={{
               scale: [1, 1.3, 1],
@@ -375,7 +375,7 @@ const HeroWidget = () => {
           <motion.div
             className="absolute -bottom-12 -left-8 w-44 h-44 rounded-full blur-2xl opacity-75"
             style={{
-              background: 'radial-gradient(circle, rgba(59,130,246,0.6) 0%, rgba(147,51,234,0.5) 50%, rgba(168,85,247,0.4) 80%, transparent 100%)'
+              background: 'radial-gradient(circle, rgba(59,130,246,0.6) 0%, rgba(99,52,229,0.5) 50%, rgba(168,85,247,0.4) 80%, transparent 100%)'
             }}
             animate={{
               scale: [1.2, 0.8, 1.2],

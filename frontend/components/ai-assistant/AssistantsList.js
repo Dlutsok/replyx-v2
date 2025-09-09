@@ -23,8 +23,8 @@ const AssistantCard = ({ assistant, onSelect, onEdit, onDelete }) => {
     {/* Заголовок с иконкой и меню */}
     <div className="flex items-start justify-between mb-2 sm:mb-3">
       <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-        <div className="w-6 h-6 sm:w-7 sm:h-7 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-          <FiCpu className="text-purple-600" size={14} />
+        <div className="w-6 h-6 sm:w-7 sm:h-7 bg-[#6334E5]/20 rounded-lg flex items-center justify-center flex-shrink-0">
+          <FiCpu className="text-[#6334E5]" size={14} />
         </div>
         <div className="min-w-0 flex-1">
           <h4 className="text-sm sm:text-base font-semibold text-gray-900 leading-tight truncate">

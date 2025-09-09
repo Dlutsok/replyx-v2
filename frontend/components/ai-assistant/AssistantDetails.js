@@ -229,7 +229,7 @@ export default function AssistantDetails({
               type="checkbox"
               checked={assistantSettings.is_active || false}
               onChange={(e) => { onSettingsChange('is_active', e.target.checked); setDirty(true); }}
-              className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
+              className="w-4 h-4 text-[#6334E5] bg-gray-100 border-gray-300 rounded focus:ring-[#6334E5] focus:ring-2"
             />
             <span className="text-sm font-medium text-gray-700">Активировать ассистента</span>
           </label>
@@ -242,7 +242,7 @@ export default function AssistantDetails({
             className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all ${
               saving || !dirty
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-purple-600 text-white hover:bg-purple-700'
+                : 'bg-[#6334E5] text-white hover:bg-[#5028c2]'
             }`}
             onClick={() => { if (dirty && !saving) { onSaveSettings(); setDirty(false); } }}
             disabled={saving || !dirty}
@@ -264,7 +264,7 @@ export default function AssistantDetails({
           className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium text-sm transition-all ${
             uploading
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-purple-600 text-white hover:bg-purple-700'
+              : 'bg-[#6334E5] text-white hover:bg-[#5028c2]'
           }`}
           onClick={() => {
             if (!assistant?.is_active) {
@@ -295,7 +295,7 @@ export default function AssistantDetails({
           <input
             type="url"
             placeholder="https://example.com/page"
-            className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#6334E5] focus:border-[#6334E5]"
             id="assistant-website-url"
           />
           <p className="text-xs text-gray-600 mt-1">
@@ -590,7 +590,7 @@ export default function AssistantDetails({
               key={tab.id}
               className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 activeTab === tab.id
-                  ? 'bg-purple-600 text-white shadow-sm'
+                  ? 'bg-[#6334E5] text-white shadow-sm'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
               onClick={() => onTabChange(tab.id)}
@@ -625,7 +625,7 @@ export default function AssistantDetails({
             <div className="p-6 overflow-auto flex-1">
               {docPreview.loading ? (
                 <div className="text-center py-8">
-                  <div className="inline-block w-6 h-6 border-2 border-gray-300 border-t-purple-600 rounded-full animate-spin mb-2"></div>
+                  <div className="inline-block w-6 h-6 border-2 border-gray-300 border-t-[#6334E5] rounded-full animate-spin mb-2"></div>
                   <p className="text-gray-600">Загрузка…</p>
                 </div>
               ) : (

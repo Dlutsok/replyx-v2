@@ -457,6 +457,52 @@ def health_check():
     except Exception as e:
         health_status["components"]["ai_token_manager"] = {"status": "unhealthy", "error": str(e)}
     
+    # Проверка дискового пространства
+    try:
+        import psutil
+        disk_usage = psutil.disk_usage('/')
+        free_space_gb = disk_usage.free / (1024**3)
+        disk_status = "healthy" if free_space_gb > 1.0 else "degraded" if free_space_gb > 0.5 else "unhealthy"
+        health_status["components"]["disk_space"] = {
+            "status": disk_status,
+            "free_space_gb": round(free_space_gb, 2),
+            "usage_percent": round((disk_usage.used / disk_usage.total) * 100, 1)
+        }
+        if disk_status == "unhealthy":
+            health_status["status"] = "unhealthy"
+    except Exception as e:
+        health_status["components"]["disk_space"] = {"status": "unhealthy", "error": str(e)}
+    
+    # Проверка памяти
+    try:
+        import psutil
+        memory = psutil.virtual_memory()
+        memory_status = "healthy" if memory.percent < 80 else "degraded" if memory.percent < 90 else "unhealthy"
+        health_status["components"]["memory"] = {
+            "status": memory_status,
+            "usage_percent": memory.percent,
+            "available_gb": round(memory.available / (1024**3), 2)
+        }
+        if memory_status == "unhealthy":
+            health_status["status"] = "unhealthy"
+    except Exception as e:
+        health_status["components"]["memory"] = {"status": "unhealthy", "error": str(e)}
+    
+    # Проверка базового статуса соединений БД
+    try:
+        from database.connection import get_db_stats
+        db_stats = get_db_stats()
+        pool_usage_percent = (db_stats['checked_out'] / db_stats['total_connections']) * 100 if db_stats['total_connections'] > 0 else 0
+        pool_status = "healthy" if pool_usage_percent < 70 else "degraded" if pool_usage_percent < 90 else "unhealthy"
+        health_status["components"]["database_pool"] = {
+            "status": pool_status,
+            "pool_usage_percent": round(pool_usage_percent, 1),
+            "checked_out": db_stats['checked_out'],
+            "pool_size": db_stats['pool_size']
+        }
+    except Exception as e:
+        health_status["components"]["database_pool"] = {"status": "unknown", "error": str(e)}
+    
     return health_status
 
 

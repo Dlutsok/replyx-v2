@@ -87,7 +87,7 @@ export default function PaymentSuccess() {
           {/* Действия */}
           <div className="space-y-3">
             <Link href="/balance">
-              <button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors">
+              <button className="w-full bg-[#6334E5] hover:bg-[#5028c2] text-white font-semibold py-3 px-4 rounded-xl transition-colors">
                 Перейти к балансу
               </button>
             </Link>

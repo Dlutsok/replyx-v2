@@ -65,8 +65,8 @@ const SetupStepsSection = () => {
         accent: 'text-green-600'
       },
       current: {
-        bg: 'bg-purple-50',
-        border: 'border-purple-200',
+        bg: 'bg-[#6334E5]/10',
+        border: 'border-[#6334E5]/30',
         icon: 'text-[#6334E5]',
         text: 'text-[#6334E5]',
         accent: 'text-[#6334E5]'
@@ -167,7 +167,7 @@ const SetupStepsSection = () => {
                       ${step.status === 'completed'
                         ? 'bg-gradient-to-br from-green-500 to-emerald-600 border-green-500 text-white shadow-sm'
                         : step.status === 'current'
-                        ? 'bg-gradient-to-br from-purple-500 to-violet-600 border-purple-500 text-white shadow-sm animate-pulse'
+                        ? 'bg-gradient-to-br from-[#6334E5] to-violet-600 border-[#6334E5] text-white shadow-sm animate-pulse'
                         : 'bg-white border-gray-300 text-gray-400'
                       }
                     `}>
@@ -211,8 +211,8 @@ const SetupStepsSection = () => {
                   >
                     <div className={`
                       w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300
-                      ${step.status === 'completed' ? 'bg-[#6334E5] border-purple-500 text-white' :
-                        step.status === 'current' ? 'bg-[#6334E5] border-purple-500 text-white' :
+                      ${step.status === 'completed' ? 'bg-[#6334E5] border-[#6334E5] text-white' :
+                        step.status === 'current' ? 'bg-[#6334E5] border-[#6334E5] text-white' :
                         'bg-white border-gray-300 text-gray-400'}
                     `}>
                       {step.status === 'completed' ? (
@@ -245,7 +245,7 @@ const SetupStepsSection = () => {
                   className={`
                     relative overflow-hidden transition-all duration-500
                     ${step.status === 'current'
-                      ? 'bg-gradient-to-br from-purple-50 via-purple-25 to-purple-50 border-2 border-purple-200 shadow-lg'
+                      ? 'bg-gradient-to-br from-[#6334E5]/10 via-[#6334E5]/10 to-[#6334E5]/10 border-2 border-[#6334E5]/30 shadow-lg'
                       : step.status === 'completed'
                       ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 shadow-md'
                       : 'bg-white border-2 border-gray-100 shadow-sm'
@@ -263,7 +263,7 @@ const SetupStepsSection = () => {
                   {/* Фоновый градиент для активного шага */}
                   {step.status === 'current' && (
                     <motion.div
-                      className="absolute inset-0 bg-gradient-to-br from-purple-100/30 via-violet-50/20 to-purple-100/30"
+                      className="absolute inset-0 bg-gradient-to-br from-[#6334E5]/30 via-violet-50/20 to-[#6334E5]/30"
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.6 }}
@@ -280,7 +280,7 @@ const SetupStepsSection = () => {
                           ${step.status === 'completed'
                             ? 'bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg'
                             : step.status === 'current'
-                            ? 'bg-gradient-to-br from-purple-500 to-violet-600 text-white shadow-lg animate-pulse'
+                            ? 'bg-gradient-to-br from-[#6334E5] to-violet-600 text-white shadow-lg animate-pulse'
                             : 'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-600'
                           }
                         `}>
@@ -312,7 +312,7 @@ const SetupStepsSection = () => {
                         ${step.id === 1 ? 'bg-gradient-to-br from-blue-100 to-blue-200' :
                           step.id === 2 ? 'bg-gradient-to-br from-green-100 to-green-200' :
                           step.id === 3 ? 'bg-gradient-to-br from-orange-100 to-orange-200' :
-                          'bg-gradient-to-br from-purple-100 to-purple-200'}
+                          'bg-gradient-to-br from-[#6334E5]/10 to-[#6334E5]/20'}
                       `}>
                         <step.icon
                           className={`w-7 h-7 transition-colors duration-300 ${
@@ -357,7 +357,7 @@ const SetupStepsSection = () => {
                             step.status === 'completed'
                               ? 'bg-gradient-to-r from-green-400 to-emerald-500'
                               : step.status === 'current'
-                              ? 'bg-gradient-to-r from-purple-400 to-violet-500'
+                              ? 'bg-gradient-to-r from-[#6334E5] to-violet-500'
                               : 'bg-gray-200'
                           }`}
                           initial={{ width: 0 }}
@@ -373,12 +373,12 @@ const SetupStepsSection = () => {
                     {/* CTA для текущего шага */}
                     {step.status === 'current' && (
                       <motion.div
-                        className="mt-4 pt-3 border-t border-purple-200"
+                        className="mt-4 pt-3 border-t border-[#6334E5]/30"
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: 0.2 }}
                       >
-                        <button className="w-full bg-gradient-to-r from-purple-500 to-violet-600 text-white py-2.5 px-4 rounded-xl font-medium text-sm transition-all duration-200 active:scale-95">
+                        <button className="w-full bg-gradient-to-r from-[#6334E5] to-violet-600 text-white py-2.5 px-4 rounded-xl font-medium text-sm transition-all duration-200 active:scale-95">
                           Продолжить шаг {step.id}
                         </button>
                       </motion.div>
@@ -414,7 +414,7 @@ const SetupStepsSection = () => {
                   className={`
                     relative bg-white rounded-2xl border transition-all duration-300
                     ${statusColors.border} ${statusColors.bg}
-                    ${step.status === 'current' ? 'shadow-lg border-purple-300' :
+                    ${step.status === 'current' ? 'shadow-lg border-[#6334E5]/40' :
                       step.status === 'completed' ? 'shadow-md' :
                       'shadow-sm border-gray-200'}
                   `}
@@ -424,7 +424,7 @@ const SetupStepsSection = () => {
                   {/* Статус индикатор */}
                   <div className="absolute top-1/2 -translate-y-1/2 -right-2 w-6 h-6 rounded-full bg-white border-2 flex items-center justify-center">
                     {step.status === 'completed' ? (
-                      <div className="w-3 h-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full" />
+                      <div className="w-3 h-3 bg-gradient-to-br from-[#6334E5] to-[#6334E5] rounded-full" />
                     ) : step.status === 'current' ? (
                       <div className="w-3 h-3 bg-[#6334E5] rounded-full animate-pulse" />
                     ) : (
@@ -454,7 +454,7 @@ const SetupStepsSection = () => {
 
                     {/* Заголовок */}
                     <h3 className={`text-lg font-semibold mb-2 transition-colors duration-300 ${
-                      step.status === 'completed' ? 'text-purple-900' :
+                      step.status === 'completed' ? 'text-[#6334E5]' :
                       step.status === 'current' ? 'text-[#6334E5]' : 'text-gray-700'
                     }`}>
                       {step.title}
@@ -498,7 +498,7 @@ const SetupStepsSection = () => {
             <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
               <button
                 onClick={() => router.push('/register')}
-                className="w-full bg-gradient-to-r from-[#6334E5] via-[#6334E5] to-[#6334E5] text-white py-4 px-6 rounded-2xl font-semibold text-base transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200/50 hover:from-[#6334E5] hover:via-[#6334E5] hover:to-[#6334E5] hover:shadow-lg active:scale-95 relative overflow-hidden"
+                className="w-full bg-gradient-to-r from-[#6334E5] via-[#6334E5] to-[#6334E5] text-white py-4 px-6 rounded-2xl font-semibold text-base transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#6334E5]/30 hover:from-[#6334E5] hover:via-[#6334E5] hover:to-[#6334E5] hover:shadow-lg active:scale-95 relative overflow-hidden"
               >
                 <span className="absolute inset-0 bg-gradient-to-r from-[#6334E5] via-[#6334E5] to-[#6334E5] opacity-0 hover:opacity-20 transition-opacity duration-300" />
                 <span className="relative z-10 flex items-center justify-center gap-2">
@@ -520,7 +520,7 @@ const SetupStepsSection = () => {
           >
             <button
               onClick={() => router.push('/register')}
-              className="px-8 py-2.5 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200 h-11 relative overflow-hidden bg-gradient-to-r from-purple-600 via-violet-600 to-indigo-600 hover:from-purple-700 hover:via-violet-700 hover:to-indigo-700"
+              className="px-8 py-2.5 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#6334E5]/30 h-11 relative overflow-hidden bg-gradient-to-r from-[#6334E5] via-violet-600 to-indigo-600 hover:from-[#6334E5] hover:via-violet-700 hover:to-indigo-700"
             >
               <span className="absolute inset-0 z-0 animate-wave-gradient bg-gradient-to-r from-[#6334E5] via-[#6334E5] to-[#6334E5] opacity-30 hover:opacity-60 transition-opacity duration-300" />
               <span className="relative z-10">Начать настройку</span>

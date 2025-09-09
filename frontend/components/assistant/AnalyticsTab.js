@@ -40,7 +40,7 @@ export default function AnalyticsTab({ stats, loading, onRefreshData }) {
     const colors = {
       blue: 'bg-blue-50 text-blue-600 border border-solid border-blue-200/60',
       green: 'bg-green-50 text-green-600 border border-solid border-green-200/60',
-      purple: 'bg-purple-50 text-purple-600 border border-solid border-purple-200/60',
+      purple: 'bg-[#6334E5]/10 text-[#6334E5] border border-solid border-[#6334E5]/30',
       yellow: 'bg-yellow-50 text-yellow-600 border border-solid border-yellow-200/60'
     };
     return colors[color] || colors.blue;

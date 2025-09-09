@@ -92,7 +92,7 @@ const IndustryCarousel = () => {
     { icon: ShoppingBagIcon, name: 'Ритейл', bgColor: 'bg-blue-50', iconColor: 'text-blue-600' },
     { icon: HeartIcon, name: 'Медицина', bgColor: 'bg-red-50', iconColor: 'text-red-600' },
     { icon: BanknotesIcon, name: 'Финансы', bgColor: 'bg-green-50', iconColor: 'text-green-600' },
-    { icon: AcademicCapIcon, name: 'Образование', bgColor: 'bg-purple-50', iconColor: 'text-[#6334E5]' },
+    { icon: AcademicCapIcon, name: 'Образование', bgColor: 'bg-[#6334E5]/10', iconColor: 'text-[#6334E5]' },
     { icon: CogIcon, name: 'Производство', bgColor: 'bg-orange-50', iconColor: 'text-orange-600' },
     { icon: TruckIcon, name: 'Логистика', bgColor: 'bg-indigo-50', iconColor: 'text-indigo-600' },
     { icon: HomeIcon, name: 'Недвижимость', bgColor: 'bg-teal-50', iconColor: 'text-teal-600' },
@@ -199,7 +199,7 @@ const HeroContent = () => {
         </Button>
 
         {/* Зеленая надпись под кнопкой */}
-        <p className="text-left text-green-500 text-xs font-normal mt-4">
+        <p className="text-center text-green-500 text-sm font-normal mt-4">
           Первые 100 сообщений бесплатно
         </p>
       </motion.div>

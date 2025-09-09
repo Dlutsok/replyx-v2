@@ -70,7 +70,7 @@ const HeroImage = () => {
         <motion.div 
           className="absolute -top-16 -right-10 w-48 h-48 rounded-full blur-2xl opacity-70"
           style={{
-            background: 'radial-gradient(circle, rgba(147,51,234,0.4) 0%, rgba(168,85,247,0.3) 35%, rgba(192,132,252,0.2) 70%, transparent 100%)'
+            background: 'radial-gradient(circle, rgba(99,52,229,0.4) 0%, rgba(168,85,247,0.3) 35%, rgba(192,132,252,0.2) 70%, transparent 100%)'
           }}
           animate={{ 
             scale: [1, 1.2, 1], 
@@ -86,7 +86,7 @@ const HeroImage = () => {
         <motion.div 
           className="absolute -bottom-12 -left-8 w-40 h-40 rounded-full blur-2xl opacity-60"
           style={{
-            background: 'radial-gradient(circle, rgba(59,130,246,0.4) 0%, rgba(147,51,234,0.3) 50%, rgba(168,85,247,0.2) 80%, transparent 100%)'
+            background: 'radial-gradient(circle, rgba(59,130,246,0.4) 0%, rgba(99,52,229,0.3) 50%, rgba(168,85,247,0.2) 80%, transparent 100%)'
           }}
           animate={{ 
             scale: [1.1, 0.9, 1.1], 
@@ -199,7 +199,7 @@ const HeroImage = () => {
             <button
               className="w-12 h-12 text-white flex items-center justify-center shadow-md cursor-default"
               style={{
-                backgroundColor: 'rgb(147, 51, 234)',
+                backgroundColor: '#6334E5',
                 borderRadius: '0.9rem'
               }}
             >

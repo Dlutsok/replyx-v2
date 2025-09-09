@@ -56,16 +56,16 @@
 }
 
 .logoIcon {
-  color: rgb(147 51 234);
+  color: #6334E5;
   transition: all 0.3s ease;
 }
 
 .logo:hover .logoIcon {
-  color: rgb(126 34 206);
+  color: #6334E5;
 }
 
 .logoText {
-  color: rgb(147 51 234);
+  color: #6334E5;
   font-weight: 700;
   font-size: 24px;
   letter-spacing: 1px;
@@ -73,7 +73,7 @@
 }
 
 .logo:hover .logoText {
-  color: rgb(126 34 206);
+  color: #6334E5;
 }
 
 .nav {
@@ -120,7 +120,7 @@
 }
 
 .ctaButton {
-  background-color: rgb(147, 51, 234);
+  background-color: #6334E5;
   color: white;
   border: none;
   padding: 10px 24px;
@@ -130,12 +130,12 @@
   height: 44px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 0 0 0 rgba(147, 51, 234, 0);
+  box-shadow: 0 0 0 0 rgba(99, 52, 229, 0);
 }
 
 .ctaButton:hover {
-  background-color: rgb(126, 34, 206);
-  box-shadow: 0 0 0 4px rgba(147, 51, 234, 0.2);
+  background-color: #6334E5;
+  box-shadow: 0 0 0 4px rgba(99, 52, 229, 0.2);
 }
 
 /* Hero Section */
@@ -167,7 +167,7 @@
   align-items: center;
   gap: 8px;
   background: #f3f4f6;
-  color: rgb(147, 51, 234);
+  color: #6334E5;
   padding: 6px 12px;
   border-radius: 16px;
   font-size: 14px;
@@ -184,7 +184,7 @@
 }
 
 .heroHighlight {
-  color: rgb(147, 51, 234);
+  color: #6334E5;
 }
 
 .heroSubtitle {
@@ -210,7 +210,7 @@
 .statNumber {
   font-size: 28px;
   font-weight: 700;
-  color: rgb(147, 51, 234);
+  color: #6334E5;
 }
 
 .statLabel {
@@ -250,8 +250,8 @@
 
 .searchInput:focus {
   outline: none;
-  border-color: rgb(147, 51, 234);
-  box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
+  border-color: #6334E5;
+  box-shadow: 0 0 0 3px rgba(99, 52, 229, 0.1);
 }
 
 .searchButton {
@@ -259,7 +259,7 @@
   right: 6px;
   top: 50%;
   transform: translateY(-50%);
-  background: rgb(147, 51, 234);
+  background: #6334E5;
   color: white;
   border: none;
   padding: 8px 16px;
@@ -292,7 +292,7 @@
   left: -20px;
   right: -20px;
   bottom: -20px;
-  background: radial-gradient(circle, rgba(147, 51, 234, 0.1) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(99, 52, 229, 0.1) 0%, transparent 70%);
   border-radius: 50%;
   animation: pulse 3s ease-in-out infinite;
 }
@@ -301,24 +301,24 @@
   position: relative;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgba(147, 51, 234, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
+  background: linear-gradient(135deg, rgba(99, 52, 229, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
   border-radius: 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 16px;
-  border: 2px solid rgba(147, 51, 234, 0.2);
+  border: 2px solid rgba(99, 52, 229, 0.2);
   transition: all 0.3s ease;
 }
 
 .heroImageContent:hover {
   transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(147, 51, 234, 0.15);
+  box-shadow: 0 20px 40px rgba(99, 52, 229, 0.15);
 }
 
 .heroImageIcon {
-  color: rgb(147, 51, 234);
+  color: #6334E5;
 }
 
 .heroImageContent h3 {
@@ -402,7 +402,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  color: rgb(147, 51, 234);
+  color: #6334E5;
   text-decoration: none;
   font-size: 14px;
   font-weight: 600;
@@ -434,8 +434,8 @@
 }
 
 .socialBtn:hover {
-  border-color: rgb(147, 51, 234);
-  color: rgb(147, 51, 234);
+  border-color: #6334E5;
+  color: #6334E5;
   transform: translateY(-2px);
 }
 
@@ -479,7 +479,7 @@
 .blogPost:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-  border-color: rgba(147, 51, 234, 0.2);
+  border-color: rgba(99, 52, 229, 0.2);
 }
 
 .postImage {
@@ -528,7 +528,7 @@
 }
 
 .postTitle a:hover {
-  color: rgb(147, 51, 234);
+  color: #6334E5;
 }
 
 .postExcerpt {
@@ -556,7 +556,7 @@
 }
 
 .noPosts svg {
-  color: rgb(147, 51, 234);
+  color: #6334E5;
   opacity: 0.5;
 }
 
@@ -619,9 +619,9 @@
 
 .categoryBtn:hover,
 .categoryBtn.active {
-  border-color: rgb(147, 51, 234);
-  background: rgba(147, 51, 234, 0.05);
-  color: rgb(147, 51, 234);
+  border-color: #6334E5;
+  background: rgba(99, 52, 229, 0.05);
+  color: #6334E5;
 }
 
 .categoryName {
@@ -636,7 +636,7 @@
 }
 
 .categoryBtn.active .categoryCount {
-  background: rgba(147, 51, 234, 0.2);
+  background: rgba(99, 52, 229, 0.2);
 }
 
 .tagsCloud {
@@ -646,8 +646,8 @@
 }
 
 .tag {
-  background: rgba(147, 51, 234, 0.1);
-  color: rgb(147, 51, 234);
+  background: rgba(99, 52, 229, 0.1);
+  color: #6334E5;
   padding: 6px 12px;
   border-radius: 16px;
   font-size: 12px;
@@ -657,7 +657,7 @@
 }
 
 .tag:hover {
-  background: rgba(147, 51, 234, 0.2);
+  background: rgba(99, 52, 229, 0.2);
   transform: translateY(-1px);
 }
 
@@ -690,8 +690,8 @@
 
 .newsletterInput:focus {
   outline: none;
-  border-color: rgb(147, 51, 234);
-  box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
+  border-color: #6334E5;
+  box-shadow: 0 0 0 3px rgba(99, 52, 229, 0.1);
 }
 
 .newsletterBtn {
@@ -737,7 +737,7 @@
 .footerBrand {
   display: flex;
   align-items: center;
-  color: rgb(147, 51, 234);
+  color: #6334E5;
   font-size: 24px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -753,7 +753,7 @@
   width: 24px;
   height: 24px;
   margin-right: 8px;
-  color: rgb(147, 51, 234);
+  color: #6334E5;
 }
 
 .footerSlogan {
@@ -774,7 +774,7 @@
 }
 
 .footerColumnTitle {
-  color: rgb(147, 51, 234);
+  color: #6334E5;
   font-size: 14px;
   font-weight: 600;
   margin: 0;
@@ -790,7 +790,7 @@
 }
 
 .footerLink:hover {
-  color: rgb(147, 51, 234);
+  color: #6334E5;
 }
 
 .footerCopyright {

@@ -137,7 +137,7 @@ const PricingBlockSection = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
             >
-              <div className="bg-gradient-to-br from-purple-600 via-violet-600 to-indigo-700 rounded-2xl p-6 text-white relative overflow-hidden">
+              <div className="bg-gradient-to-br from-[#6334E5] via-violet-600 to-indigo-700 rounded-2xl p-6 text-white relative overflow-hidden">
                 {/* Декоративные элементы */}
                 <div className="absolute top-0 left-0 w-full h-full">
                   <div className="absolute top-2 left-2 w-16 h-16 rounded-full blur-lg opacity-10" style={{background: 'linear-gradient(90deg, #6334E5, #6334E5)'}}></div>
@@ -295,7 +295,7 @@ const PricingBlockSection = () => {
             className="relative"
             {...DESIGN_TOKENS.animation.withDelay(0.3)}
           >
-            <div className="bg-gradient-to-br from-purple-600 via-violet-600 to-indigo-700 rounded-3xl p-8 text-white relative overflow-hidden">
+            <div className="bg-gradient-to-br from-[#6334E5] via-violet-600 to-indigo-700 rounded-3xl p-8 text-white relative overflow-hidden">
               {/* Декоративные элементы */}
               <div className="absolute top-0 left-0 w-full h-full">
                 <div className="absolute top-4 left-4 w-20 h-20 rounded-full blur-xl opacity-10" style={{background: 'linear-gradient(90deg, #6334E5, #6334E5)'}}></div>

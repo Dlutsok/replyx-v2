@@ -61,24 +61,15 @@ function LandingHeader() {
 
       {/* Мобильная версия хедера */}
       <header className={`block lg:hidden ${landingStyles.header}`}>
-        <div className="px-4 sm:px-6 lg:px-8 py-4">
+        <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             {/* Логотип */}
             <Link href="/" className={landingStyles.logo}>
               <img src="/logo.svg" alt="Logo" className={landingStyles.logoIcon} style={{width: '120px', height: '60px'}} />
             </Link>
 
-            {/* Мобильное меню и кнопки */}
+            {/* Мобильное меню */}
             <div className="flex items-center gap-3">
-              {/* Кнопка "Начать бесплатно" для мобильных */}
-              <button
-                className="px-4 py-2 text-white font-semibold rounded-lg transition-all duration-300 text-sm"
-                onClick={() => router.push('/register')}
-                style={{background: 'linear-gradient(90deg, #6334E5, #6334E5)'}}
-              >
-                Начать
-              </button>
-
               {/* Гамбургер меню */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -96,124 +87,124 @@ function LandingHeader() {
         </div>
 
         {/* Мобильное выдвигающееся меню */}
-        <div className={`lg:hidden fixed inset-0 z-[200] transform transition-all duration-500 ease-out ${isMobileMenuOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}>
+        <div className={`lg:hidden fixed right-0 top-0 z-[200] w-[80vw] h-screen transform transition-all duration-500 ease-out ${isMobileMenuOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}>
           {/* Фон с blur эффектом */}
           <div
-            className="absolute inset-0 backdrop-blur-md bg-gradient-to-br from-purple-900/20 via-blue-900/15 to-indigo-900/20"
+            className="absolute inset-0 w-full h-full backdrop-blur-md bg-gradient-to-br from-[#4c1d95]/20 via-blue-900/15 to-indigo-900/20"
             onClick={() => setIsMobileMenuOpen(false)}
           ></div>
 
           {/* Декоративные элементы фона */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-purple-400/10 to-transparent rounded-full blur-xl animate-pulse" style={{animationDuration: '4s'}}></div>
+          <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
+            <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-[#6334E5]/50/10 to-transparent rounded-full blur-xl animate-pulse" style={{animationDuration: '4s'}}></div>
             <div className="absolute bottom-40 right-20 w-24 h-24 bg-gradient-to-br from-blue-400/10 to-transparent rounded-full blur-lg animate-pulse" style={{animationDuration: '6s', animationDelay: '1s'}}></div>
             <div className="absolute top-1/2 left-1/3 w-16 h-16 bg-gradient-to-br from-indigo-400/10 to-transparent rounded-full blur-md animate-pulse" style={{animationDuration: '5s', animationDelay: '2s'}}></div>
           </div>
 
-          {/* Меню с glassmorphism эффектом */}
-          <div className="absolute right-0 top-0 h-full w-80 max-w-[90vw] bg-white backdrop-blur-xl border-l border-white/20 shadow-2xl">
-            <div className="relative h-full bg-white">
+          {/* Полноэкранное меню */}
+          <div className="absolute inset-0 w-full h-full bg-white backdrop-blur-xl">
+            <div className="relative w-full h-full bg-white">
               {/* Градиентный overlay */}
-              <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-purple-50/30 to-blue-50/30"></div>
+              <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-white/60 via-[#6334E5]/10/30 to-blue-50/30"></div>
 
               <div className="relative p-6 h-full flex flex-col">
                 {/* Заголовок меню */}
                 <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h2 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                    <h2 className="text-xl font-bold bg-gradient-to-r from-[#6334E5] to-blue-600 bg-clip-text text-transparent">
                       Меню
                     </h2>
                     <p className="text-sm text-gray-500 mt-1">Навигация по сайту</p>
                   </div>
                   <button
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="p-2 rounded-xl hover:bg-white/50 transition-all duration-200 group"
+                    className="p-3 rounded-xl hover:bg-red-50 hover:border-red-200 transition-all duration-300 group border border-transparent hover:border-red-200"
+                    aria-label="Закрыть меню"
                   >
-                    <svg className="w-5 h-5 text-gray-500 group-hover:text-gray-700 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-6 h-6 text-gray-500 group-hover:text-red-500 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
                 </div>
 
                 {/* Навигационные ссылки */}
-                <nav className="space-y-2 mb-8 flex-1">
+                <nav className="space-y-4 mb-8 flex-1">
                   <a
                     href="#features"
-                    className="group flex items-center px-4 py-4 text-gray-700 hover:text-white rounded-xl transition-all duration-300 hover:bg-gradient-to-r hover:from-purple-500 hover:to-blue-500 hover:shadow-lg hover:shadow-purple-500/25"
+                    className="group flex items-center px-6 py-5 text-gray-700 hover:text-white rounded-2xl transition-all duration-300 hover:bg-gradient-to-r hover:from-[#6334E5] hover:to-blue-600 hover:shadow-xl hover:shadow-[#6334E5]/30 hover:scale-[1.02] active:scale-[0.98]"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <div className="w-8 h-8 rounded-lg bg-purple-100 group-hover:bg-white/20 flex items-center justify-center mr-4 transition-colors duration-300">
-                      <svg className="w-4 h-4 text-purple-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-[#6334E5]/20 to-blue-500/20 group-hover:from-white/30 group-hover:to-white/20 flex items-center justify-center mr-5 transition-all duration-300 group-hover:scale-110">
+                      <svg className="w-6 h-6 text-[#6334E5] group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                     </div>
-                    <span className="font-medium">Возможности</span>
+                    <div>
+                      <span className="font-semibold text-lg">Возможности</span>
+                      <p className="text-sm text-gray-500 group-hover:text-white/80 mt-1">Функционал платформы</p>
+                    </div>
                   </a>
                   <a
                     href="#solutions"
-                    className="group flex items-center px-4 py-4 text-gray-700 hover:text-white rounded-xl transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-500 hover:to-indigo-500 hover:shadow-lg hover:shadow-blue-500/25"
+                    className="group flex items-center px-6 py-5 text-gray-700 hover:text-white rounded-2xl transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-500 hover:to-indigo-600 hover:shadow-xl hover:shadow-blue-500/30 hover:scale-[1.02] active:scale-[0.98]"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <div className="w-8 h-8 rounded-lg bg-blue-100 group-hover:bg-white/20 flex items-center justify-center mr-4 transition-colors duration-300">
-                      <svg className="w-4 h-4 text-blue-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-100 to-indigo-100 group-hover:from-white/30 group-hover:to-white/20 flex items-center justify-center mr-5 transition-all duration-300 group-hover:scale-110">
+                      <svg className="w-6 h-6 text-blue-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                       </svg>
                     </div>
-                    <span className="font-medium">Решения</span>
+                    <div>
+                      <span className="font-semibold text-lg">Решения</span>
+                      <p className="text-sm text-gray-500 group-hover:text-white/80 mt-1">Интеграции и API</p>
+                    </div>
                   </a>
                   <a
                     href="#pricing"
-                    className="group flex items-center px-4 py-4 text-gray-700 hover:text-white rounded-xl transition-all duration-300 hover:bg-gradient-to-r hover:from-green-500 hover:to-emerald-500 hover:shadow-lg hover:shadow-green-500/25"
+                    className="group flex items-center px-6 py-5 text-gray-700 hover:text-white rounded-2xl transition-all duration-300 hover:bg-gradient-to-r hover:from-green-500 hover:to-emerald-600 hover:shadow-xl hover:shadow-green-500/30 hover:scale-[1.02] active:scale-[0.98]"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <div className="w-8 h-8 rounded-lg bg-green-100 group-hover:bg-white/20 flex items-center justify-center mr-4 transition-colors duration-300">
-                      <svg className="w-4 h-4 text-green-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-green-100 to-emerald-100 group-hover:from-white/30 group-hover:to-white/20 flex items-center justify-center mr-5 transition-all duration-300 group-hover:scale-110">
+                      <svg className="w-6 h-6 text-green-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                       </svg>
                     </div>
-                    <span className="font-medium">Тарифы</span>
-                  </a>
-                  <Link
-                    href="/blog"
-                    className="group flex items-center px-4 py-4 text-gray-700 hover:text-white rounded-xl transition-all duration-300 hover:bg-gradient-to-r hover:from-orange-500 hover:to-red-500 hover:shadow-lg hover:shadow-orange-500/25"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    style={{display: 'none'}}
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-orange-100 group-hover:bg-white/20 flex items-center justify-center mr-4 transition-colors duration-300">
-                      <svg className="w-4 h-4 text-orange-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                      </svg>
+                    <div>
+                      <span className="font-semibold text-lg">Тарифы</span>
+                      <p className="text-sm text-gray-500 group-hover:text-white/80 mt-1">Цены и планы</p>
                     </div>
-                    <span className="font-medium">Блог</span>
-                  </Link>
+                  </a>
                 </nav>
 
                 {/* Кнопки действий */}
-                <div className="space-y-3 mt-auto">
+                <div className="space-y-4 mt-auto">
                   <button
-                    className="w-full px-4 py-3 text-primary-700 border-2 border-primary-200 font-semibold rounded-xl hover:bg-primary-50 hover:border-primary-300 transition-all duration-300 shadow-lg hover:shadow-primary-500/25"
+                    className="w-full px-6 py-4 text-[#6334E5] border-2 border-[#6334E5]/30 font-semibold rounded-2xl hover:bg-[#6334E5] hover:text-white transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-[#6334E5]/25 hover:scale-[1.02] active:scale-[0.98] bg-white/80 backdrop-blur-sm text-lg"
                     onClick={() => {
                       setIsMobileMenuOpen(false);
                       router.push('/login');
                     }}
                   >
-                    Войти
+                    <span className="flex items-center justify-center gap-3">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                      </svg>
+                      Войти в аккаунт
+                    </span>
                   </button>
                   <button
-                    className="w-full px-4 py-3 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-primary-500/30 relative overflow-hidden group new-button-effect"
+                    className="w-full px-6 py-4 text-white font-semibold rounded-2xl transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-[#6334E5]/40 relative overflow-hidden group bg-gradient-to-r from-[#6334E5] to-blue-600 hover:scale-[1.02] active:scale-[0.98] text-lg"
                     onClick={() => {
                       setIsMobileMenuOpen(false);
                       router.push('/register');
                     }}
                   >
-                    <span className="absolute inset-0 z-0 hoverEffect">
-                      <div></div>
-                    </span>
-                    <span className="relative flex items-center justify-center gap-2 z-10">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <span className="relative flex items-center justify-center gap-3 z-10">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                       </svg>
-                      Зарегистрироваться
+                      Начать работу
                     </span>
                   </button>
                 </div>
@@ -221,7 +212,7 @@ function LandingHeader() {
                 {/* Нижний декоративный элемент */}
                 <div className="mt-6 pt-4 border-t border-gray-200/50">
                   <div className="flex items-center justify-center">
-                    <div className="w-12 h-1 bg-gradient-to-r from-purple-400 to-blue-400 rounded-full opacity-30"></div>
+                    <div className="w-12 h-1 bg-gradient-to-r from-[#6334E5]/50 to-blue-400 rounded-full opacity-30"></div>
                   </div>
                 </div>
               </div>

@@ -18,7 +18,7 @@ const UsersAnalyticsPanel = ({
   // Получаем данные пользователей
   const users = usersData?.users || [];
   const pagination = usersData?.pagination || {};
-  const { total = 0, pages = 1, current_page = 1, per_page = 20 } = pagination;
+  const { total = 0, pages = 1, page: current_page = 1, limit: per_page = 20 } = pagination;
 
   // Статусы пользователей
   const statusOptions = [
@@ -79,8 +79,8 @@ const UsersAnalyticsPanel = ({
     <div className="grid grid-cols-1 sm:grid-cols-6 gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
       {/* Пользователь */}
       <div className="sm:col-span-2 flex items-center gap-3">
-        <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-          <FiUser size={16} className="text-purple-600" />
+        <div className="w-8 h-8 bg-[#6334E5]/20 rounded-full flex items-center justify-center">
+          <FiUser size={16} className="text-[#6334E5]" />
         </div>
         <div className="min-w-0">
           <div className="font-medium text-gray-900 truncate">
@@ -103,17 +103,17 @@ const UsersAnalyticsPanel = ({
       {/* Диалоги */}
       <div className="text-sm">
         <div className="font-medium text-gray-900">
-          {user.dialogs_count || 0}
+          {user.total_dialogs || user.dialogs_count || 0}
         </div>
         <div className="text-gray-500">диалогов</div>
       </div>
 
-      {/* Потрачено */}
+      {/* Баланс */}
       <div className="text-sm">
         <div className="font-medium text-gray-900">
-          {formatters.currency(user.total_spent || 0)}
+          {formatters.currency(user.balance || 0)}
         </div>
-        <div className="text-gray-500">потрачено</div>
+        <div className="text-gray-500">баланс</div>
       </div>
     </div>
   );
@@ -148,7 +148,7 @@ const UsersAnalyticsPanel = ({
               onClick={() => handleUsersPageChange(page)}
               className={`px-3 py-2 rounded-lg text-sm font-medium ${
                 current_page === page
-                  ? 'bg-purple-100 text-purple-700 border border-purple-300'
+                  ? 'bg-[#6334E5]/20 text-[#5028c2] border border-[#6334E5]/40'
                   : 'border border-gray-300 hover:bg-gray-50'
               }`}
             >
@@ -191,7 +191,7 @@ const UsersAnalyticsPanel = ({
               placeholder="Поиск по email или имени..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#6334E5]/100 focus:border-[#6334E5]/100"
             />
           </div>
 
@@ -199,7 +199,7 @@ const UsersAnalyticsPanel = ({
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            className="px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#6334E5]/100 focus:border-[#6334E5]/100"
           >
             {statusOptions.map(option => (
               <option key={option.value} value={option.value}>
@@ -218,7 +218,7 @@ const UsersAnalyticsPanel = ({
           <div>Регистрация</div>
           <div>Статус</div>
           <div>Диалоги</div>
-          <div>Потрачено</div>
+          <div>Баланс</div>
         </div>
 
         {/* Список пользователей */}

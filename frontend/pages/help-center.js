@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '@/hooks';
 import {
   FiHelpCircle, FiBook, FiPlay, FiMessageSquare, FiSettings,
   FiStar, FiCheckCircle, FiMail, FiPhone,
@@ -184,8 +184,8 @@ export default function HelpCenterPage() {
           {/* Быстрые действия */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-purple-50 rounded-xl flex items-center justify-center">
-                <FiCheckCircle className="text-purple-600" size={16} />
+              <div className="w-8 h-8 bg-[#6334E5]/10 rounded-xl flex items-center justify-center">
+                <FiCheckCircle className="text-[#6334E5]" size={16} />
               </div>
               <h3 className="text-lg font-semibold text-gray-900">Быстрые действия</h3>
             </div>
@@ -263,9 +263,9 @@ export default function HelpCenterPage() {
                   onClick={() => toggleSection(section.id)}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-[#6334E5]/10 rounded-lg flex items-center justify-center">
                       {React.createElement(section.icon, {
-                        className: "text-purple-600",
+                        className: "text-[#6334E5]",
                         size: 20
                       })}
                     </div>
@@ -296,7 +296,7 @@ export default function HelpCenterPage() {
                             <p className="text-sm text-gray-600 mb-3">{item.content}</p>
                             <a
                               href={item.link}
-                              className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 text-sm font-medium"
+                              className="inline-flex items-center gap-2 text-[#6334E5] hover:text-[#5028c2] text-sm font-medium"
                             >
                               Подробнее
                               <FiExternalLink size={14} />

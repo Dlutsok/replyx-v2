@@ -375,7 +375,7 @@ export default function AssistantPage() {
           <h1 className="text-2xl font-semibold text-gray-900 mb-2">Ошибка</h1>
           <p className="text-gray-600 mb-4">{error}</p>
           <Link href="/ai-assistant">
-            <button className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+            <button className="px-4 py-2 bg-[#6334E5] text-white rounded-lg hover:bg-[#5028c2]">
               Назад к ассистентам
             </button>
           </Link>
@@ -390,7 +390,7 @@ export default function AssistantPage() {
         <div className="text-center">
           <h1 className="text-2xl font-semibold text-gray-900 mb-2">Ассистент не найден</h1>
           <Link href="/ai-assistant">
-            <button className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+            <button className="px-4 py-2 bg-[#6334E5] text-white rounded-lg hover:bg-[#5028c2]">
               Назад к ассистентам
             </button>
           </Link>
@@ -454,8 +454,8 @@ export default function AssistantPage() {
                 </Link>
                 
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-2xl bg-purple-50 border border-solid border-purple-200/60 flex items-center justify-center">
-                    <FiCpu size={16} className="text-purple-600" />
+                  <div className="w-10 h-10 rounded-2xl bg-[#6334E5]/10 border border-solid border-[#6334E5]/30/60 flex items-center justify-center">
+                    <FiCpu size={16} className="text-[#6334E5]" />
                   </div>
                   <div>
                     <h1 className="text-2xl font-semibold text-gray-900">
@@ -575,8 +575,8 @@ const OverviewTab = ({ assistant, stats, documents, bots, channels }) => {
           {/* Левая часть - приветствие и информация */}
           <div className="flex-1 min-w-0">
             <div className="flex items-start gap-3 mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200/60 flex items-center justify-center flex-shrink-0">
-                <FiCpu size={20} className="text-purple-600" />
+              <div className="w-12 h-12 bg-gradient-to-br from-[#6334E5]/10 to-[#6334E5]/20 rounded-xl border border-[#6334E5]/30/60 flex items-center justify-center flex-shrink-0">
+                <FiCpu size={20} className="text-[#6334E5]" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-col gap-1 mb-2">
@@ -621,8 +621,8 @@ const OverviewTab = ({ assistant, stats, documents, bots, channels }) => {
 
         <div className="bg-white border border-gray-200 rounded-xl p-5 transition-all duration-150 hover:border-gray-300 hover:shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl flex items-center justify-center">
-              <FiUpload size={20} className="text-purple-600" />
+            <div className="w-12 h-12 bg-gradient-to-br from-[#6334E5]/10 to-[#6334E5]/20 rounded-xl flex items-center justify-center">
+              <FiUpload size={20} className="text-[#6334E5]" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Документов</p>
@@ -650,8 +650,8 @@ const OverviewTab = ({ assistant, stats, documents, bots, channels }) => {
         <div className="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-gray-50/30 to-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-11 h-11 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl flex items-center justify-center">
-                <FiSettings size={18} className="text-purple-600" />
+              <div className="w-11 h-11 bg-gradient-to-br from-[#6334E5]/10 to-[#6334E5]/20 rounded-xl flex items-center justify-center">
+                <FiSettings size={18} className="text-[#6334E5]" />
               </div>
               <div>
                 <h3 className="text-xl font-semibold text-gray-900">Информация об ассистенте</h3>
@@ -687,7 +687,7 @@ const OverviewTab = ({ assistant, stats, documents, bots, channels }) => {
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Модель ИИ</label>
                   <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200">
+                    <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-[#6334E5]/10 text-[#5028c2] border border-[#6334E5]/30">
                       <FiCpu size={10} className="mr-1" />
                       OpenAI
                     </span>
@@ -771,8 +771,8 @@ const OverviewTab = ({ assistant, stats, documents, bots, channels }) => {
         <div className="space-y-4">
           {documents?.length > 0 && (
             <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
-              <div className="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                <FiUpload size={14} className="text-purple-600" />
+              <div className="w-8 h-8 bg-[#6334E5]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                <FiUpload size={14} className="text-[#6334E5]" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-gray-900">Загружен документ</p>

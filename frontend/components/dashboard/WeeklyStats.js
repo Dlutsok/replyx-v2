@@ -77,7 +77,7 @@ const WeeklyStats = React.memo(({ metrics, loading, onRefresh }) => {
       {!hasData ? (
         <div className="flex items-center justify-center py-8">
           <div className="text-center max-w-xs">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl flex items-center justify-center mx-auto mb-4 border border-blue-100">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-50 to-[#6334E5]/10 rounded-xl flex items-center justify-center mx-auto mb-4 border border-blue-100">
               <FiBarChart2 className="w-6 h-6 text-blue-400" />
             </div>
             <h3 className="text-gray-900 text-sm font-semibold mb-2">Добро пожаловать!</h3>
@@ -87,7 +87,7 @@ const WeeklyStats = React.memo(({ metrics, loading, onRefresh }) => {
             </p>
             <button
               onClick={() => window.location.href = '/ai-assistant'}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-[#6334E5] hover:from-blue-700 hover:to-[#5028c2] text-white rounded-lg text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md"
             >
               <FiMessageSquare className="w-4 h-4" />
               Создать первого ассистента

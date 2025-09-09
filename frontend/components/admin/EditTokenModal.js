@@ -267,8 +267,8 @@ const EditTokenModal = ({ token, onClose, onSave }) => {
               </div>
               <button
                 type="button"
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${
-                  formData.is_active ? 'bg-purple-600' : 'bg-gray-200'
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:ring-offset-2 ${
+                  formData.is_active ? 'bg-[#6334E5]' : 'bg-gray-200'
                 }`}
                 onClick={() => handleInputChange('is_active', !formData.is_active)}
               >
@@ -297,7 +297,7 @@ const EditTokenModal = ({ token, onClose, onSave }) => {
                       ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
                       : validationState.name?.isValid
                       ? 'border-green-300 focus:ring-green-500 focus:border-green-500'
-                      : 'border-gray-300 focus:ring-purple-500 focus:border-purple-500'
+                      : 'border-gray-300 focus:ring-[#6334E5] focus:border-[#6334E5]'
                   }`}
                   maxLength={50}
                 />
@@ -326,7 +326,7 @@ const EditTokenModal = ({ token, onClose, onSave }) => {
                     type="button"
                     className={`p-3 border rounded-lg text-left transition-all duration-150 ${
                       getSelectedModels().includes(model.id)
-                        ? 'border-purple-300 bg-purple-50 text-purple-700'
+                        ? 'border-[#6334E5]/30 bg-[#6334E5]/10 text-[#6334E5]'
                         : 'border-gray-300 bg-white hover:border-gray-400 hover:bg-gray-50 text-gray-700'
                     }`}
                     onClick={() => handleModelToggle(model.id)}
@@ -335,13 +335,13 @@ const EditTokenModal = ({ token, onClose, onSave }) => {
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium">{model.label}</span>
                         {model.popular && (
-                          <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full">
+                          <span className="px-2 py-0.5 bg-[#6334E5]/20 text-[#6334E5] text-xs rounded-full">
                             Популярная
                           </span>
                         )}
                       </div>
                       {getSelectedModels().includes(model.id) && (
-                        <FiCheck className="text-purple-600" size={16} />
+                        <FiCheck className="text-[#6334E5]" size={16} />
                       )}
                     </div>
                   </button>
@@ -370,7 +370,7 @@ const EditTokenModal = ({ token, onClose, onSave }) => {
                         ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
                         : validationState.daily_limit?.isValid
                         ? 'border-green-300 focus:ring-green-500 focus:border-green-500'
-                        : 'border-gray-300 focus:ring-purple-500 focus:border-purple-500'
+                        : 'border-gray-300 focus:ring-[#6334E5] focus:border-[#6334E5]'
                     }`}
                   />
                   <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-gray-500">
@@ -398,7 +398,7 @@ const EditTokenModal = ({ token, onClose, onSave }) => {
                         ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
                         : validationState.monthly_limit?.isValid
                         ? 'border-green-300 focus:ring-green-500 focus:border-green-500'
-                        : 'border-gray-300 focus:ring-purple-500 focus:border-purple-500'
+                        : 'border-gray-300 focus:ring-[#6334E5] focus:border-[#6334E5]'
                     }`}
                   />
                   <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-gray-500">
@@ -430,7 +430,7 @@ const EditTokenModal = ({ token, onClose, onSave }) => {
                       <div
                         key={i}
                         className={`w-2 h-2 rounded-full ${
-                          i < formData.priority ? 'bg-purple-600' : 'bg-gray-300'
+                          i < formData.priority ? 'bg-[#6334E5]' : 'bg-gray-300'
                         }`}
                       />
                     ))}
@@ -453,7 +453,7 @@ const EditTokenModal = ({ token, onClose, onSave }) => {
                 placeholder="Описание назначения токена, ограничения и другая полезная информация..."
                 rows={3}
                 maxLength={500}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150 resize-none"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent transition-all duration-150 resize-none"
               />
               <div className="flex justify-end">
                 <span className="text-xs text-gray-500">{formData.notes.length}/500</span>

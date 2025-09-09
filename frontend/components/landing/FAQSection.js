@@ -11,10 +11,10 @@ import SectionWrapper from '../common/SectionWrapper';
 const faqCustomStyles = `
   @keyframes faq-glow {
     0%, 100% {
-      box-shadow: 0 0 0 rgba(147, 51, 234, 0.1);
+      box-shadow: 0 0 0 rgba(99, 52, 229, 0.1);
     }
     50% {
-      box-shadow: 0 0 20px rgba(147, 51, 234, 0.2);
+      box-shadow: 0 0 20px rgba(99, 52, 229, 0.2);
     }
   }
 
@@ -24,7 +24,7 @@ const faqCustomStyles = `
 
   .faq-item-hover:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(147, 51, 234, 0.1);
+    box-shadow: 0 10px 25px rgba(99, 52, 229, 0.1);
   }
 
   .faq-icon-glow {
@@ -139,9 +139,9 @@ const FAQSection = () => {
       <div className="hidden lg:block">
         {/* Фоновые декоративные элементы */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-purple-100/20 to-transparent rounded-full blur-2xl"></div>
+          <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-[#6334E5]/20 to-transparent rounded-full blur-2xl"></div>
           <div className="absolute bottom-40 right-16 w-24 h-24 bg-gradient-to-br from-blue-100/15 to-transparent rounded-full blur-xl"></div>
-          <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-gradient-to-br from-purple-200/10 to-transparent rounded-full blur-lg"></div>
+          <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-gradient-to-br from-[#6334E5]/30 to-transparent rounded-full blur-lg"></div>
         </div>
 
         <div className="relative z-10">
@@ -164,8 +164,8 @@ const FAQSection = () => {
               <div
                 className={`bg-white border-2 rounded-2xl transition-all duration-300 overflow-hidden faq-item-hover ${
                   openFAQ === index
-                    ? 'border-purple-200 shadow-xl'
-                    : 'border-gray-100 hover:border-purple-100 shadow-md'
+                    ? 'border-[#6334E5]/30 shadow-xl'
+                    : 'border-gray-100 hover:border-[#6334E5]/20 shadow-md'
                 }`}
               >
                 {/* Вопрос */}
@@ -176,8 +176,8 @@ const FAQSection = () => {
                   <div className="flex items-center gap-5 flex-1">
                     <div className={`${DESIGN_TOKENS.icons.large} rounded-2xl flex items-center justify-center transition-all duration-300 faq-icon-glow ${
                       openFAQ === index
-                        ? 'bg-purple-100 text-[#6334E5] shadow-lg'
-                        : 'bg-white border border-gray-200 text-gray-500 group-hover:bg-purple-50 group-hover:text-purple-500 group-hover:border-purple-200'
+                        ? 'bg-[#6334E5]/10 text-[#6334E5] shadow-lg'
+                        : 'bg-white border border-gray-200 text-gray-500 group-hover:bg-[#6334E5]/10 group-hover:text-[#6334E5] group-hover:border-[#6334E5]/30'
                     }`}>
                       <faq.icon size={22} />
                     </div>
@@ -226,7 +226,7 @@ const FAQSection = () => {
         >
           {/* Декоративные элементы */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-1/2 left-1/4 w-2 h-2 bg-purple-400/30 rounded-full animate-ping" style={{animationDelay: '0s'}}></div>
+            <div className="absolute top-1/2 left-1/4 w-2 h-2 bg-[#6334E5]/30 rounded-full animate-ping" style={{animationDelay: '0s'}}></div>
             <div className="absolute top-1/3 right-1/3 w-1.5 h-1.5 bg-blue-400/40 rounded-full animate-ping" style={{animationDelay: '1s'}}></div>
             <div className="absolute bottom-1/4 left-1/2 w-1 h-1 bg-indigo-400/50 rounded-full animate-ping" style={{animationDelay: '2s'}}></div>
           </div>
@@ -235,7 +235,7 @@ const FAQSection = () => {
             {/* Основной текст */}
             <div className="mb-8">
               <h3 className="text-2xl md:text-4xl font-bold mb-4">
-                <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-[#6334E5] via-blue-600 to-[#6334E5] bg-clip-text text-transparent">
                   Остались вопросы?
                 </span>
               </h3>
@@ -250,9 +250,9 @@ const FAQSection = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsModalOpen(true)}
-                className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl overflow-hidden"
+                className="group relative px-8 py-4 bg-gradient-to-r from-[#6334E5] to-blue-600 text-white font-semibold rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl overflow-hidden"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#6334E5] to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <span className="relative flex items-center gap-3">
                   <FiMail className="w-5 h-5" />
                   Написать нам
@@ -263,7 +263,7 @@ const FAQSection = () => {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="group px-8 py-4 border-2 border-purple-200 text-[#6334E5] font-semibold rounded-2xl hover:bg-purple-50 hover:border-purple-300 transition-all duration-300"
+                className="group px-8 py-4 border-2 border-[#6334E5]/30 text-[#6334E5] font-semibold rounded-2xl hover:bg-[#6334E5]/10 hover:border-[#6334E5]/40 transition-all duration-300"
               >
                 <span className="flex items-center gap-2">
                   <FiMessageSquare className="w-5 h-5" />
@@ -291,7 +291,7 @@ const FAQSection = () => {
               </div>
               <div className="w-1 h-1 bg-gray-300 rounded-full hidden sm:block"></div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                <div className="w-2 h-2 bg-[#6334E5] rounded-full"></div>
                 <span>Работаем 24/7</span>
               </div>
             </motion.div>
@@ -340,7 +340,7 @@ const FAQSection = () => {
                       value={formData.name}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#6334E5] focus:border-[#6334E5] transition-all duration-200 bg-white"
                       placeholder="Иван Петров"
                     />
                   </div>
@@ -355,7 +355,7 @@ const FAQSection = () => {
                       value={formData.phone}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#6334E5] focus:border-[#6334E5] transition-all duration-200 bg-white"
                       placeholder="+7(993)334-99-13"
                     />
                   </div>
@@ -370,7 +370,7 @@ const FAQSection = () => {
                       onChange={handleInputChange}
                       required
                       rows={4}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 resize-none bg-white"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#6334E5] focus:border-[#6334E5] transition-all duration-200 resize-none bg-white"
                       placeholder="Опишите ваш вопрос..."
                     />
                   </div>
@@ -384,7 +384,7 @@ const FAQSection = () => {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium py-3 px-6 rounded-[0.9rem] hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-gradient-to-r from-[#6334E5] to-blue-600 text-white font-medium py-3 px-6 rounded-[0.9rem] hover:from-[#6334E5] hover:to-blue-700 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <span className="flex items-center justify-center gap-2">
                       {isSubmitting ? (
@@ -413,9 +413,9 @@ const FAQSection = () => {
       <div className="block lg:hidden">
         {/* Фоновые декоративные элементы */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-16 left-6 w-20 h-20 bg-gradient-to-br from-purple-100/20 to-transparent rounded-full blur-2xl"></div>
+          <div className="absolute top-16 left-6 w-20 h-20 bg-gradient-to-br from-[#6334E5]/20 to-transparent rounded-full blur-2xl"></div>
           <div className="absolute bottom-32 right-8 w-16 h-16 bg-gradient-to-br from-blue-100/15 to-transparent rounded-full blur-xl"></div>
-          <div className="absolute top-1/2 right-1/4 w-12 h-12 bg-gradient-to-br from-purple-200/10 to-transparent rounded-full blur-lg"></div>
+          <div className="absolute top-1/2 right-1/4 w-12 h-12 bg-gradient-to-br from-[#6334E5]/30 to-transparent rounded-full blur-lg"></div>
         </div>
 
         <div className="relative z-10">
@@ -443,8 +443,8 @@ const FAQSection = () => {
                 <div
                   className={`bg-white border-2 rounded-xl transition-all duration-300 overflow-hidden faq-item-hover ${
                     openFAQ === index
-                      ? 'border-purple-200 shadow-lg'
-                      : 'border-gray-100 hover:border-purple-100 shadow-sm'
+                      ? 'border-[#6334E5]/30 shadow-lg'
+                      : 'border-gray-100 hover:border-[#6334E5]/20 shadow-sm'
                   }`}
                 >
                   {/* Вопрос */}
@@ -455,8 +455,8 @@ const FAQSection = () => {
                     <div className="flex items-center gap-3 flex-1">
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 faq-icon-glow ${
                         openFAQ === index
-                          ? 'bg-purple-100 text-[#6334E5]'
-                          : 'bg-white border border-gray-200 text-gray-500 group-hover:bg-purple-50 group-hover:text-purple-500 group-hover:border-purple-200'
+                          ? 'bg-[#6334E5]/10 text-[#6334E5]'
+                          : 'bg-white border border-gray-200 text-gray-500 group-hover:bg-[#6334E5]/10 group-hover:text-[#6334E5] group-hover:border-[#6334E5]/30'
                       }`}>
                         <faq.icon size={16} />
                       </div>
@@ -503,7 +503,7 @@ const FAQSection = () => {
           >
             {/* Декоративные элементы */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              <div className="absolute top-1/2 left-1/4 w-1.5 h-1.5 bg-purple-400/30 rounded-full animate-ping" style={{animationDelay: '0s'}}></div>
+              <div className="absolute top-1/2 left-1/4 w-1.5 h-1.5 bg-[#6334E5]/30 rounded-full animate-ping" style={{animationDelay: '0s'}}></div>
               <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-blue-400/40 rounded-full animate-ping" style={{animationDelay: '1s'}}></div>
               <div className="absolute bottom-1/4 left-1/2 w-0.5 h-0.5 bg-indigo-400/50 rounded-full animate-ping" style={{animationDelay: '2s'}}></div>
             </div>
@@ -512,7 +512,7 @@ const FAQSection = () => {
               {/* Основной текст */}
               <div className="mb-6">
                 <h3 className="text-xl font-bold mb-3">
-                  <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-[#6334E5] via-blue-600 to-[#6334E5] bg-clip-text text-transparent">
                     Остались вопросы?
                   </span>
                 </h3>
@@ -527,9 +527,9 @@ const FAQSection = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setIsModalOpen(true)}
-                  className="group relative px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl overflow-hidden text-base w-full max-w-xs"
+                  className="group relative px-6 py-3 bg-gradient-to-r from-[#6334E5] to-blue-600 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl overflow-hidden text-base w-full max-w-xs"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#6334E5] to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <span className="relative flex items-center justify-center gap-2">
                     <FiMail className="w-4 h-4" />
                     Написать нам
@@ -540,7 +540,7 @@ const FAQSection = () => {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="group px-6 py-3 border-2 border-purple-200 text-[#6334E5] font-semibold rounded-xl hover:bg-purple-50 hover:border-purple-300 transition-all duration-300 text-base w-full max-w-xs"
+                  className="group px-6 py-3 border-2 border-[#6334E5]/30 text-[#6334E5] font-semibold rounded-xl hover:bg-[#6334E5]/10 hover:border-[#6334E5]/40 transition-all duration-300 text-base w-full max-w-xs"
                 >
                   <span className="flex items-center justify-center gap-2">
                     <FiMessageSquare className="w-4 h-4" />
@@ -566,7 +566,7 @@ const FAQSection = () => {
                   <span>Консультация бесплатная</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-[#6334E5] rounded-full"></div>
                   <span>Работаем 24/7</span>
                 </div>
               </motion.div>
@@ -615,7 +615,7 @@ const FAQSection = () => {
                           value={formData.name}
                           onChange={handleInputChange}
                           required
-                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white"
+                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#6334E5] focus:border-[#6334E5] transition-all duration-200 bg-white"
                           placeholder="Иван Петров"
                         />
                       </div>
@@ -630,7 +630,7 @@ const FAQSection = () => {
                           value={formData.phone}
                           onChange={handleInputChange}
                           required
-                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 bg-white"
+                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#6334E5] focus:border-[#6334E5] transition-all duration-200 bg-white"
                           placeholder="+7(993)334-99-13"
                         />
                       </div>
@@ -645,7 +645,7 @@ const FAQSection = () => {
                           onChange={handleInputChange}
                           required
                           rows={4}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 resize-none bg-white"
+                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#6334E5] focus:border-[#6334E5] transition-all duration-200 resize-none bg-white"
                           placeholder="Опишите ваш вопрос..."
                         />
                       </div>
@@ -659,7 +659,7 @@ const FAQSection = () => {
                       <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium py-3 px-6 rounded-[0.9rem] hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full bg-gradient-to-r from-[#6334E5] to-blue-600 text-white font-medium py-3 px-6 rounded-[0.9rem] hover:from-[#6334E5] hover:to-blue-700 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <span className="flex items-center justify-center gap-2">
                           {isSubmitting ? (

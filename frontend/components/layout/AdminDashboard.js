@@ -1,18 +1,19 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '@/hooks';
 import { 
   FiHome, FiUsers, FiBarChart, FiSettings, FiShield, FiCpu, 
   FiLogOut, FiMenu, FiX, FiMonitor, FiDollarSign, FiActivity,
   FiDatabase, FiZap, FiTrendingUp, FiUser
 } from 'react-icons/fi';
-import styles from '../../styles/layout/AdminDashboard.module.css';
+import styles from '@/styles/layout/AdminDashboard.module.css';
 
 const AdminDashboard = ({ children, activeSection = 'overview' }) => {
   const { user, logout } = useAuth();
   const router = useRouter();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const menuItems = [
     {
@@ -34,10 +35,10 @@ const AdminDashboard = ({ children, activeSection = 'overview' }) => {
       href: '/admin-analytics'
     },
     {
-      id: 'start-analytics',
-      label: 'Аналитика /start',
-      icon: FiTrendingUp,
-      href: '/admin-start-analytics'
+      id: 'payments',
+      label: 'Финансы',
+      icon: FiDollarSign,
+      href: '/admin-payments'
     },
     {
       id: 'bots-monitoring',
@@ -67,24 +68,23 @@ const AdminDashboard = ({ children, activeSection = 'overview' }) => {
 
   const handleLogout = () => {
     logout();
+    setMobileMenuOpen(false);
     router.push('/login');
+  };
+
+  const handleMenuItemClick = () => {
+    setMobileMenuOpen(false);
   };
 
   return (
     <div className={styles.adminDashboard}>
       {/* Sidebar */}
-      <div className={`${styles.sidebar} ${sidebarCollapsed ? styles.collapsed : ''}`}>
+      <div className={`${styles.sidebar} ${sidebarCollapsed ? styles.collapsed : ''} ${mobileMenuOpen ? styles.open : ''}`}>
         <div className={styles.sidebarHeader}>
           <div className={styles.logo}>
             <FiShield size={20} />
             {!sidebarCollapsed && <span>Admin Panel</span>}
           </div>
-          <button 
-            className={styles.toggleBtn}
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          >
-            {sidebarCollapsed ? <FiMenu size={20} /> : <FiX size={20} />}
-          </button>
         </div>
 
         <div className={styles.adminInfo}>
@@ -108,8 +108,8 @@ const AdminDashboard = ({ children, activeSection = 'overview' }) => {
             <div className={styles.sectionTitle}>
               {!sidebarCollapsed && 'Управление'}
             </div>
-            {menuItems.slice(0, 4).map(item => (
-              <Link key={item.id} href={item.href}>
+            {menuItems.slice(0, 5).map(item => (
+              <Link key={item.id} href={item.href} onClick={handleMenuItemClick}>
                 <div className={`${styles.navItem} ${activeSection === item.id ? styles.active : ''}`}>
                   <item.icon size={16} />
                   {!sidebarCollapsed && <span>{item.label}</span>}
@@ -122,8 +122,8 @@ const AdminDashboard = ({ children, activeSection = 'overview' }) => {
             <div className={styles.sectionTitle}>
               {!sidebarCollapsed && 'Мониторинг'}
             </div>
-            {menuItems.slice(4, 6).map(item => (
-              <Link key={item.id} href={item.href}>
+            {menuItems.slice(5, 7).map(item => (
+              <Link key={item.id} href={item.href} onClick={handleMenuItemClick}>
                 <div className={`${styles.navItem} ${activeSection === item.id ? styles.active : ''}`}>
                   <item.icon size={16} />
                   {!sidebarCollapsed && <span>{item.label}</span>}
@@ -136,8 +136,8 @@ const AdminDashboard = ({ children, activeSection = 'overview' }) => {
             <div className={styles.sectionTitle}>
               {!sidebarCollapsed && 'Конфигурация'}
             </div>
-            {menuItems.slice(6).map(item => (
-              <Link key={item.id} href={item.href}>
+            {menuItems.slice(7).map(item => (
+              <Link key={item.id} href={item.href} onClick={handleMenuItemClick}>
                 <div className={`${styles.navItem} ${activeSection === item.id ? styles.active : ''}`}>
                   <item.icon size={16} />
                   {!sidebarCollapsed && <span>{item.label}</span>}
@@ -153,8 +153,24 @@ const AdminDashboard = ({ children, activeSection = 'overview' }) => {
         </nav>
       </div>
 
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div
+          className={styles.mobileOverlay}
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Main Content */}
-      <div className={`${styles.mainContainer} ${sidebarCollapsed ? styles.sidebarCollapsed : ''}`}>
+      <div className={`${styles.mainContainer} ${sidebarCollapsed ? styles.sidebarCollapsed : ''} ${mobileMenuOpen ? styles.mobileMenuOpen : ''}`}>
+        {/* Mobile Menu Button */}
+        <button
+          className={styles.mobileMenuBtn}
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          <FiMenu size={20} />
+        </button>
+
         <div className={styles.mainContent}>
           {children}
         </div>

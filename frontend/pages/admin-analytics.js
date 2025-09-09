@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { withAuth } from '../hooks/useAuth';
 import { useNotifications } from '../hooks/useNotifications';
-import AdminDashboard from '../components/layout/AdminDashboard';
+import AdminDashboard from '@/components/layout/AdminDashboard';
 import useAdminAnalytics from '../hooks/useAdminAnalytics';
 
 // Компоненты аналитики
@@ -28,6 +28,7 @@ const AdminAnalyticsPage = () => {
     usersData,
     dialogsData,
     revenueData,
+    usersAIMessagesData,
     metrics,
     isLoading,
     error,
@@ -35,6 +36,7 @@ const AdminAnalyticsPage = () => {
     handleUsersPageChange,
     refreshData,
     formatters,
+    fetchUsersAIMessagesData,
     clearError
   } = useAdminAnalytics(period, activeTab);
 
@@ -85,7 +87,7 @@ const AdminAnalyticsPage = () => {
   // Компонент загрузки - Minimal Style
   const LoadingDisplay = () => (
     <div className="flex flex-col items-center justify-center py-12">
-      <div className="w-8 h-8 border-2 border-gray-300 border-t-purple-600 rounded-full animate-spin mb-4"></div>
+      <div className="w-8 h-8 border-2 border-gray-300 border-t-[#6334E5] rounded-full animate-spin mb-4"></div>
       <p className="text-sm text-gray-600 font-medium">Загрузка аналитики...</p>
     </div>
   );
@@ -119,6 +121,8 @@ const AdminAnalyticsPage = () => {
             dialogsData={dialogsData}
             formatters={formatters}
             isLoading={isLoading}
+            usersAIMessagesData={usersAIMessagesData}
+            fetchUsersAIMessagesData={fetchUsersAIMessagesData}
           />
         );
         
@@ -173,7 +177,7 @@ const AdminAnalyticsPage = () => {
               <button
                 onClick={handleRefresh}
                 disabled={isLoading}
-                className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               >
                 <FiRefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
                 {isLoading ? 'Обновление...' : 'Обновить'}
@@ -181,7 +185,7 @@ const AdminAnalyticsPage = () => {
 
               <button
                 onClick={() => showInfo('Функция экспорта будет доступна в следующем обновлении', { title: 'Информация' })}
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-200"
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#6334E5] hover:bg-[#5028c2] text-white rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:ring-offset-2 transition-all duration-200"
               >
                 <FiDownload size={16} />
                 Экспорт
@@ -210,7 +214,7 @@ const AdminAnalyticsPage = () => {
                     onClick={() => handlePeriodChange(option.value)}
                     className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
                       period === option.value
-                        ? 'bg-purple-100 text-purple-700 border border-purple-200'
+                        ? 'bg-[#6334E5]/20 text-[#5028c2] border border-[#6334E5]/30'
                         : 'bg-gray-100 text-gray-700 border border-transparent hover:bg-gray-200'
                     }`}
                   >

@@ -37,7 +37,7 @@ function LegalHeader() {
             Войти
           </button>
           <button
-            className="px-6 py-2.5 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200 h-11 relative overflow-hidden"
+            className="px-6 py-2.5 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#6334E5]/30 h-11 relative overflow-hidden"
             onClick={() => router.push('/register')}
             style={{background: 'linear-gradient(90deg, #6334E5, #6334E5)'}}
           >
@@ -209,7 +209,7 @@ export default function LegalPage() {
             <h1 style={{
               fontSize: '2rem',
               fontWeight: '700',
-              color: 'rgb(147 51 234)',
+              color: '#6334E5',
               textAlign: 'center',
               marginBottom: '1rem'
             }}>
@@ -254,8 +254,8 @@ export default function LegalPage() {
                     onClick={() => router.push('/legal/privacy')}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'translateY(-4px)';
-                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(147, 51, 234, 0.15)';
-                      e.currentTarget.style.borderColor = 'rgb(147 51 234)';
+                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(99, 52, 229, 0.15)';
+                      e.currentTarget.style.borderColor = '#6334E5';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = 'translateY(0)';
@@ -280,7 +280,7 @@ export default function LegalPage() {
                     <h3 style={{
                       fontSize: '1.25rem',
                       fontWeight: '600',
-                      color: 'rgb(147 51 234)',
+                      color: '#6334E5',
                       marginBottom: '0.5rem'
                     }}>
                       Политика конфиденциальности
@@ -302,10 +302,10 @@ export default function LegalPage() {
                     <div style={{
                       marginTop: '1rem',
                       padding: '0.5rem 1rem',
-                      background: 'rgba(147, 51, 234, 0.1)',
+                      background: 'rgba(99, 52, 229, 0.1)',
                       borderRadius: '0.5rem',
                       fontSize: '0.85rem',
-                      color: 'rgb(147 51 234)',
+                      color: '#6334E5',
                       fontWeight: '500'
                     }}>
                       Читать →
@@ -331,8 +331,8 @@ export default function LegalPage() {
                     onClick={() => router.push('/legal/cookies')}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'translateY(-4px)';
-                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(147, 51, 234, 0.15)';
-                      e.currentTarget.style.borderColor = 'rgb(147 51 234)';
+                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(99, 52, 229, 0.15)';
+                      e.currentTarget.style.borderColor = '#6334E5';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = 'translateY(0)';
@@ -357,7 +357,7 @@ export default function LegalPage() {
                     <h3 style={{
                       fontSize: '1.25rem',
                       fontWeight: '600',
-                      color: 'rgb(147 51 234)',
+                      color: '#6334E5',
                       marginBottom: '0.5rem'
                     }}>
                       Политика использования cookie
@@ -379,10 +379,10 @@ export default function LegalPage() {
                     <div style={{
                       marginTop: '1rem',
                       padding: '0.5rem 1rem',
-                      background: 'rgba(147, 51, 234, 0.1)',
+                      background: 'rgba(99, 52, 229, 0.1)',
                       borderRadius: '0.5rem',
                       fontSize: '0.85rem',
-                      color: 'rgb(147 51 234)',
+                      color: '#6334E5',
                       fontWeight: '500'
                     }}>
                       Читать →
@@ -408,8 +408,8 @@ export default function LegalPage() {
                     onClick={() => router.push('/legal/offer')}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'translateY(-4px)';
-                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(147, 51, 234, 0.15)';
-                      e.currentTarget.style.borderColor = 'rgb(147 51 234)';
+                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(99, 52, 229, 0.15)';
+                      e.currentTarget.style.borderColor = '#6334E5';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = 'translateY(0)';
@@ -438,7 +438,7 @@ export default function LegalPage() {
                     <h3 style={{
                       fontSize: '1.25rem',
                       fontWeight: '600',
-                      color: 'rgb(147 51 234)',
+                      color: '#6334E5',
                       marginBottom: '0.5rem'
                     }}>
                       Публичная оферта
@@ -460,10 +460,10 @@ export default function LegalPage() {
                     <div style={{
                       marginTop: '1rem',
                       padding: '0.5rem 1rem',
-                      background: 'rgba(147, 51, 234, 0.1)',
+                      background: 'rgba(99, 52, 229, 0.1)',
                       borderRadius: '0.5rem',
                       fontSize: '0.85rem',
-                      color: 'rgb(147 51 234)',
+                      color: '#6334E5',
                       fontWeight: '500'
                     }}>
                       Читать →
@@ -489,8 +489,8 @@ export default function LegalPage() {
                     onClick={() => router.push('/legal/terms')}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'translateY(-4px)';
-                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(147, 51, 234, 0.15)';
-                      e.currentTarget.style.borderColor = 'rgb(147 51 234)';
+                      e.currentTarget.style.boxShadow = '0 8px 25px rgba(99, 52, 229, 0.15)';
+                      e.currentTarget.style.borderColor = '#6334E5';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = 'translateY(0)';
@@ -516,7 +516,7 @@ export default function LegalPage() {
                     <h3 style={{
                       fontSize: '1.25rem',
                       fontWeight: '600',
-                      color: 'rgb(147 51 234)',
+                      color: '#6334E5',
                       marginBottom: '0.5rem'
                     }}>
                       Пользовательское соглашение и согласие на обработку ПДн
@@ -538,10 +538,10 @@ export default function LegalPage() {
                     <div style={{
                       marginTop: '1rem',
                       padding: '0.5rem 1rem',
-                      background: 'rgba(147, 51, 234, 0.1)',
+                      background: 'rgba(99, 52, 229, 0.1)',
                       borderRadius: '0.5rem',
                       fontSize: '0.85rem',
-                      color: 'rgb(147 51 234)',
+                      color: '#6334E5',
                       fontWeight: '500'
                     }}>
                       Читать →
@@ -562,7 +562,7 @@ export default function LegalPage() {
                 <h3 style={{
                   fontSize: '1.25rem',
                   fontWeight: '600',
-                  color: 'rgb(147 51 234)',
+                  color: '#6334E5',
                   textAlign: 'center',
                   marginBottom: '1.5rem'
                 }}>
@@ -613,10 +613,10 @@ export default function LegalPage() {
                       Связь с нами
                     </h4>
                     <p style={{color: '#64748b', fontSize: '0.9rem', marginBottom: '0.25rem'}}>
-                      <strong>Email:</strong> <a href="mailto:support@replyx.ru" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a>
+                      <strong>Email:</strong> <a href="mailto:support@replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a>
                     </p>
                     <p style={{color: '#64748b', fontSize: '0.9rem'}}>
-                      <strong>Телефон:</strong> <a href="tel:+79933349913" style={{color: 'rgb(147 51 234)', textDecoration: 'none', fontWeight: '500'}}>+7 (993) 334-99-13</a>
+                      <strong>Телефон:</strong> <a href="tel:+79933349913" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>+7 (993) 334-99-13</a>
                     </p>
                   </div>
                 </div>

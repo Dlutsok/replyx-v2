@@ -6,6 +6,7 @@ export const useAdminAnalytics = (period = '7d', activeTab = 'overview') => {
   const [usersData, setUsersData] = useState(null);
   const [dialogsData, setDialogsData] = useState(null);
   const [revenueData, setRevenueData] = useState(null);
+  const [usersAIMessagesData, setUsersAIMessagesData] = useState(null);
   
   // UI состояния
   const [isLoading, setIsLoading] = useState(true);
@@ -104,6 +105,25 @@ export const useAdminAnalytics = (period = '7d', activeTab = 'overview') => {
     }
   }, [period]);
 
+  // Загрузка данных пользователей с AI сообщениями
+  const fetchUsersAIMessagesData = useCallback(async (page = 1, limit = 100) => {
+    try {
+      const response = await fetch(`/api/admin/analytics/users-ai-messages?page=${page}&limit=${limit}`, {
+        headers: getAuthHeaders()
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
+      const data = await response.json();
+      setUsersAIMessagesData(data);
+      return data;
+    } catch (error) {
+      return handleApiError(error, 'статистика AI сообщений пользователей');
+    }
+  }, []);
+
   // Универсальная загрузка данных для активной вкладки
   const loadDataForTab = useCallback(async (tab) => {
     setIsLoading(true);
@@ -118,7 +138,7 @@ export const useAdminAnalytics = (period = '7d', activeTab = 'overview') => {
           await Promise.all([fetchOverviewData(), fetchUsersData()]);
           break;
         case 'dialogs':
-          await Promise.all([fetchOverviewData(), fetchDialogsData()]);
+          await Promise.all([fetchOverviewData(), fetchDialogsData(), fetchUsersAIMessagesData()]);
           break;
         case 'revenue':
           await Promise.all([fetchOverviewData(), fetchRevenueData()]);
@@ -174,15 +194,13 @@ export const useAdminAnalytics = (period = '7d', activeTab = 'overview') => {
 
   // Вычисляемые значения для метрик
   const metrics = overviewData ? {
-    totalUsers: overviewData.total_users || 0,
-    activeUsers: overviewData.active_users || 0,
-    totalDialogs: overviewData.total_dialogs || 0,
-    totalRevenue: overviewData.total_revenue || 0,
+    total_users: overviewData.total_users || 0,
+    active_users_today: overviewData.active_users_today || 0,
+    total_dialogs: overviewData.total_dialogs || 0,
+    total_revenue: overviewData.total_revenue || 0,
     
-    // Изменения (growth)
-    usersGrowth: overviewData.users_growth || 0,
-    dialogsGrowth: overviewData.dialogs_growth || 0,
-    revenueGrowth: overviewData.revenue_growth || 0,
+    // Изменения (growth) - используем правильную структуру
+    growth_metrics: overviewData.growth_metrics || {},
     
     // Дополнительные метрики
     avgSessionDuration: overviewData.avg_session_duration || 0,
@@ -197,6 +215,7 @@ export const useAdminAnalytics = (period = '7d', activeTab = 'overview') => {
     usersData,
     dialogsData,
     revenueData,
+    usersAIMessagesData,
     metrics,
     
     // UI состояния
@@ -211,6 +230,7 @@ export const useAdminAnalytics = (period = '7d', activeTab = 'overview') => {
     // Методы управления
     refreshData,
     loadDataForTab,
+    fetchUsersAIMessagesData,
     
     // Форматирование
     formatters,

@@ -884,7 +884,7 @@ function DatabaseExplorer() {
   const getTypeColor = (type) => {
     if (type.includes('Integer')) return 'text-blue-600 bg-blue-50';
     if (type.includes('String')) return 'text-green-600 bg-green-50';
-    if (type.includes('DateTime')) return 'text-purple-600 bg-purple-50';
+    if (type.includes('DateTime')) return 'text-[#6334E5] bg-[#6334E5]/10';
     if (type.includes('Boolean')) return 'text-orange-600 bg-orange-50';
     if (type.includes('Float')) return 'text-cyan-600 bg-cyan-50';
     if (type.includes('Text')) return 'text-gray-600 bg-gray-50';
@@ -903,8 +903,8 @@ function DatabaseExplorer() {
             {/* Левая часть - приветствие и информация */}
             <div className="flex-1 min-w-0">
               <div className="flex items-start sm:items-center gap-3 mb-3 sm:mb-4">
-                <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 lg:w-11 lg:h-11 xl:w-12 xl:h-12 bg-purple-50 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
-                  <FiDatabase className="text-purple-600" size={12} />
+                <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 lg:w-11 lg:h-11 xl:w-12 xl:h-12 bg-[#6334E5]/10 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+                  <FiDatabase className="text-[#6334E5]" size={12} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-col gap-1 sm:gap-2 mb-2">
@@ -943,14 +943,14 @@ function DatabaseExplorer() {
 
               {/* Текущий фильтр */}
               {activeFilter && (
-                <div className="flex items-center gap-2 px-3 py-2 bg-purple-50 border border-purple-200 rounded-xl text-sm">
-                  <FiFilter className="w-4 h-4 text-purple-600" />
-                  <span className="text-purple-700">
+                <div className="flex items-center gap-2 px-3 py-2 bg-[#6334E5]/10 border border-[#6334E5]/30 rounded-xl text-sm">
+                  <FiFilter className="w-4 h-4 text-[#6334E5]" />
+                  <span className="text-[#5028c2]">
                     {useTranslations ? (FIELD_TRANSLATIONS[activeFilter.field] || activeFilter.field) : activeFilter.field}: {activeFilter.value}
                   </span>
                   <button
                     onClick={() => setActiveFilter(null)}
-                    className="text-purple-600 hover:text-purple-800 ml-2"
+                    className="text-[#6334E5] hover:text-[#4c1d95] ml-2"
                   >
                     ×
                   </button>
@@ -963,7 +963,7 @@ function DatabaseExplorer() {
                   onClick={() => setMode('schema')}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     mode === 'schema'
-                      ? 'bg-purple-600 text-white shadow-sm'
+                      ? 'bg-[#6334E5] text-white shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
@@ -974,7 +974,7 @@ function DatabaseExplorer() {
                   onClick={() => setMode('data')}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     mode === 'data'
-                      ? 'bg-purple-600 text-white shadow-sm'
+                      ? 'bg-[#6334E5] text-white shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
@@ -985,7 +985,7 @@ function DatabaseExplorer() {
                   onClick={() => setMode('users')}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     mode === 'users'
-                      ? 'bg-purple-600 text-white shadow-sm'
+                      ? 'bg-[#6334E5] text-white shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
@@ -1000,7 +1000,7 @@ function DatabaseExplorer() {
                   onClick={() => setUseTranslations(!useTranslations)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all border ${
                     useTranslations
-                      ? 'bg-purple-50 text-purple-700 border-purple-200'
+                      ? 'bg-[#6334E5]/10 text-[#5028c2] border-[#6334E5]/30'
                       : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
                   }`}
                 >
@@ -1016,7 +1016,7 @@ function DatabaseExplorer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 mb-6">
           <div className="bg-white rounded-xl border border-gray-200 p-4">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600">
+              <div className="w-9 h-9 rounded-xl bg-[#6334E5]/10 border border-[#6334E5]/30 flex items-center justify-center text-[#6334E5]">
                 <FiTable size={18} />
               </div>
               <div>
@@ -1032,7 +1032,7 @@ function DatabaseExplorer() {
 
           <div className="bg-white rounded-xl border border-gray-200 p-4">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600">
+              <div className="w-9 h-9 rounded-xl bg-[#6334E5]/10 border border-[#6334E5]/30 flex items-center justify-center text-[#6334E5]">
                 <FiLink size={18} />
               </div>
               <div>
@@ -1048,7 +1048,7 @@ function DatabaseExplorer() {
 
           <div className="bg-white rounded-xl border border-gray-200 p-4">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600">
+              <div className="w-9 h-9 rounded-xl bg-[#6334E5]/10 border border-[#6334E5]/30 flex items-center justify-center text-[#6334E5]">
                 <FiDatabase size={18} />
               </div>
               <div>
@@ -1064,7 +1064,7 @@ function DatabaseExplorer() {
 
           <div className="bg-white rounded-xl border border-gray-200 p-4">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600">
+              <div className="w-9 h-9 rounded-xl bg-[#6334E5]/10 border border-[#6334E5]/30 flex items-center justify-center text-[#6334E5]">
                 <FiUsers size={18} />
               </div>
               <div>
@@ -1091,7 +1091,7 @@ function DatabaseExplorer() {
                   placeholder="Поиск таблиц и полей..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#6334E5] focus:border-[#6334E5]/100"
                 />
               </div>
             </div>
@@ -1116,7 +1116,7 @@ function DatabaseExplorer() {
                   }}
                   className={`p-4 rounded-xl cursor-pointer transition-all border ${
                     selectedTable === tableName
-                      ? 'bg-purple-50 border-2 border-purple-200 shadow-sm'
+                      ? 'bg-[#6334E5]/10 border-2 border-[#6334E5]/30 shadow-sm'
                       : 'bg-white border border-gray-200 hover:shadow-md hover:border-gray-300'
                   }`}
                 >
@@ -1157,7 +1157,7 @@ function DatabaseExplorer() {
                       animate={{ opacity: 1, y: 0 }}
                       className={`bg-white rounded-xl border cursor-pointer transition-all ${
                         selectedField === fieldName
-                          ? 'border-purple-200 shadow-md ring-2 ring-purple-100'
+                          ? 'border-[#6334E5]/30 shadow-md ring-2 ring-[#6334E5]/20'
                           : 'border-gray-200 hover:shadow-sm hover:border-gray-300'
                       }`}
                       onClick={() => setSelectedField(selectedField === fieldName ? null : fieldName)}
@@ -1208,7 +1208,7 @@ function DatabaseExplorer() {
               </div>
             ) : (
               <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-                <div className="w-16 h-16 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center mx-auto mb-4 text-purple-600">
+                <div className="w-16 h-16 rounded-xl bg-[#6334E5]/10 border border-[#6334E5]/30 flex items-center justify-center mx-auto mb-4 text-[#6334E5]">
                   <FiInfo size={24} />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Выберите таблицу</h3>
@@ -1244,7 +1244,7 @@ function DatabaseExplorer() {
                     }}
                     className={`p-4 rounded-xl cursor-pointer transition-all border ${
                       selectedTable === tableName
-                        ? 'bg-purple-50 border-2 border-purple-200 shadow-sm'
+                        ? 'bg-[#6334E5]/10 border-2 border-[#6334E5]/30 shadow-sm'
                         : 'bg-white border border-gray-200 hover:shadow-md hover:border-gray-300'
                     }`}
                   >
@@ -1277,7 +1277,7 @@ function DatabaseExplorer() {
                 />
               ) : (
                 <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-                  <div className="w-16 h-16 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center mx-auto mb-4 text-purple-600">
+                  <div className="w-16 h-16 rounded-xl bg-[#6334E5]/10 border border-[#6334E5]/30 flex items-center justify-center mx-auto mb-4 text-[#6334E5]">
                     <FiInfo size={24} />
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Выберите таблицу</h3>
@@ -1302,7 +1302,7 @@ function DatabaseExplorer() {
 
               {loading ? (
                 <div className="flex items-center justify-center p-8">
-                  <div className="w-8 h-8 border-4 border-gray-300 border-t-purple-600 rounded-full animate-spin"></div>
+                  <div className="w-8 h-8 border-4 border-gray-300 border-t-[#6334E5] rounded-full animate-spin"></div>
                 </div>
               ) : (
                 <div className="space-y-3 max-h-screen overflow-y-auto">
@@ -1317,13 +1317,13 @@ function DatabaseExplorer() {
                       }}
                       className={`p-4 rounded-xl cursor-pointer transition-all border ${
                         selectedUser?.id === user.id
-                          ? 'bg-purple-50 border-2 border-purple-200 shadow-sm'
+                          ? 'bg-[#6334E5]/10 border-2 border-[#6334E5]/30 shadow-sm'
                           : 'bg-white border border-gray-200 hover:shadow-md hover:border-gray-300'
                       }`}
                     >
                       <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-8 h-8 bg-purple-50 border border-purple-200 rounded-full flex items-center justify-center">
-                          <FiUser className="w-4 h-4 text-purple-600" />
+                        <div className="flex-shrink-0 w-8 h-8 bg-[#6334E5]/10 border border-[#6334E5]/30 rounded-full flex items-center justify-center">
+                          <FiUser className="w-4 h-4 text-[#6334E5]" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <h3 className="font-semibold text-gray-900 truncate">
@@ -1336,7 +1336,7 @@ function DatabaseExplorer() {
                                 ? 'bg-red-100 text-red-800'
                                 : user.role === 'manager'
                                 ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-purple-100 text-purple-800'
+                                : 'bg-[#6334E5]/20 text-[#4c1d95]'
                             }`}>
                               {useTranslations ? (VALUE_TRANSLATIONS[user.role] || user.role) : user.role}
                             </span>
@@ -1356,8 +1356,8 @@ function DatabaseExplorer() {
                   {/* Информация о пользователе */}
                   <div className="bg-white rounded-xl border border-gray-200 p-6">
                     <div className="flex items-start gap-4">
-                      <div className="flex-shrink-0 w-16 h-16 bg-purple-50 border border-purple-200 rounded-full flex items-center justify-center">
-                        <FiUser className="w-8 h-8 text-purple-600" />
+                      <div className="flex-shrink-0 w-16 h-16 bg-[#6334E5]/10 border border-[#6334E5]/30 rounded-full flex items-center justify-center">
+                        <FiUser className="w-8 h-8 text-[#6334E5]" />
                       </div>
                       <div className="flex-1">
                         <h2 className="text-2xl font-bold text-gray-900 mb-2">
@@ -1483,7 +1483,7 @@ function DatabaseExplorer() {
                   {/* Если нет связанных данных */}
                   {Object.keys(userRelatedData).length === 0 && !loading && (
                     <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-                      <div className="w-16 h-16 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center mx-auto mb-4 text-purple-600">
+                      <div className="w-16 h-16 rounded-xl bg-[#6334E5]/10 border border-[#6334E5]/30 flex items-center justify-center mx-auto mb-4 text-[#6334E5]">
                         <FiInfo size={24} />
                       </div>
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -1497,7 +1497,7 @@ function DatabaseExplorer() {
                 </div>
               ) : (
                 <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-                  <div className="w-16 h-16 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center mx-auto mb-4 text-purple-600">
+                  <div className="w-16 h-16 rounded-xl bg-[#6334E5]/10 border border-[#6334E5]/30 flex items-center justify-center mx-auto mb-4 text-[#6334E5]">
                     <FiUsers size={24} />
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Выберите пользователя</h3>

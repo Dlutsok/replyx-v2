@@ -263,7 +263,7 @@ const BenchmarksSection = () => {
       blue: 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200',
       green: 'bg-gradient-to-br from-green-50 to-green-100 border-green-200',
       orange: 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200',
-      purple: 'bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200'
+      purple: 'bg-gradient-to-br from-[#6334E5]/10 to-[#6334E5]/20 border-[#6334E5]/30'
     };
     return gradients[color] || 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200';
   };
@@ -292,8 +292,8 @@ const BenchmarksSection = () => {
 
   return (
     <section className="relative min-h-[600px] md:min-h-[700px] flex items-center overflow-hidden pb-20 lg:pt-20">
-      {/* Hero-style gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white via-white to-purple-50/30 pointer-events-none" />
+      {/* White background */}
+      <div className="absolute inset-0 bg-white pointer-events-none" />
 
       <div className={`max-w-1200 mx-auto ${DESIGN_TOKENS.spacing.containerPadding} w-full relative`}>
         {/* Заголовок секции */}
@@ -320,7 +320,7 @@ const BenchmarksSection = () => {
                   className={`bg-white rounded-xl px-3 py-2 shadow-sm border transition-all duration-300 cursor-pointer flex-shrink-0 min-w-[180px] relative ${
                     activeTab === index
                       ? 'border-[#6334E5] shadow-md bg-[#6334E5]/10/50'
-                      : 'border-gray-200 hover:shadow-md hover:border-purple-200'
+                      : 'border-gray-200 hover:shadow-md hover:border-[#6334E5]/30'
                   }`}
                   data-tab-index={index}
                   onClick={() => handleTabClick(index)}
@@ -402,7 +402,7 @@ const BenchmarksSection = () => {
                     className={`bg-white rounded-lg px-3 py-2 lg:px-4 lg:py-3 shadow-sm border transition-all duration-300 cursor-pointer ${
                       activeTab === index
                         ? 'border-[#6334E5] shadow-md bg-[#6334E5]/10/50'
-                        : 'border-gray-200 hover:shadow-md hover:border-purple-200'
+                        : 'border-gray-200 hover:shadow-md hover:border-[#6334E5]/30'
                     }`}
                     onClick={() => handleTabClick(index)}
                   >
@@ -483,8 +483,8 @@ const BenchmarksSection = () => {
     <div>
       {/* Main hero-style section */}
       <section className="relative min-h-[600px] md:min-h-[700px] flex items-center overflow-hidden">
-        {/* Hero-style gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-white via-white to-purple-50/30 pointer-events-none" />
+        {/* White background */}
+        <div className="absolute inset-0 bg-white pointer-events-none" />
 
         <div className={`max-w-1200 mx-auto ${DESIGN_TOKENS.spacing.containerPadding} w-full relative`}>
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-10 items-center">

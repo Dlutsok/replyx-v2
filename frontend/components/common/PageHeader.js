@@ -49,7 +49,7 @@ const PageHeader = React.memo(({
           {/* Аватар пользователя */}
           {showAvatar && (
             <div className={DESIGN_TOKENS.cards.avatar}>
-              <FiUser size={28} className="text-purple-600" />
+              <FiUser size={28} className="text-[#6334E5]" />
             </div>
           )}
 
@@ -77,8 +77,8 @@ const PageHeader = React.memo(({
         <div className="flex items-center space-x-4">
           {/* Бейдж (например, уровень пользователя) */}
           {badge && (
-            <div className="px-3 py-1.5 bg-purple-50 border border-purple-200 rounded-xl flex items-center space-x-2">
-              <span className="text-purple-600 text-sm font-medium">
+            <div className="px-3 py-1.5 bg-[#6334E5]/10 border border-[#6334E5]/30 rounded-xl flex items-center space-x-2">
+              <span className="text-[#6334E5] text-sm font-medium">
                 {badge}
               </span>
             </div>

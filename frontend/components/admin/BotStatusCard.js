@@ -48,8 +48,8 @@ const BotStatusCard = ({
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center">
-            <FiCpu className="text-purple-600" size={20} />
+          <div className="w-10 h-10 bg-gradient-to-br from-[#6334E5]/20 to-[#6334E5]/30 rounded-lg flex items-center justify-center">
+            <FiCpu className="text-[#6334E5]" size={20} />
           </div>
           <div>
             <h3 className="font-semibold text-gray-900 text-lg">
@@ -126,7 +126,7 @@ const BotStatusCard = ({
         </button>
         
         <button 
-          className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-purple-700 bg-purple-100 rounded-lg hover:bg-purple-200 transition-colors"
+          className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-[#5028c2] bg-[#6334E5]/20 rounded-lg hover:bg-[#6334E5]/30 transition-colors"
           onClick={() => onBotDetails(bot)}
           title="Подробности"
         >

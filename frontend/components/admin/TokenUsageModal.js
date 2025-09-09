@@ -355,3 +355,5 @@ const TokenUsageModal = ({ token, onClose }) => {
     </div>
   );
 };
+
+export default TokenUsageModal;

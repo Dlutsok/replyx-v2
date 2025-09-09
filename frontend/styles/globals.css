@@ -60,9 +60,19 @@ body {
 .font-light { font-weight: 300; }
 .font-normal { font-weight: 400; }
 .font-medium { font-weight: 500; }
-.font-semibold { font-weight: 600; }
+.font-semibold { font-weight: 500; }
 .font-bold { font-weight: 700; }
-.font-extrabold { font-weight: 800; }
+.font-extrabold { font-weight: 500; }
+
+/* Специальные правила для заголовков и текста */
+h3.font-bold {
+    font-weight: 500;
+}
+
+p .font-bold,
+p.font-bold {
+    font-weight: 400;
+}
 
 a {
   color: inherit;
@@ -688,4 +698,347 @@ a {
   100% {
     transform: rotate(360deg);
   }
+}
+
+/* Стили для кнопки создания ассистента */
+button[class*="bg-gradient-to-r"][class*="from-blue-600"][class*="to-[#6334E5]"] {
+  background: linear-gradient(to right, #6334E5, #6334E5) !important;
+}
+
+button[class*="bg-gradient-to-r"][class*="from-blue-600"][class*="to-[#6334E5]"]:hover {
+  background: linear-gradient(to right, #5028c2, #5028c2) !important;
+}
+
+/* Мобильная адаптация DialogModal компонента */
+@media (max-width: 768px) {
+  /* Оверлей для мобильных устройств */
+  .DialogModal_modalOverlay__qmZ_W {
+    padding: 8px !important;
+    align-items: flex-start !important;
+    padding-top: 20px !important;
+  }
+
+  /* Основное модальное окно */
+  .DialogModal_dialogModal__Qbmpk {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 90vh !important;
+    max-height: 90vh !important;
+    border-radius: 16px !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* Контент модального окна */
+  .DialogModal_dialogContent__edkUb {
+    height: 100% !important;
+  }
+
+  /* Тело модального окна - убираем двухколоночный макет */
+  .DialogModal_modalBody__kocj9 {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+  }
+
+  /* Чат-панель */
+  .DialogModal_chatPane__kLZ0d {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    border-right: none !important;
+    min-height: 0 !important;
+  }
+
+  /* Прокручиваемая область чата */
+  .DialogModal_chatScroll__Vi0ou {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    padding: 0 !important;
+  }
+
+  /* Футер чата */
+  .DialogModal_chatFooter__mRegK {
+    border-top: 1px solid #e5e7eb !important;
+    background: #fff !important;
+    padding: 16px !important;
+  }
+
+  /* Правая информационная панель - скрываем на мобильных */
+  .DialogModal_infoPane__Sjqin {
+    display: none !important;
+  }
+
+  /* Кнопка закрытия - делаем больше для тачскрина */
+  .DialogModal_floatingClose__F8JKH {
+    position: fixed !important;
+    top: 33px !important;
+    right: 10px !important;
+    width: 35px !important;
+    height: 35px !important;
+    font-size: 20px !important;
+    z-index: 10000 !important;
+
+  }
+
+  .DialogModal_floatingClose__F8JKH:hover {
+    background: rgba(0, 0, 0, 0.9) !important;
+    transform: scale(1.1) !important;
+  }
+
+  /* Статус подключения */
+  .DialogModal_connectionStatus___XPSv {
+    padding: 12px 16px !important;
+    font-size: 14px !important;
+  }
+
+  /* История сообщений */
+  .MessageHistory_messageHistory__EXoCj {
+    padding: 16px !important;
+  }
+
+  /* Контейнер сообщений */
+  .MessageHistory_messagesContainer__m6Jj2 {
+    gap: 16px !important;
+  }
+
+  /* Отдельное сообщение */
+  .MessageHistory_messageRow__auAKJ {
+    margin-bottom: 12px !important;
+  }
+
+  /* Аватар пользователя */
+  .MessageHistory_avatar__DHqhw {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 14px !important;
+  }
+
+  /* Текст сообщения */
+  .MessageHistory_msgText__fTdob {
+    font-size: 16px !important;
+    line-height: 1.5 !important;
+  }
+
+  /* Заголовок сообщения */
+  .MessageHistory_msgHeader__Kb8ec {
+    margin-bottom: 8px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    min-width: 0 !important; /* предотвращает сжатие */
+  }
+
+  /* Имя отправителя */
+  .MessageHistory_senderName__eU8_0 {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    flex-shrink: 0 !important; /* не сжимать имя */
+  }
+
+  /* Время сообщения */
+  .MessageHistory_msgTime__W_PjZ {
+    font-size: 12px !important;
+    color: #6b7280 !important;
+    flex-shrink: 0 !important; /* не сжимать время */
+    margin-left: auto !important; /* прижать вправо */
+  }
+
+  /* Системное сообщение */
+  .MessageHistory_systemNotice__6UIRg {
+    padding: 12px 16px !important;
+    font-size: 14px !important;
+  }
+
+  /* Футер диалога */
+  .DialogFooter_dialogFooter__zXAs8 {
+    padding: 16px !important;
+  }
+
+  /* Кнопка перехвата */
+  .DialogFooter_takeoverButton__MuCvI {
+    padding: 12px 20px !important;
+    font-size: 16px !important;
+    min-height: 48px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Для очень маленьких экранов */
+  .DialogModal_modalOverlay__qmZ_W {
+    padding: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  .DialogModal_dialogModal__Qbmpk {
+    height: 90vh !important;
+    border-radius: 16px !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    overflow: hidden !important;
+  }
+
+  .DialogModal_chatFooter__mRegK {
+    padding: 12px !important;
+  }
+
+  .MessageHistory_messageHistory__EXoCj {
+    padding: 12px !important;
+  }
+
+  .DialogModal_connectionStatus___XPSv {
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+  }
+
+  .DialogFooter_takeoverButton__MuCvI {
+    padding: 10px 16px !important;
+    font-size: 15px !important;
+    min-height: 44px !important;
+  }
+
+  /* Уменьшаем аватары на очень маленьких экранах */
+  .MessageHistory_avatar__DHqhw {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 12px !important;
+  }
+
+  .MessageHistory_msgText__fTdob {
+    font-size: 15px !important;
+  }
+
+  .MessageHistory_senderName__eU8_0 {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Время сообщения на маленьких экранах */
+  .MessageHistory_msgTime__W_PjZ {
+    font-size: 11px !important;
+    color: #6b7280 !important;
+    flex-shrink: 0 !important;
+    margin-left: auto !important;
+  }
+
+  /* Заголовок сообщения на маленьких экранах */
+  .MessageHistory_msgHeader__Kb8ec {
+    margin-bottom: 6px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    min-width: 0 !important;
+  }
+
+  /* Типы сообщений */
+  .MessageHistory_user__BRYJ5 {
+    align-self: flex-end !important;
+  }
+
+  .MessageHistory_manager__1VglU {
+    align-self: flex-start !important;
+  }
+
+  .MessageHistory_assistant__NTYic {
+    align-self: flex-start !important;
+  }
+
+  .MessageHistory_system__ZFMHJ {
+    align-self: stretch !important;
+    margin: 8px 0 !important;
+  }
+
+  /* Тело сообщения */
+  .MessageHistory_msgBody__Q37wr {
+    max-width: 100% !important;
+    padding: 12px 16px !important;
+    border-radius: 16px !important;
+    margin-bottom: 8px !important;
+  }
+
+  /* Системные сообщения */
+  .MessageHistory_warning__zsqv1 {
+    background: #fef3c7 !important;
+    border: 1px solid #f59e0b !important;
+  }
+
+  .MessageHistory_success__V5BDX {
+    background: #d1fae5 !important;
+    border: 1px solid #10b981 !important;
+  }
+
+  .MessageHistory_systemIcon__3k_Fl {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .MessageHistory_systemText__I7YQI {
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+  }
+
+  .MessageHistory_systemTime__EhIF5 {
+    font-size: 12px !important;
+    color: #6b7280 !important;
+  }
+
+  /* Системный контент */
+  .MessageHistory_systemContent___ZIYB {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  /* Иконки в системных сообщениях */
+  .MessageHistory_systemNotice__6UIRg svg {
+    flex-shrink: 0 !important;
+    margin-top: 2px !important;
+  }
+
+  /* Анимации сообщений */
+  .MessageHistory_messageRow__auAKJ {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: opacity 0.3s ease, transform 0.3s ease !important;
+  }
+
+  /* Пустой контейнер в конце */
+  .MessageHistory_messageRow__auAKJ:last-child {
+    margin-bottom: 20px !important;
+  }
+
+  /* Секция перехвата диалога */
+  .DialogFooter_takeoverSection__Heo1M {
+    margin-bottom: 12px !important;
+  }
+
+  /* Стили для кнопки перехвата */
+  .DialogFooter_takeover__RBFbo {
+    background: #10b981 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    transition: all 0.2s ease !important;
+  }
+
+  .DialogFooter_takeover__RBFbo:hover {
+    background: #059669 !important;
+    transform: translateY(-1px) !important;
+  }
+
+  .DialogFooter_takeover__RBFbo svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+}
+
+/* Стили для суммы баланса */
+.text-4xl.font-bold.text-gray-900.mb-2 {
+  font-weight: 500;
 }

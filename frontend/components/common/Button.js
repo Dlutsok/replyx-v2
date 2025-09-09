@@ -62,7 +62,7 @@ const Button = ({
         sizeStyles[size],
         stateStyles,
         'inline-flex items-center justify-center',
-        'focus:outline-none focus:ring-4 focus:ring-purple-200',
+        'focus:outline-none focus:ring-4 focus:ring-[#6334E5]/30',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         DESIGN_TOKENS.buttons.borderRadius,
         className

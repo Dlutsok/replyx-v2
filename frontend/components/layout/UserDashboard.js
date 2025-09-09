@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '@/hooks';
 import { 
   FiMessageSquare, FiBarChart, FiUser, FiSettings, FiHelpCircle, 
   FiLogOut, FiCreditCard, FiZap, FiMenu, FiX, FiHome, FiCpu

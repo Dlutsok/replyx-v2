@@ -55,7 +55,7 @@ export default function SettingsTab({
                 value={assistantSettings.name || ''}
                 onChange={(e) => handleChange('name', e.target.value)}
                 placeholder="Введите название..."
-                className="w-full px-4 py-3 border border-solid border-gray-200/60 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-150 bg-white"
+                className="w-full px-4 py-3 border border-solid border-gray-200/60 rounded-2xl focus:ring-2 focus:ring-[#6334E5] focus:border-[#6334E5] transition-all duration-150 bg-white"
               />
             </div>
 
@@ -68,7 +68,7 @@ export default function SettingsTab({
                 onChange={(e) => handleChange('description', e.target.value)}
                 placeholder="Описание ассистента..."
                 rows={3}
-                className="w-full px-4 py-3 border border-solid border-gray-200/60 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-150 bg-white resize-none"
+                className="w-full px-4 py-3 border border-solid border-gray-200/60 rounded-2xl focus:ring-2 focus:ring-[#6334E5] focus:border-[#6334E5] transition-all duration-150 bg-white resize-none"
               />
             </div>
 
@@ -79,7 +79,7 @@ export default function SettingsTab({
               <select
                 value={assistantSettings.ai_model || 'gpt-4o-mini'}
                 onChange={(e) => handleChange('ai_model', e.target.value)}
-                className="w-full px-4 py-3 border border-solid border-gray-200/60 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-150 bg-white"
+                className="w-full px-4 py-3 border border-solid border-gray-200/60 rounded-2xl focus:ring-2 focus:ring-[#6334E5] focus:border-[#6334E5] transition-all duration-150 bg-white"
               >
                 {aiModels.map(model => (
                   <option key={model.value} value={model.value}>
@@ -96,7 +96,7 @@ export default function SettingsTab({
               <label className="flex items-center gap-3">
                 <div
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                    assistantSettings.is_active ? 'bg-purple-600' : 'bg-gray-200'
+                    assistantSettings.is_active ? 'bg-[#6334E5]' : 'bg-gray-200'
                   }`}
                   onClick={() => handleChange('is_active', !assistantSettings.is_active)}
                 >
@@ -125,7 +125,7 @@ export default function SettingsTab({
               onChange={(e) => handleChange('system_prompt', e.target.value)}
               placeholder="Вы полезный AI-ассистент, который помогает пользователям с их вопросами..."
               rows={8}
-              className="w-full px-4 py-3 border border-solid border-gray-200/60 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-150 bg-white font-mono text-sm resize-none"
+              className="w-full px-4 py-3 border border-solid border-gray-200/60 rounded-2xl focus:ring-2 focus:ring-[#6334E5] focus:border-[#6334E5] transition-all duration-150 bg-white font-mono text-sm resize-none"
             />
             <p className="text-sm text-gray-500 mt-2">
               Это сообщение определяет, как ассистент будет себя вести и отвечать на вопросы.
@@ -147,7 +147,7 @@ export default function SettingsTab({
                 </div>
                 <div
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                    assistantSettings.website_integration_enabled ? 'bg-purple-600' : 'bg-gray-200'
+                    assistantSettings.website_integration_enabled ? 'bg-[#6334E5]' : 'bg-gray-200'
                   }`}
                   onClick={() => handleChange('website_integration_enabled', !assistantSettings.website_integration_enabled)}
                 >
@@ -166,7 +166,7 @@ export default function SettingsTab({
                 </div>
                 <div
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                    assistantSettings.enable_logging !== false ? 'bg-purple-600' : 'bg-gray-200'
+                    assistantSettings.enable_logging !== false ? 'bg-[#6334E5]' : 'bg-gray-200'
                   }`}
                   onClick={() => handleChange('enable_logging', !(assistantSettings.enable_logging !== false))}
                 >
@@ -197,7 +197,7 @@ export default function SettingsTab({
             className={`w-full sm:w-auto px-6 py-3 rounded-2xl font-medium flex items-center justify-center gap-2 transition-all duration-150 ${
               saving || !dirty
                 ? 'bg-gray-50 text-gray-500 cursor-not-allowed border border-solid border-gray-200/60'
-                : 'bg-purple-600 text-white hover:bg-purple-700 border border-solid border-purple-600'
+                : 'bg-[#6334E5] text-white hover:bg-[#5028c2] border border-solid border-[#6334E5]'
             }`}
             onClick={handleSave}
             disabled={saving || !dirty}

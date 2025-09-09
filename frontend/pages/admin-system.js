@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import AdminDashboard from '../components/layout/AdminDashboard';
+import AdminDashboard from '@/components/layout/AdminDashboard';
 import SystemHealthHeader from '../components/admin/SystemHealthHeader';
 import SystemHealthOverview from '../components/admin/SystemHealthOverview';
 import SystemTabs from '../components/admin/SystemTabs';
@@ -8,7 +8,7 @@ import LogsManager from '../components/admin/LogsManager';
 import DatabaseMonitor from '../components/admin/DatabaseMonitor';
 import CacheManager from '../components/admin/CacheManager';
 import TasksMonitor from '../components/admin/TasksMonitor';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '@/hooks';
 import { useSystemHealth } from '../hooks/useSystemHealth';
 import styles from '../styles/pages/AdminSystem.module.css';
 

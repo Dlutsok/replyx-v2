@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import styles from '../styles/pages/Usage.module.css';
 import dashStyles from '../styles/pages/Dashboard.module.css';
 import { useNotifications } from '../hooks/useNotifications';
+import { useDashboardData } from '../hooks/useDashboardData';
 import {
   FiMessageSquare, FiFileText, FiCreditCard,
   FiFilter, FiDownload, FiCalendar, FiSearch, FiActivity,
@@ -54,7 +55,7 @@ function QuickActions({ onExportClick, onFilterToggle }) {
   const getIconStyle = (color) => {
     switch (color) {
       case 'purple':
-        return { bg: 'bg-purple-50', text: 'text-purple-600' };
+        return { bg: 'bg-[#6334E5]/10', text: 'text-[#6334E5]' };
       case 'blue':
         return { bg: 'bg-blue-50', text: 'text-blue-600' };
       case 'green':
@@ -112,13 +113,17 @@ function QuickActions({ onExportClick, onFilterToggle }) {
 }
 
 // Компонент метрик расходов
-function UsageMetrics({ stats, total }) {
+function UsageMetrics({ stats, total, dashboardMetrics }) {
+  const messagesProcessed = dashboardMetrics?.messages_processed || 0;
+  const savingsAmount = messagesProcessed * 20; // Та же формула, что и на дашборде
+
   const metrics = [
     {
-      title: 'ОБЩИЕ РАСХОДЫ',
-      value: `${(stats.totalSpent || 0).toLocaleString('ru-RU')} ₽`,
+      title: 'Вы сэкономили',
+      value: `${savingsAmount.toLocaleString('ru-RU')}₽`,
       icon: FaRubleSign,
-      change: '+0%'
+      change: `+${messagesProcessed} ответов`,
+      subtitle: 'в этом месяце'
     },
     {
       title: 'КОЛИЧЕСТВО ОПЕРАЦИЙ',
@@ -156,11 +161,16 @@ function UsageMetrics({ stats, total }) {
             </div>
             {metric.change && (
               <div className="flex items-center gap-1 text-sm">
-                <FiTrendingUp className="text-gray-400" size={12} />
-                <span className="text-gray-400 font-medium">{metric.change}</span>
+                <FiTrendingUp className={metric.title === 'Вы сэкономили' ? "text-emerald-600" : "text-gray-400"} size={12} />
+                <span className={metric.title === 'Вы сэкономили' ? "font-semibold text-emerald-600" : "text-gray-400 font-medium"}>{metric.change}</span>
               </div>
             )}
           </div>
+          {metric.subtitle && (
+            <div className={dashStyles.metricSubtitle}>
+              {metric.subtitle}
+            </div>
+          )}
         </div>
       ))}
     </div>
@@ -169,6 +179,7 @@ function UsageMetrics({ stats, total }) {
 
 function Usage() {
   const { showSuccess, showError } = useNotifications();
+  const { metrics: dashboardMetrics, loading: dashboardLoading } = useDashboardData();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -505,7 +516,7 @@ function Usage() {
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900">Общая статистика</h3>
               </div>
-              <UsageMetrics stats={stats} total={total} />
+              <UsageMetrics stats={stats} total={total} dashboardMetrics={dashboardMetrics} />
             </div>
           </div>
 
@@ -571,7 +582,7 @@ function Usage() {
                   placeholder="Поиск по операциям..."
                   value={filters.search}
                   onChange={(e) => handleFilterChange('search', e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6334E5]/100 focus:border-transparent"
                 />
               </div>
 
@@ -581,7 +592,7 @@ function Usage() {
                 <button
                   className={`flex items-center gap-2 px-3 py-2 text-sm border rounded-lg transition-colors flex-1 sm:flex-none justify-center ${
                     showFilters
-                      ? 'border-purple-300 bg-purple-50 text-purple-700'
+                      ? 'border-[#6334E5]/40 bg-[#6334E5]/10 text-[#5028c2]'
                       : 'border-gray-300 hover:bg-gray-50 text-gray-700'
                   }`}
                   onClick={() => setShowFilters(!showFilters)}
@@ -595,7 +606,7 @@ function Usage() {
                   <select
                     value={filters.period}
                     onChange={(e) => handleFilterChange('period', e.target.value)}
-                    className="px-3 py-2 pr-8 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent w-full appearance-none bg-white cursor-pointer"
+                    className="px-3 py-2 pr-8 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6334E5]/100 focus:border-transparent w-full appearance-none bg-white cursor-pointer"
                   >
                     {periods.map(period => (
                       <option key={period.value} value={period.value}>
@@ -623,7 +634,7 @@ function Usage() {
                     <select
                       value={filters.type}
                       onChange={(e) => handleFilterChange('type', e.target.value)}
-                      className="w-full px-3 py-2 pr-8 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none bg-white cursor-pointer"
+                      className="w-full px-3 py-2 pr-8 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6334E5]/100 focus:border-transparent appearance-none bg-white cursor-pointer"
                     >
                       {operationTypes.map(type => (
                         <option key={type.value} value={type.value}>
@@ -646,7 +657,7 @@ function Usage() {
                       <select
                         value={filters.sortBy}
                         onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-                        className="w-full px-3 py-2 pr-8 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent appearance-none bg-white cursor-pointer"
+                        className="w-full px-3 py-2 pr-8 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6334E5]/100 focus:border-transparent appearance-none bg-white cursor-pointer"
                       >
                         <option value="date">По дате</option>
                         <option value="amount">По сумме</option>
@@ -663,7 +674,7 @@ function Usage() {
                       <button
                         className={`px-2 py-2 text-sm border rounded-lg transition-colors ${
                           filters.sortOrder === 'desc'
-                            ? 'border-purple-300 bg-purple-50 text-purple-700'
+                            ? 'border-[#6334E5]/40 bg-[#6334E5]/10 text-[#5028c2]'
                             : 'border-gray-300 hover:bg-gray-50 text-gray-700'
                         }`}
                         onClick={() => handleFilterChange('sortOrder', 'desc')}
@@ -674,7 +685,7 @@ function Usage() {
                       <button
                         className={`px-2 py-2 text-sm border rounded-lg transition-colors ${
                           filters.sortOrder === 'asc'
-                            ? 'border-purple-300 bg-purple-50 text-purple-700'
+                            ? 'border-[#6334E5]/40 bg-[#6334E5]/10 text-[#5028c2]'
                             : 'border-gray-300 hover:bg-gray-50 text-gray-700'
                         }`}
                         onClick={() => handleFilterChange('sortOrder', 'asc')}
@@ -690,7 +701,7 @@ function Usage() {
               {/* Мобильная кнопка применения фильтров */}
               <div className="block sm:hidden mt-4 pt-4 border-t border-gray-200">
                 <button
-                  className="w-full px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors"
+                  className="w-full px-4 py-2 text-sm font-medium text-white bg-[#6334E5] rounded-lg hover:bg-[#5028c2] transition-colors"
                   onClick={() => setShowFilters(false)}
                 >
                   Применить фильтры

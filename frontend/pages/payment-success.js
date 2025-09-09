@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '@/hooks';
 import { FiCheck, FiArrowRight, FiCreditCard, FiRefreshCw } from 'react-icons/fi';
 
 export default function PaymentSuccess() {
@@ -73,12 +73,12 @@ export default function PaymentSuccess() {
         <meta name="description" content="Платеж успешно обработан" />
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-[#6334E5]/10 to-blue-50 flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
           {isProcessing ? (
             <>
               <div className="w-16 h-16 mx-auto mb-6 relative">
-                <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
+                <div className="w-16 h-16 border-4 border-[#6334E5]/30 border-t-[#6334E5] rounded-full animate-spin"></div>
               </div>
               <h1 className="text-xl font-semibold text-gray-900 mb-2">
                 Обрабатываем платеж...
@@ -101,7 +101,7 @@ export default function PaymentSuccess() {
               <div className="space-y-3">
                 <button
                   onClick={handleGoToBalance}
-                  className="w-full bg-purple-600 text-white py-3 px-6 rounded-xl hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
+                  className="w-full bg-[#6334E5] text-white py-3 px-6 rounded-xl hover:bg-[#5028c2] transition-colors flex items-center justify-center gap-2"
                 >
                   <FiCreditCard className="w-5 h-5" />
                   Перейти к балансу
@@ -120,11 +120,11 @@ export default function PaymentSuccess() {
                 Средства зачислены на ваш баланс. Теперь вы можете использовать все возможности ReplyX.
               </p>
               
-              <div className="bg-purple-50 rounded-xl p-4 mb-6">
-                <p className="text-sm text-purple-800 font-medium">
+              <div className="bg-[#6334E5]/10 rounded-xl p-4 mb-6">
+                <p className="text-sm text-[#4c1d95] font-medium">
                   🎉 Баланс успешно пополнен!
                 </p>
-                <p className="text-xs text-purple-600 mt-1">
+                <p className="text-xs text-[#6334E5] mt-1">
                   Обновленный баланс будет отображен в личном кабинете
                 </p>
               </div>
@@ -132,7 +132,7 @@ export default function PaymentSuccess() {
               <div className="space-y-3">
                 <button
                   onClick={handleGoToBalance}
-                  className="w-full bg-purple-600 text-white py-3 px-6 rounded-xl hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
+                  className="w-full bg-[#6334E5] text-white py-3 px-6 rounded-xl hover:bg-[#5028c2] transition-colors flex items-center justify-center gap-2"
                 >
                   <FiCreditCard className="w-5 h-5" />
                   Посмотреть баланс

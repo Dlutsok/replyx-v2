@@ -116,7 +116,7 @@ export default function ResetPassword() {
                     {/* Левая панель с градиентным фоном в стиле дашборда */}
                     <div className="relative hidden lg:block overflow-hidden">
                         {/* Градиентный фон в стиле дашборда */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-white to-purple-50" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#6334E5]/10 via-white to-[#6334E5]/10" />
 
         {/* Анимированные пузырьки по всей левой половине - едва заметные */}
         <div className="absolute top-10 left-10 w-96 h-96 rounded-full opacity-5 blur-3xl animate-pulse"
@@ -217,7 +217,7 @@ export default function ResetPassword() {
                     {/* Левая панель с градиентным фоном в стиле дашборда */}
                     <div className="relative hidden lg:block overflow-hidden">
                         {/* Градиентный фон в стиле дашборда */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-white to-purple-50" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#6334E5]/10 via-white to-[#6334E5]/10" />
 
         {/* Анимированные пузырьки по всей левой половине - едва заметные */}
         <div className="absolute top-10 left-10 w-96 h-96 rounded-full opacity-5 blur-3xl animate-pulse"
@@ -318,7 +318,7 @@ export default function ResetPassword() {
                     {/* Левая панель с градиентным фоном в стиле дашборда */}
                     <div className="relative hidden lg:block overflow-hidden">
                         {/* Градиентный фон в стиле дашборда */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-white to-purple-50" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#6334E5]/10 via-white to-[#6334E5]/10" />
 
         {/* Анимированные пузырьки по всей левой половине - едва заметные */}
         <div className="absolute top-10 left-10 w-96 h-96 rounded-full opacity-5 blur-3xl animate-pulse"
@@ -411,7 +411,7 @@ export default function ResetPassword() {
                 {/* Левая панель с градиентным фоном в стиле дашборда */}
                 <div className="relative hidden lg:block overflow-hidden">
                     {/* Градиентный фон в стиле дашборда */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-white to-purple-50" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#6334E5]/10 via-white to-[#6334E5]/10" />
 
         {/* Анимированные пузырьки по всей левой половине - едва заметные */}
         <div className="absolute top-10 left-10 w-96 h-96 rounded-full opacity-5 blur-3xl animate-pulse"

@@ -37,7 +37,7 @@ function TermsHeader() {
             Войти
           </button>
           <button
-            className="px-6 py-2.5 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-200 h-11 relative overflow-hidden"
+            className="px-6 py-2.5 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#6334E5]/30 h-11 relative overflow-hidden"
             onClick={() => router.push('/register')}
             style={{background: 'linear-gradient(90deg, #6334E5, #6334E5)'}}
           >

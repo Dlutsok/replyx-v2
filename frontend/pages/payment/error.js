@@ -106,7 +106,7 @@ export default function PaymentError() {
           <div className="space-y-3">
             <button
               onClick={handleRetryPayment}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-[#6334E5] hover:bg-[#5028c2] text-white font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2"
             >
               <FiRefreshCw className="w-4 h-4" />
               Попробовать снова
@@ -125,7 +125,7 @@ export default function PaymentError() {
             <p className="text-sm text-gray-600">
               Если проблема повторяется, свяжитесь с нашей поддержкой:
             </p>
-            <p className="text-sm font-semibold text-purple-600 mt-1">
+            <p className="text-sm font-semibold text-[#6334E5] mt-1">
               support@replyx.ru
             </p>
           </div>

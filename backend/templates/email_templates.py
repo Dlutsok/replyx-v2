@@ -105,7 +105,7 @@ class EmailTemplateConfig:
     BRAND_NAME = "ReplyX"
     DOMAIN = "replyx.ru"
     # Минималистичная цветовая схема
-    ACCENT_COLOR = "rgb(147, 51, 234)"  # Фиолетовый для кнопок
+    ACCENT_COLOR = "#6334E5"  # Фиолетовый для кнопок
     TEXT_COLOR = "#374151"              # Серый текст
     LIGHT_GRAY = "#F3F4F6"             # Светло-серый фон
     MEDIUM_GRAY = "#6B7280"            # Средний серый для подписей

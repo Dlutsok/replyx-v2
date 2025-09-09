@@ -65,9 +65,9 @@ function ExtractionSpinner() {
         {/* Центральный счётчик */}
         <div className="absolute inset-0 flex items-center justify-center">
           {timeLeft > 0 ? (
-            <span className="text-xl font-bold text-purple-600">{timeLeft}</span>
+            <span className="text-xl font-bold text-[#6334E5]">{timeLeft}</span>
           ) : (
-            <span className="text-lg font-bold text-purple-600">∞</span>
+            <span className="text-lg font-bold text-[#6334E5]">∞</span>
           )}
         </div>
       </div>
@@ -476,7 +476,7 @@ export default function KnowledgeTab({
                   />
                   <button
                     onClick={() => document.getElementById('document-upload').click()}
-                    className="w-full sm:w-auto px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-sm sm:text-base"
+                    className="w-full sm:w-auto px-4 py-2 bg-[#6334E5] hover:bg-[#5028c2] text-white rounded-lg transition-colors text-sm sm:text-base"
                     disabled={uploading}
                   >
                     {uploading ? 'Загрузка...' : 'Выбрать файл'}
@@ -516,7 +516,7 @@ export default function KnowledgeTab({
                       value={websiteUrl}
                       onChange={(e) => setWebsiteUrl(e.target.value)}
                       placeholder="https://example.com/page"
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent"
                     />
                   </div>
                   <div className="text-sm text-gray-600">
@@ -541,7 +541,7 @@ export default function KnowledgeTab({
                       handleWebsiteUpload(websiteUrl.trim());
                     }
                   }}
-                  className="w-full sm:w-auto px-4 py-2 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                  className="w-full sm:w-auto px-4 py-2 text-sm bg-[#6334E5] hover:bg-[#5028c2] text-white rounded-lg transition-colors disabled:opacity-50"
                   disabled={!websiteUrl.trim() || urlLoading}
                 >
                   {urlLoading ? 'Индексирую...' : 'Добавить страницу'}
@@ -620,7 +620,7 @@ export default function KnowledgeTab({
               const colorClasses = {
                 blue: 'bg-blue-50 text-blue-600',
                 green: 'bg-green-50 text-green-600',
-                purple: 'bg-purple-50 text-purple-600',
+                purple: 'bg-[#6334E5]/10 text-[#6334E5]',
                 orange: 'bg-orange-50 text-orange-600'
               };
 
@@ -637,7 +637,7 @@ export default function KnowledgeTab({
                       <div className="flex items-start gap-3 sm:gap-4">
                         {/* Иконка */}
                         <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center flex-shrink-0">
-                          <Icon size={14} className="sm:w-[18px] sm:h-[18px] text-purple-600" />
+                          <Icon size={14} className="sm:w-[18px] sm:h-[18px] text-[#6334E5]" />
                         </div>
 
                         {/* Контент */}
@@ -657,7 +657,7 @@ export default function KnowledgeTab({
                       {/* Кнопки управления */}
                       <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
                         <button
-                          className="px-3 py-2 sm:px-4 sm:py-2.5 text-sm bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center gap-1.5 sm:gap-2"
+                          className="px-3 py-2 sm:px-4 sm:py-2.5 text-sm bg-[#6334E5] hover:bg-[#5028c2] text-white rounded-lg transition-colors flex items-center gap-1.5 sm:gap-2"
                           onClick={(e) => {
                             e.stopPropagation();
                             if (category.id === 'documents') {
@@ -702,8 +702,8 @@ export default function KnowledgeTab({
                               <div key={qa.id} className="bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
                                 <div className="flex items-start justify-between gap-3">
                                   <div className="flex items-start gap-3 flex-1 min-w-0">
-                                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-purple-50 border border-purple-200 flex items-center justify-center flex-shrink-0">
-                                      <FiHelpCircle size={14} className="sm:w-[16px] sm:h-[16px] text-purple-600" />
+                                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-[#6334E5]/10 border border-[#6334E5]/30 flex items-center justify-center flex-shrink-0">
+                                      <FiHelpCircle size={14} className="sm:w-[16px] sm:h-[16px] text-[#6334E5]" />
                                     </div>
                                     <div className="min-w-0 flex-1">
                                       <h4 className="text-sm font-semibold text-gray-900 line-clamp-2">
@@ -714,7 +714,7 @@ export default function KnowledgeTab({
                                       </div>
                                       <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-2">
                                         {qa.category && (
-                                          <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 text-sm bg-purple-100 text-purple-700 rounded-full">
+                                          <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 text-sm bg-[#6334E5]/20 text-[#6334E5] rounded-full">
                                             {qa.category}
                                           </span>
                                         )}
@@ -769,7 +769,7 @@ export default function KnowledgeTab({
                                 <div className="flex items-start justify-between gap-3">
                                   <div className="flex items-start gap-3 flex-1 min-w-0">
                                     <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center flex-shrink-0">
-                                      <FiFileText size={14} className="sm:w-[16px] sm:h-[16px] text-purple-600" />
+                                      <FiFileText size={14} className="sm:w-[16px] sm:h-[16px] text-[#6334E5]" />
                                     </div>
                                     <div className="min-w-0 flex-1">
                                       <h4 className="text-sm font-medium text-gray-900 line-clamp-1">
@@ -793,7 +793,7 @@ export default function KnowledgeTab({
                                       <span className="sm:hidden">👁️</span>
                                     </button>
                                     <button
-                                      className="px-2 py-1 sm:px-3 text-sm bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg border border-purple-200 transition-colors"
+                                      className="px-2 py-1 sm:px-3 text-sm bg-[#6334E5]/10 hover:bg-[#6334E5]/20 text-[#6334E5] rounded-lg border border-[#6334E5]/30 transition-colors"
                                       onClick={() => handleDocumentSummary(doc)}
                                     >
                                       <span className="hidden sm:inline">Выжимка</span>
@@ -851,7 +851,7 @@ function InfoTooltip({ text, position = 'top' }) {
     >
       <FiHelpCircle 
         size={16} 
-        className="text-gray-400 hover:text-purple-600 cursor-help transition-colors duration-150"
+        className="text-gray-400 hover:text-[#6334E5] cursor-help transition-colors duration-150"
       />
       {isVisible && (
         <div className={`absolute z-50 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg max-w-xs whitespace-normal ${
@@ -979,8 +979,8 @@ function QAModal({ isOpen, mode, item, onClose, onSave }) {
         {/* Header */}
         <div className="px-4 py-3 sm:px-6 sm:py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
           <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
-              <FiHelpCircle size={16} className="text-purple-600 sm:w-[20px] sm:h-[20px]" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#6334E5]/20 rounded-xl flex items-center justify-center flex-shrink-0">
+              <FiHelpCircle size={16} className="text-[#6334E5] sm:w-[20px] sm:h-[20px]" />
             </div>
             <div className="min-w-0 flex-1">
               <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
@@ -1016,7 +1016,7 @@ function QAModal({ isOpen, mode, item, onClose, onSave }) {
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
                 placeholder="Как мне оплатить услугу?"
-                className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none transition-all duration-150 text-sm sm:text-base"
+                className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent resize-none transition-all duration-150 text-sm sm:text-base"
                 rows={2}
                 required
               />
@@ -1036,7 +1036,7 @@ function QAModal({ isOpen, mode, item, onClose, onSave }) {
                 value={answer}
                 onChange={(e) => setAnswer(e.target.value)}
                 placeholder="Вы можете оплатить услугу через..."
-                className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none transition-all duration-150 text-sm sm:text-base"
+                className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent resize-none transition-all duration-150 text-sm sm:text-base"
                 rows={4}
                 required
               />
@@ -1057,7 +1057,7 @@ function QAModal({ isOpen, mode, item, onClose, onSave }) {
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                   placeholder="Оплата и тарифы"
-                  className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150 text-sm sm:text-base"
+                  className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent transition-all duration-150 text-sm sm:text-base"
                 />
               </div>
 
@@ -1091,7 +1091,7 @@ function QAModal({ isOpen, mode, item, onClose, onSave }) {
                 value={keywords}
                 onChange={(e) => setKeywords(e.target.value)}
                 placeholder="оплата, платеж, деньги, счет, карта"
-                className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150 text-sm sm:text-base"
+                className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent transition-all duration-150 text-sm sm:text-base"
               />
               <div className="text-xs text-gray-500 mt-2">
                 Разделяйте ключевые слова запятыми. Например: оплата, платеж, банк
@@ -1111,7 +1111,7 @@ function QAModal({ isOpen, mode, item, onClose, onSave }) {
           </button>
           <button
             onClick={handleSave}
-            className="w-full sm:w-auto px-4 py-2.5 sm:px-6 text-sm font-medium bg-purple-600 hover:bg-purple-700 text-white rounded-lg sm:rounded-xl transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed h-10 sm:h-11 flex items-center justify-center"
+            className="w-full sm:w-auto px-4 py-2.5 sm:px-6 text-sm font-medium bg-[#6334E5] hover:bg-[#5028c2] text-white rounded-lg sm:rounded-xl transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed h-10 sm:h-11 flex items-center justify-center"
             disabled={!question.trim() || !answer.trim() || saving}
           >
             {saving ? (

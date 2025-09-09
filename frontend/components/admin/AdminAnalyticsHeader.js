@@ -62,7 +62,7 @@ const AdminAnalyticsHeader = ({
                 border border-gray-300 rounded-xl
                 text-sm font-medium text-gray-700
                 bg-white hover:bg-gray-50
-                focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2
+                focus:outline-none focus:ring-2 focus:ring-[#6334E5]/100 focus:ring-offset-2
                 disabled:opacity-50 disabled:cursor-not-allowed
                 transition-all duration-200
                 ${isLoading ? 'animate-pulse' : ''}
@@ -79,10 +79,10 @@ const AdminAnalyticsHeader = ({
               onClick={handleExport}
               className="
                 inline-flex items-center gap-2 px-4 py-2
-                bg-gradient-to-r from-purple-600 to-violet-600
-                hover:from-purple-700 hover:to-violet-700
+                bg-gradient-to-r from-[#6334E5] to-violet-600
+                hover:from-[#5028c2] hover:to-violet-700
                 text-white rounded-xl text-sm font-medium
-                focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2
+                focus:outline-none focus:ring-2 focus:ring-[#6334E5]/100 focus:ring-offset-2
                 transition-all duration-200
               "
             >
@@ -111,7 +111,7 @@ const AdminAnalyticsHeader = ({
                     px-4 py-2 rounded-xl text-sm font-medium
                     transition-all duration-200
                     ${period === option.value 
-                      ? 'bg-purple-100 text-purple-700 border border-purple-200' 
+                      ? 'bg-[#6334E5]/20 text-[#5028c2] border border-[#6334E5]/30' 
                       : 'bg-gray-100 text-gray-700 border border-transparent hover:bg-gray-200'
                     }
                   `}

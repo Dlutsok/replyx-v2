@@ -51,9 +51,9 @@ const OverviewMetrics = ({ metrics, formatters, isLoading = false }) => {
       border: 'border-green-200'
     },
     purple: {
-      bg: 'bg-purple-50',
-      icon: 'text-purple-600',
-      border: 'border-purple-200'
+      bg: 'bg-[#6334E5]/10',
+      icon: 'text-[#6334E5]',
+      border: 'border-[#6334E5]/30'
     },
     orange: {
       bg: 'bg-orange-50',

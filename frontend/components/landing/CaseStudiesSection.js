@@ -57,7 +57,7 @@ const CaseStudiesSection = () => {
       company: 'MedCenter Pro',
       industry: 'Медицинская клиника',
       avatar: 'MP',
-      avatarColor: 'bg-purple-500',
+      avatarColor: 'bg-[#6334E5]',
       results: [
         { metric: 'Записи', value: '+90%', icon: FiBarChart },
         { metric: 'Время на админ.', value: '-70%', icon: FiClock },
@@ -195,7 +195,7 @@ const CaseStudiesSection = () => {
         {/* Мобильная версия CTA блока */}
         <div className="block lg:hidden">
           <motion.div
-            className="relative text-center bg-gradient-to-br from-purple-600 via-violet-600 to-indigo-700 rounded-2xl p-6 overflow-hidden mb-8"
+            className="relative text-center bg-gradient-to-br from-[#6334E5] via-violet-600 to-indigo-700 rounded-2xl p-6 overflow-hidden mb-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.8, ease: "easeOut" }}
@@ -212,7 +212,7 @@ const CaseStudiesSection = () => {
                 Готовы к такому же результату?
               </h3>
 
-              <p className="text-purple-100 mb-4 text-base leading-relaxed">
+              <p className="text-white mb-4 text-base leading-relaxed">
                 Автоматизируйте поддержку за 15 минут и увеличьте эффективность бизнеса на{' '}
                 <span className="font-bold text-white">300%</span>
               </p>
@@ -245,7 +245,7 @@ const CaseStudiesSection = () => {
                 </span>
               </button>
 
-              <p className="text-purple-200 mt-3 text-xs">
+              <p className="text-[#6334E5]/60 mt-3 text-xs">
                 <strong>14 дней бесплатно</strong> • Без обязательств
               </p>
             </div>
@@ -255,7 +255,7 @@ const CaseStudiesSection = () => {
         {/* Десктопная версия CTA блока */}
         <div className="hidden lg:block">
           <motion.div
-            className="relative text-center bg-gradient-to-br from-purple-600 via-violet-600 to-indigo-700 rounded-3xl p-10 overflow-hidden"
+            className="relative text-center bg-gradient-to-br from-[#6334E5] via-violet-600 to-indigo-700 rounded-3xl p-10 overflow-hidden"
             {...DESIGN_TOKENS.animation.withDelay(0.5)}
           >
             {/* Декоративные элементы */}
@@ -271,7 +271,7 @@ const CaseStudiesSection = () => {
                 Готовы к такому же результату?
               </h3>
 
-              <p className="text-purple-100 mb-6 max-w-2xl mx-auto text-lg leading-relaxed">
+              <p className="text-white mb-6 max-w-2xl mx-auto text-lg leading-relaxed">
                 Автоматизируйте поддержку за 15 минут и увеличьте эффективность бизнеса на{' '}
                 <span className="font-bold text-white">300%</span>
               </p>
@@ -323,7 +323,7 @@ const CaseStudiesSection = () => {
               </motion.button>
 
               <motion.p
-                className="text-purple-200 mt-4 text-sm"
+                className="text-white mt-4 text-sm"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1.2 }}

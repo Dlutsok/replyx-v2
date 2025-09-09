@@ -225,7 +225,7 @@ const DataTable = ({
   const getTypeColor = (type) => {
     if (type.includes('Integer')) return 'text-blue-600';
     if (type.includes('String') || type.includes('Text')) return 'text-green-600';
-    if (type.includes('DateTime')) return 'text-purple-600';
+    if (type.includes('DateTime')) return 'text-[#6334E5]';
     if (type.includes('Boolean')) return 'text-orange-600';
     if (type.includes('Float')) return 'text-cyan-600';
     return 'text-gray-600';

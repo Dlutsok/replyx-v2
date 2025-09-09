@@ -1,6 +1,6 @@
 import { withAuth } from '../hooks/useAuth';
 import useBotsMonitoring from '../hooks/useBotsMonitoring';
-import AdminDashboard from '../components/layout/AdminDashboard';
+import AdminDashboard from '@/components/layout/AdminDashboard';
 import BotsMonitoringGrid from '../components/admin/BotsMonitoringGrid';
 import BotsStatsCards from '../components/admin/BotsStatsCards';
 import BotDetailsModal from '../components/admin/BotDetailsModal';
@@ -37,7 +37,7 @@ const AdminBotsMonitoring = () => {
       <AdminDashboard activeSection="bots-monitoring">
         <div className="bg-white px-4 sm:px-6 xl:px-8 pt-4 sm:pt-6 xl:pt-8 pb-4 sm:pb-6 xl:pb-8 rounded-2xl">
           <div className="flex flex-col items-center justify-center py-12">
-            <div className="w-8 h-8 border-2 border-gray-300 border-t-purple-600 rounded-full animate-spin mb-4"></div>
+            <div className="w-8 h-8 border-2 border-gray-300 border-t-[#6334E5] rounded-full animate-spin mb-4"></div>
             <p className="text-sm text-gray-600 font-medium">Загрузка данных мониторинга...</p>
           </div>
         </div>
@@ -77,14 +77,14 @@ const AdminBotsMonitoring = () => {
             {/* Правая часть - действия */}
             <div className="flex flex-col sm:flex-row gap-3">
               <button
-                className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-200"
+                className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:ring-offset-2 transition-all duration-200"
                 onClick={refresh}
               >
                 <FiRefreshCw size={16} />
                 Обновить
               </button>
 
-              <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-200">
+              <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#6334E5] hover:bg-[#5028c2] text-white rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:ring-offset-2 transition-all duration-200">
                 <FiSettings size={16} />
                 Настройки
               </button>
@@ -119,7 +119,7 @@ const AdminBotsMonitoring = () => {
                   placeholder="Поиск AI-ассистента..."
                   value={filters.search}
                   onChange={(e) => setFilter('search', e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent transition-all duration-150"
                 />
               </div>
             </div>
@@ -131,7 +131,7 @@ const AdminBotsMonitoring = () => {
                 <select
                   value={filters.status}
                   onChange={(e) => setFilter('status', e.target.value)}
-                  className="px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150 min-w-[140px]"
+                  className="px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent transition-all duration-150 min-w-[140px]"
                 >
                   <option value="all">Все статусы</option>
                   <option value="online">Онлайн</option>
@@ -146,7 +146,7 @@ const AdminBotsMonitoring = () => {
                 <select
                   value={filters.period}
                   onChange={(e) => setFilter('period', e.target.value)}
-                  className="px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150 min-w-[140px]"
+                  className="px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent transition-all duration-150 min-w-[140px]"
                 >
                   <option value="24h">За 24 часа</option>
                   <option value="7d">За 7 дней</option>
@@ -190,8 +190,8 @@ const AdminBotsMonitoring = () => {
                       <div className="flex items-start gap-4">
                         {/* Bot Info */}
                         <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <FiCpu className="text-purple-600" size={20} />
+                          <div className="w-10 h-10 bg-[#6334E5]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <FiCpu className="text-[#6334E5]" size={20} />
                           </div>
                           <div className="flex-1 min-w-0">
                             <h4 className="text-sm font-semibold text-gray-900 truncate mb-1">

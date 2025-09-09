@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { withAuth } from '../hooks/useAuth';
-import AdminDashboard from '../components/layout/AdminDashboard';
+import AdminDashboard from '@/components/layout/AdminDashboard';
 import { FiPlus, FiSearch, FiFilter } from 'react-icons/fi';
 import AITokensTable from '../components/admin/AITokensTable';
 import AddTokenModal from '../components/admin/AddTokenModal';
@@ -234,7 +234,7 @@ const AdminAITokensPage = () => {
             {/* Правая часть - кнопка добавления */}
             <div className="flex-shrink-0">
               <button
-                className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-150 hover:shadow-lg hover:shadow-purple-600/25"
+                className="inline-flex items-center gap-2 bg-[#6334E5] hover:bg-[#5028c2] text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-150 hover:shadow-lg hover:shadow-[#6334E5]/25"
                 onClick={() => setShowAddModal(true)}
               >
                 <FiPlus size={18} />
@@ -256,7 +256,7 @@ const AdminAITokensPage = () => {
                   placeholder="Поиск по названию или моделям..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent transition-all duration-150"
                 />
               </div>
             </div>
@@ -268,7 +268,7 @@ const AdminAITokensPage = () => {
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150 min-w-[120px]"
+                  className="px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent transition-all duration-150 min-w-[120px]"
                 >
                   <option value="all">Все</option>
                   <option value="active">Активные</option>
@@ -281,7 +281,7 @@ const AdminAITokensPage = () => {
                 <select
                   value={priorityFilter}
                   onChange={(e) => setPriorityFilter(e.target.value)}
-                  className="px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-150 min-w-[140px]"
+                  className="px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent transition-all duration-150 min-w-[140px]"
                 >
                   <option value="all">Все</option>
                   <option value="high">Высокий (1-2)</option>
@@ -314,7 +314,7 @@ const AdminAITokensPage = () => {
           {/* Loading State */}
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12">
-              <div className="w-8 h-8 border-2 border-gray-300 border-t-purple-600 rounded-full animate-spin mb-4"></div>
+              <div className="w-8 h-8 border-2 border-gray-300 border-t-[#6334E5] rounded-full animate-spin mb-4"></div>
               <p className="text-sm text-gray-600 font-medium">Загрузка AI токенов...</p>
             </div>
           ) : filteredTokens.length === 0 ? (
@@ -326,7 +326,7 @@ const AdminAITokensPage = () => {
               <h3 className="text-lg font-semibold text-gray-900 mb-2">AI токены не найдены</h3>
               <p className="text-sm text-gray-600 text-center mb-4">Добавьте первый AI токен для начала работы с системой</p>
               <button
-                className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-all duration-150"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#6334E5] hover:bg-[#5028c2] text-white rounded-lg font-medium transition-all duration-150"
                 onClick={() => setShowAddModal(true)}
               >
                 <FiPlus size={18} />
@@ -345,8 +345,8 @@ const AdminAITokensPage = () => {
                     <div className="flex flex-col lg:flex-row lg:items-start gap-4">
                       {/* Token Header */}
                       <div className="flex items-start gap-3 flex-1 min-w-0">
-                        <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <FiPlus className="text-purple-600" size={20} />
+                        <div className="w-10 h-10 bg-[#6334E5]/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <FiPlus className="text-[#6334E5]" size={20} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-3 mb-2">
@@ -460,7 +460,7 @@ const AdminAITokensPage = () => {
                         </button>
 
                         <button
-                          className="flex-1 lg:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 bg-purple-50 border border-purple-200 hover:bg-purple-100 text-purple-700 text-sm font-medium rounded-lg transition-all duration-150"
+                          className="flex-1 lg:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 bg-[#6334E5]/10 border border-[#6334E5]/30 hover:bg-[#6334E5]/20 text-[#5028c2] text-sm font-medium rounded-lg transition-all duration-150"
                           onClick={() => openUsageModal(token)}
                           title="Просмотр статистики"
                         >

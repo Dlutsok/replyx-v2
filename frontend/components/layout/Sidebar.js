@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '@/hooks';
 import { useSmartProgress } from '../../hooks/useSmartProgress';
 import styles from '../../styles/layout/Sidebar.module.css';
 

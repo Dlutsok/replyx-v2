@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '@/hooks';
 import { FiX, FiArrowLeft, FiCreditCard, FiAlertCircle } from 'react-icons/fi';
 
 export default function PaymentError() {
@@ -152,7 +152,7 @@ export default function PaymentError() {
               <div className="space-y-3">
                 <button
                   onClick={handleTryAgain}
-                  className="w-full bg-purple-600 text-white py-3 px-6 rounded-xl hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
+                  className="w-full bg-[#6334E5] text-white py-3 px-6 rounded-xl hover:bg-[#5028c2] transition-colors flex items-center justify-center gap-2"
                 >
                   <FiCreditCard className="w-5 h-5" />
                   Попробовать снова

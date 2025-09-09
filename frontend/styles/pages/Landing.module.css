@@ -62,7 +62,7 @@
 }
 
 .logo:hover .logoIcon {
-  color: rgb(126 34 206);
+  color: #6334E5;
 }
 
 .logoText {
@@ -74,7 +74,7 @@
 }
 
 .logo:hover .logoText {
-  color: rgb(126 34 206);
+  color: #6334E5;
 }
 
 .nav {
@@ -120,7 +120,7 @@
 }
 
 .ctaButton {
-  background-color: rgb(147, 51, 234);
+  background-color: #6334E5;
   color: white;
   border: none;
   padding: 10px 24px;
@@ -130,12 +130,12 @@
   height: 44px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 0 0 0 rgba(147, 51, 234, 0);
+  box-shadow: 0 0 0 0 rgba(99, 52, 229, 0);
 }
 
 .ctaButton:hover {
-  background-color: rgb(126, 34, 206);
-  box-shadow: 0 0 0 4px rgba(147, 51, 234, 0.2);
+  background-color: #6334E5;
+  box-shadow: 0 0 0 4px rgba(99, 52, 229, 0.2);
 }
 
 /* CTA Section */
@@ -280,13 +280,13 @@
   font-size: 16px;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(124, 77, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(99, 52, 229, 0.15);
 }
 
 .ctaPrimaryButton:hover {
   background: #5a2fc2;
   transform: translateY(-0.5px);
-  box-shadow: 0 2px 8px rgba(124, 77, 255, 0.1);
+  box-shadow: 0 2px 8px rgba(99, 52, 229, 0.1);
 }
 
 .ctaSecondaryButton {
@@ -422,19 +422,19 @@
 .whiteFooter {
   position: relative;
   background: white;
-  border: 2px solid rgba(147, 51, 234, 0.2);
+  border: 2px solid rgba(99, 52, 229, 0.2);
   border-radius: 1rem;
   padding: 48px 48px;
   margin: 32px auto;
   width: 1140px;
   max-width: 1140px;
-  box-shadow: 0 8px 32px rgba(147, 51, 234, 0.1);
+  box-shadow: 0 8px 32px rgba(99, 52, 229, 0.1);
   transition: all 0.3s ease;
 }
 
 .whiteFooter:hover {
-  border-color: rgba(147, 51, 234, 0.3);
-  box-shadow: 0 12px 40px rgba(147, 51, 234, 0.15);
+  border-color: rgba(99, 52, 229, 0.3);
+  box-shadow: 0 12px 40px rgba(99, 52, 229, 0.15);
   transform: translateY(-2px);
 }
 
@@ -457,7 +457,7 @@
   display: flex;
   align-items: center;
   margin-bottom: 8px;
-  color: rgb(147, 51, 234);
+  color: #6334E5;
   font-size: 28px;
   font-weight: 700;
   letter-spacing: -0.5px;
@@ -467,7 +467,7 @@
   width: 32px;
   height: 32px;
   margin-right: 12px;
-  color: rgb(147, 51, 234);
+  color: #6334E5;
 }
 
 .whiteFooterSlogan {
@@ -507,7 +507,7 @@
 }
 
 .whiteFooterLink:hover {
-  color: rgb(147, 51, 234);
+  color: #6334E5;
   transform: translateX(-2px);
 }
 
@@ -518,7 +518,7 @@
 }
 
 .footerColumnTitle {
-  color: rgb(147, 51, 234);
+  color: #6334E5;
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 4px;
@@ -538,8 +538,8 @@
   gap: 8px;
   padding: 8px 12px;
   border-radius: 8px;
-  background: rgba(147, 51, 234, 0.05);
-  border: 1px solid rgba(147, 51, 234, 0.1);
+  background: rgba(99, 52, 229, 0.05);
+  border: 1px solid rgba(99, 52, 229, 0.1);
   color: #6b7280;
   text-decoration: none;
   font-size: 14px;
@@ -548,9 +548,9 @@
 }
 
 .footerWidget:hover {
-  background: rgba(147, 51, 234, 0.1);
-  border-color: rgba(147, 51, 234, 0.2);
-  color: rgb(147, 51, 234);
+  background: rgba(99, 52, 229, 0.1);
+  border-color: rgba(99, 52, 229, 0.2);
+  color: #6334E5;
   transform: translateY(-1px);
 }
 
@@ -560,7 +560,7 @@
 }
 
 .footerWidget:hover svg {
-  color: rgb(147, 51, 234);
+  color: #6334E5;
 }
 
 .whiteFooterCopyright {
