@@ -24,6 +24,22 @@ import styles from '../styles/pages/Dialogs.module.css';
 import dashStyles from '../styles/pages/Dashboard.module.css';
 
 export default function Dialogs() {
+  // Принудительная перезагрузка стилей при маунте компонента
+  useEffect(() => {
+    // Принудительная перерисовка для загрузки CSS модулей
+    const forceRerender = () => {
+      if (typeof window !== 'undefined' && document.body) {
+        document.body.style.display = 'none';
+        document.body.offsetHeight; // Force reflow
+        document.body.style.display = '';
+      }
+    };
+    
+    // Небольшая задержка для завершения загрузки стилей
+    const timeout = setTimeout(forceRerender, 10);
+    return () => clearTimeout(timeout);
+  }, []);
+
   // UI State
   const [selectedDialog, setSelectedDialog] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);

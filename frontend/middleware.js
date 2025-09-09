@@ -150,22 +150,18 @@ function generateRestrictiveCSP() {
     ? "'self' http://localhost:3000 http://localhost:3001 http://127.0.0.1:3000 https://stencom.ru https://www.stencom.ru"
     : "'self'";
   
-  // В dev режиме разрешаем unsafe-inline и unsafe-eval для Next.js
-  const scriptSrc = process.env.NODE_ENV === 'development'
-    ? "'self' 'unsafe-inline' 'unsafe-eval' https:"
-    : "'self'";
+  // Разрешаем unsafe-inline для Next.js в обоих режимах (production тоже требует для лендинга)
+  const scriptSrc = "'self' 'unsafe-inline' 'unsafe-eval' https:";
     
-  const styleSrc = process.env.NODE_ENV === 'development'
-    ? "'self' 'unsafe-inline' https:"
-    : "'self'";
+  const styleSrc = "'self' 'unsafe-inline' https:";
     
-  const defaultSrc = process.env.NODE_ENV === 'development'
-    ? "'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:"
-    : "'self'";
+  // Разрешаем базовые директивы для Next.js в обоих режимах
+  const defaultSrc = "'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:";
     
+  // Разрешаем подключения к API и WebSocket в обоих режимах
   const connectSrc = process.env.NODE_ENV === 'development'
     ? "'self' https: wss: ws: https://replyx.ru http://localhost:8000"
-    : "'self'";
+    : "'self' https: wss: ws: https://replyx.ru";
     
   return [
     `frame-ancestors ${frameAncestors}`,
