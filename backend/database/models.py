@@ -451,12 +451,29 @@ class Payment(Base):
     order_id = Column(String, unique=True, nullable=False)  # Уникальный номер заказа для Т-Банк
     amount = Column(NUMERIC(12, 2), nullable=False)  # Сумма в рублях
     currency = Column(String(3), nullable=False, default='RUB')  # Валюта платежа
-    status = Column(String, default='pending')  # 'pending', 'processing', 'success', 'failed', 'cancelled'
+    # Расширенные статусы согласно документации Тинькофф
+    status = Column(String, default='pending')  # Все возможные статусы: pending, success, failed, canceled, expired, partial_refund, refunded, reversed, partial_reversed, unknown
+    tinkoff_status = Column(String, nullable=True)  # Оригинальный статус от Тинькофф: NEW, FORM_SHOWED, AUTHORIZING, AUTHORIZED, CONFIRMED, etc.
     payment_method = Column(String, default='tinkoff')  # Метод оплаты
     description = Column(String, nullable=True)  # Описание платежа
-    tinkoff_payment_id = Column(String, nullable=True)  # ID платежа от Т-Банк (если вернется)
+    tinkoff_payment_id = Column(String, nullable=True)  # ID платежа от Т-Банк (PaymentId)
+    
+    # URLs для обработки результатов
     success_url = Column(String, nullable=True)  # URL успешной оплаты
     fail_url = Column(String, nullable=True)  # URL неудачной оплаты
+    
+    # Дополнительные поля для чеков (54-ФЗ)
+    customer_email = Column(String, nullable=True)  # Email для отправки чека
+    customer_phone = Column(String, nullable=True)  # Телефон для отправки чека
+    customer_name = Column(String, nullable=True)  # Имя покупателя
+    
+    # Техническая информация
+    error_code = Column(String, nullable=True)  # Код ошибки от Тинькофф
+    error_message = Column(String, nullable=True)  # Сообщение об ошибке от Тинькофф
+    card_mask = Column(String, nullable=True)  # Маскированный номер карты (если доступен)
+    payment_url = Column(String, nullable=True)  # URL для оплаты от Тинькофф
+    
+    # Временные метки
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     completed_at = Column(DateTime, nullable=True)  # Время завершения платежа
