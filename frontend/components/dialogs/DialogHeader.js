@@ -1,13 +1,10 @@
 import { FiX, FiMessageCircle, FiSmartphone, FiUser, FiMail } from 'react-icons/fi';
 import styles from './DialogHeader.module.css';
+import { getUserDisplayName } from '../../utils/dialogHelpers';
 
 const DialogHeader = ({ dialog, onClose }) => {
   const getDisplayName = () => {
-    if (dialog.name) return dialog.name;
-    if (dialog.first_name && dialog.last_name) return `${dialog.first_name} ${dialog.last_name}`;
-    if (dialog.first_name) return dialog.first_name;
-    if (dialog.telegram_username) return `@${dialog.telegram_username}`;
-    return 'Неизвестный пользователь';
+    return getUserDisplayName(dialog);
   };
 
   const getSourceInfo = () => {

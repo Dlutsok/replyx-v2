@@ -83,7 +83,6 @@ const DataTable = ({
       setPagination(result.pagination || {});
 
     } catch (err) {
-      console.error('Ошибка загрузки данных:', err);
       setError(err.message);
       setData([]);
     } finally {
@@ -153,7 +152,6 @@ const DataTable = ({
       }
 
     } catch (err) {
-      console.error('Ошибка удаления:', err);
       setError(err.message);
     }
   };
@@ -176,7 +174,6 @@ const DataTable = ({
           }
         });
       } catch (err) {
-        console.error(`Ошибка удаления записи ${id}:`, err);
       }
     }
 

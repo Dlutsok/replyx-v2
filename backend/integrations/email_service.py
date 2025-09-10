@@ -9,6 +9,7 @@ import logging
 from pathlib import Path
 from datetime import datetime, timedelta
 from threading import Lock
+import pytz
 
 # Импортируем шаблоны
 import sys
@@ -219,9 +220,12 @@ class EmailService:
         # Формируем ссылку на диалог
         dialog_link = f"{BASE_URL}/admin?dialog_id={dialog_id}"
         
-        # Если timestamp не передан, используем текущее время
+        # Если timestamp не передан, используем текущее время в локальном часовом поясе
         if timestamp is None:
-            timestamp = datetime.utcnow().strftime("%d.%m.%Y %H:%M")
+            # Используем часовой пояс Москвы (Europe/Moscow) вместо UTC
+            moscow_tz = pytz.timezone('Europe/Moscow')
+            local_time = datetime.now(moscow_tz)
+            timestamp = local_time.strftime("%d.%m.%Y %H:%M")
         
         # Получаем шаблон
         template_data = EmailTemplates.handoff_notification_email(

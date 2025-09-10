@@ -77,6 +77,33 @@ const MessageHistory = ({ messages, loading, error }) => {
   // Обрабатываем текст (оставляем эмодзи, но убираем лишние пробелы)
   const sanitizeText = (text = '') => text.replace(/\s{2,}/g, ' ').trim();
 
+  // Markdown utility function (copied from chat-iframe.js)
+  const parseMarkdown = (text) => {
+    // Guard clause: handle null, undefined, or non-string values
+    if (!text || typeof text !== 'string') {
+      return '';
+    }
+    
+    // Bold
+    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Italic
+    text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    // Code blocks
+    text = text.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+    // Inline code
+    text = text.replace(/`(.*?)`/g, '<code>$1</code>');
+    // Line breaks
+    text = text.replace(/\n/g, '<br>');
+    // Lists
+    text = text.replace(/^- (.+)$/gm, '<li>$1</li>');
+    text = text.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+    // Wrap consecutive list items
+    text = text.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
+    text = text.replace(/<\/ul>\s*<ul>/g, '');
+    
+    return text;
+  };
+
   const getSystemNoticeType = (text = '') => {
     const t = sanitizeText(text).toLowerCase();
     if (t.includes('подключил') || t.includes('оператор подключился') || t.includes('успешно')) return 'success';
@@ -154,7 +181,7 @@ const MessageHistory = ({ messages, loading, error }) => {
                         <span className={styles.msgTime}>{formatTime(message.timestamp)}</span>
                       )}
                     </div>
-                    <div className={styles.msgText}>{sanitizeText(message.text)}</div>
+                    <div className={styles.msgText} dangerouslySetInnerHTML={{ __html: parseMarkdown(message.text) }} />
                   </div>
                 </>
               ) : (
@@ -165,7 +192,7 @@ const MessageHistory = ({ messages, loading, error }) => {
                     <div className={`${styles.systemNotice} ${styles[type]}`}>
                       <Icon className={styles.systemIcon} />
                       <div className={styles.systemContent}>
-                        <div className={styles.systemText}>{sanitizeText(message.text)}</div>
+                        <div className={styles.systemText} dangerouslySetInnerHTML={{ __html: parseMarkdown(message.text) }} />
                         {message.timestamp && (
                           <div className={styles.systemTime}>{formatTime(message.timestamp)}</div>
                         )}

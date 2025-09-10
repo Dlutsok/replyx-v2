@@ -541,6 +541,11 @@ def get_bot_ai_response(data: dict, db: Session = Depends(get_db)):
         if not assistant:
             raise HTTPException(status_code=404, detail="Assistant not found")
         
+        # Получаем диалог для handoff detection (если есть dialog_id)
+        dialog = None
+        if dialog_id:
+            dialog = db.query(models.Dialog).filter(models.Dialog.id == dialog_id).first()
+        
         # Проверяем баланс перед генерацией ответа
         balance_service = BalanceService(db)
         if not balance_service.check_sufficient_balance(user_id, "bot_message"):
@@ -673,6 +678,51 @@ def get_bot_ai_response(data: dict, db: Session = Depends(get_db)):
         )
         
         response = completion.choices[0].message.content.strip()
+        
+        # 🔍 ПРОВЕРКА ПОТРЕБНОСТИ В ОПЕРАТОРЕ
+        # Используем улучшенную систему определения handoff
+        handoff_triggered = False
+        try:
+            from services.improved_handoff_detector import ImprovedHandoffDetector
+            detector = ImprovedHandoffDetector()
+            
+            should_trigger, reason, details = detector.should_request_handoff(
+                user_text=message,
+                ai_text=response,
+                dialog=dialog if dialog_id else None
+            )
+            
+            if should_trigger:
+                handoff_triggered = True
+                logger.info(f"🔍 HANDOFF TRIGGERED for dialog {dialog_id}: reason={reason}, score={details.get('total_score', 0):.2f}")
+                logger.info(f"   Matched patterns: {[p['description'] for p in details.get('matched_patterns', [])]}")
+                
+                # Инициируем handoff через сервис
+                try:
+                    from services.handoff_service import HandoffService
+                    handoff_service = HandoffService(db)
+                    
+                    if dialog_id:
+                        # Генерируем уникальный request_id для идемпотентности
+                        import uuid
+                        request_id = str(uuid.uuid4())
+                        
+                        handoff_result = handoff_service.request_handoff(
+                            dialog_id=dialog_id,
+                            reason=reason,
+                            request_id=request_id,
+                            last_user_text=message[:500]  # Ограничиваем длину
+                        )
+                        
+                        logger.info(f"✅ Handoff successfully requested for dialog {dialog_id}: {handoff_result.status}")
+                        
+                except Exception as handoff_error:
+                    logger.error(f"❌ Failed to request handoff for dialog {dialog_id}: {handoff_error}")
+                    # Не блокируем основной ответ при ошибке handoff
+                    
+        except Exception as detection_error:
+            logger.error(f"❌ Handoff detection error for dialog {dialog_id}: {detection_error}")
+            # Не блокируем основной ответ при ошибке детекции
         
         # 🔍 ДЕТАЛЬНОЕ ЛОГИРОВАНИЕ ОТВЕТА
         logger.info(f"🤖 Generated response: '{response[:200]}...'")

@@ -98,7 +98,6 @@ const useBotsMonitoring = (options = {}) => {
         return; // Запрос был отменен, это нормально
       }
 
-      console.error('Ошибка загрузки данных ботов:', error);
       setState(prev => ({
         ...prev,
         loading: false,
@@ -136,7 +135,6 @@ const useBotsMonitoring = (options = {}) => {
         });
       }
     } catch (error) {
-      console.error('Ошибка загрузки статистики:', error);
     }
   }, [state.filters.period]);
 
@@ -208,7 +206,6 @@ const useBotsMonitoring = (options = {}) => {
         }));
       }
     } catch (error) {
-      console.error(`Ошибка выполнения действия ${action} для бота ${botId}:`, error);
     }
   }, [fetchBotsData]);
 

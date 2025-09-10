@@ -21,10 +21,8 @@ const AdminAnalyticsHeader = ({
   const handleExport = async () => {
     try {
       // TODO: Implement export functionality
-      console.log('Экспорт аналитики за период:', period);
       showInfo('Функция экспорта будет доступна в следующем обновлении', { title: 'Информация' });
     } catch (error) {
-      console.error('Ошибка экспорта:', error);
     }
   };
 

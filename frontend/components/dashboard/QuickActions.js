@@ -90,7 +90,6 @@ const QuickActions = React.memo(({ assistants, onRefresh }) => {
         setShowEmbedModal(true);
       }
     } catch (error) {
-      console.error('Error fetching embed code:', error);
       showError('Ошибка получения кода виджета', {
         title: 'Ошибка'
       });

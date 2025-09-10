@@ -78,7 +78,6 @@ export default function Balance() {
       }
 
     } catch (err) {
-      console.error('Ошибка загрузки данных баланса:', err);
       showError('Ошибка загрузки данных баланса');
     } finally {
       setDataLoading(false);
@@ -138,7 +137,6 @@ export default function Balance() {
       }
       
     } catch (error) {
-      console.error('Ошибка создания платежа:', error);
       setMessage(error.message || 'Произошла ошибка при создании платежа');
       setMessageType('error');
       setLoading(false);

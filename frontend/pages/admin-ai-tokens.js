@@ -26,11 +26,8 @@ const AdminAITokensPage = () => {
 
   // Load tokens on component mount
   useEffect(() => {
-    console.log('🔍 AdminAITokensPage useEffect - checking auth and loading tokens');
     const token = localStorage.getItem('token');
-    console.log('🔑 Token found:', !!token);
     if (token) {
-      console.log('🔑 Token preview:', token.substring(0, 20) + '...');
     }
     loadTokens();
   }, []);
@@ -41,7 +38,6 @@ const AdminAITokensPage = () => {
     let token = localStorage.getItem('token');
     
     if (!token) {
-      console.log('🔐 Токен не найден в localStorage, пользователь не авторизован');
       window.location.href = '/login';
       return null;
     }
@@ -50,17 +46,14 @@ const AdminAITokensPage = () => {
   };
 
   const loadTokens = async () => {
-    console.log('📥 loadTokens called');
     try {
       setLoading(true);
       setError(null);
       
       const token = await ensureAuthToken();
-      console.log('🔑 ensureAuthToken returned:', !!token);
       if (!token) return; // Если токен отсутствует, пользователь будет перенаправлен
       
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru';
-      console.log('🌐 Making request to:', `${apiUrl}/api/admin/ai-tokens`);
       const response = await fetch(`${apiUrl}/api/admin/ai-tokens`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -68,13 +61,11 @@ const AdminAITokensPage = () => {
         }
       });
       
-      console.log('📊 Response status:', response.status, response.statusText);
 
       if (!response.ok) {
         // Если токен истек, перенаправляем на страницу входа
         if (response.status === 401) {
           localStorage.removeItem('token');
-          console.log('🔄 Токен истек, перенаправляем на страницу входа...');
           window.location.href = '/login';
           return;
         }
@@ -84,7 +75,6 @@ const AdminAITokensPage = () => {
       const data = await response.json();
       setTokens(data || []);
     } catch (err) {
-      console.error('Error loading tokens:', err);
       setError('Не удалось загрузить AI токены. Попробуйте перезагрузить страницу.');
     } finally {
       setLoading(false);
@@ -114,7 +104,6 @@ const AdminAITokensPage = () => {
       await loadTokens(); // Reload tokens
       setShowAddModal(false);
     } catch (err) {
-      console.error('Error adding token:', err);
       throw err; // Re-throw to be handled by modal
     }
   };
@@ -143,7 +132,6 @@ const AdminAITokensPage = () => {
       setShowEditModal(false);
       setSelectedToken(null);
     } catch (err) {
-      console.error('Error editing token:', err);
       throw err; // Re-throw to be handled by modal
     }
   };
@@ -171,7 +159,6 @@ const AdminAITokensPage = () => {
       setShowDeleteModal(false);
       setSelectedToken(null);
     } catch (err) {
-      console.error('Error deleting token:', err);
       throw err; // Re-throw to be handled by modal
     }
   };

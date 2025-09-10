@@ -105,14 +105,12 @@ async def init_payment_tinkoff(order_id: str, amount: int, description: str, cus
         'TerminalKey': TINKOFF_TERMINAL_KEY,
         'OrderId': order_id,
         'Amount': amount,
-        'Currency': 'RUB',
         'Description': description,
         'CustomerKey': customer_key,
         'SuccessURL': success_url,
         'FailURL': fail_url,
         'Language': 'ru',
-        'PayType': 'O',
-        'OperationInitiatorType': 'Customer'  # Обязательный параметр согласно требованиям ЦБ РФ
+        'PayType': 'O'
     }
     
     # Добавляем данные для чека (54-ФЗ), если предоставлены
@@ -221,6 +219,20 @@ async def create_payment(
         else:
             success_url = os.getenv('TINKOFF_SUCCESS_URL', 'http://localhost:3000/payment/success')
             fail_url = os.getenv('TINKOFF_FAIL_URL', 'http://localhost:3000/payment/error')
+
+        # Важно: добавляем order_id в SuccessURL/FailURL, чтобы на фронте был идентификатор заказа
+        try:
+            from urllib.parse import urlparse, parse_qsl, urlencode, urlunparse
+            def append_order_param(url: str, order: str) -> str:
+                parsed = urlparse(url)
+                qs = dict(parse_qsl(parsed.query))
+                qs['order'] = order
+                new_query = urlencode(qs)
+                return urlunparse(parsed._replace(query=new_query))
+            success_url = append_order_param(success_url, order_id)
+            fail_url = append_order_param(fail_url, order_id)
+        except Exception as e:
+            logger.warning(f"Не удалось добавить order параметр к URL: {e}")
         
         # Создаем запись о платеже в БД
         payment = Payment(
@@ -408,8 +420,17 @@ async def tinkoff_notification(
     Вызывается автоматически при изменении статуса платежа
     """
     try:
-        # Получаем данные из запроса
-        notification_data = await request.json()
+        # Логируем источник
+        client_ip = request.headers.get('x-forwarded-for', request.client.host if request.client else 'unknown')
+        logger.info(f"Webhook от Т-Банк с IP: {client_ip}")
+
+        # Получаем данные из запроса (поддерживаем JSON и form-data)
+        content_type = request.headers.get('content-type', '')
+        if 'application/json' in content_type:
+            notification_data = await request.json()
+        else:
+            form_data = await request.form()
+            notification_data = dict(form_data)
         
         logger.info(f"Получено уведомление от Тинькофф: OrderId={notification_data.get('OrderId')}, Status={notification_data.get('Status')}")
         
@@ -430,7 +451,7 @@ async def tinkoff_notification(
         
         # Проверяем подпись (токен) для безопасности
         expected_token = calculate_signature(notification_data)
-        if received_token != expected_token:
+        if str(received_token).lower() != str(expected_token).lower():
             logger.error(f"Неверная подпись уведомления для заказа {order_id}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

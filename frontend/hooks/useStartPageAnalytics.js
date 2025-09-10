@@ -20,7 +20,6 @@ export const useStartPageAnalytics = () => {
     if (!sessionId.current) {
       sessionId.current = generateSessionId();
       startTime.current = new Date();
-      console.log('Start page analytics session initialized:', sessionId.current);
     }
   }, [generateSessionId]);
 
@@ -39,9 +38,7 @@ export const useStartPageAnalytics = () => {
       };
 
       await smartProgressApi.post('/api/start/events/track', payload);
-      console.log('Analytics event tracked:', eventType, stepId, actionType);
     } catch (error) {
-      console.warn('Failed to track analytics event:', error);
     }
   }, []);
 

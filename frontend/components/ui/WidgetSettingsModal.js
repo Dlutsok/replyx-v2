@@ -136,7 +136,6 @@ const WidgetSettingsModal = ({ isOpen, onClose, onSave, selectedAssistant, isNew
         throw new Error('Ошибка загрузки');
       }
     } catch (error) {
-      console.error('Error uploading avatar:', error);
       showNotification('Ошибка загрузки аватара', 'error');
     }
   };
@@ -185,7 +184,6 @@ const WidgetSettingsModal = ({ isOpen, onClose, onSave, selectedAssistant, isNew
         showNotification(`Ошибка: ${error.detail || 'Неизвестная ошибка'}`, 'error');
       }
     } catch (error) {
-      console.error('Error saving widget settings:', error);
       showNotification('Ошибка сохранения настроек', 'error');
     }
   };

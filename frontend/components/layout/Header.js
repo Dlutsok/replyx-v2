@@ -46,7 +46,6 @@ export default function Header({ isMobile, sidebarOpen, setSidebarOpen }) {
           setUserEmail(data.email || '');
         })
         .catch(err => {
-          console.error('Error fetching user data:', err);
         });
 
     }

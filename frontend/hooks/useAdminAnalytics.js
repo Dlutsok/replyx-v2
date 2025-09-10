@@ -23,7 +23,6 @@ export const useAdminAnalytics = (period = '7d', activeTab = 'overview') => {
   });
 
   const handleApiError = (error, context) => {
-    console.error(`API error in ${context}:`, error);
     setError(`Ошибка загрузки данных: ${context}`);
     return null;
   };
@@ -147,7 +146,6 @@ export const useAdminAnalytics = (period = '7d', activeTab = 'overview') => {
           await fetchOverviewData();
       }
     } catch (error) {
-      console.error('Error loading tab data:', error);
       setError('Ошибка загрузки данных');
     } finally {
       setIsLoading(false);

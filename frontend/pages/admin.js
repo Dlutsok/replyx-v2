@@ -99,7 +99,6 @@ const AdminPanel = () => {
         setIsConnected(true);
         setLastUpdated(new Date());
       } catch (error) {
-        console.error('Ошибка обновления данных:', error);
         setIsConnected(false);
       }
     }, 30000);
@@ -124,7 +123,6 @@ const AdminPanel = () => {
         throw new Error(`HTTP ${response.status}`);
       }
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
       setIsConnected(false);
     }
   };
@@ -140,7 +138,6 @@ const AdminPanel = () => {
         throw new Error(`HTTP ${response.status}`);
       }
     } catch (error) {
-      console.error('Error fetching system health:', error);
       setIsConnected(false);
     }
   };
@@ -161,7 +158,6 @@ const AdminPanel = () => {
         throw new Error(`HTTP ${response.status}`);
       }
     } catch (error) {
-      console.error('Error fetching realtime stats:', error);
       setIsConnected(false);
     } finally {
       setIsLoading(false);

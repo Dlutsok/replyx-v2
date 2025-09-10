@@ -36,9 +36,9 @@ export const useSmartProgress = () => {
         loading: false
       }));
       
-      console.log('Smart progress loaded:', response.data);
+      
     } catch (error) {
-      console.warn('Failed to load progress status:', error);
+      
       setProgress(prev => ({
         ...prev,
         loading: false,
@@ -51,7 +51,7 @@ export const useSmartProgress = () => {
   const markWidgetCopied = useCallback(async () => {
     try {
       await smartProgressApi.post('/api/start/progress/mark-widget-copied');
-      console.log('Widget copy event tracked');
+      
       
       // Обновляем статус сразу локально для быстрого отклика
       setProgress(prev => ({
@@ -63,7 +63,7 @@ export const useSmartProgress = () => {
       // Затем перезагружаем с сервера для точности
       setTimeout(fetchProgressStatus, 500);
     } catch (error) {
-      console.warn('Failed to mark widget copied:', error);
+      
     }
   }, [fetchProgressStatus]);
 

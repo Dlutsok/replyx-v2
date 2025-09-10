@@ -20,7 +20,6 @@ const AdminSystemPage = () => {
     interval: 30000 // 30 секунд
   });
   
-  console.log('🏥 Admin System - Health Data:', { healthData, isLoading, error, lastUpdated });
 
   // Проверка прав доступа
   useEffect(() => {

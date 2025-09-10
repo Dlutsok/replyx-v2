@@ -63,10 +63,8 @@ export const useAdminSettings = (options = {}) => {
       setSettings(groupedSettings);
       setLastUpdated(data.last_updated ? new Date(data.last_updated) : new Date());
       
-      console.log('📋 Admin Settings loaded:', Object.keys(groupedSettings));
       
     } catch (err) {
-      console.error('❌ Error fetching admin settings:', err);
       setError(err.message);
     } finally {
       setIsLoading(false);
@@ -77,7 +75,6 @@ export const useAdminSettings = (options = {}) => {
   const updateSetting = useCallback((category, key, value) => {
     setSettings(prev => {
       if (!prev[category] || !prev[category][key]) {
-        console.warn(`⚠️ Setting ${category}.${key} not found`);
         return prev;
       }
 
@@ -125,7 +122,6 @@ export const useAdminSettings = (options = {}) => {
 
       if (updates.length === 0) {
         if (showSuccessMessage) {
-          console.log('ℹ️ No changes to save');
         }
         return { success: true, message: 'Нет изменений для сохранения', updatedCount: 0 };
       }
@@ -160,7 +156,6 @@ export const useAdminSettings = (options = {}) => {
 
       setLastUpdated(new Date());
       
-      console.log(`✅ Settings saved: ${updates.length} items`);
       
       return { 
         success: true, 
@@ -170,7 +165,6 @@ export const useAdminSettings = (options = {}) => {
       };
 
     } catch (err) {
-      console.error('❌ Error saving settings:', err);
       setError(`Ошибка сохранения настроек: ${err.message}`);
       return { success: false, error: err.message };
     } finally {
@@ -252,7 +246,6 @@ export const useAdminSettings = (options = {}) => {
       return result;
 
     } catch (err) {
-      console.error('❌ Error testing setting:', err);
       return {
         success: false,
         message: `Ошибка тестирования: ${err.message}`
@@ -283,7 +276,6 @@ export const useAdminSettings = (options = {}) => {
       return data.categories || [];
 
     } catch (err) {
-      console.error('❌ Error fetching categories:', err);
       return [];
     }
   }, []);

@@ -23,7 +23,6 @@ export default async function handler(req, res) {
             res.status(response.status).json(data);
         }
     } catch (error) {
-        console.error('Error sending forgot password email:', error);
         res.status(500).json({ detail: 'Ошибка соединения с сервером' });
     }
 }

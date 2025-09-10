@@ -17,7 +17,6 @@ const BotsManagement = ({ bots, loading, onRefresh, onUpdate }) => {
         onUpdate();
       }
     } catch (error) {
-        console.error('Bot toggle failed:', error);
     } finally {
       setActionLoading(prev => ({ ...prev, [bot.id]: false }));
     }
@@ -32,7 +31,6 @@ const BotsManagement = ({ bots, loading, onRefresh, onUpdate }) => {
         onUpdate();
       }
     } catch (error) {
-        console.error('Bot start failed:', error);
     } finally {
       setActionLoading(prev => ({ ...prev, [bot.id]: false }));
     }
@@ -47,7 +45,6 @@ const BotsManagement = ({ bots, loading, onRefresh, onUpdate }) => {
         onUpdate();
       }
     } catch (error) {
-        console.error('Bot stop failed:', error);
     } finally {
       setActionLoading(prev => ({ ...prev, [bot.id]: false }));
     }

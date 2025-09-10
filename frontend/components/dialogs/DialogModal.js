@@ -47,7 +47,7 @@ const DialogModal = ({
 
     try {
       const sseUrl = `${API_URL}/api/dialogs/${dialogId}/events?token=${encodeURIComponent(token)}`;
-      console.log('🔌 [DialogModal] Connecting to SSE:', sseUrl);
+      // SSE connection logging removed
       
       const eventSource = new EventSource(sseUrl);
       websocketRef.current = eventSource;
@@ -55,7 +55,7 @@ const DialogModal = ({
       // SSE не имеет onclose, но EventSource автоматически переподключается
       // Мы обрабатываем закрытие и переподключение вручную
       const handleSSEClose = () => {
-        console.log('🔌 [DialogModal] SSE connection closed');
+        
         setWsConnected(false);
         websocketRef.current = null;
 
@@ -63,21 +63,20 @@ const DialogModal = ({
         if (isOpen && reconnectAttemptsRef.current < maxReconnectAttempts) {
           reconnectAttemptsRef.current++;
           const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 10000);
-          console.log(`🔄 [DialogModal] SSE Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current})`);
           
           reconnectTimeoutRef.current = setTimeout(() => {
             connectSSE();
           }, delay);
         } else if (isOpen && reconnectAttemptsRef.current >= maxReconnectAttempts) {
           // Переключаемся на fallback polling после исчерпания попыток  
-          console.log('⚠️ [DialogModal] SSE reconnection failed, switching to polling fallback');
+          
           setUseFallback(true);
           startFallbackPolling();
         }
       };
 
       eventSource.onopen = () => {
-        console.log('✅ [DialogModal] SSE connected');
+        
         setWsConnected(true);
         setWsError(null);
         reconnectAttemptsRef.current = 0;
@@ -89,7 +88,7 @@ const DialogModal = ({
           // SSE heartbeat handling (вместо WebSocket ping/pong)
           if (event.data === '__heartbeat__' || event.data === '{"type":"heartbeat"}') {
             // SSE heartbeat - просто логируем
-            console.log('💓 [DialogModal] SSE heartbeat received');
+            
             return;
           }
 
@@ -100,44 +99,42 @@ const DialogModal = ({
             return;
           }
 
-          console.log('📨 [АДМИН SSE] Получено событие:', data);
-          console.log('📨 [АДМИН SSE] Диалог ID:', dialogId);
-          console.log('📨 [АДМИН SSE] Тип события:', data.type || 'message');
+          
+          
+          
 
           // Обрабатываем новые сообщения - НОВЫЙ ФОРМАТ
           if (data.type === 'message:new' && data.message) {
             const message = data.message;
-            console.log('📥 [АДМИН SSE] Добавляем сообщение от', message.sender, ':', message.text.substring(0, 50));
-            console.log('📥 [АДМИН SSE] ID сообщения:', message.id);
+            
             
             setMessages(prevMessages => {
               // Проверяем, есть ли уже такое сообщение
               const exists = prevMessages.some(msg => msg.id === message.id);
               if (exists) {
-                console.log('⚠️ [АДМИН SSE] Сообщение уже существует, пропускаем:', message.id);
+                
                 return prevMessages;
               }
               
               // Добавляем новое сообщение
-              console.log('✅ [АДМИН SSE] Сообщение добавлено в состояние:', message.id);
+              
               return [...prevMessages, message];
             });
           }
           // Поддержка старого формата для совместимости
           else if (data.id && data.sender && data.text) {
-            console.log('📥 [АДМИН SSE] Добавляем сообщение (старый формат) от', data.sender, ':', data.text.substring(0, 50));
-            console.log('📥 [АДМИН SSE] ID сообщения:', data.id);
+            
             
             setMessages(prevMessages => {
               // Проверяем, есть ли уже такое сообщение
               const exists = prevMessages.some(msg => msg.id === data.id);
               if (exists) {
-                console.log('⚠️ [АДМИН SSE] Сообщение уже существует, пропускаем:', data.id);
+                
                 return prevMessages;
               }
               
               // Добавляем новое сообщение
-              console.log('✅ [АДМИН SSE] Сообщение добавлено в состояние:', data.id);
+              
               return [...prevMessages, data];
             });
           }
@@ -150,19 +147,19 @@ const DialogModal = ({
           }
 
         } catch (err) {
-          console.error('❌ [DialogModal] Error processing SSE message:', err);
+          
         }
       };
 
       eventSource.onerror = (error) => {
-        console.error('❌ [DialogModal] SSE error:', error);
+        
         setWsError('Ошибка SSE соединения');
         // При ошибке вызываем обработку закрытия для переподключения
         handleSSEClose();
       };
 
     } catch (err) {
-      console.error('❌ [DialogModal] Failed to create SSE connection:', err);
+      
       setWsError('Не удалось подключиться к SSE');
     }
   }, [dialogId, token, isOpen]);
@@ -187,7 +184,7 @@ const DialogModal = ({
   const startFallbackPolling = useCallback(() => {
     if (!dialogId || !token || pollingIntervalRef.current) return;
 
-    console.log('🔄 [DialogModal] Starting fallback polling');
+    
     
     const pollMessages = async () => {
       try {
@@ -200,14 +197,14 @@ const DialogModal = ({
           setMessages(prevMessages => {
             // Обновляем только если есть новые сообщения
             if (messagesData.length !== prevMessages.length) {
-              console.log(`🔄 [DialogModal] Polling update: ${prevMessages.length} -> ${messagesData.length} messages`);
+              
               return messagesData;
             }
             return prevMessages;
           });
         }
       } catch (err) {
-        console.error('❌ [DialogModal] Polling error:', err);
+        
       }
     };
 
@@ -222,7 +219,7 @@ const DialogModal = ({
     if (pollingIntervalRef.current) {
       clearInterval(pollingIntervalRef.current);
       pollingIntervalRef.current = null;
-      console.log('⏹️ [DialogModal] Stopped fallback polling');
+      
     }
   }, []);
 
@@ -269,7 +266,7 @@ const DialogModal = ({
       
       if (forceReplace) {
         // Полная замена сообщений (только при первой загрузке)
-        console.log('🔄 [DialogModal] Полная замена сообщений:', messagesData.length);
+        
         setMessages(messagesData);
       } else {
         // Умное объединение: добавляем только новые сообщения
@@ -278,7 +275,7 @@ const DialogModal = ({
             !prevMessages.some(existingMsg => existingMsg.id === newMsg.id)
           );
           if (newMessages.length > 0) {
-            console.log('🔄 [DialogModal] Добавляем новые сообщения из API:', newMessages.length);
+            
             return [...prevMessages, ...newMessages].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
           }
           return prevMessages;
@@ -307,12 +304,12 @@ const DialogModal = ({
       if (statusResponse.ok) {
         const statusData = await statusResponse.json();
         currentStatus = statusData.status;
-        console.log('Current dialog handoff status:', currentStatus);
+        
       }
       
       // Если диалог не в состоянии 'requested', сначала запрашиваем handoff
       if (currentStatus !== 'requested') {
-        console.log('Dialog not in requested state, requesting handoff first...');
+        
         const requestResponse = await fetch(`/api/dialogs/${dialogId}/handoff/request`, {
           method: 'POST',
           headers: { 
@@ -330,7 +327,7 @@ const DialogModal = ({
           throw new Error(errorData.detail || 'Ошибка запроса handoff');
         }
         
-        console.log('Handoff requested successfully');
+        
       }
       
       // Теперь делаем takeover
@@ -349,7 +346,7 @@ const DialogModal = ({
       }
 
       const responseData = await takeoverResponse.json();
-      console.log('Takeover successful:', responseData);
+      
       
       // Обновляем состояние на основе ответа от сервера
       setIsTakenOver(responseData.status === 'active');
@@ -363,7 +360,7 @@ const DialogModal = ({
         });
       }
     } catch (err) {
-      console.error('Takeover error:', err);
+      
       setError(err.message || 'Ошибка перехвата диалога');
     } finally {
       setTakeoverLoading(false);
@@ -411,16 +408,16 @@ const DialogModal = ({
 
   // Отправка сообщения
   const handleSendMessage = async (messageText) => {
-    console.log('🔄 [FRONTEND] Начинаем отправку сообщения от менеджера');
-    console.log('🔄 [FRONTEND] Dialog ID:', dialogId);
-    console.log('🔄 [FRONTEND] Token есть:', !!token);
-    console.log('🔄 [FRONTEND] Текст сообщения:', messageText);
+    
+    
+    
+    
 
     if (!dialogId || !token || !messageText.trim()) {
       const errorMsg = !dialogId ? 'ID диалога не найден' :
                       !token ? 'Не авторизован' :
                       !messageText.trim() ? 'Текст сообщения пустой' : 'Неизвестная ошибка';
-      console.error('❌ [FRONTEND] Отсутствуют обязательные параметры:', errorMsg);
+      
       setMessageError(errorMsg);
       return;
     }
@@ -434,8 +431,8 @@ const DialogModal = ({
         text: messageText
       };
 
-      console.log('🔄 [FRONTEND] Данные запроса:', requestBody);
-      console.log('🔄 [FRONTEND] URL запроса:', `/api/dialogs/${dialogId}/messages`);
+      
+      
 
       const response = await fetch(`/api/dialogs/${dialogId}/messages`, {
         method: 'POST',
@@ -446,11 +443,11 @@ const DialogModal = ({
         body: JSON.stringify(requestBody)
       });
 
-      console.log('🔄 [FRONTEND] Получен ответ:', response.status, response.statusText);
+      
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error('❌ [FRONTEND] Ошибка сервера:', errorData);
+        
 
         let errorMessage = 'Ошибка отправки сообщения';
         if (response.status === 402) {
@@ -467,7 +464,7 @@ const DialogModal = ({
       }
 
       const responseData = await response.json();
-      console.log('✅ [FRONTEND] Успешный ответ:', responseData);
+      
 
       // Оптимистичное обновление: добавляем сообщение сразу, если SSE подключен
       // SSE может не успеть доставить обновление моментально
@@ -484,14 +481,13 @@ const DialogModal = ({
 
       // Перезагружаем сообщения только если SSE не подключен
       if (!wsConnected) {
-        console.log('🔄 [FRONTEND] Перезагружаем сообщения (SSE не подключен)...');
         await loadMessages(false); // forceReplace=false при перезагрузке после отправки
-        console.log('✅ [FRONTEND] Сообщения перезагружены');
+        
       } else {
-        console.log('✅ [FRONTEND] Сообщение добавлено оптимистично');
+        
       }
     } catch (err) {
-      console.error('❌ [FRONTEND] Ошибка отправки:', err);
+      
       const errorMessage = err.message || 'Произошла неизвестная ошибка при отправке сообщения';
       setMessageError(errorMessage);
 

@@ -285,7 +285,6 @@ function Usage() {
       }
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
-        console.error('Ошибка загрузки данных:', error);
       }
     } finally {
       setLoading(false);
@@ -293,25 +292,16 @@ function Usage() {
   };
 
   const calculateStatsFromTransactions = (data) => {
-    console.log('Calculating stats from transactions:', data.length, 'transactions');
     
     const now = new Date();
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     
     const spendingTransactions = data.filter(t => t.amount < 0);
-    console.log('Spending transactions:', spendingTransactions.length);
-    console.log('Sample transaction:', spendingTransactions[0]);
     
     const totalSpent = Math.abs(spendingTransactions.reduce((sum, t) => sum + t.amount, 0));
     const thisMonthSpent = Math.abs(spendingTransactions
       .filter(t => new Date(t.created_at) >= thisMonth)
       .reduce((sum, t) => sum + t.amount, 0));
-
-    console.log('Calculated stats:', {
-      totalSpent,
-      totalTransactions: spendingTransactions.length,
-      thisMonth: thisMonthSpent
-    });
 
     setStats({
       totalSpent,
@@ -398,7 +388,6 @@ function Usage() {
               exportTransactions = [...exportTransactions, ...pageItems];
             }
           } catch (pageError) {
-            console.warn(`Не удалось загрузить страницу ${page}:`, pageError);
           }
         }
       } else {
@@ -458,7 +447,6 @@ function Usage() {
       // Показываем уведомление об успешном экспорте
       showSuccess(`Экспортировано ${exportTransactions.length} из ${totalOperations} операций в Excel`, { title: 'Экспорт завершен' });
     } catch (error) {
-      console.error('Ошибка экспорта:', error);
       showError('Ошибка при экспорте данных', { title: 'Ошибка' });
     } finally {
       setIsExporting(false);

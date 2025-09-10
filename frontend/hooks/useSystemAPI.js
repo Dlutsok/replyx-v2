@@ -36,11 +36,6 @@ export const useSystemAPI = () => {
       });
 
       if (!response.ok) {
-        // Логируем ошибки для отладки
-        console.error(`API Error: ${endpoint}`, {
-          status: response.status,
-          statusText: response.statusText
-        });
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
@@ -50,7 +45,6 @@ export const useSystemAPI = () => {
       if (error.name === 'AbortError') {
         throw new Error('Request cancelled');
       }
-      console.error(`API Request failed: ${endpoint}`, error);
       throw error;
     }
   }, []);

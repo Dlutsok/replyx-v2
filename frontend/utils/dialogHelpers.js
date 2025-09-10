@@ -121,29 +121,15 @@ export const toLocal = (timestamp) => {
 
 /**
  * Получение отображаемого имени пользователя
+ * ИСПРАВЛЕНО: Упрощенная логика, полагается на корректные данные с бэкенда
  */
 export const getUserDisplayName = (dialog) => {
-  const isTelegram = getChannelType(dialog) === CHANNEL_TELEGRAM;
-  let userName = dialog.name;
-  
-  if (!userName) {
-    if (dialog.first_name && dialog.last_name) {
-      userName = `${cleanName(dialog.first_name, isTelegram)} ${cleanName(dialog.last_name, isTelegram)}`;
-    } else if (dialog.first_name) {
-      userName = cleanName(dialog.first_name, isTelegram);
-    } else if (dialog.telegram_username) {
-      userName = `@${cleanName(dialog.telegram_username, isTelegram)}`;
-    } else if (dialog.guest_id) {
-      userName = `Пользователь#${dialog.id}`;
-    } else {
-      userName = 'Неизвестно';
-    }
-  } else {
-    // Очищаем name от цифр в конце только для Telegram
-    userName = cleanName(userName, isTelegram);
+  // ПРОСТО ИСПОЛЬЗУЕМ ТО, ЧТО ВОЗВРАЩАЕТ БЭКЕНД
+  if (dialog.name && dialog.name.trim() !== '') {
+    return dialog.name;
   }
   
-  return userName;
+  return 'Неизвестно';
 };
 
 /**

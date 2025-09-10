@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from typing import Optional, Tuple, List, Dict, Any
 from uuid import uuid4
 import asyncio
+import pytz
 
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, func, text
@@ -12,10 +13,10 @@ from sqlalchemy.exc import IntegrityError
 
 from database import models
 from schemas.handoff import HandoffStatusOut, HandoffQueueItem, HandoffStatus
+from core.app_config import HANDOFF_RECIPIENTS, FRONTEND_URL
+from services.events_pubsub import publish_dialog_event
 
 # Handoff configuration constants
-HANDOFF_KEYWORDS_RU = ['оператор', 'человек', 'менеджер', 'поддержка', 'помощь', 'жалоба', 'проблема']
-HANDOFF_FALLBACK_PATTERNS = ['не могу ответить', 'не нашёл информации', 'обратитесь в поддержку', 'свяжитесь с']
 HANDOFF_MAX_REQUESTS_PER_MINUTE = 3
 
 logger = logging.getLogger(__name__)
@@ -43,6 +44,11 @@ class HandoffService:
     def __init__(self, db: Session):
         self.db = db
         self._seq_counter = 0
+
+    def _get_local_time(self) -> datetime:
+        """Get current time in Moscow timezone instead of UTC."""
+        moscow_tz = pytz.timezone('Europe/Moscow')
+        return datetime.now(moscow_tz)
 
     def request_handoff(
         self, 
@@ -142,7 +148,7 @@ class HandoffService:
                 text="Переключаем ваш диалог на сотрудника. Мы уже занимаемся вашим вопросом, ответим в ближайшее время",
                 message_kind="system",
                 system_type="handoff_requested",
-                timestamp=datetime.utcnow()
+                timestamp=self._get_local_time()
             )
             self.db.add(system_message)
             
@@ -165,6 +171,12 @@ class HandoffService:
                     asyncio.create_task(self._send_handoff_notifications(dialog, reason, last_user_text))
                     # Отправляем системное сообщение в Telegram при запросе оператора
                     asyncio.create_task(self._send_telegram_system_message(dialog_id, "Переключаем ваш диалог на сотрудника. Мы уже занимаемся вашим вопросом, ответим в ближайшее время", "handoff_requested"))
+                    # Отправляем событие в Redis pub/sub для всех активных клиентов
+                    asyncio.create_task(publish_dialog_event(dialog_id, {
+                        "type": "handoff_requested",
+                        "dialog_id": dialog_id,
+                        "timestamp": datetime.utcnow().isoformat()
+                    }))
                 else:
                     logger.debug(f"Skipping async notifications for dialog {dialog_id} - no active event loop")
             except RuntimeError:
@@ -262,7 +274,7 @@ class HandoffService:
                 text="Оператор подключился",
                 message_kind="system",
                 system_type="handoff_started",
-                timestamp=datetime.utcnow()
+                timestamp=self._get_local_time()
             )
             self.db.add(system_message)
             
@@ -285,6 +297,13 @@ class HandoffService:
                     asyncio.create_task(self._send_ws_notification(dialog_id, "handoff_started", manager_id))
                     # Отправляем системное сообщение в Telegram при подключении оператора
                     asyncio.create_task(self._send_telegram_system_message(dialog_id, "Оператор подключился", "handoff_started"))
+                    # Отправляем событие в Redis pub/sub для всех активных клиентов
+                    asyncio.create_task(publish_dialog_event(dialog_id, {
+                        "type": "handoff_started",
+                        "dialog_id": dialog_id,
+                        "manager_id": manager_id,
+                        "timestamp": datetime.utcnow().isoformat()
+                    }))
                 else:
                     logger.debug(f"Skipping WS notification for dialog {dialog_id} - no active event loop")
             except RuntimeError:
@@ -355,7 +374,7 @@ class HandoffService:
                 text="Диалог возвращен к AI-ассистенту. Спасибо за обращение!",
                 message_kind="system",
                 system_type="handoff_released",
-                timestamp=datetime.utcnow()
+                timestamp=self._get_local_time()
             )
             self.db.add(system_message)
             
@@ -377,6 +396,12 @@ class HandoffService:
                     asyncio.create_task(self._send_ws_notification(dialog_id, "handoff_released"))
                     # Отправляем системное сообщение в Telegram
                     asyncio.create_task(self._send_telegram_system_message(dialog_id, "Диалог возвращен к AI-ассистенту. Спасибо за обращение!", "handoff_released"))
+                    # Отправляем событие в Redis pub/sub для всех активных клиентов
+                    asyncio.create_task(publish_dialog_event(dialog_id, {
+                        "type": "handoff_released",
+                        "dialog_id": dialog_id,
+                        "timestamp": datetime.utcnow().isoformat()
+                    }))
                 else:
                     logger.debug(f"Skipping WS notification for dialog {dialog_id} - no active event loop")
             except RuntimeError:
@@ -425,7 +450,7 @@ class HandoffService:
                 text="Запрос оператора отменен",
                 message_kind="system",
                 system_type="handoff_cancelled",
-                timestamp=datetime.utcnow()
+                timestamp=self._get_local_time()
             )
             self.db.add(system_message)
             
@@ -492,50 +517,6 @@ class HandoffService:
         
         return queue
 
-    def should_request_handoff(self, user_text: str, ai_text: str = None, dialog=None) -> Tuple[bool, str]:
-        """
-        Check if handoff should be automatically requested.
-        
-        Args:
-            user_text: User's message text
-            ai_text: AI's response text (optional)
-            dialog: Dialog object for context (optional)
-            
-        Returns:
-            Tuple of (should_request, reason)
-        """
-        # Check for keywords in user text
-        keywords_ru = ["оператор", "менеджер", "живой человек", "поддержка", "помощь", "человек"]
-        keywords_en = ["operator", "manager", "human", "support", "help", "person"]
-        
-        user_text_lower = user_text.lower()
-        
-        for keyword in keywords_ru + keywords_en:
-            if keyword in user_text_lower:
-                return True, "keyword"
-        
-        # Check AI response for fallback patterns
-        if ai_text:
-            fallback_patterns = [
-                "не нашёл информации",
-                "не могу ответить",
-                "обратитесь в поддержку",
-                "не понимаю",
-                "couldn't find",
-                "can't answer",
-                "contact support"
-            ]
-            
-            ai_text_lower = ai_text.lower()
-            for pattern in fallback_patterns:
-                if pattern in ai_text_lower:
-                    return True, "fallback"
-        
-        # Check dialog context for repeated failures
-        if dialog and dialog.fallback_count >= 2:
-            return True, "retries"
-        
-        return False, ""
 
     def _build_status_response(self, dialog) -> HandoffStatusOut:
         """Build HandoffStatusOut from dialog object."""
@@ -597,24 +578,36 @@ class HandoffService:
     async def _send_handoff_notifications(self, dialog, reason: str, last_user_text: str = None):
         """Send email notifications to operators (async)."""
         try:
-            from backend.integrations.email_service import send_handoff_notification
+            from integrations.email_service import email_service
             
             # Get admin users or use configured recipients
-            recipients = getattr(settings, 'HANDOFF_RECIPIENTS', None)
+            recipients = None
+            if HANDOFF_RECIPIENTS:
+                recipients = [email.strip() for email in HANDOFF_RECIPIENTS.split(',') if email.strip()]
+            
             if not recipients:
                 admins = self.db.query(models.User).filter(
                     models.User.role == 'admin'
                 ).all()
                 recipients = [admin.email for admin in admins if admin.email]
             
+            if not recipients:
+                logger.warning("No recipients found for handoff notifications - no admin users with email addresses")
+                return
+            
             for email in recipients:
-                await send_handoff_notification(
+                # Используем синхронный метод email_service
+                success = email_service.send_handoff_notification(
                     to_email=email,
                     dialog_id=dialog.id,
-                    user_preview=last_user_text or "",
                     reason=reason,
-                    link=f"{settings.FRONTEND_URL}/admin/dialogs/{dialog.id}"
+                    user_preview=last_user_text or "",
+                    timestamp=None  # will use current time
                 )
+                if success:
+                    logger.info(f"Handoff notification sent to {email} for dialog {dialog.id}")
+                else:
+                    logger.error(f"Failed to send handoff notification to {email} for dialog {dialog.id}")
                 
         except Exception as e:
             logger.error(f"Error sending handoff notifications: {str(e)}")
@@ -644,6 +637,33 @@ class HandoffService:
             
         except Exception as e:
             logger.error(f"Error sending WebSocket notification: {str(e)}")
+
+    async def _send_sse_notification(self, dialog_id: int, event_type: str, manager_id: int = None):
+        """Send SSE event notification for handoff events."""
+        try:
+            from services.sse_manager import push_sse_event
+            
+            self._seq_counter += 1
+            event_data = {
+                "type": event_type,
+                "dialog_id": dialog_id,
+                "seq": self._seq_counter,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+            
+            if manager_id:
+                manager = self.db.query(models.User).filter(models.User.id == manager_id).first()
+                if manager:
+                    event_data["manager"] = {
+                        "id": manager_id,
+                        "name": manager.first_name.strip() if manager.first_name else f"User #{manager_id}"
+                    }
+            
+            await push_sse_event(dialog_id, event_data)
+            logger.info(f"SSE event '{event_type}' sent for dialog {dialog_id}")
+            
+        except Exception as e:
+            logger.error(f"Error sending SSE notification: {str(e)}")
 
     async def _send_telegram_system_message(self, dialog_id: int, text: str, system_type: str):
         """Send system message to Telegram bot for dialog."""

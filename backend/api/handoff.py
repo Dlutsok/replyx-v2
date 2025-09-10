@@ -11,12 +11,14 @@ from database import models
 from schemas.handoff import (
     HandoffRequestIn, HandoffStatusOut, HandoffTakeoverIn, 
     HandoffReleaseIn, HandoffCancelIn, OperatorHeartbeatIn,
-    HandoffQueueItem
+    HandoffQueueItem, HandoffDetectionRequest, HandoffDetectionResponse
 )
+from pydantic import BaseModel
 from services.handoff_service import HandoffService
 
 
 logger = logging.getLogger(__name__)
+
 
 # Router for dialog-specific handoff endpoints
 router = APIRouter(prefix="/dialogs/{dialog_id}/handoff", tags=["handoff"])
@@ -320,3 +322,64 @@ def force_reset_handoff(
     except Exception as e:
         logger.error(f"Error force resetting handoff for dialog {dialog_id}: {str(e)}")
         raise HTTPException(status_code=500, detail="Произошла ошибка. Попробуйте позже.")
+
+
+# Новый endpoint для определения handoff
+@router.post("/should-request", response_model=HandoffDetectionResponse)
+def should_request_handoff_api(
+    request: HandoffDetectionRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    API для определения нужен ли handoff с улучшенной логикой.
+    
+    Используется bot_worker.js и другими компонентами для 
+    единообразного определения потребности в операторе.
+    
+    **Features:**
+    - Контекстный анализ текста
+    - Исключение ложных срабатываний  
+    - Весовая система оценки
+    - Подробная диагностика решений
+    """
+    try:
+        from services.improved_handoff_detector import ImprovedHandoffDetector
+        detector = ImprovedHandoffDetector()
+        
+        # Получаем диалог если передан dialog_id
+        dialog = None
+        if request.dialog_id:
+            dialog = db.query(models.Dialog).filter(
+                models.Dialog.id == request.dialog_id
+            ).first()
+        
+        # Анализируем текст на необходимость handoff
+        should_handoff, reason, details = detector.should_request_handoff(
+            user_text=request.user_text,
+            ai_text=request.ai_text,
+            dialog=dialog
+        )
+        
+        # Подробное логирование для диагностики
+        if should_handoff:
+            matched_patterns = [p['description'] for p in details.get('matched_patterns', [])]
+            logger.info(f"🔍 Handoff detection API: SHOULD_HANDOFF=True")
+            logger.info(f"   Dialog ID: {request.dialog_id}")
+            logger.info(f"   Reason: {reason}")
+            logger.info(f"   Score: {details.get('total_score', 0):.2f}")
+            logger.info(f"   Patterns: {matched_patterns}")
+            logger.info(f"   Text: {request.user_text[:100]}...")
+        else:
+            logger.debug(f"🔍 Handoff detection API: SHOULD_HANDOFF=False (score: {details.get('total_score', 0):.2f})")
+        
+        return HandoffDetectionResponse(
+            should_handoff=should_handoff,
+            reason=reason,
+            score=details.get('total_score', 0.0),
+            matched_patterns=[p['description'] for p in details.get('matched_patterns', [])],
+            details=details
+        )
+        
+    except Exception as e:
+        logger.error(f"Error in handoff detection API: {str(e)}")
+        raise HTTPException(status_code=500, detail="Ошибка анализа handoff")

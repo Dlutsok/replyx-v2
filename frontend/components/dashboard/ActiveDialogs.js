@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { FiMessageCircle, FiUser, FiClock, FiExternalLink, FiRefreshCw, FiTool, FiGlobe } from 'react-icons/fi';
 import { useDialogActions, useWebSocket } from '../../hooks/useDashboardData';
+import { getUserDisplayName as getDialogUserDisplayName } from '../../utils/dialogHelpers';
 
 const ActiveDialogs = React.memo(({ dialogs: initialDialogs, loading, onRefresh }) => {
   const [dialogs, setDialogs] = useState(initialDialogs || []);
@@ -62,7 +63,6 @@ const ActiveDialogs = React.memo(({ dialogs: initialDialogs, loading, onRefresh 
         ));
       }
     } catch (error) {
-      console.error('Error taking over dialog:', error);
     } finally {
       setActionLoading(prev => ({ ...prev, [dialogId]: false }));
     }
@@ -81,7 +81,6 @@ const ActiveDialogs = React.memo(({ dialogs: initialDialogs, loading, onRefresh 
         ));
       }
     } catch (error) {
-      console.error('Error releasing dialog:', error);
     } finally {
       setActionLoading(prev => ({ ...prev, [dialogId]: false }));
     }
@@ -104,12 +103,7 @@ const ActiveDialogs = React.memo(({ dialogs: initialDialogs, loading, onRefresh 
   }, []);
 
   const getUserDisplayName = useCallback((dialog) => {
-    if (dialog.name) return dialog.name;
-    if (dialog.first_name && dialog.last_name) return `${dialog.first_name} ${dialog.last_name}`;
-    if (dialog.first_name) return dialog.first_name;
-    if (dialog.telegram_username) return `@${dialog.telegram_username}`;
-    if (dialog.email) return dialog.email;
-    return `Пользователь #${dialog.user_id}`;
+    return getDialogUserDisplayName(dialog);
   }, []);
 
   const getDialogStatus = useCallback((dialog) => {

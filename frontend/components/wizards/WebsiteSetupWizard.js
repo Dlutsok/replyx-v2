@@ -183,7 +183,6 @@ const WebsiteSetupWizard = ({ isOpen, onClose, onComplete, selectedAssistant }) 
     } catch (error) {
       setStepData(prev => ({ ...prev, uploading: false }));
       showError('Ошибка загрузки файлов', { title: 'Ошибка' });
-      console.error('Ошибка загрузки файлов:', error);
     }
   };
 

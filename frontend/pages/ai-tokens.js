@@ -64,7 +64,6 @@ export default function AITokensPage() {
                 setTokens(data);
             }
         } catch (error) {
-            console.error('Ошибка загрузки токенов:', error);
         } finally {
             setLoading(false);
         }
@@ -107,7 +106,6 @@ export default function AITokensPage() {
                 showError('Ошибка при сохранении токена', { title: 'Ошибка' });
             }
         } catch (error) {
-            console.error('Ошибка:', error);
             showError('Ошибка при сохранении токена', { title: 'Ошибка' });
         }
     };
@@ -142,7 +140,6 @@ export default function AITokensPage() {
                 showError('Ошибка при удалении токена', { title: 'Ошибка' });
             }
         } catch (error) {
-            console.error('Ошибка:', error);
             showError('Ошибка при удалении токена', { title: 'Ошибка' });
         }
     };
@@ -165,7 +162,6 @@ export default function AITokensPage() {
                 showError('Ошибка при изменении статуса токена', { title: 'Ошибка' });
             }
         } catch (error) {
-            console.error('Ошибка:', error);
             showError('Ошибка при изменении статуса токена', { title: 'Ошибка' });
         }
     };
@@ -186,7 +182,6 @@ export default function AITokensPage() {
                 showError('Ошибка при создании тестовых токенов', { title: 'Ошибка' });
             }
         } catch (error) {
-            console.error('Ошибка:', error);
             showError('Ошибка при создании тестовых токенов', { title: 'Ошибка' });
         }
     };

@@ -86,7 +86,6 @@ const StartPage = () => {
         return assistants && assistants.length > 0 ? assistants[0] : null;
       }
     } catch (error) {
-      console.error('Ошибка получения ассистентов:', error);
     }
     return null;
   }, []);
@@ -114,13 +113,11 @@ const StartPage = () => {
         }
       }
     } catch (error) {
-      console.error('Ошибка получения домена виджета:', error);
     }
     return null;
   }, [getFirstAssistant]);
 
   const handleTaskAction = useCallback(async (taskId, action) => {
-    console.log(`Task ${taskId}, action: ${action}`);
     
     // Отслеживание действия пользователя
     const step = steps.find(s => s.id === taskId);

@@ -61,17 +61,6 @@ export default function Dialogs() {
     time_filter: timeFilter || 'all'
   }), [searchQuery, statusFilter, selectedChannel, selectedBot, timeFilter]);
   
-  // Отладочный лог для фильтров (только при изменении)
-  useEffect(() => {
-    console.log('🔍 [Dialogs] Filters changed:', {
-      searchQuery,
-      statusFilter,
-      selectedChannel,
-      selectedBot,
-      timeFilter,
-      finalFilters: filters
-    });
-  }, [filters, searchQuery, statusFilter, selectedChannel, selectedBot, timeFilter]);
 
   // Data sync hook
   const {
@@ -134,7 +123,7 @@ export default function Dialogs() {
         openDialogModal(dialog);
       }
     } catch (err) {
-      console.error('Error taking over dialog:', err);
+      // Error handling without console log
     }
   }, [takeoverDialog, dialogs, openDialogModal]);
 
@@ -142,7 +131,7 @@ export default function Dialogs() {
     try {
       await releaseDialog(dialog.id);
     } catch (err) {
-      console.error('Error releasing dialog:', err);
+      // Error handling without console log
     }
   }, [releaseDialog]);
 
@@ -150,7 +139,7 @@ export default function Dialogs() {
     try {
       await cancelHandoff(dialogId);
     } catch (err) {
-      console.error('Error cancelling handoff:', err);
+      // Error handling without console log
     }
   }, [cancelHandoff]);
 
@@ -211,21 +200,7 @@ export default function Dialogs() {
       {!loading && !error && (
         <>
           {/* Handoff Queue - показываем если есть диалоги, ожидающие оператора */}
-          {(() => {
-            // Используем handoffDialogs - специально загруженные диалоги в очереди, независимо от фильтров поиска
-            console.log('🔍 [Dialogs] HandoffQueue check:', {
-              totalDialogs: dialogs.length,
-              handoffDialogs: handoffDialogs.length,
-              searchActive: !!searchQuery || statusFilter !== STATUS_ALL,
-              handoffStatuses: handoffDialogs.map(d => ({ 
-                id: d.id, 
-                handoff_status: d.handoff_status,
-                is_taken_over: d.is_taken_over,
-                handoff_requested_at: d.handoff_requested_at
-              }))
-            });
-            
-            return handoffDialogs.length > 0 ? (
+          {handoffDialogs.length > 0 ? (
               <div style={{ marginBottom: '24px' }}>
                 <HandoffQueue
                   dialogs={handoffDialogs}
@@ -234,8 +209,7 @@ export default function Dialogs() {
                   isLoading={loading}
                 />
               </div>
-            ) : null;
-          })()}
+            ) : null}
 
           <DialogControls 
             searchQuery={searchQuery}

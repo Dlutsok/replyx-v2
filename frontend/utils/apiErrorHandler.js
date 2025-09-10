@@ -325,7 +325,6 @@ export async function apiRequestWithRetry(url, options = {}, retryConfig = {}) {
           maxDelay
         );
         
-        console.warn(`API request failed, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`, error);
         await new Promise(resolve => setTimeout(resolve, delay));
         continue;
       }
@@ -348,7 +347,6 @@ export function createErrorHandler(showToast, context = '') {
     const message = customMessage || error.message || 'Произошла ошибка';
     const fullMessage = context ? `${context}: ${message}` : message;
     
-    console.error(`Error${context ? ` in ${context}` : ''}:`, error);
     
     if (showToast) {
       showToast(fullMessage, 'error');

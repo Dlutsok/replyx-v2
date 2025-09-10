@@ -34,7 +34,6 @@ export default async function handler(req, res) {
             res.status(response.status).json(data);
         }
     } catch (error) {
-        console.error('Error in qa-knowledge [id] API:', error);
         res.status(500).json({ detail: 'Ошибка соединения с сервером' });
     }
 }

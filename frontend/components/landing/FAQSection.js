@@ -93,7 +93,6 @@ const FAQSection = () => {
         setSubmitError(result.message || 'Произошла ошибка при отправке формы');
       }
     } catch (error) {
-      console.error('Error submitting form:', error);
       setSubmitError('Не удалось отправить форму. Проверьте подключение к интернету и попробуйте снова.');
     } finally {
       setIsSubmitting(false);

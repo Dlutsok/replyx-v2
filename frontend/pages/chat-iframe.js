@@ -23,9 +23,6 @@ const API_URL = getApiUrl();
 const USE_SSE_TRANSPORT = true;
 
 // Debug логирование API URL
-console.log('[ReplyX iframe] API_URL:', API_URL);
-console.log('[ReplyX iframe] Transport mode: SSE (WebSocket removed)');
-console.log('[ReplyX iframe] URL params:', typeof window !== 'undefined' ? window.location.search : 'N/A');
 
 // Security utility: safely logs URLs with tokens
 function safeLogUrl(url, label = "URL") {
@@ -43,9 +40,7 @@ function safeLogUrl(url, label = "URL") {
     });
     
     const safeUrl = `${urlObj.protocol}//${urlObj.host}${urlObj.pathname}${params.toString() ? '?' + params.toString() : ''}`;
-    console.log(`[ReplyX iframe] ${label}: ${safeUrl}`);
   } catch (e) {
-    console.log(`[ReplyX iframe] ${label}: [invalid URL format]`);
   }
 }
 
@@ -454,24 +449,15 @@ export default function ChatIframe() {
         const result = await response.json();
         setHandoffStatus(result.status);
         
-        // Добавляем системное сообщение
-        const systemMessage = {
-          id: `system-${Date.now()}`,
-          sender: 'system',
-          text: 'Переключаем ваш диалог на сотрудника. Мы уже занимаемся вашим вопросом, ответим в ближайшее время',
-          timestamp: new Date().toISOString(),
-          system_type: 'handoff_requested'
-        };
-        
-        setMessages(prev => [...prev, systemMessage]);
-        scrollToBottom();
+        // Системное сообщение будет получено через загрузку диалога из БД
+        // Обновляем диалог чтобы получить системное сообщение от сервера
+        await loadDialog();
         
       } else {
         const error = await response.json();
         alert(`Сообщение об ошибке: ${error.detail || 'Ошибка запроса оператора'}`);
       }
     } catch (error) {
-      console.error('Error requesting handoff:', error);
       alert('Ошибка соединения. Попробуйте позже.');
     }
   };
@@ -630,7 +616,6 @@ export default function ChatIframe() {
   // Функция получения настроек виджета через API
   const fetchWidgetSettings = async (token) => {
     try {
-      console.log('[CHAT_IFRAME] 🔄 Запрашиваем настройки виджета через API...');
       
       const response = await fetch(`${API_URL}/api/widget-config`, {
         method: 'POST',
@@ -643,7 +628,6 @@ export default function ChatIframe() {
       const result = await response.json();
       
       if (result.success && result.config) {
-        console.log('[CHAT_IFRAME] ✅ Настройки получены:', result.config);
         
         // Применяем полученные настройки
         if (result.config.operator_name) {
@@ -657,7 +641,6 @@ export default function ChatIframe() {
           const fullAvatarUrl = result.config.avatar_url.startsWith('http') 
             ? result.config.avatar_url 
             : `${API_URL}${result.config.avatar_url}`;
-          console.log('[CHAT_IFRAME] 🖼️ Устанавливаем URL аватара:', fullAvatarUrl);
           setAvatarUrl(fullAvatarUrl);
         }
         if (result.config.widget_theme) {
@@ -670,11 +653,9 @@ export default function ChatIframe() {
         
         return result.config;
       } else {
-        console.warn('[CHAT_IFRAME] ⚠️ Не удалось получить настройки:', result.reason);
         return null;
       }
     } catch (error) {
-      console.error('[CHAT_IFRAME] ❌ Ошибка получения настроек:', error);
       return null;
     }
   };
@@ -707,13 +688,11 @@ export default function ChatIframe() {
         const fullAvatarUrl = decodedAvatarUrl.startsWith('http') 
           ? decodedAvatarUrl 
           : `${API_URL}${decodedAvatarUrl}`;
-        console.log('[CHAT_IFRAME] 🖼️ Аватар из URL параметров:', fullAvatarUrl);
         setAvatarUrl(fullAvatarUrl);
       }
       
       // Если нет URL параметров персонализации, но есть токен - запрашиваем через API
       if (token && !operatorNameParam && !businessNameParam && !avatarUrlParam) {
-        console.log('[CHAT_IFRAME] 🔍 URL параметры персонализации отсутствуют, запрашиваем через API...');
         await fetchWidgetSettings(token);
       }
       
@@ -736,7 +715,6 @@ export default function ChatIframe() {
             setDebugInfo(`✅ Диалог инициализирован`);
           }
         } catch (error) {
-          console.error('Ошибка инициализации:', error);
           setDebugInfo(`✅ Готов к созданию диалога при первом сообщении`);
         }
       } else if (assistantId && gid && !token) {
@@ -749,7 +727,6 @@ export default function ChatIframe() {
             setDebugInfo(`✅ Диалог инициализирован`);
           }
         } catch (error) {
-          console.error('Ошибка инициализации:', error);
           setDebugInfo(`✅ Готов к созданию диалога при первом сообщении`);
         }
       } else {
@@ -783,7 +760,6 @@ export default function ChatIframe() {
         sseUrl += `?${params.toString()}`;
       }
       
-      console.log('[ReplyX iframe] SSE URL:', sseUrl);
       
       const eventSource = new EventSource(sseUrl);
       
@@ -797,9 +773,62 @@ export default function ChatIframe() {
             const statusRes = await fetch(`${API_URL}/api/dialogs/${dialogId}/handoff/status`);
             if (statusRes.ok) {
               const s = await statusRes.json();
-              if (s && s.status) setHandoffStatus(s.status);
+              if (s && s.status) {
+                setHandoffStatus(s.status);
+                
+                // Синхронизируем системные сообщения на основе текущего статуса
+                // Это важно если виджет подключился ПОСЛЕ событий handoff
+                const currentMessages = messages;
+                
+                if (s.status === 'requested') {
+                  // Проверяем нет ли уже сообщения о запросе handoff
+                  const hasHandoffRequestedMsg = currentMessages.some(m => m.system_type === 'handoff_requested');
+                  if (!hasHandoffRequestedMsg) {
+                    const systemMessage = {
+                      id: `system-sync-${Date.now()}`,
+                      sender: 'system',
+                      text: 'Переключаем ваш диалог на сотрудника. Мы уже занимаемся вашим вопросом, ответим в ближайшее время',
+                      timestamp: new Date().toISOString(),
+                      system_type: 'handoff_requested'
+                    };
+                    setMessages(prev => [...prev, systemMessage]);
+                  }
+                }
+                
+                if (s.status === 'active') {
+                  // Показываем все нужные системные сообщения для активного handoff
+                  let messagesToAdd = [];
+                  
+                  const hasHandoffRequestedMsg = currentMessages.some(m => m.system_type === 'handoff_requested');
+                  if (!hasHandoffRequestedMsg) {
+                    messagesToAdd.push({
+                      id: `system-sync-requested-${Date.now()}`,
+                      sender: 'system',
+                      text: 'Переключаем ваш диалог на сотрудника. Мы уже занимаемся вашим вопросом, ответим в ближайшее время',
+                      timestamp: new Date().toISOString(),
+                      system_type: 'handoff_requested'
+                    });
+                  }
+                  
+                  const hasHandoffStartedMsg = currentMessages.some(m => m.system_type === 'handoff_started');
+                  if (!hasHandoffStartedMsg) {
+                    messagesToAdd.push({
+                      id: `system-sync-started-${Date.now()}`,
+                      sender: 'system',  
+                      text: 'Оператор подключился',
+                      timestamp: new Date().toISOString(),
+                      system_type: 'handoff_started'
+                    });
+                  }
+                  
+                  if (messagesToAdd.length > 0) {
+                    setMessages(prev => [...prev, ...messagesToAdd]);
+                  }
+                }
+              }
             }
-          } catch (e) {}
+          } catch (e) {
+          }
         })();
         
         // Уведомляем родительское окно о подключении SSE
@@ -813,7 +842,6 @@ export default function ChatIframe() {
       eventSource.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          console.log('📨 [Widget] SSE message received:', data);
           
           // Обработка разных типов сообщений через SSE
           if (data.type === 'typing_start') {
@@ -832,10 +860,11 @@ export default function ChatIframe() {
           if (data.type === 'handoff_requested') {
             setHandoffStatus('requested');
             setTyping(false);
+            // Создаем системное сообщение мгновенно через SSE
             const systemMessage = {
               id: `system-${Date.now()}`,
               sender: 'system',
-              text: data.message || 'Переключаем ваш диалог на сотрудника. Мы уже занимаемся вашим вопросом, ответим в ближайшее время',
+              text: 'Переключаем ваш диалог на сотрудника. Мы уже занимаемся вашим вопросом, ответим в ближайшее время',
               timestamp: new Date().toISOString(),
               system_type: 'handoff_requested'
             };
@@ -887,7 +916,6 @@ export default function ChatIframe() {
                   Math.abs(new Date(m.timestamp) - new Date(data.timestamp)) < 60000 // в пределах минуты
                 );
                 if (recentDuplicate) {
-                  console.log(`🔄 [Widget] Skipping duplicate user message: ${data.text}`);
                   return prev;
                 }
               }
@@ -932,7 +960,6 @@ export default function ChatIframe() {
                   Math.abs(new Date(m.timestamp) - new Date(msg.timestamp)) < 60000 // в пределах минуты
                 );
                 if (recentDuplicate) {
-                  console.log(`🔄 [Widget] Skipping duplicate user message: ${msg.text}`);
                   return prev;
                 }
               }
@@ -966,12 +993,10 @@ export default function ChatIframe() {
           
           scrollToBottom();
         } catch (error) {
-          console.error('Error parsing SSE message:', error);
         }
       };
       
       eventSource.onerror = (error) => {
-        console.error('SSE connection error:', error);
         setDebugInfo(`❌ Ошибка SSE: Переподключение...`);
         setIsOnline(false);
         
@@ -994,13 +1019,11 @@ export default function ChatIframe() {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden && !isOnline) {
-        console.log('Visibility changed, SSE reconnect logic here');
       }
     }
     
     const handleOnlineStatus = () => {
       if (navigator.onLine && !isOnline) {
-        console.log('Online status changed, SSE reconnect logic here');
       }
     };
     
@@ -1110,7 +1133,6 @@ export default function ChatIframe() {
         return;
       }
       const msgs = await res.json();
-      console.log('[FETCH_MESSAGES_WIDGET] Загружено сообщений:', msgs.length);
       
       setMessages(msgs);
       setDialogLoaded(true);
@@ -1130,7 +1152,6 @@ export default function ChatIframe() {
         return;
       }
     const msgs = await res.json();
-    console.log('[FETCH_MESSAGES] Загружено сообщений:', msgs.length);
     
     setMessages(msgs);
     setDialogLoaded(true);
@@ -1224,9 +1245,6 @@ export default function ChatIframe() {
     // Auto-scroll to bottom after sending message
     scrollToBottom();
     
-    console.log('🚀 [ВИДЖЕТ→АДМИН] Отправляем сообщение в диалог', dialogId);
-    console.log('🚀 [ВИДЖЕТ→АДМИН] Текст сообщения:', textToSend.substring(0, 50));
-    console.log('🚀 [ВИДЖЕТ→АДМИН] API URL:', API_URL);
     
     try {
       let res;
@@ -1235,7 +1253,6 @@ export default function ChatIframe() {
       if (assistantId) {
         // Гостевой режим
         endpoint = `${API_URL}/api/widget/dialogs/${dialogId}/messages?assistant_id=${assistantId}&guest_id=${guestId}`;
-        console.log('🚀 [ВИДЖЕТ→АДМИН] Гостевой режим, endpoint:', endpoint);
         res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1244,7 +1261,6 @@ export default function ChatIframe() {
       } else {
         // Режим с токеном
         endpoint = `${API_URL}/api/site/dialogs/${dialogId}/messages?site_token=${siteToken}&guest_id=${guestId}`;
-        console.log('🚀 [ВИДЖЕТ→АДМИН] Режим с токеном, endpoint:', endpoint);
         res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1252,13 +1268,11 @@ export default function ChatIframe() {
         });
       }
       
-      console.log('🚀 [ВИДЖЕТ→АДМИН] Ответ сервера:', res.status, res.statusText);
       
       if (res.ok) {
         // Сообщение успешно отправлено, ожидаем ответ
         setLoading(false); // Сразу разблокируем кнопку после успешной отправки
         setDebugInfo(`✅ Сообщение отправлено, ожидаю ответ...`);
-        console.log('✅ [ВИДЖЕТ→АДМИН] Сообщение успешно отправлено на сервер');
         
         // Уведомляем родительское окно об отправке сообщения
         if (typeof window !== 'undefined' && window.parent) {
@@ -1596,7 +1610,7 @@ export default function ChatIframe() {
                       maxWidth: '80%'
                     }}>
                       <div dangerouslySetInnerHTML={{ 
-                        __html: (m.system_type ? getSystemIcon(m.system_type) : '') + m.text 
+                        __html: m.text 
                       }} />
                     </div>
                   </div>
@@ -1616,7 +1630,7 @@ export default function ChatIframe() {
                       }}
                     >
                       <div className="message-content" dangerouslySetInnerHTML={{ 
-                        __html: (m.system_type ? getSystemIcon(m.system_type) : '') + parseMarkdown(m.text) 
+                        __html: parseMarkdown(m.text) 
                       }} />
                     </div>
                   </div>

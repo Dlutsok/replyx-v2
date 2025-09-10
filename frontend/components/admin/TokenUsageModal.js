@@ -33,7 +33,6 @@ const TokenUsageModal = ({ token, onClose }) => {
       const data = await response.json();
       setUsageData(data || []);
     } catch (err) {
-      console.error('Error loading usage data:', err);
       setError('Не удалось загрузить статистику использования');
     } finally {
       setLoading(false);

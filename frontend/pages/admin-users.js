@@ -57,10 +57,8 @@ const AdminUsersPage = () => {
         const data = await response.json();
         setUsers(data);
       } else {
-        console.error('Error fetching users:', response.statusText);
       }
     } catch (error) {
-      console.error('Error fetching users:', error);
     } finally {
       setIsLoading(false);
     }
@@ -150,7 +148,6 @@ const AdminUsersPage = () => {
         setErrorMessage(error.detail || 'Не удалось обновить баланс');
       }
     } catch (error) {
-      console.error('Error adjusting balance:', error);
       setErrorMessage('Ошибка сети. Проверьте подключение и попробуйте снова.');
     } finally {
       setIsSubmitting(false);
@@ -186,7 +183,6 @@ const AdminUsersPage = () => {
         setErrorMessage(error.detail || 'Не удалось обновить пользователя');
       }
     } catch (error) {
-      console.error('Error updating user:', error);
       setErrorMessage('Ошибка сети. Проверьте подключение и попробуйте снова.');
     } finally {
       setIsSubmitting(false);
@@ -216,7 +212,6 @@ const AdminUsersPage = () => {
         showError(`Ошибка: ${error.detail || 'Не удалось удалить пользователя'}`);
       }
     } catch (error) {
-      console.error('Error deleting user:', error);
       showError('Ошибка при удалении пользователя');
     }
   };
@@ -243,7 +238,6 @@ const AdminUsersPage = () => {
         showError(`Ошибка: ${error.detail || 'Не удалось изменить статус'}`);
       }
     } catch (error) {
-      console.error('Error toggling status:', error);
       showError('Ошибка при изменении статуса');
     }
   };
@@ -309,7 +303,6 @@ const AdminUsersPage = () => {
         setErrorMessage(error.detail || 'Не удалось создать пользователя');
       }
     } catch (error) {
-      console.error('Error creating user:', error);
       setErrorMessage('Ошибка сети. Проверьте подключение и попробуйте снова.');
     } finally {
       setIsSubmitting(false);

@@ -87,10 +87,16 @@ def _extract_user_name(text: str) -> Optional[str]:
         # Примеры: "меня зовут Дан", "я Дан", "я — Дан"
         m = re.search(r"меня\s+зовут\s+([A-Za-zА-Яа-яЁё\-]{2,30})", t, flags=re.IGNORECASE)
         if m:
-            return m.group(1).strip()
+            extracted_name = m.group(1).strip()
+            # ИСПРАВЛЕНИЕ: Не извлекаем автогенерированные имена
+            if not re.match(r'^Пользователь#?\d*$', extracted_name):
+                return extracted_name
         m = re.search(r"^я\s*[—-]?\s*([A-Za-zА-Яа-яЁё\-]{2,30})\b", t, flags=re.IGNORECASE)
         if m:
-            return m.group(1).strip()
+            extracted_name = m.group(1).strip()
+            # ИСПРАВЛЕНИЕ: Не извлекаем автогенерированные имена
+            if not re.match(r'^Пользователь#?\d*$', extracted_name):
+                return extracted_name
     except Exception:
         pass
     return None
@@ -214,19 +220,16 @@ def get_dialogs(
         dialog_user = db.query(models.User).filter(models.User.id == d.user_id).first()
         user_email = dialog_user.email if dialog_user else None
         
-        # Функция для очистки любого строкового поля от лишних "0" в конце
-        def clean_field(value):
-            if not value or not isinstance(value, str):
-                return value
-            if value.endswith('0'):
-                cleaned = value.rstrip('0').rstrip()
-                return cleaned if cleaned else value  # Если после очистки остается пустая строка, возвращаем оригинал
-            return value
+        # Используем исходные значения без "очистки", так как clean_field удалял легитимные нули
+        cleaned_first_name = d.first_name
+        cleaned_last_name = d.last_name
+        cleaned_telegram_username = d.telegram_username
         
-        # Очищаем все текстовые поля от лишних "0"
-        cleaned_first_name = clean_field(d.first_name)
-        cleaned_last_name = clean_field(d.last_name)
-        cleaned_telegram_username = clean_field(d.telegram_username)
+        # ИСПРАВЛЕНИЕ: Игнорируем испорченные автогенерированные имена в first_name
+        # Если first_name содержит паттерн "Пользователь#N", считаем его невалидным
+        import re
+        if cleaned_first_name and re.match(r'^Пользователь#\d+', cleaned_first_name):
+            cleaned_first_name = None  # Игнорируем испорченное значение
         
         # Приоритет отображения имени: Telegram данные -> Guest ID (сайт) -> User данные -> username -> ID
         user_name = None
@@ -239,13 +242,11 @@ def get_dialogs(
         elif d.guest_id:
             # Для анонимных пользователей сайта (виджета) генерируем уникальное имя
             # Используем ID диалога для создания уникального номера
-            user_name = f"Пользователь#{d.id}"
+            # ИСПРАВЛЕНИЕ: Явно приводим к int, чтобы избежать конкатенации с auto_response
+            dialog_id = int(d.id)  # Убеждаемся, что это число
+            user_name = f"Пользователь#{dialog_id}"
         elif dialog_user and dialog_user.first_name:
-            user_name = clean_field(dialog_user.first_name)
-        
-        # Дополнительная очистка user_name от лишних символов "0" в конце
-        if user_name and user_name.endswith('0'):
-            user_name = user_name.rstrip('0').rstrip()
+            user_name = dialog_user.first_name
         
         items.append({
             "id": d.id,
@@ -282,6 +283,7 @@ def get_dialogs(
             "comment": "",  # Можно добавить первое сообщение пользователя
             "sentiment": "neutral"  # По умолчанию
         })
+        print(f"🔍 [FINAL RESPONSE] Dialog {d.id}: name in response = '{user_name}'")
     
     return {
         "items": items,
@@ -417,7 +419,9 @@ def get_dialog_messages(dialog_id: int, db: Session = Depends(get_db), current_u
             "id": m.id,
             "sender": m.sender,
             "text": m.text,
-            "timestamp": m.timestamp.isoformat() + 'Z'
+            "timestamp": m.timestamp.isoformat() + 'Z',
+            "message_kind": getattr(m, 'message_kind', None),
+            "system_type": getattr(m, 'system_type', None)
         } for m in sorted(dialog.messages, key=lambda x: x.timestamp)
     ]
     return messages

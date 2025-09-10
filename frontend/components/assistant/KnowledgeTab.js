@@ -170,7 +170,6 @@ export default function KnowledgeTab({
         return data.status; // 'processing' или 'completed'
       }
     } catch (error) {
-      console.error('Error checking summary status:', error);
     }
     return 'completed'; // По умолчанию считаем завершенным, чтобы показать кнопку
   };
@@ -230,7 +229,6 @@ export default function KnowledgeTab({
       const token = localStorage.getItem('token');
       
       if (!token) {
-        console.error('No auth token found');
         return;
       }
 
@@ -246,15 +244,12 @@ export default function KnowledgeTab({
         setQaKnowledge(data);
       } else {
         const error = await resp.text();
-        console.error('Failed to load Q&A knowledge:', resp.status, error);
         
         if (resp.status === 401) {
-          console.error('Unauthorized - token may be invalid or expired');
           // Можно добавить логику для перенаправления на логин
         }
       }
     } catch (error) {
-      console.error('Error loading Q&A knowledge:', error);
     } finally {
       setQaLoading(false);
     }
@@ -296,11 +291,9 @@ export default function KnowledgeTab({
         await loadQAKnowledge(); // Перезагружаем список
       } else {
         const error = await resp.text();
-        console.error('Delete error:', resp.status, error);
         showError(`Не удалось удалить Q&A запись: ${error}`, { title: 'Ошибка' });
       }
     } catch (error) {
-      console.error('Error deleting Q&A:', error);
       showError('Ошибка при удалении Q&A записи', { title: 'Ошибка' });
     }
   };
@@ -335,7 +328,6 @@ export default function KnowledgeTab({
         showError(`Ошибка: ${error.detail || 'Не удалось сохранить Q&A запись'}`, { title: 'Ошибка' });
       }
     } catch (error) {
-      console.error('Error saving Q&A:', error);
       showError('Ошибка при сохранении Q&A записи', { title: 'Ошибка' });
     }
   };

@@ -5,6 +5,7 @@ import {
   FiMoreVertical, FiEye, FiX
 } from 'react-icons/fi';
 import styles from './DialogCard.module.css';
+import { getUserDisplayName as getDialogUserDisplayName } from '../../utils/dialogHelpers';
 
 const DialogCard = ({ 
   dialog, 
@@ -31,11 +32,7 @@ const DialogCard = ({
   };
 
   const getUserDisplayName = (dialog) => {
-    if (dialog.name) return dialog.name;
-    if (dialog.first_name && dialog.last_name) return `${dialog.first_name} ${dialog.last_name}`;
-    if (dialog.first_name) return dialog.first_name;
-    if (dialog.telegram_username) return `@${dialog.telegram_username}`;
-    return 'Неизвестно';
+    return getDialogUserDisplayName(dialog);
   };
 
   const getInitials = (name, email, dialog = null) => {

@@ -54,7 +54,6 @@ export default function IntegrationsTab({
         setShowEmbedModal(true);
       }
     } catch (error) {
-      console.error('Error fetching embed code:', error);
       showError('Ошибка получения кода виджета', { title: 'Ошибка' });
     }
   }, []);
@@ -153,7 +152,6 @@ export default function IntegrationsTab({
         throw new Error(errorData.detail || `Ошибка ${isEditing ? 'обновления' : 'создания'} бота`);
       }
     } catch (error) {
-      console.error('Ошибка работы с Telegram ботом:', error);
       showError(`Ошибка ${editingBot ? 'обновления' : 'создания'} бота: ${error.message}`, { title: 'Ошибка' });
     } finally {
       setCreatingBot(false);

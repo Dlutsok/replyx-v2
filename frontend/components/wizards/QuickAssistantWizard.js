@@ -115,7 +115,6 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
         try {
           await updateAssistant();
         } catch (error) {
-          console.error('Ошибка автосохранения:', error);
         }
         setAutoSaving(false);
       }

@@ -45,11 +45,9 @@ export const useSystemHealth = (options = {}) => {
 
       const data = await response.json();
       
-      console.log('🔥 Health API Response:', data);
       setHealthData(data);
       setLastUpdated(new Date().toISOString());
       setError(null);
-      console.log('✅ Health data updated:', { status: data.status, timestamp: data.timestamp });
       
       return data;
     } catch (err) {
@@ -57,7 +55,6 @@ export const useSystemHealth = (options = {}) => {
         return; // Запрос был отменен, игнорируем
       }
 
-      console.error('System health fetch error:', err);
       const errorMessage = err.message || 'Ошибка загрузки данных системы';
       
       setError(errorMessage);
@@ -216,7 +213,6 @@ export const useSystemMetrics = () => {
       setMetricsData(data);
       
     } catch (err) {
-      console.error('System metrics fetch error:', err);
       setError(err.message || 'Ошибка загрузки метрик системы');
     } finally {
       setIsLoading(false);

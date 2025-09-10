@@ -11,12 +11,10 @@ const TestAdminTokensPage = () => {
   }, []);
 
   const testAuth = async () => {
-    console.log('🚀 Starting auth test...');
     setAuthStatus('logging-in');
     
     try {
       // 1. Login first
-      console.log('🔐 Logging in...');
       const loginResponse = await fetch('http://localhost:8000/api/login', {
         method: 'POST',
         headers: {
@@ -32,11 +30,9 @@ const TestAdminTokensPage = () => {
       const loginData = await loginResponse.json();
       const token = loginData.access_token;
       localStorage.setItem('token', token);
-      console.log(`✅ Login successful, token saved: ${token.substring(0, 20)}...`);
       setAuthStatus('logged-in');
       
       // 2. Test /api/me
-      console.log('👤 Testing /api/me...');
       const meResponse = await fetch('http://localhost:8000/api/me', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -49,11 +45,9 @@ const TestAdminTokensPage = () => {
       }
       
       const userData = await meResponse.json();
-      console.log(`👤 User data:`, userData);
       setAuthStatus('user-verified');
       
       // 3. Test AI tokens API
-      console.log('🎯 Testing AI tokens API...');
       const tokensResponse = await fetch('http://localhost:8000/api/admin/ai-tokens', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -66,12 +60,10 @@ const TestAdminTokensPage = () => {
       }
       
       const tokensData = await tokensResponse.json();
-      console.log(`🎯 AI tokens loaded: ${tokensData.length} tokens`);
       setTokens(tokensData);
       setAuthStatus('success');
       
     } catch (error) {
-      console.error(`❌ Error: ${error.message}`);
       setError(error.message);
       setAuthStatus('error');
     } finally {

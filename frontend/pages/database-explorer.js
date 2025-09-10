@@ -643,7 +643,6 @@ function DatabaseExplorer() {
         setTableSchema(schema);
       }
     } catch (error) {
-      console.error('Ошибка загрузки схемы:', error);
     } finally {
       setLoading(false);
     }
@@ -674,10 +673,8 @@ function DatabaseExplorer() {
         const result = await response.json();
         setUsersList(result.data || []);
       } else {
-        console.error('Error fetching users:', response.statusText);
       }
     } catch (error) {
-      console.error('Error fetching users:', error);
     }
   };
 
@@ -701,7 +698,6 @@ function DatabaseExplorer() {
           availableTables = tablesData.tables.map(t => t.name);
         }
       } catch (error) {
-        console.error('Error fetching available tables:', error);
       }
       
       // Определяем таблицы, связанные с пользователями (только те, что доступны)
@@ -746,26 +742,9 @@ function DatabaseExplorer() {
             const result = await response.json();
             relatedData[table] = result.data || [];
           } else {
-            const errorText = await response.text();
-            console.error(`HTTP ${response.status} for table ${table}:`, errorText);
-            console.log(`Request was:`, {
-              table,
-              field,
-              userId: userId.toString(),
-              body: {
-                page: 1,
-                limit: 1000,
-                search: null,
-                filter_field: field,
-                filter_value: userId.toString(),
-                sort_field: 'created_at',
-                sort_order: 'desc'
-              }
-            });
             relatedData[table] = [];
           }
         } catch (error) {
-          console.error(`Error fetching ${table}:`, error);
           relatedData[table] = [];
           // Пропускаем таблицу при ошибке сервера
           continue;
@@ -802,14 +781,12 @@ function DatabaseExplorer() {
               relatedData.messages.push(...(result.data || []));
             }
           } catch (error) {
-            console.error(`Error fetching messages for dialog ${dialog.id}:`, error);
           }
         }
       }
 
       setUserRelatedData(relatedData);
     } catch (error) {
-      console.error('Error fetching user related data:', error);
     } finally {
       setLoading(false);
     }

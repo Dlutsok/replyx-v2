@@ -85,7 +85,6 @@ export const useDashboardData = () => {
   // Создаём стабильную функцию для fetchData
   const fetchData = useCallback(async () => {
     if (!headers.Authorization) {
-      console.log('No authorization token found');
       return;
     }
 
@@ -95,18 +94,14 @@ export const useDashboardData = () => {
       // Параллельные запросы к API с оптимизированной обработкой
       const requests = Object.entries(requestConfigs).map(async ([key, config]) => {
         try {
-          console.log(`Fetching ${key} from ${config.url}`);
           const response = await fetch(config.url, { headers: config.headers });
           if (!response.ok && !config.optional) {
             const errorText = await response.text();
-            console.error(`API error for ${key}:`, response.status, errorText);
             throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
           }
           const data = response.ok ? await response.json() : (config.optional ? null : []);
-          console.log(`${key} data:`, data);
           return data;
         } catch (error) {
-          console.warn(`Failed to fetch ${key}:`, error);
           return config.optional ? null : [];
         }
       });
@@ -147,13 +142,11 @@ export const useDashboardData = () => {
       };
 
       // Расчетов производительности (убрали useMemo - он не должен быть внутри функции)
-      console.log('Dialog statuses:', fallbackDialogs.map(d => ({ id: d.id, status: d.status })));
       // Проверяем различные возможные статусы активных диалогов
       const possibleActiveStatuses = ['active', 'ongoing', 'in_progress', 'open', 'waiting'];
       const activeDialogsCount = fallbackDialogs.filter(d => 
         possibleActiveStatuses.includes(d.status?.toLowerCase())
       ).length;
-      console.log('Active dialogs calculation:', { fallbackDialogs, activeDialogsCount });
       
       const performanceData = {
         messages_per_hour: Math.floor((fallbackMetrics.periodMessages || 0) * 24 / 30),
@@ -200,7 +193,6 @@ export const useDashboardData = () => {
         performance: performanceData
       };
       
-      console.log('Final metrics data:', finalMetrics);
       
       setData({
         metrics: finalMetrics,
@@ -226,7 +218,6 @@ export const useDashboardData = () => {
         error: null
       });
     } catch (error) {
-      console.error('Dashboard data fetch error:', error);
       setData(prev => ({
         ...prev,
         loading: false,
@@ -400,7 +391,6 @@ export const useBotActions = () => {
       });
       return success;
     } catch (error) {
-      console.error('Bot toggle error:', error);
       setLastAction({ 
         type: 'toggle', 
         botId, 
@@ -426,7 +416,6 @@ export const useBotActions = () => {
       setLastAction({ type: 'start', botId, success, timestamp: new Date() });
       return success;
     } catch (error) {
-      console.error('Bot start error:', error);
       setLastAction({ type: 'start', botId, success: false, error: error.message, timestamp: new Date() });
       return false;
     } finally {
@@ -446,7 +435,6 @@ export const useBotActions = () => {
       setLastAction({ type: 'stop', botId, success, timestamp: new Date() });
       return success;
     } catch (error) {
-      console.error('Bot stop error:', error);
       setLastAction({ type: 'stop', botId, success: false, error: error.message, timestamp: new Date() });
       return false;
     } finally {
@@ -482,7 +470,6 @@ export const useDialogActions = () => {
       setLastAction({ type: 'takeover', dialogId, success, timestamp: new Date() });
       return success;
     } catch (error) {
-      console.error('Dialog takeover error:', error);
       setLastAction({ type: 'takeover', dialogId, success: false, error: error.message, timestamp: new Date() });
       return false;
     } finally {
@@ -502,7 +489,6 @@ export const useDialogActions = () => {
       setLastAction({ type: 'release', dialogId, success, timestamp: new Date() });
       return success;
     } catch (error) {
-      console.error('Dialog release error:', error);
       setLastAction({ type: 'release', dialogId, success: false, error: error.message, timestamp: new Date() });
       return false;
     } finally {
@@ -534,14 +520,12 @@ export const useWebSocket = (url, onMessage, options = {}) => {
         });
         return response.ok;
       } catch (error) {
-        console.warn('Backend недоступен:', error.message);
         return false;
       }
     };
 
     checkBackend().then(isBackendAvailable => {
       if (!isBackendAvailable) {
-        console.warn('Backend недоступен, пропускаем WebSocket подключение');
         setLastError(new Error('Backend недоступен'));
         
         // Попробуем снова через некоторое время
@@ -559,7 +543,6 @@ export const useWebSocket = (url, onMessage, options = {}) => {
       const websocket = new WebSocket(url);
       
       websocket.onopen = () => {
-        console.log('WebSocket подключен:', url);
         setConnected(true);
         setWs(websocket);
         setReconnectAttempts(0);
@@ -573,30 +556,25 @@ export const useWebSocket = (url, onMessage, options = {}) => {
             onMessage(data);
           }
         } catch (error) {
-          console.error('Ошибка парсинга WebSocket сообщения:', error);
         }
       };
       
       websocket.onclose = (event) => {
-        console.log('WebSocket отключен:', url, 'Код:', event.code);
         setConnected(false);
         setWs(null);
         
         // Автоматическое переподключение только при неожиданном закрытии
         if (autoReconnect && reconnectAttempts < maxReconnectAttempts && !event.wasClean && event.code !== 1000) {
-          console.log(`Попытка переподключения... (${reconnectAttempts + 1}/${maxReconnectAttempts})`);
           setTimeout(() => {
             setReconnectAttempts(prev => prev + 1);
             connect();
           }, reconnectInterval);
         } else if (reconnectAttempts >= maxReconnectAttempts) {
-          console.warn(`WebSocket отключен после ${maxReconnectAttempts} неудачных попыток`);
           setDisabled(true);
         }
       };
       
       websocket.onerror = (error) => {
-        console.warn('WebSocket ошибка:', error);
         setLastError(error);
       };
     });

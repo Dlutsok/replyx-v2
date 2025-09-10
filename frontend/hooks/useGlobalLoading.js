@@ -131,7 +131,6 @@ export const useAsyncAction = () => {
       if (onError) {
         onError(error);
       } else {
-        console.error('Async action error:', error);
       }
       throw error;
     } finally {

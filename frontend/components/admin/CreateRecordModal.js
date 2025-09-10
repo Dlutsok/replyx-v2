@@ -150,7 +150,6 @@ const CreateRecordModal = ({
       onClose();
 
     } catch (err) {
-      console.error('Ошибка создания записи:', err);
       setError(err.message);
     } finally {
       setLoading(false);

@@ -52,11 +52,9 @@ const CSRFProtectedForm = forwardRef(({
         }
         
         // Можно добавить обработку успешного ответа
-        console.log('🛡️ Форма успешно отправлена');
       }
       
     } catch (error) {
-      console.error('🛡️ Ошибка отправки формы:', error);
       setSubmitError(error.message);
     } finally {
       setIsSubmitting(false);

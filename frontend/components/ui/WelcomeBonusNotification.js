@@ -32,7 +32,6 @@ export default function WelcomeBonusNotification() {
         setShow(true);
       }
     } catch (error) {
-        console.error('Ошибка получения статуса приветственного бонуса:', error);
       }
   };
 
@@ -67,7 +66,6 @@ export default function WelcomeBonusNotification() {
         showSuccess(data.message);
       }
     } catch (error) {
-        console.error('Ошибка получения приветственного бонуса:', error);
         showError('Ошибка при получении бонуса. Попробуйте позже.');
       } finally {
       setClaiming(false);

@@ -63,7 +63,7 @@ const DialogTable = ({ dialogs, bots, onDialogOpen }) => {
                               Перехвачен
                             </span>
                           )}
-                          {dialog.is_taken_over !== 1 && dialog.auto_response && (
+                          {dialog.is_taken_over !== 1 && Boolean(dialog.auto_response) && (
                             <span className={`${styles.statusBadge} ${styles.active}`}>
                               Активен
                             </span>
@@ -158,7 +158,7 @@ const DialogTable = ({ dialogs, bots, onDialogOpen }) => {
                     <span className={`${styles.dialogCardStatus} ${styles.taken}`}>
                       Перехвачен
                     </span>
-                  ) : dialog.auto_response ? (
+                  ) : Boolean(dialog.auto_response) ? (
                     <span className={`${styles.dialogCardStatus} ${styles.active}`}>
                       Активен
                     </span>

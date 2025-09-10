@@ -71,15 +71,15 @@ function AppContent({ Component, pageProps }: AppProps) {
 
   // Принудительное перенаправление неавторизованных пользователей
   useEffect(() => {
-    if (!isLoading && !isAuthenticated && !isPublicRoute && !isLegalRoute && !isChatIframe) {
+    if (!isLoading && !isAuthenticated && !isPublicRoute && !isLegalRoute && !isChatIframe && !isPaymentRoute) {
       console.warn('Unauthorized user on protected route, forcing redirect to home');
       // Используем window.location.replace для мгновенного перенаправления
       window.location.replace('/');
     }
-  }, [isAuthenticated, isLoading, isPublicRoute, isLegalRoute, isChatIframe, router]);
+  }, [isAuthenticated, isLoading, isPublicRoute, isLegalRoute, isChatIframe, isPaymentRoute, router]);
 
   // Дополнительная проверка - блокируем показ контента неавторизованным пользователям
-  const shouldBlockContent = !isAuthenticated && !isPublicRoute && !isLegalRoute && !isChatIframe && !isLoading;
+  const shouldBlockContent = !isAuthenticated && !isPublicRoute && !isLegalRoute && !isChatIframe && !isPaymentRoute && !isLoading;
 
   // Если загружается авторизация - показываем loading
   if (isLoading) {
@@ -107,6 +107,11 @@ function AppContent({ Component, pageProps }: AppProps) {
 
   // Для публичных и правовых маршрутов показываем компонент без Layout
   if (isPublicRoute || isLegalRoute) {
+    return <Component {...pageProps} />;
+  }
+
+  // Для страниц платежей рендерим компонент без Layout независимо от авторизации
+  if (isPaymentRoute) {
     return <Component {...pageProps} />;
   }
 

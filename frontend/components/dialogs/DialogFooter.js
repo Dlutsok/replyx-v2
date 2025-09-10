@@ -25,7 +25,7 @@ const DialogFooter = ({
       await onSendMessage(message);
       setMessage('');
     } catch (err) {
-      console.error('Error sending message:', err);
+      
     } finally {
       setIsSubmitting(false);
     }

@@ -61,7 +61,6 @@ const AdminPaymentsPage = () => {
         showError('Ошибка при загрузке платежей');
       }
     } catch (error) {
-      console.error('Error fetching payments:', error);
       setErrorMessage('Ошибка соединения с сервером');
       showError('Ошибка соединения с сервером');
     } finally {
@@ -84,7 +83,6 @@ const AdminPaymentsPage = () => {
         // Дополнительные статистики можно использовать в дашборде
       }
     } catch (error) {
-      console.error('Error fetching payment stats:', error);
     }
   };
 
@@ -105,7 +103,6 @@ const AdminPaymentsPage = () => {
         showError('Ошибка при загрузке деталей платежа');
       }
     } catch (error) {
-      console.error('Error fetching payment details:', error);
       showError('Ошибка при загрузке деталей платежа');
     }
   };

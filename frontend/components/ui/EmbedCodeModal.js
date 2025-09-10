@@ -41,9 +41,7 @@ const EmbedCodeModal = React.memo(({
   const trackWidgetCopyEvent = useCallback(async () => {
     try {
       await smartProgressApi.post('/api/start/progress/mark-widget-copied');
-      console.log('Widget copy event tracked successfully');
     } catch (error) {
-      console.warn('Failed to track widget copy event:', error);
       // Не прерываем процесс копирования при ошибке аналитики
     }
   }, []);
@@ -66,7 +64,6 @@ const EmbedCodeModal = React.memo(({
 
       return () => clearTimeout(timeoutId);
     } catch (error) {
-      console.error('Failed to copy code:', error);
       // Fallback для старых браузеров
       const textArea = document.createElement('textarea');
       textArea.value = embedCode;

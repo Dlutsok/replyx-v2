@@ -518,7 +518,17 @@ class EmailTemplates:
         </p>
         """
         
-        subject = f"[Handoff requested] Диалог #{dialog_id} | {reason} | \"{user_preview[:50]}\""
+        # Более понятный заголовок для оператора
+        if reason == "keyword":
+            subject_text = "Клиент запросил живого оператора"
+        elif reason == "fallback":
+            subject_text = "Требуется помощь оператора"  
+        elif reason == "retries":
+            subject_text = "Сложный случай - нужен оператор"
+        else:
+            subject_text = "Требуется оператор"
+            
+        subject = f"ReplyX: {subject_text} (диалог #{dialog_id})"
         
         template = Template(EmailTemplates._get_base_template())
         html = template.render(

@@ -157,7 +157,6 @@ export default function OnboardingWizard({ user, onComplete, onSkip }) {
         throw new Error('Ошибка создания ассистента');
       }
     } catch (error) {
-      console.error('Error creating assistant:', error);
       showError('Произошла ошибка при создании ассистента', { title: 'Ошибка' });
     } finally {
       setIsLoading(false);

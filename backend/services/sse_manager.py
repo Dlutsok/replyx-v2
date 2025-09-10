@@ -479,6 +479,12 @@ async def push_sse_event(dialog_id: int, event_data: dict):
     """
     try:
         logger.info(f"🚀 [push_sse_event] Called for dialog {dialog_id}: {event_data.get('sender', 'unknown')} - {event_data.get('text', '')[:30]}...")
+        
+        # Ленивая инициализация SSE manager
+        if sse_manager.redis is None:
+            logger.info("🔄 [push_sse_event] Initializing SSE manager Redis connection...")
+            await sse_manager.initialize()
+        
         await sse_manager.broadcast_event(dialog_id, event_data)
         logger.info(f"✅ [push_sse_event] Successfully broadcasted for dialog {dialog_id}")
     except Exception as e:

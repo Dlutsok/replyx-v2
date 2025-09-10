@@ -66,7 +66,6 @@ export const AuthProvider = ({ children }) => {
       const isPublicRoute = PUBLIC_ROUTES.includes(currentPath);
       
       if (!isPublicRoute && !isAuthenticated && !isLoading) {
-            console.warn('Route protection triggered, FORCING redirect:', currentPath);
             window.location.replace('/');
           }
     };
@@ -77,7 +76,6 @@ export const AuthProvider = ({ children }) => {
       
       // Предварительная проверка при начале перехода
       if (!isPublicRoute && !isAuthenticated && !isLoading) {
-            console.warn('Blocking navigation to protected route:', currentPath);
             window.location.replace('/');
             throw 'Route change aborted - redirecting to landing'; // Прерываем навигацию
           }
@@ -100,14 +98,12 @@ export const AuthProvider = ({ children }) => {
       
       // Если нет токена и мы на защищенной странице - мгновенный редирект
       if (!hasToken && !isPublicRoute) {
-        console.warn('No token found, FORCING redirect to home from:', currentPath);
         window.location.replace('/');
         return;
       }
       
       // Если нет авторизации в состоянии, но есть на защищенной странице
       if (!isAuthenticated && !isPublicRoute && hasToken) {
-        console.warn('Authentication state lost but token exists, FORCING redirect from:', currentPath);
         window.location.replace('/');
       }
     }
@@ -127,7 +123,6 @@ export const AuthProvider = ({ children }) => {
         }
       });
     } catch (error) {
-      console.error('Error updating activity:', error);
     }
   };
 
@@ -161,7 +156,6 @@ export const AuthProvider = ({ children }) => {
         logout();
       }
     } catch (error) {
-      console.error('Auth check failed:', error);
       logout();
     } finally {
       setIsLoading(false);
@@ -180,7 +174,6 @@ export const AuthProvider = ({ children }) => {
     
     // Для приватных маршрутов - немедленно перенаправляем на landing
     if (!isPublicRoute && !isAuthenticated) {
-      console.warn('Unauthorized access to private route:', currentPath);
       router.replace('/');
     }
   };
@@ -323,7 +316,6 @@ export const AuthProvider = ({ children }) => {
         });
       }
     } catch (error) {
-      console.error('Logout API call failed:', error);
     }
     
     // ПРИНУДИТЕЛЬНОЕ перенаправление - немедленно без задержек
@@ -362,14 +354,12 @@ export const withAuth = (WrappedComponent, options = {}) => {
     useEffect(() => {
       // Проверка авторизации
       if (!isLoading && !isAuthenticated) {
-        console.warn('Unauthorized access attempt to:', router.pathname);
         router.replace('/');
         return;
       }
 
       // Проверка прав админа если требуется
       if (!isLoading && isAuthenticated && adminOnly && user?.role !== 'admin') {
-        console.warn('Admin access required for:', router.pathname);
         router.replace('/dashboard');
         return;
       }

@@ -156,7 +156,6 @@ export default function AssistantPage() {
         throw new Error('Ошибка загрузки документов');
       }
     } catch (err) {
-      console.error('Ошибка загрузки документов:', err);
       setErrors(prev => ({ ...prev, documents: err.message }));
     } finally {
       setLoadingData(prev => ({ ...prev, documents: false }));
@@ -185,7 +184,6 @@ export default function AssistantPage() {
         throw new Error('Ошибка загрузки ботов');
       }
     } catch (err) {
-      console.error('Ошибка загрузки ботов:', err);
       setErrors(prev => ({ ...prev, bots: err.message }));
     } finally {
       setLoadingData(prev => ({ ...prev, bots: false }));
@@ -210,11 +208,9 @@ export default function AssistantPage() {
         setStats(data);
       } else {
         // Статистика может быть недоступна - это не критичная ошибка
-        console.warn('Статистика недоступна');
         setStats(null);
       }
     } catch (err) {
-      console.error('Ошибка загрузки статистики:', err);
       setErrors(prev => ({ ...prev, stats: err.message }));
     } finally {
       setLoadingData(prev => ({ ...prev, stats: false }));
@@ -270,7 +266,6 @@ export default function AssistantPage() {
         throw new Error('Ошибка сохранения');
       }
     } catch (err) {
-      console.error('Ошибка сохранения настроек:', err);
       showError('Ошибка сохранения настроек: ' + err.message);
     } finally {
       setSaving(false);
@@ -319,7 +314,6 @@ export default function AssistantPage() {
         throw new Error(errorMessage);
       }
     } catch (err) {
-      console.error('Ошибка загрузки документа:', err);
       showError('Ошибка загрузки документа: ' + err.message);
     } finally {
       setUploading(false);
@@ -346,7 +340,6 @@ export default function AssistantPage() {
         throw new Error('Ошибка удаления');
       }
     } catch (err) {
-      console.error('Ошибка удаления документа:', err);
       showError('Ошибка удаления документа: ' + err.message);
     }
   };

@@ -94,7 +94,6 @@ export const useCSRFProtection = () => {
       return token;
       
     } catch (err) {
-      console.error('🛡️ Ошибка получения CSRF токена:', err);
       setError(err.message);
       return null;
     } finally {
@@ -162,7 +161,6 @@ export const useCSRFProtection = () => {
       });
       
     } catch (err) {
-      console.error('🛡️ Ошибка добавления CSRF токена:', err);
       throw err;
     }
   }, [getCSRFHeaders]);
@@ -200,7 +198,6 @@ export const useCSRFProtection = () => {
       });
       
     } catch (err) {
-      console.error('🛡️ Ошибка отправки формы с CSRF токеном:', err);
       throw err;
     }
   }, [ensureToken]);

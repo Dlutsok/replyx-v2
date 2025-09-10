@@ -35,7 +35,6 @@ export default function TutorialTooltip({
           }
         }
       } catch (error) {
-        console.error('Ошибка проверки подсказок:', error);
       }
     };
 
@@ -57,7 +56,6 @@ export default function TutorialTooltip({
       });
       setIsShown(true);
     } catch (error) {
-      console.error('Ошибка сохранения подсказки:', error);
     }
   };
 

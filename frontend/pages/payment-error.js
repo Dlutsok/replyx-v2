@@ -31,21 +31,23 @@ export default function PaymentError() {
           formData.append('success', false);
           formData.append('error_message', errorMessage || `Код ошибки: ${errorCode}`);
 
+          const headers = {};
+          const token = localStorage.getItem('token');
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+          }
+
           const response = await fetch('/api/payments/complete-payment', {
             method: 'POST',
             body: formData,
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+            headers: headers
           });
 
           if (response.ok) {
-            console.log('Статус платежа обновлен как неудачный');
           }
         }
 
       } catch (error) {
-        console.error('Ошибка обработки неудачного платежа:', error);
       } finally {
         setIsProcessing(false);
       }

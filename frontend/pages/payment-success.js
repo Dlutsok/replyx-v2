@@ -30,12 +30,16 @@ export default function PaymentSuccess() {
         formData.append('success', success);
         if (paymentId) formData.append('payment_id', paymentId);
 
+        const headers = {};
+        const token = localStorage.getItem('token');
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const response = await fetch('/api/payments/complete-payment', {
           method: 'POST',
           body: formData,
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
+          headers: headers
         });
 
         if (!response.ok) {
@@ -43,10 +47,8 @@ export default function PaymentSuccess() {
         }
 
         const result = await response.json();
-        console.log('Платеж обработан:', result);
 
       } catch (error) {
-        console.error('Ошибка обработки платежа:', error);
         setError(error.message);
       } finally {
         setIsProcessing(false);

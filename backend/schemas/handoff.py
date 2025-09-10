@@ -119,3 +119,19 @@ class HandoffReleaseIn(BaseModel):
 class HandoffCancelIn(BaseModel):
     """Schema for cancel request."""
     pass  # Can be called by user or manager
+
+
+class HandoffDetectionRequest(BaseModel):
+    """Schema for handoff detection request."""
+    user_text: str = Field(..., description="User's message text")
+    ai_text: Optional[str] = Field(None, description="AI response text (optional)")
+    dialog_id: Optional[int] = Field(None, description="Dialog ID for context (optional)")
+
+
+class HandoffDetectionResponse(BaseModel):
+    """Schema for handoff detection response."""
+    should_handoff: bool = Field(..., description="Whether handoff should be triggered")
+    reason: str = Field(..., description="Reason for handoff decision")
+    score: float = Field(..., description="Confidence score (0.0-1.0+)")
+    matched_patterns: list = Field(default_factory=list, description="List of matched pattern descriptions")
+    details: dict = Field(default_factory=dict, description="Detailed analysis results")

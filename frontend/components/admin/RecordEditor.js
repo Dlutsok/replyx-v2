@@ -114,7 +114,6 @@ const RecordEditor = ({
       onClose();
 
     } catch (err) {
-      console.error('Ошибка сохранения записи:', err);
       setError(err.message);
     } finally {
       setLoading(false);

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { FiHeadphones, FiMessageSquare, FiUserCheck, FiX, FiChevronDown, FiGlobe, FiZap, FiClock, FiAlertTriangle } from 'react-icons/fi';
+import { getUserDisplayName } from '../../utils/dialogHelpers';
 
 // ==================== UTILITIES ====================
 
@@ -20,7 +21,6 @@ import { FiHeadphones, FiMessageSquare, FiUserCheck, FiX, FiChevronDown, FiGlobe
       return Math.max(0, minutes);
       
     } catch (error) {
-      console.warn('HandoffQueue: Invalid timestamp', timestamp, error);
       return 0;
     }
   };
@@ -98,7 +98,8 @@ const getPriorityInfo = (level) => {
 
 const Header = ({ count }) => (
   <div className="mb-4">
-    <div className="flex items-center justify-between mb-3">
+    {/* Mobile: Stack vertically, Desktop: Horizontal layout */}
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
       <div className="flex items-center gap-3">
         <FiHeadphones className="text-gray-600" size={18} />
         <div>
@@ -106,39 +107,44 @@ const Header = ({ count }) => (
           <p className="text-xs text-gray-600">Требуют внимания оператора</p>
         </div>
       </div>
-      <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-md border">
+      <span className="px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-[6px] border self-start sm:self-auto">
         {count} диалогов
       </span>
     </div>
 
-    {/* Priority legend */}
-    <div className="flex items-center gap-4 text-xs text-gray-600">
-      <span>Приоритеты:</span>
-      <span className="flex items-center gap-1">
-        <FiZap className="w-3 h-3 text-red-500" />
-        <span>Критический (≥ 1 ч)</span>
-      </span>
-      <span className="flex items-center gap-1">
-        <FiClock className="w-3 h-3 text-orange-500" />
-        <span>Важный (≥ 10 мин)</span>
-      </span>
-      <span className="flex items-center gap-1">
-        <FiAlertTriangle className="w-3 h-3 text-gray-500" />
-        <span>Обычный (&lt; 10 мин)</span>
-      </span>
+    {/* Priority legend - Responsive */}
+    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs text-gray-600">
+      <span className="font-medium">Приоритеты:</span>
+      <div className="flex items-center gap-3 sm:gap-4">
+        <span className="flex items-center gap-1">
+          <FiZap className="w-3 h-3 text-red-500 flex-shrink-0" />
+          <span className="hidden sm:inline">Критический (≥ 1 ч)</span>
+          <span className="sm:hidden">Крит.</span>
+        </span>
+        <span className="flex items-center gap-1">
+          <FiClock className="w-3 h-3 text-orange-500 flex-shrink-0" />
+          <span className="hidden sm:inline">Важный (≥ 10 мин)</span>
+          <span className="sm:hidden">Важн.</span>
+        </span>
+        <span className="flex items-center gap-1">
+          <FiAlertTriangle className="w-3 h-3 text-gray-500 flex-shrink-0" />
+          <span className="hidden sm:inline">Обычный (&lt; 10 мин)</span>
+          <span className="sm:hidden">Обыч.</span>
+        </span>
+      </div>
     </div>
   </div>
 );
 
 const EmptyState = () => (
-  <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
-    <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-      <FiHeadphones size={16} className="text-gray-600" />
+  <div className="bg-white rounded-[13px] border border-gray-200 p-6 text-center">
+    <div className="w-10 h-10 bg-gray-100 rounded-[13px] flex items-center justify-center mx-auto mb-4">
+      <FiHeadphones size={20} className="text-gray-600" />
     </div>
-    <h3 className="text-sm font-semibold text-gray-900 mb-1">
+    <h3 className="text-base font-semibold text-gray-900 mb-2">
       Очередь пуста
     </h3>
-    <p className="text-xs text-gray-600">
+    <p className="text-sm text-gray-600">
       Все запросы обрабатываются автоматически
     </p>
   </div>
@@ -152,62 +158,68 @@ const DialogCard = ({ dialog, isExpanded, onToggleExpanded, onTakeDialog, onCanc
   const PriorityIcon = priorityInfo.icon;
 
   return (
-    <div className={`rounded-lg border p-3 bg-white border-gray-200 hover:border-gray-300 transition-colors duration-150`}>
-      {/* Compact single row layout */}
-      <div className="flex items-center justify-between gap-4">
-        {/* Priority indicator */}
-        <div className="flex-shrink-0">
-          <PriorityIcon className={`w-4 h-4 ${priorityInfo.color}`} />
-        </div>
+    <div className={`rounded-[13px] border p-3 bg-white border-gray-200 hover:border-gray-300 transition-colors duration-150`}>
+      {/* Mobile: Stack vertically, Desktop: Horizontal layout */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        {/* Top row on mobile: Priority + Name + Channel */}
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          {/* Priority indicator */}
+          <div className="flex-shrink-0">
+            <PriorityIcon className={`w-4 h-4 ${priorityInfo.color}`} />
+          </div>
 
-        {/* Dialog name and channel */}
-        <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-semibold text-gray-900 truncate">
-            {dialog.name || dialog.telegram_username || `Диалог #${dialog.id}`}
-          </h4>
-          <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
-            {dialog.channel_type === 'telegram' ? (
-              <span>Telegram</span>
-            ) : (
-              <span>Сайт</span>
-            )}
-            <span className={`text-xs font-medium ${priorityColors.accent}`}>
-              {priorityInfo.label}
-            </span>
+          {/* Dialog name and channel */}
+          <div className="flex-1 min-w-0">
+            <h4 className="text-sm font-semibold text-gray-900 truncate">
+              {getUserDisplayName(dialog)}
+            </h4>
+            <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
+              {dialog.channel_type === 'telegram' ? (
+                <span>Telegram</span>
+              ) : (
+                <span>Сайт</span>
+              )}
+              <span className={`text-xs font-medium ${priorityColors.accent}`}>
+                {priorityInfo.label}
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Wait time */}
-        <div className="flex-shrink-0 text-right">
-          <div className="text-sm font-bold text-gray-900">
-            {formatWaitTime(waitMinutes)}
+        {/* Bottom row on mobile: Wait time + Actions */}
+        <div className="flex items-center justify-between sm:justify-end gap-3">
+          {/* Wait time */}
+          <div className="flex-shrink-0 text-right sm:text-right">
+            <div className="text-sm font-bold text-gray-900">
+              {formatWaitTime(waitMinutes)}
+            </div>
+            <div className="text-xs text-gray-500">ожидания</div>
           </div>
-          <div className="text-xs text-gray-500">ожидания</div>
-        </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <button
-            className="px-2.5 py-1 bg-[#6334E5] text-white text-xs font-medium rounded-md border border-[#6334E5]"
-            onClick={() => onTakeDialog(dialog.id)}
-            disabled={isLoading}
-          >
-            Взять
-          </button>
-          <button
-            className="px-2.5 py-1 border border-gray-300 text-gray-700 text-xs font-medium rounded-md"
-            onClick={() => onCancel && onCancel(dialog.id)}
-            disabled={isLoading}
-          >
-            Отмена
-          </button>
+          {/* Actions - Responsive button sizes */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              className="px-3 py-1.5 sm:px-2.5 sm:py-1 bg-[#7C3AED] text-white text-xs font-medium rounded-[6px] border border-[#7C3AED] min-w-[60px] hover:bg-[#6D28D9] transition-colors duration-150"
+              onClick={() => onTakeDialog(dialog.id)}
+              disabled={isLoading}
+            >
+              Взять
+            </button>
+            <button
+              className="px-3 py-1.5 sm:px-2.5 sm:py-1 border border-gray-300 text-gray-700 text-xs font-medium rounded-[6px] min-w-[60px] hover:bg-gray-50 transition-colors duration-150"
+              onClick={() => onCancel && onCancel(dialog.id)}
+              disabled={isLoading}
+            >
+              Отмена
+            </button>
 
-          <button
-            className="p-1 text-gray-400 hover:text-gray-600 rounded-md"
-            onClick={() => onToggleExpanded(dialog.id)}
-          >
-            <FiChevronDown size={12} className={isExpanded ? 'rotate-180' : ''} />
-          </button>
+            <button
+              className="p-1.5 sm:p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-[6px] transition-colors duration-150"
+              onClick={() => onToggleExpanded(dialog.id)}
+            >
+              <FiChevronDown size={12} className={isExpanded ? 'rotate-180' : ''} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -281,10 +293,10 @@ const HandoffQueue = ({ dialogs = [], onTakeDialog, onCancel, isLoading = false 
   }
             
               return (
-    <div className="bg-white rounded-xl border border-gray-200 p-4 w-full">
+    <div className="bg-white rounded-[13px] border border-gray-200 p-3 sm:p-4 w-full">
       <Header count={queueDialogs.length} />
 
-      <div className="space-y-2">
+      <div className="space-y-3">
         {queueDialogs.map((dialog) => (
           <DialogCard
             key={dialog.id}

@@ -401,16 +401,13 @@ const BotCreationWizard = ({ isOpen, onClose, onComplete, user }) => {
             }
           });
         } catch (onboardingError) {
-          console.warn('Ошибка при обновлении статуса онбординга:', onboardingError);
         }
         
       } else {
         const errorData = await response.text();
-        console.error('Ошибка API:', errorData);
         throw new Error(`Ошибка создания бота: ${response.status} ${response.statusText}`);
       }
     } catch (error) {
-      console.error('Ошибка создания бота:', error);
       showError('Произошла ошибка при создании бота. Попробуйте еще раз.', { title: 'Ошибка создания' });
     } finally {
       setIsCreating(false);

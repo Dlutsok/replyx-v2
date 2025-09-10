@@ -7,11 +7,9 @@ const proxy = createProxyMiddleware({
     '^/api/dialogs': '/api/dialogs', // Убираем префикс если нужно
   },
   onError: (err, req, res) => {
-    console.error('SSE Proxy error:', err.message);
     res.status(500).json({ error: 'Proxy error' });
   },
   onProxyReq: (proxyReq, req, res) => {
-    console.log(`🔄 [SSE Proxy] ${req.method} ${req.url} -> ${proxyReq.path}`);
   },
   onProxyRes: (proxyRes, req, res) => {
     // Для SSE запросов устанавливаем правильные заголовки

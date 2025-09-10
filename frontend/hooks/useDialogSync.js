@@ -75,7 +75,7 @@ export const useDialogSync = ({ enabled = true, interval = 30000, filters = {} }
         setHandoffDialogs(data.items || []);
       }
     } catch (error) {
-      console.error('Error loading handoff dialogs:', error);
+      
     }
   }, []);
 
@@ -99,7 +99,7 @@ export const useDialogSync = ({ enabled = true, interval = 30000, filters = {} }
     
     // Проверяем кэш если не принудительная загрузка
     if (!forceLoad && cached && (now - cached.timestamp < CACHE_TTL)) {
-      console.log('📦 [useDialogSync] Using cached data for key:', cacheKey);
+      // 
       performanceMetrics.current.cacheHits++;
 
       const { data } = cached;
@@ -128,36 +128,34 @@ export const useDialogSync = ({ enabled = true, interval = 30000, filters = {} }
 
       // Логируем метрики производительности
       const responseTime = performance.now() - startTime;
-      console.log('📊 [useDialogSync] Cache hit performance:', {
-        responseTime: `${responseTime.toFixed(2)}ms`,
-        cacheHit: true,
-        totalApiCalls: performanceMetrics.current.apiCalls,
-        cacheHitRate: `${((performanceMetrics.current.cacheHits / performanceMetrics.current.apiCalls) * 100).toFixed(1)}%`
-      });
+      //   responseTime: `${responseTime.toFixed(2)}ms`,
+      //   cacheHit: true,
+      //   totalApiCalls: performanceMetrics.current.apiCalls,
+      //   cacheHitRate: `${((performanceMetrics.current.cacheHits / performanceMetrics.current.apiCalls) * 100).toFixed(1)}%`
+      // });
 
       return;
     } else if (cached) {
-      console.log('📦 [useDialogSync] Cache expired, refreshing data');
+      // 
     } else {
-      console.log('📦 [useDialogSync] No cache found for key:', cacheKey);
+      // 
     }
     
     // Предотвращаем слишком частые вызовы
     if (!forceLoad && timeSinceLastLoad < MIN_REQUEST_INTERVAL) {
-      console.log('🚦 [useDialogSync] Request throttled, too soon since last request');
+      
       return;
     }
     
     // Предотвращаем одновременные запросы
     if (isLoadingRef.current && !forceLoad) {
-      console.log('🚦 [useDialogSync] Request skipped, already loading');
+      
       return;
     }
     
-    console.log('🔄 [useDialogSync] loadData called at', new Date().toISOString());
     const token = localStorage.getItem('token');
     if (!token) {
-      console.error('❌ [useDialogSync] No token found');
+      
       setError('Не авторизован');
       setLoading(false);
       return;
@@ -172,7 +170,7 @@ export const useDialogSync = ({ enabled = true, interval = 30000, filters = {} }
     }
     
     loadingTimeoutRef.current = setTimeout(() => {
-      console.error('⚠️ [useDialogSync] Loading timeout - forcing loading to false');
+      
       setLoading(false);
       isLoadingRef.current = false;
       setError('Превышено время ожидания загрузки данных');
@@ -180,12 +178,11 @@ export const useDialogSync = ({ enabled = true, interval = 30000, filters = {} }
 
     try {
       setError('');
-      console.log('📡 [useDialogSync] Making API calls...', { 
-        filters,
-        cacheKey,
-        currentPage,
-        pageSize 
-      });
+      //   filters,
+      //   cacheKey,
+      //   currentPage,
+      //   pageSize 
+      // });
       
       // Создаем параметры запроса с фильтрами
       const params = new URLSearchParams({
@@ -202,14 +199,13 @@ export const useDialogSync = ({ enabled = true, interval = 30000, filters = {} }
       if (filters.assistant_id) params.append('assistant_id', filters.assistant_id.toString());
       if (filters.time_filter && filters.time_filter !== 'all') params.append('time_filter', filters.time_filter);
       
-      console.log('🔍 [useDialogSync] Applied filters:', {
-        search: filters.search || 'none',
-        status: filters.status || 'all',
-        channel: filters.channel || 'none',
-        assistant_id: filters.assistant_id || 'none',
-        time_filter: filters.time_filter || 'all',
-        finalParams: params.toString()
-      });
+      //   search: filters.search || 'none',
+      //   status: filters.status || 'all',
+      //   channel: filters.channel || 'none',
+      //   assistant_id: filters.assistant_id || 'none',
+      //   time_filter: filters.time_filter || 'all',
+      //   finalParams: params.toString()
+      // });
       
       const [dialogsRes, filtersRes] = await Promise.all([
         fetch(`${API_URL}/api/dialogs?${params.toString()}`, {
@@ -220,17 +216,16 @@ export const useDialogSync = ({ enabled = true, interval = 30000, filters = {} }
         })
       ]);
 
-      console.log('📊 [useDialogSync] API responses:', {
-        dialogsOk: dialogsRes.ok,
-        dialogsStatus: dialogsRes.status,
-        filtersOk: filtersRes.ok, 
-        filtersStatus: filtersRes.status
-      });
+      //   dialogsOk: dialogsRes.ok,
+      //   dialogsStatus: dialogsRes.status,
+      //   filtersOk: filtersRes.ok, 
+      //   filtersStatus: filtersRes.status
+      // });
 
       if (!dialogsRes.ok || !filtersRes.ok) {
         const dialogsError = dialogsRes.ok ? null : await dialogsRes.text();
         const filtersError = filtersRes.ok ? null : await filtersRes.text();
-        console.error('❌ [useDialogSync] API errors:', { dialogsError, filtersError });
+        
         throw new Error('Ошибка загрузки данных');
       }
 
@@ -239,13 +234,12 @@ export const useDialogSync = ({ enabled = true, interval = 30000, filters = {} }
         filtersRes.json()
       ]);
 
-      console.log('📈 [useDialogSync] Data received:', {
-        dialogsCount: Array.isArray(dialogsData) ? dialogsData.length : (dialogsData?.items?.length || 0),
-        botsCount: Array.isArray(filtersData?.bots) ? filtersData.bots.length : 0,
-        channelsCount: Array.isArray(filtersData?.channels) ? filtersData.channels.length : 0,
-        dialogsType: typeof dialogsData,
-        filtersType: typeof filtersData
-      });
+      //   dialogsCount: Array.isArray(dialogsData) ? dialogsData.length : (dialogsData?.items?.length || 0),
+      //   botsCount: Array.isArray(filtersData?.bots) ? filtersData.bots.length : 0,
+      //   channelsCount: Array.isArray(filtersData?.channels) ? filtersData.channels.length : 0,
+      //   dialogsType: typeof dialogsData,
+      //   filtersType: typeof filtersData
+      // });
 
       // Обработка диалогов с поддержкой пагинации
       let processedDialogs = [];
@@ -255,12 +249,11 @@ export const useDialogSync = ({ enabled = true, interval = 30000, filters = {} }
         // Новый API формат с пагинацией
         processedDialogs = dialogsData.items;
         total = dialogsData.total || 0;
-        console.log('📄 [useDialogSync] Pagination data:', {
-          page: dialogsData.page,
-          total: dialogsData.total,
-          pages: dialogsData.pages,
-          limit: dialogsData.limit
-        });
+        //   page: dialogsData.page,
+        //   total: dialogsData.total,
+        //   pages: dialogsData.pages,
+        //   limit: dialogsData.limit
+        // });
       } else if (Array.isArray(dialogsData)) {
         // Старый формат (массив)
         processedDialogs = dialogsData;
@@ -312,17 +305,16 @@ export const useDialogSync = ({ enabled = true, interval = 30000, filters = {} }
         timestamp: now
       });
       
-      console.log('✅ [useDialogSync] Data loaded successfully:', {
-        finalDialogsCount: processedDialogs.length,
-        finalBotsCount: Array.isArray(filtersData?.bots) ? filtersData.bots.length : 0,
-        finalChannelsCount: Array.isArray(filtersData?.channels) ? filtersData.channels.length : 0,
-        cached: true,
-        sampleDialog: processedDialogs[0] ? {
-          id: processedDialogs[0].id,
-          handoff_status: processedDialogs[0].handoff_status,
-          is_taken_over: processedDialogs[0].is_taken_over
-        } : 'no dialogs'
-      });
+      //   finalDialogsCount: processedDialogs.length,
+      //   finalBotsCount: Array.isArray(filtersData?.bots) ? filtersData.bots.length : 0,
+      //   finalChannelsCount: Array.isArray(filtersData?.channels) ? filtersData.channels.length : 0,
+      //   cached: true,
+      //   sampleDialog: processedDialogs[0] ? {
+      //     id: processedDialogs[0].id,
+      //     handoff_status: processedDialogs[0].handoff_status,
+      //     is_taken_over: processedDialogs[0].is_taken_over
+      //   } : 'no dialogs'
+      // });
 
       // Логируем финальные метрики производительности
       const totalResponseTime = performance.now() - startTime;
@@ -330,16 +322,15 @@ export const useDialogSync = ({ enabled = true, interval = 30000, filters = {} }
       const newAvgTime = (currentAvgTime * (performanceMetrics.current.apiCalls - 1) + totalResponseTime) / performanceMetrics.current.apiCalls;
       performanceMetrics.current.avgResponseTime = newAvgTime;
 
-      console.log('📊 [useDialogSync] Final performance metrics:', {
-        totalResponseTime: `${totalResponseTime.toFixed(2)}ms`,
-        avgResponseTime: `${newAvgTime.toFixed(2)}ms`,
-        cacheHitRate: `${((performanceMetrics.current.cacheHits / performanceMetrics.current.apiCalls) * 100).toFixed(1)}%`,
-        totalApiCalls: performanceMetrics.current.apiCalls,
-        totalErrors: performanceMetrics.current.errors
-      });
+      //   totalResponseTime: `${totalResponseTime.toFixed(2)}ms`,
+      //   avgResponseTime: `${newAvgTime.toFixed(2)}ms`,
+      //   cacheHitRate: `${((performanceMetrics.current.cacheHits / performanceMetrics.current.apiCalls) * 100).toFixed(1)}%`,
+      //   totalApiCalls: performanceMetrics.current.apiCalls,
+      //   totalErrors: performanceMetrics.current.errors
+      // });
 
     } catch (err) {
-      console.error('❌ [useDialogSync] Error loading data:', err);
+      
       const newErrorCount = errorCount + 1;
       setErrorCount(newErrorCount);
       performanceMetrics.current.errors++;
@@ -365,7 +356,7 @@ export const useDialogSync = ({ enabled = true, interval = 30000, filters = {} }
 
   // Функция инвалидации кэша
   const invalidateCache = useCallback(() => {
-    console.log('🗑️ [useDialogSync] Cache invalidated');
+    
     cacheRef.current.clear();
   }, []);
 
@@ -394,31 +385,30 @@ export const useDialogSync = ({ enabled = true, interval = 30000, filters = {} }
     const filtersChanged = lastFiltersRef.current !== null && lastFiltersRef.current !== currentFiltersString;
     const isInitialLoad = !initialLoadDoneRef.current;
     
-    console.log('📋 [useDialogSync] Effect triggered:', {
-      filtersChanged,
-      isInitialLoad,
-      initialLoadDone: initialLoadDoneRef.current,
-      lastFilters: lastFiltersRef.current,
-      currentFilters: currentFiltersString,
-      loading,
-      isLoadingRef: isLoadingRef.current
-    });
+    //   filtersChanged,
+    //   isInitialLoad,
+    //   initialLoadDone: initialLoadDoneRef.current,
+    //   lastFilters: lastFiltersRef.current,
+    //   currentFilters: currentFiltersString,
+    //   loading,
+    //   isLoadingRef: isLoadingRef.current
+    // });
     
     if (isInitialLoad) {
       // Первоначальная загрузка
-      console.log('🔄 [useDialogSync] Initial load');
+      // 
       lastFiltersRef.current = currentFiltersString;
       initialLoadDoneRef.current = true;
       // Немедленная загрузка для первоначального запроса
       debouncedLoadData(true);
     } else if (filtersChanged) {
-      console.log('🔄 [useDialogSync] Filters changed, triggering debounced reload');
+      // 
       lastFiltersRef.current = currentFiltersString;
       // Очищаем кэш при изменении фильтров
       invalidateCache();
       debouncedLoadData();
     } else {
-      console.log('⏭️ [useDialogSync] No changes detected, skipping load');
+      // No changes detected, skipping load
     }
   }, [filtersString, currentPage, debouncedLoadData, invalidateCache]);
 
@@ -458,7 +448,7 @@ export const useDialogSync = ({ enabled = true, interval = 30000, filters = {} }
   // Методы для работы с диалогами
   const takeoverDialog = useCallback(async (dialogId) => {
     const token = localStorage.getItem('token');
-    console.log('Takeover dialog attempt:', dialogId);
+    
     
     try {
       // Сначала проверяем статус диалога
@@ -468,12 +458,12 @@ export const useDialogSync = ({ enabled = true, interval = 30000, filters = {} }
       if (statusResponse.ok) {
         const statusData = await statusResponse.json();
         currentStatus = statusData.status;
-        console.log('Current dialog handoff status:', currentStatus);
+        
       }
       
       // Если диалог не в состоянии 'requested', сначала запрашиваем handoff
       if (currentStatus !== 'requested') {
-        console.log('Dialog not in requested state, requesting handoff first...');
+        
         const requestResponse = await fetch(`${API_URL}/api/dialogs/${dialogId}/handoff/request`, {
           method: 'POST',
           headers: { 
@@ -491,10 +481,10 @@ export const useDialogSync = ({ enabled = true, interval = 30000, filters = {} }
           throw new Error(errorData.detail || 'Ошибка запроса handoff');
         }
         
-        console.log('Handoff requested successfully');
+        
       }
       
-      console.log('Making takeover request to:', `${API_URL}/api/dialogs/${dialogId}/handoff/takeover`);
+      
       const response = await fetch(`${API_URL}/api/dialogs/${dialogId}/handoff/takeover`, {
         method: 'POST',
         headers: { 
@@ -504,21 +494,21 @@ export const useDialogSync = ({ enabled = true, interval = 30000, filters = {} }
         body: JSON.stringify({})
       });
       
-      console.log('Takeover response status:', response.status);
+      
       
       if (response.ok) {
         const result = await response.json();
-        console.log('Takeover success:', result);
+        
         invalidateCache(); // Инвалидируем кэш перед обновлением
         await loadData(true); // Принудительно обновляем данные
       } else {
         const errorData = await response.json();
-        console.error('Takeover error response:', errorData);
+        
         showError(`Ошибка взятия диалога: ${errorData.detail || 'Неизвестная ошибка'}`, { title: 'Ошибка' });
         throw new Error(errorData.detail || 'Не удалось взять диалог');
       }
     } catch (err) {
-      console.error('Error taking over dialog:', err);
+      
       showError(`Ошибка: ${err.message}`, { title: 'Ошибка' });
       throw err;
     }
@@ -543,7 +533,7 @@ export const useDialogSync = ({ enabled = true, interval = 30000, filters = {} }
         throw new Error(errorData.detail || 'Не удалось отпустить диалог');
       }
     } catch (err) {
-      console.error('Error releasing dialog:', err);
+      
       throw err;
     }
   }, [loadData, invalidateCache]);
@@ -567,7 +557,7 @@ export const useDialogSync = ({ enabled = true, interval = 30000, filters = {} }
         throw new Error(errorData.detail || 'Не удалось отменить запрос');
       }
     } catch (err) {
-      console.error('Error cancelling handoff:', err);
+      
       throw err;
     }
   }, [loadData, invalidateCache]);
@@ -579,7 +569,7 @@ export const useDialogSync = ({ enabled = true, interval = 30000, filters = {} }
       try {
         await loadData(false, true); // loadMore = true
       } catch (error) {
-        console.error('Error loading more dialogs:', error);
+        
         setLoadMoreLoading(false);
       }
     }
@@ -601,7 +591,7 @@ export const useDialogSync = ({ enabled = true, interval = 30000, filters = {} }
   useEffect(() => {
     const shouldReset = currentPage !== 1;
     if (shouldReset) {
-      console.log('🔄 [useDialogSync] Resetting to page 1 due to filter change');
+      
       setCurrentPage(1);
       // Очищаем кэш при сбросе пагинации
       invalidateCache();

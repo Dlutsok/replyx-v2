@@ -68,7 +68,6 @@ export default function AIAssistant() {
         setBots(Array.isArray(data) ? data : []);
       }
     } catch (error) {
-      console.error('Ошибка загрузки ботов:', error);
     }
   };
 
@@ -82,7 +81,6 @@ export default function AIAssistant() {
         setSelectedAssistant(prev => prev ? { ...prev, ...data } : data);
       }
     } catch (e) {
-      console.error('Ошибка загрузки настроек ассистента:', e);
     }
   };
   
@@ -136,7 +134,6 @@ export default function AIAssistant() {
         await loadStats();
       }
     } catch (error) {
-      console.error('Ошибка загрузки ассистентов:', error);
       const cleanMessage = sanitizeTechnicalError(error.message || 'Ошибка загрузки ассистентов');
       showError(cleanMessage, 'ASSISTANTS_LOAD_ERROR');
     } finally {
@@ -156,7 +153,6 @@ export default function AIAssistant() {
         setAssistantStats(data.byAssistant);
       }
     } catch (error) {
-      console.error('Ошибка загрузки статистики:', error);
     }
   };
 
@@ -172,7 +168,6 @@ export default function AIAssistant() {
         setChannels(data.channels);
       }
     } catch (error) {
-      console.error('Ошибка загрузки диалогов:', error);
     }
   };
 
@@ -187,7 +182,6 @@ export default function AIAssistant() {
         setDocuments(data);
       }
     } catch (error) {
-      console.error('Ошибка загрузки документов:', error);
     }
   };
 
@@ -255,7 +249,6 @@ export default function AIAssistant() {
         showError('Удаление доступно только владельцу организации', 'ASSISTANT_DELETE_PERMISSION_ERROR');
       }
     } catch (error) {
-      console.error('Ошибка удаления ассистента:', error);
       showError('Ошибка удаления ассистента', 'ASSISTANT_DELETE_ERROR');
     }
   };
@@ -278,7 +271,6 @@ export default function AIAssistant() {
         showSuccess(`Ассистент ${isActive ? 'активирован' : 'деактивирован'}`, isActive ? 'ASSISTANT_ACTIVATE_SUCCESS' : 'ASSISTANT_DEACTIVATE_SUCCESS');
       }
     } catch (error) {
-      console.error('Ошибка изменения статуса ассистента:', error);
       showError('Ошибка изменения статуса ассистента', 'ASSISTANT_STATUS_ERROR');
     }
   };
@@ -306,7 +298,6 @@ export default function AIAssistant() {
         showSuccess('Настройки сохранены', 'ASSISTANT_SETTINGS_SAVE_SUCCESS');
       }
     } catch (error) {
-      console.error('Ошибка сохранения настроек:', error);
       showError('Ошибка сохранения настроек', 'ASSISTANT_SETTINGS_SAVE_ERROR');
     } finally {
       setSaving(false);
@@ -341,7 +332,6 @@ export default function AIAssistant() {
         showSuccess('Документ загружен', 'DOCUMENT_UPLOAD_SUCCESS');
       }
     } catch (error) {
-      console.error('Ошибка загрузки документа:', error);
       const cleanMessage = sanitizeTechnicalError(error.message || 'Ошибка загрузки документа');
       showError(cleanMessage, 'DOCUMENT_UPLOAD_ERROR');
     } finally {
@@ -361,7 +351,6 @@ export default function AIAssistant() {
         showSuccess('Документ удален', 'DOCUMENT_DELETE_SUCCESS');
       }
     } catch (error) {
-      console.error('Ошибка удаления документа:', error);
       showError('Ошибка удаления документа', 'DOCUMENT_DELETE_ERROR');
     }
   };
@@ -395,7 +384,6 @@ export default function AIAssistant() {
         showSuccess('Бот создан', 'BOT_CREATE_SUCCESS');
       }
     } catch (error) {
-      console.error('Ошибка создания бота:', error);
       const cleanMessage = sanitizeTechnicalError(error.message || 'Ошибка создания бота');
       showError(cleanMessage, 'BOT_CREATE_ERROR');
     } finally {
@@ -420,7 +408,6 @@ export default function AIAssistant() {
         showSuccess('Бот обновлен', 'BOT_UPDATE_SUCCESS');
       }
     } catch (error) {
-      console.error('Ошибка обновления бота:', error);
       showError('Ошибка обновления бота', 'BOT_UPDATE_ERROR');
     }
   };
@@ -437,7 +424,6 @@ export default function AIAssistant() {
         showSuccess('Бот удален', 'BOT_DELETE_SUCCESS');
       }
     } catch (error) {
-      console.error('Ошибка удаления бота:', error);
       showError('Ошибка удаления бота', 'BOT_DELETE_ERROR');
     }
   };
@@ -477,7 +463,6 @@ export default function AIAssistant() {
       showSuccess('Настройки виджета сохранены', 'WIDGET_SETTINGS_SAVE_SUCCESS');
       closeModal('showWidgetSettings');
     } catch (error) {
-      console.error('Ошибка обновления настроек виджета:', error);
       showError('Ошибка сохранения настроек', 'WIDGET_SETTINGS_SAVE_ERROR');
     }
   };

@@ -159,7 +159,6 @@ const Dashboard = React.memo(function Dashboard() {
           setOnboardingStatus(data);
         })
         .catch(err => {
-          console.error('Error fetching onboarding status:', err);
         });
     }
   }, [user]);
@@ -196,7 +195,6 @@ const Dashboard = React.memo(function Dashboard() {
         setOnboardingStatus(null);
       })
       .catch(err => {
-        console.error('Error completing onboarding:', err);
       });
   }, []);
 
@@ -206,12 +204,10 @@ const Dashboard = React.memo(function Dashboard() {
 
   const handleViewDialogs = useCallback(() => {
     // TODO: Показать активные диалоги
-    console.log('Показать диалоги');
   }, []);
 
   const handleViewAnalytics = useCallback(() => {
     // TODO: Показать аналитику
-    console.log('Показать аналитику');
   }, []);
 
   // Условные return должны быть после всех хуков

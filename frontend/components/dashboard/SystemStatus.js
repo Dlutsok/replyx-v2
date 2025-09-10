@@ -105,7 +105,6 @@ const SystemStatus = ({ bots, loading, onRefresh, onUpdate }) => {
         onUpdate();
       }
     } catch (error) {
-      console.error('Failed to toggle bot', error);
     } finally {
       setActionLoading(prev => ({ ...prev, [bot.id]: false }));
     }

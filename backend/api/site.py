@@ -295,10 +295,10 @@ async def site_add_dialog_message(
     
     response_msg = None
     if sender == 'user' and not is_taken_over:
-        # АВТОТРИГГЕР: Проверяем триггерные фразы ПЕРЕД генерацией ответа
+        # АВТОТРИГГЕР: Улучшенная система определения handoff с контекстным анализом
+        from services.improved_handoff_detector import ImprovedHandoffDetector
         handoff_service = HandoffService(db)
-        trigger_keywords = ['оператор', 'человек', 'менеджер', 'поддержка', 'помощь', 'жалоба', 'проблема']
-        user_text = text.lower() if text else ''
+        detector = ImprovedHandoffDetector()
         
         # Проверяем не был ли недавно освобожден диалог (избегаем ложных срабатываний)
         recent_release = db.query(models.HandoffAudit).filter(
@@ -307,30 +307,48 @@ async def site_add_dialog_message(
             models.HandoffAudit.created_at > datetime.now() - timedelta(minutes=5)
         ).first()
         
+        # Используем улучшенную систему определения handoff
+        should_handoff_detected, handoff_reason, handoff_details = detector.should_request_handoff(
+            user_text=text or '',
+            dialog=dialog
+        )
+        
         should_trigger_handoff = (
-            any(keyword in user_text for keyword in trigger_keywords) and
+            should_handoff_detected and
             not recent_release and
             dialog.handoff_status != 'requested' and
             dialog.handoff_status != 'active'
         )
         
+        # 🔍 ДЕТАЛЬНАЯ ДИАГНОСТИКА HANDOFF ЛОГИКИ
+        logger.info(f"🔍 HANDOFF DIAGNOSIS for dialog {dialog_id}:")
+        logger.info(f"   should_handoff_detected: {should_handoff_detected} (reason: {handoff_reason})")
+        logger.info(f"   recent_release: {'Yes' if recent_release else 'No'}")
+        logger.info(f"   dialog.handoff_status: {dialog.handoff_status}")
+        logger.info(f"   FINAL should_trigger_handoff: {should_trigger_handoff}")
+        if should_handoff_detected and not should_trigger_handoff:
+            logger.warning(f"🚨 HANDOFF BLOCKED! Detection worked but conditions failed")
+        
         if should_trigger_handoff:
             try:
                 from uuid import uuid4
                 new_request_id = str(uuid4())
-                logger.info(f"Auto-triggering handoff for dialog {dialog_id} due to keywords: {user_text[:100]}")
+                # Подробное логирование причин handoff
+                matched_patterns = [p['description'] for p in handoff_details.get('matched_patterns', [])]
+                logger.info(f"🔄 Auto-triggering handoff for dialog {dialog_id}")
+                logger.info(f"   Reason: {handoff_reason}")
+                logger.info(f"   Score: {handoff_details.get('total_score', 0):.2f}")
+                logger.info(f"   Patterns: {matched_patterns}")
+                logger.info(f"   User text: {text[:100] if text else 'None'}...")
+                
                 handoff_result = handoff_service.request_handoff(
                     dialog_id=dialog_id,
-                    reason="auto_trigger",
+                    reason=handoff_reason,  # Используем точную причину от детектора
                     request_id=new_request_id,
                     last_user_text=text[:200] if text else None
                 )
                 
-                # Отправляем уведомление о запросе оператора
-                await ws_push_site_dialog_message(dialog_id, {
-                    "type": "handoff_requested",
-                    "message": "Ваш запрос передан оператору. Пожалуйста, подождите..."
-                })
+                # Уведомление о handoff будет отправлено через handoff_service автоматически
                 
                 # Останавливаем генерацию AI ответа
                 await ws_push_site_dialog_message(dialog_id, {"type": "typing_stop"})
@@ -684,10 +702,10 @@ async def widget_add_dialog_message(
     
     response_msg = None
     if sender == 'user' and not is_taken_over:
-        # АВТОТРИГГЕР для widget: Проверяем триггерные фразы ПЕРЕД генерацией ответа
+        # АВТОТРИГГЕР для widget: Улучшенная система определения handoff
+        from services.improved_handoff_detector import ImprovedHandoffDetector
         handoff_service = HandoffService(db)
-        trigger_keywords = ['оператор', 'человек', 'менеджер', 'поддержка', 'помощь', 'жалоба', 'проблема']
-        user_text = text.lower() if text else ''
+        detector = ImprovedHandoffDetector()
         
         # Проверяем не был ли недавно освобожден диалог (избегаем ложных срабатываний)
         recent_release = db.query(models.HandoffAudit).filter(
@@ -696,30 +714,48 @@ async def widget_add_dialog_message(
             models.HandoffAudit.created_at > datetime.now() - timedelta(minutes=5)
         ).first()
         
+        # Используем улучшенную систему определения handoff
+        should_handoff_detected, handoff_reason, handoff_details = detector.should_request_handoff(
+            user_text=text or '',
+            dialog=dialog
+        )
+        
         should_trigger_handoff = (
-            any(keyword in user_text for keyword in trigger_keywords) and
+            should_handoff_detected and
             not recent_release and
             dialog.handoff_status != 'requested' and
             dialog.handoff_status != 'active'
         )
         
+        # 🔍 ДЕТАЛЬНАЯ ДИАГНОСТИКА HANDOFF ЛОГИКИ
+        logger.info(f"🔍 HANDOFF DIAGNOSIS for dialog {dialog_id}:")
+        logger.info(f"   should_handoff_detected: {should_handoff_detected} (reason: {handoff_reason})")
+        logger.info(f"   recent_release: {'Yes' if recent_release else 'No'}")
+        logger.info(f"   dialog.handoff_status: {dialog.handoff_status}")
+        logger.info(f"   FINAL should_trigger_handoff: {should_trigger_handoff}")
+        if should_handoff_detected and not should_trigger_handoff:
+            logger.warning(f"🚨 HANDOFF BLOCKED! Detection worked but conditions failed")
+        
         if should_trigger_handoff:
             try:
                 from uuid import uuid4
                 new_request_id = str(uuid4())
-                logger.info(f"Auto-triggering handoff for widget dialog {dialog_id} due to keywords: {user_text[:100]}")
+                # Подробное логирование причин handoff для widget
+                matched_patterns = [p['description'] for p in handoff_details.get('matched_patterns', [])]
+                logger.info(f"🔄 Auto-triggering handoff for widget dialog {dialog_id}")
+                logger.info(f"   Reason: {handoff_reason}")
+                logger.info(f"   Score: {handoff_details.get('total_score', 0):.2f}")
+                logger.info(f"   Patterns: {matched_patterns}")
+                logger.info(f"   User text: {text[:100] if text else 'None'}...")
+                
                 handoff_result = handoff_service.request_handoff(
                     dialog_id=dialog_id,
-                    reason="auto_trigger",
+                    reason=handoff_reason,  # Используем точную причину от детектора
                     request_id=new_request_id,
                     last_user_text=text[:200] if text else None
                 )
                 
-                # Отправляем уведомление о запросе оператора
-                await ws_push_site_dialog_message(dialog_id, {
-                    "type": "handoff_requested",
-                    "message": "Ваш запрос передан оператору. Пожалуйста, подождите..."
-                })
+                # Уведомление о handoff будет отправлено через handoff_service автоматически
                 
                 # Останавливаем генерацию AI ответа
                 await ws_push_site_dialog_message(dialog_id, {"type": "typing_stop"})
