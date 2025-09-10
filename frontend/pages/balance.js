@@ -92,8 +92,8 @@ export default function Balance() {
       return;
     }
 
-    if (parseFloat(rechargeAmount) < 100) {
-      setMessage('Минимальная сумма пополнения составляет 100 рублей');
+    if (parseFloat(rechargeAmount) < 1) {
+      setMessage('Минимальная сумма пополнения составляет 1 рубль');
       setMessageType('error');
       return;
     }
