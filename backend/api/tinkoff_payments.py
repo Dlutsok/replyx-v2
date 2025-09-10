@@ -93,36 +93,22 @@ def calculate_signature(data: dict) -> str:
     return hashlib.sha256(concatenated_string.encode('utf-8')).hexdigest()
 
 def verify_webhook_signature(data: dict, received_token: str) -> bool:
-    """Проверка подписи webhook'а от Тинькофф с учетом дополнительных полей"""
-    # Попробуем несколько вариантов подписи
-    
-    # Вариант 1: стандартная подпись (как для создания платежей)
+    """Проверка подписи webhook'а от Тинькофф"""
     try:
+        # Используем стандартный алгоритм подписи
         expected_token = calculate_signature(data)
-        if str(received_token).lower() == str(expected_token).lower():
-            logger.info("✅ Подпись совпала (стандартный алгоритм)")
-            return True
-    except Exception as e:
-        logger.error(f"Ошибка при проверке стандартной подписи: {e}")
-    
-    # Вариант 2: только основные поля для webhook'ов
-    try:
-        webhook_fields = ['TerminalKey', 'OrderId', 'Success', 'Status', 'PaymentId']
-        filtered_data = {k: v for k, v in data.items() 
-                        if k in webhook_fields and v is not None and str(v).strip() != ''}
-        filtered_data['Password'] = TINKOFF_SECRET_KEY
+        signature_match = str(received_token).lower() == str(expected_token).lower()
         
-        sorted_keys = sorted(filtered_data.keys())
-        concatenated_string = ''.join([str(filtered_data[key]) for key in sorted_keys])
-        expected_token = hashlib.sha256(concatenated_string.encode('utf-8')).hexdigest()
-        
-        if str(received_token).lower() == str(expected_token).lower():
-            logger.info("✅ Подпись совпала (webhook алгоритм)")
+        if signature_match:
+            logger.debug("✅ Подпись webhook'а корректна")
             return True
+        else:
+            logger.warning(f"⚠️ Подпись не совпадает. Получено: {received_token[:8]}..., ожидалось: {expected_token[:8]}...")
+            return False
+            
     except Exception as e:
-        logger.error(f"Ошибка при проверке webhook подписи: {e}")
-    
-    return False
+        logger.error(f"❌ Ошибка при проверке подписи webhook'а: {e}")
+        return False
 
 async def init_payment_tinkoff(order_id: str, amount: int, description: str, customer_key: str, success_url: str, fail_url: str, email: str = None, phone: str = None, name: str = None):
     """Инициация платежа через API Тинькофф"""
@@ -318,8 +304,28 @@ async def create_payment(
             "order_id": order_id
         })
         
+    except requests.exceptions.Timeout:
+        logger.error(f"Timeout при создании платежа {order_id}")
+        if 'payment' in locals():
+            payment.status = 'failed'
+            payment.error_message = 'Timeout при создании платежа'
+            db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_408_REQUEST_TIMEOUT,
+            detail="Платежная система недоступна. Попробуйте позже."
+        )
+    except requests.exceptions.ConnectionError:
+        logger.error(f"Connection error при создании платежа {order_id}")
+        if 'payment' in locals():
+            payment.status = 'failed'
+            payment.error_message = 'Ошибка подключения к платежной системе'
+            db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Платежная система недоступна. Попробуйте позже."
+        )
     except Exception as e:
-        logger.error(f"Ошибка создания платежа: {e}")
+        logger.error(f"Ошибка создания платежа {order_id}: {e}")
         logger.error(f"Тип ошибки: {type(e)}")
         import traceback
         logger.error(f"Полный трейс: {traceback.format_exc()}")
@@ -465,12 +471,8 @@ async def tinkoff_notification(
         
         logger.info(f"Получено уведомление от Тинькофф: OrderId={notification_data.get('OrderId')}, Status={notification_data.get('Status')}")
         
-        # ДЕТАЛЬНОЕ ЛОГИРОВАНИЕ для отладки проблемы с подписью
-        logger.info(f"🔍 WEBHOOK ДАННЫЕ от IP {client_ip}:")
-        logger.info(f"   Content-Type: {content_type}")
-        safe_data = {k: v for k, v in notification_data.items() if k not in ['Token', 'Password']}
-        logger.info(f"   Данные (без токена): {safe_data}")
-        logger.info(f"   Все ключи: {list(notification_data.keys())}")
+        # Базовое логирование webhook'а  
+        logger.debug(f"IP источника: {client_ip}, Content-Type: {content_type}")
         
         # Проверяем обязательные поля
         required_fields = ['OrderId', 'Status', 'PaymentId', 'Token']
@@ -488,20 +490,18 @@ async def tinkoff_notification(
         received_token = notification_data['Token']
         
         # Проверяем подпись (токен) для безопасности
-        logger.info(f"🔐 ПРОВЕРКА ПОДПИСИ для {order_id}:")
-        logger.info(f"   Получена подпись: {received_token}")
+        logger.info(f"🔐 ПРОВЕРКА ПОДПИСИ для {order_id}")
         
-        # ВРЕМЕННОЕ РЕШЕНИЕ: проверяем IP и пропускаем для официальных серверов Тинькофф
-        # TODO: Исправить алгоритм подписи для полной безопасности
         if not verify_webhook_signature(notification_data, received_token):
-            if client_ip in ['212.49.24.206', '138.124.107.177']:
-                logger.warning(f"⚠️ Пропускаем проверку подписи для официального IP Тинькофф: {client_ip}")
-            else:
-                logger.error(f"❌ Неверная подпись уведомления для заказа {order_id}")
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Invalid signature"
-                )
+            logger.error(f"❌ Неверная подпись уведомления для заказа {order_id}")
+            logger.error(f"❌ Получена подпись: {received_token}")
+            logger.error(f"❌ IP источника: {client_ip}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid signature"
+            )
+        
+        logger.info(f"✅ Подпись webhook'а проверена успешно")
         
         # Ищем платеж в БД
         payment = db.query(Payment).filter(Payment.order_id == order_id).first()
@@ -605,3 +605,90 @@ async def get_payment_history(
         "created_at": p.created_at,
         "completed_at": p.completed_at
     } for p in payments]
+
+
+# ==========================================
+# PRODUCTION MONITORING & HEALTH CHECKS
+# ==========================================
+
+@router.get("/health")
+async def payment_system_health(db: Session = Depends(get_db)):
+    """Health check для системы платежей"""
+    try:
+        # Проверка подключения к БД
+        recent_payments = db.query(Payment).filter(
+            Payment.created_at >= datetime.utcnow() - timedelta(hours=24)
+        ).count()
+        
+        # Проверка процента успешных платежей за последние 24 часа
+        successful_payments = db.query(Payment).filter(
+            Payment.created_at >= datetime.utcnow() - timedelta(hours=24),
+            Payment.status == 'success'
+        ).count()
+        
+        success_rate = (successful_payments / recent_payments * 100) if recent_payments > 0 else 100
+        
+        health_status = {
+            "status": "healthy" if success_rate >= 80 else "degraded",
+            "tinkoff_api": "connected",
+            "database": "connected", 
+            "payments_24h": recent_payments,
+            "success_rate": round(success_rate, 2),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        return health_status
+        
+    except Exception as e:
+        logger.error(f"Health check error: {e}")
+        return {
+            "status": "unhealthy",
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+
+@router.get("/metrics")
+async def payment_metrics(db: Session = Depends(get_db)):
+    """Метрики системы платежей для мониторинга"""
+    try:
+        now = datetime.utcnow()
+        day_ago = now - timedelta(hours=24)
+        
+        # Общая статистика за 24 часа
+        total_payments = db.query(Payment).filter(Payment.created_at >= day_ago).count()
+        successful_payments = db.query(Payment).filter(
+            Payment.created_at >= day_ago, 
+            Payment.status == 'success'
+        ).count()
+        failed_payments = db.query(Payment).filter(
+            Payment.created_at >= day_ago,
+            Payment.status == 'failed'
+        ).count()
+        pending_payments = db.query(Payment).filter(
+            Payment.created_at >= day_ago,
+            Payment.status == 'pending'
+        ).count()
+        
+        # Средняя сумма платежа
+        from sqlalchemy import func
+        avg_amount = db.query(func.avg(Payment.amount)).filter(
+            Payment.created_at >= day_ago,
+            Payment.status == 'success'
+        ).scalar() or 0
+        
+        return {
+            "payments_24h": {
+                "total": total_payments,
+                "successful": successful_payments,
+                "failed": failed_payments, 
+                "pending": pending_payments,
+                "success_rate": round((successful_payments / total_payments * 100) if total_payments > 0 else 0, 2)
+            },
+            "average_amount": round(float(avg_amount), 2),
+            "timestamp": now.isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Metrics error: {e}")
+        return {"error": str(e), "timestamp": datetime.utcnow().isoformat()}
