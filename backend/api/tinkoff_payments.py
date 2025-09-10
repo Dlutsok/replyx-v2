@@ -382,10 +382,9 @@ async def complete_payment(
             # Пополняем баланс пользователя
             from services.balance_service import BalanceService
             balance_service = BalanceService(db)
-            balance_service.add_balance(
+            balance_service.top_up_balance(
                 user_id=payment.user_id,
-                amount=payment.amount,
-                transaction_type='payment_topup',
+                amount=float(payment.amount),
                 description=f"Пополнение через Т-Банк (заказ {order_id})"
             )
             
@@ -510,10 +509,9 @@ async def tinkoff_notification(
             # Пополняем баланс пользователя
             from services.balance_service import BalanceService
             balance_service = BalanceService(db)
-            balance_service.add_balance(
+            balance_service.top_up_balance(
                 user_id=payment.user_id,
-                amount=payment.amount,
-                transaction_type='payment_topup',
+                amount=float(payment.amount),
                 description=f"Пополнение через Т-Банк (заказ {order_id})"
             )
             
