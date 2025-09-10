@@ -11,7 +11,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_PREFIX: ghcr.io/dlutsok/replyx
+  IMAGE_PREFIX: ghcr.io/dlutsok/replyx2
   ENABLE_CODE_SCANNING_UPLOAD: 'false'
 
 jobs:

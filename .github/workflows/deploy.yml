@@ -16,7 +16,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_PREFIX: ghcr.io/dlutsok/replyx
+  IMAGE_PREFIX: ghcr.io/dlutsok/replyx2
 
 jobs:
   # =============================================================================
