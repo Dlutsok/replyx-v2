@@ -477,6 +477,7 @@ class Payment(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     completed_at = Column(DateTime, nullable=True)  # Время завершения платежа
+    webhook_processed_at = Column(DateTime, nullable=True)  # 🔒 Время обработки webhook (защита от повторов)
     
     # Relationships
     user = relationship('User', backref='payments')

@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from database.connection import get_db
 from database.models import User, Payment
 from core.auth import get_current_user
+from validators.rate_limiter import rate_limit_api, rate_limit_by_ip
 from datetime import datetime
 from pydantic import BaseModel
 import uuid
@@ -13,6 +14,8 @@ import hashlib
 import hmac
 import requests
 import json
+import ipaddress
+from typing import List
 
 
 logger = logging.getLogger(__name__)
@@ -31,6 +34,38 @@ TINKOFF_API_URL = TINKOFF_SANDBOX_API_URL if TINKOFF_SANDBOX_MODE else TINKOFF_P
 
 # Дополнительные настройки
 TINKOFF_REQUEST_TIMEOUT = int(os.getenv('TINKOFF_REQUEST_TIMEOUT', '30'))
+
+# IP адреса T-Bank для webhook уведомлений (согласно документации)
+TINKOFF_WEBHOOK_IPS = [
+    '185.71.76.0/27',  # Основной диапазон T-Bank (продакшн)
+    '185.71.77.0/27',  # Резервный диапазон T-Bank (продакшн)
+    '77.75.153.0/25',  # Дополнительный диапазон (продакшн)
+    '91.194.226.0/23', # Новый диапазон 2024+ (продакшн)
+    '212.49.24.206/32', # Тестовый IP T-Bank (обнаружен в логах webhook'ов)
+]
+
+def is_tinkoff_ip(client_ip: str) -> bool:
+    """Проверка принадлежности IP к T-Bank whitelist"""
+    if not client_ip or client_ip in ['unknown', 'localhost', '127.0.0.1']:
+        # В development режиме разрешаем локальные IP
+        if os.getenv('ENVIRONMENT', 'development') == 'development':
+            logger.warning(f"🚧 DEV mode: разрешаю IP {client_ip} для webhook")
+            return True
+        return False
+    
+    try:
+        client_addr = ipaddress.ip_address(client_ip)
+        for cidr in TINKOFF_WEBHOOK_IPS:
+            if client_addr in ipaddress.ip_network(cidr):
+                logger.info(f"✅ IP {client_ip} принадлежит T-Bank")
+                return True
+        
+        logger.warning(f"❌ IP {client_ip} НЕ принадлежит T-Bank whitelist")
+        return False
+        
+    except ValueError:
+        logger.error(f"❌ Некорректный IP адрес: {client_ip}")
+        return False
 TINKOFF_DEBUG_LOGGING = os.getenv('TINKOFF_DEBUG_LOGGING', 'false').lower() == 'true'
 
 # Валидация критически важных настроек
@@ -99,8 +134,8 @@ def calculate_signature(data: dict) -> str:
     logger.info(f"   🔐 ПОДПИСЬ (исправленная):")
     logger.info(f"   Ключи: {safe_keys}")
     logger.info(f"   Нормализованные значения: {safe_values}")
-    logger.info(f"   Строка для подписи: '{concatenated_string}'")
-    logger.info(f"   Длина строки: {len(concatenated_string)}")
+    logger.info(f"   Длина строки для подписи: {len(concatenated_string)} символов")
+    # NOTE: Строку подписи не логируем - содержит секретный ключ
     
     # Вычисляем SHA256 хэш
     return hashlib.sha256(concatenated_string.encode('utf-8')).hexdigest()
@@ -233,6 +268,7 @@ async def init_payment_tinkoff(order_id: str, amount: int, description: str, cus
         raise Exception("Ошибка соединения с платежной системой")
 
 @router.post("/create-payment")
+@rate_limit_api(limit=10, window=300)  # 🔒 Максимум 10 платежей за 5 минут на пользователя
 async def create_payment(
     amount: float = Form(..., ge=1, le=50000),
     description: str = Form(default="Пополнение баланса ReplyX"),
@@ -468,6 +504,7 @@ async def complete_payment(
         )
 
 @router.post("/tinkoff-notification")
+@rate_limit_by_ip(limit=100, window=3600)  # 🔒 Максимум 100 webhook в час с одного IP
 async def tinkoff_notification(
     request: Request,
     db: Session = Depends(get_db)
@@ -477,9 +514,17 @@ async def tinkoff_notification(
     Вызывается автоматически при изменении статуса платежа
     """
     try:
-        # Логируем источник
+        # Логируем источник и проверяем IP
         client_ip = request.headers.get('x-forwarded-for', request.client.host if request.client else 'unknown')
         logger.info(f"Webhook от Т-Банк с IP: {client_ip}")
+        
+        # 🔒 ПРОВЕРКА IP WHITELIST T-BANK
+        if not is_tinkoff_ip(client_ip):
+            logger.error(f"🚨 БЛОКИРОВКА: Webhook с неавторизованного IP {client_ip}")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access denied: IP not in T-Bank whitelist"
+            )
 
         # Получаем данные из запроса (поддерживаем JSON и form-data)
         content_type = request.headers.get('content-type', '')
@@ -497,7 +542,7 @@ async def tinkoff_notification(
         safe_data = {k: v for k, v in notification_data.items() if k not in ['Token', 'Password']}
         logger.info(f"   Все поля webhook'а: {safe_data}")
         logger.info(f"   Список ключей: {sorted(list(notification_data.keys()))}")
-        logger.info(f"   Получен Token: {notification_data.get('Token', 'ОТСУТСТВУЕТ')}")
+        logger.info(f"   Получен Token: {'***СКРЫТ***' if notification_data.get('Token') else 'ОТСУТСТВУЕТ'}")
         
         # Проверяем обязательные поля
         required_fields = ['OrderId', 'Status', 'PaymentId', 'Token']
@@ -536,6 +581,11 @@ async def tinkoff_notification(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Payment not found"
             )
+        
+        # 🔒 ЗАЩИТА ОТ ПОВТОРНОЙ ОБРАБОТКИ WEBHOOK
+        if payment.webhook_processed_at:
+            logger.info(f"⚠️ Webhook для {order_id} уже обработан {payment.webhook_processed_at}")
+            return {"Status": "OK"}  # Возвращаем успех для T-Bank
         
         # Маппинг статусов Тинькофф на наши статусы
         status_mapping = {
@@ -593,9 +643,13 @@ async def tinkoff_notification(
             payment.completed_at = datetime.utcnow()
             logger.warning(f"Платеж {order_id} завершен с ошибкой: {payment_status}")
         
+        # 🔒 ОТМЕЧАЕМ WEBHOOK КАК ОБРАБОТАННЫЙ
+        payment.webhook_processed_at = datetime.utcnow()
+        
         db.commit()
         
         logger.info(f"Статус платежа {order_id} обновлен: {old_status} → {new_status}")
+        logger.info(f"🔒 Webhook обработан и заблокирован от повторов")
         
         # Возвращаем OK для Тинькофф
         return {"Status": "OK"}

@@ -15,9 +15,14 @@ class BalanceService:
     def __init__(self, db: Session):
         self.db = db
     
-    def get_or_create_balance(self, user_id: int) -> UserBalance:
+    def get_or_create_balance(self, user_id: int, for_update: bool = False) -> UserBalance:
         """Получить или создать баланс пользователя"""
-        balance = self.db.query(UserBalance).filter(UserBalance.user_id == user_id).first()
+        query = self.db.query(UserBalance).filter(UserBalance.user_id == user_id)
+        if for_update:
+            # 🔒 Блокировка строки для предотвращения race conditions
+            query = query.with_for_update()
+        
+        balance = query.first()
         if not balance:
             balance = UserBalance(user_id=user_id, balance=0.0)
             self.db.add(balance)
@@ -31,11 +36,12 @@ class BalanceService:
         return balance.balance
     
     def top_up_balance(self, user_id: int, amount: float, description: str = "Пополнение баланса") -> BalanceTransaction:
-        """Пополнить баланс пользователя"""
+        """Пополнить баланс пользователя с защитой от race conditions"""
         if amount <= 0:
             raise ValueError("Сумма пополнения должна быть положительной")
         
-        balance = self.get_or_create_balance(user_id)
+        # 🔒 Получаем баланс с блокировкой для предотвращения race conditions
+        balance = self.get_or_create_balance(user_id, for_update=True)
         balance_before = float(balance.balance)
         balance_after = balance_before + amount
         
