@@ -70,40 +70,57 @@ def generate_order_id():
     """Генерация уникального номера заказа"""
     return f"replyx_{int(datetime.utcnow().timestamp())}_{str(uuid.uuid4())[:8]}"
 
+def tinkoff_normalize_value(value):
+    """Нормализация значений для подписи согласно требованиям Т-Банк"""
+    if isinstance(value, bool):
+        return 'true' if value else 'false'  # булевы значения в нижнем регистре
+    return str(value)
+
 def calculate_signature(data: dict) -> str:
     """Вычисление подписи для запроса к Т-Банк согласно документации"""
     # Исключаем поле подписи, пустые значения и None
-    filtered_data = {k: v for k, v in data.items() 
-                    if k not in ['token', 'Token'] and v is not None and str(v).strip() != ''}
+    items = [(k, v) for k, v in data.items() 
+             if k not in ['token', 'Token'] and v is not None and str(v).strip() != '']
     
-    # Добавляем секретный ключ как Password (согласно документации)
-    filtered_data['Password'] = TINKOFF_SECRET_KEY
+    # Добавляем секретный ключ как Password (согласно документации Т-Банк)
+    items.append(('Password', TINKOFF_SECRET_KEY))
     
-    # Сортируем по ключам и создаем строку конкатенации
-    sorted_keys = sorted(filtered_data.keys())
-    concatenated_values = [str(filtered_data[key]) for key in sorted_keys]
-    concatenated_string = ''.join(concatenated_values)
+    # Сортируем по ключам (ASCII сортировка)
+    items.sort(key=lambda kv: kv[0])
     
-    # Безопасное логирование без секретов
-    safe_values = [str(filtered_data[key]) for key in sorted_keys if key != 'Password']
-    logger.debug(f"Ключи для подписи (кроме Password): {[k for k in sorted_keys if k != 'Password']}")
-    logger.debug(f"Длина строки для хеширования: {len(concatenated_string)} символов")
+    # Нормализуем значения и создаем строку конкатенации
+    normalized_values = [tinkoff_normalize_value(v) for _, v in items]
+    concatenated_string = ''.join(normalized_values)
+    
+    # Детальное логирование для диагностики
+    safe_items = [(k, tinkoff_normalize_value(v)) for k, v in items if k != 'Password']
+    safe_keys = [k for k, _ in safe_items]
+    safe_values = [v for _, v in safe_items]
+    logger.info(f"   🔐 ПОДПИСЬ (исправленная):")
+    logger.info(f"   Ключи: {safe_keys}")
+    logger.info(f"   Нормализованные значения: {safe_values}")
+    logger.info(f"   Строка для подписи: '{concatenated_string}'")
+    logger.info(f"   Длина строки: {len(concatenated_string)}")
     
     # Вычисляем SHA256 хэш
     return hashlib.sha256(concatenated_string.encode('utf-8')).hexdigest()
 
 def verify_webhook_signature(data: dict, received_token: str) -> bool:
-    """Проверка подписи webhook'а от Тинькофф"""
+    """Проверка подписи webhook'а от Тинькофф с правильной нормализацией булевых значений"""
     try:
-        # Используем стандартный алгоритм подписи
-        expected_token = calculate_signature(data)
-        signature_match = str(received_token).lower() == str(expected_token).lower()
+        logger.info(f"🔐 ПРОВЕРКА ПОДПИСИ (исправленный алгоритм)...")
         
-        if signature_match:
-            logger.debug("✅ Подпись webhook'а корректна")
+        # Используем исправленную функцию calculate_signature с нормализацией булевых значений
+        expected_token = calculate_signature(data)
+        
+        logger.info(f"   Получено от Т-Банк: {received_token}")
+        logger.info(f"   Ожидалось (исправленное): {expected_token}")
+        
+        if str(received_token).lower() == str(expected_token).lower():
+            logger.info("✅ Подпись webhook'а совпала!")
             return True
         else:
-            logger.warning(f"⚠️ Подпись не совпадает. Получено: {received_token[:8]}..., ожидалось: {expected_token[:8]}...")
+            logger.error(f"❌ Подпись не совпала!")
             return False
             
     except Exception as e:
@@ -145,12 +162,15 @@ async def init_payment_tinkoff(order_id: str, amount: int, description: str, cus
         data['NotificationURL'] = notification_url
     
     # Добавляем токен (подпись)
+    logger.info(f"🔐 СОЗДАНИЕ ПОДПИСИ INIT для {order_id}:")
+    logger.info(f"   Поля для Init: {sorted([k for k in data.keys()])}")
+    logger.info(f"   Значения Init: {[str(data[k]) for k in sorted(data.keys())]}")
+    
     token = calculate_signature(data)
     data['Token'] = token
     
+    logger.info(f"   Подпись Init: {token}")
     logger.info(f"Инициация платежа {order_id} на сумму {amount} копеек")
-    logger.debug(f"Количество параметров для подписи: {len([k for k in data.keys() if k != 'Token'])}")
-    logger.debug(f"URL запроса: {TINKOFF_API_URL}Init")
     
     try:
         response = requests.post(
@@ -471,8 +491,13 @@ async def tinkoff_notification(
         
         logger.info(f"Получено уведомление от Тинькофф: OrderId={notification_data.get('OrderId')}, Status={notification_data.get('Status')}")
         
-        # Базовое логирование webhook'а  
-        logger.debug(f"IP источника: {client_ip}, Content-Type: {content_type}")
+        # Детальное логирование для анализа подписи
+        logger.info(f"🔍 WEBHOOK АНАЛИЗ от IP {client_ip}:")
+        logger.info(f"   Content-Type: {content_type}")
+        safe_data = {k: v for k, v in notification_data.items() if k not in ['Token', 'Password']}
+        logger.info(f"   Все поля webhook'а: {safe_data}")
+        logger.info(f"   Список ключей: {sorted(list(notification_data.keys()))}")
+        logger.info(f"   Получен Token: {notification_data.get('Token', 'ОТСУТСТВУЕТ')}")
         
         # Проверяем обязательные поля
         required_fields = ['OrderId', 'Status', 'PaymentId', 'Token']
