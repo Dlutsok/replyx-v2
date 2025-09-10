@@ -330,14 +330,14 @@ export default function Balance() {
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
                         placeholder="1000"
-                        min="100"
+                        min="1"
                         max="50000"
                         className="w-full px-4 py-3 text-xl font-medium border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent transition-all text-center"
                       />
                       <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg">₽</div>
                     </div>
                     <div className="text-xs text-gray-500 mt-1 text-center">
-                      Минимум 100₽ • Максимум 50,000₽
+                      Минимум 1₽ • Максимум 50,000₽
                     </div>
                   </div>
 
@@ -368,14 +368,14 @@ export default function Balance() {
                     <LoadingButton
                       onClick={() => handleRecharge(amount)}
                       loading={loading}
-                      disabled={!amount || parseFloat(amount) < 100}
+                      disabled={!amount || parseFloat(amount) < 1}
                       className="w-full py-3.5 text-base font-semibold bg-[#6334E5] hover:bg-[#5028c2] disabled:bg-gray-300 text-white rounded-xl transition-colors flex items-center justify-center gap-2"
                     >
                       <FiCreditCard size={18} />
                       {loading ? 'Подготовка к оплате...' : 'Пополнить баланс'}
                     </LoadingButton>
                     
-                    {amount && parseFloat(amount) >= 100 && (
+                    {amount && parseFloat(amount) >= 1 && (
                       <div className="text-center text-sm text-gray-600 mt-2">
                         Вы получите ≈ {Math.floor(parseFloat(amount) / 5)} сообщений
                       </div>
