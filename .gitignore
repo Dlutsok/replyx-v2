@@ -92,3 +92,6 @@ CLAUDE.md
 TASK/
 agent-workdir/
 *.backup
+
+# Deployment configuration (server-specific, not needed for builds)
+Deployed/
