@@ -356,7 +356,7 @@ const AdminPaymentsPage = () => {
                       <div className={styles.methodInfo}>
                         <span className={styles.methodName}>Тинькофф Банк</span>
                         {payment.card_mask && (
-                          <span className={styles.cardMask}>**** {payment.card_mask}</span>
+                          <span className={styles.cardMask}>{payment.card_mask}</span>
                         )}
                       </div>
                     </div>
