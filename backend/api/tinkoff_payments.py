@@ -214,9 +214,14 @@ async def init_payment_tinkoff(order_id: str, amount: int, description: str, cus
             }]
         }
         data['Receipt'] = receipt
-        logger.info(f"📄 Добавлен Receipt для email: {email}")
+        logger.info(f"📄 ✅ СОЗДАН RECEIPT ДЛЯ ЧЕКА:")
+        logger.info(f"   📧 Email в Receipt: '{email}'")
+        logger.info(f"   💰 Сумма: {amount} копеек")
+        logger.info(f"   📝 Описание: '{description}'")
+        logger.info(f"   🏪 Налогообложение: usn_income")
     else:
-        logger.warning(f"⚠️ Нет email для Receipt - чек не будет сформирован")
+        logger.warning(f"⚠️ ❌ НЕТ EMAIL ДЛЯ RECEIPT - ЧЕК НЕ БУДЕТ СФОРМИРОВАН!")
+        logger.warning(f"   📧 Переданный email: '{email}' (тип: {type(email)})")
     
     # Добавляем NotificationURL только если он задан и доступен из интернета
     notification_url = os.getenv('TINKOFF_NOTIFICATION_URL', '').strip()
@@ -313,6 +318,13 @@ async def create_payment(
     Создание платежа и формирование формы для перенаправления на Т-Банк
     """
     try:
+        # 📧 ДИАГНОСТИКА EMAIL ДЛЯ ЧЕКА
+        logger.info(f"🔍 СОЗДАНИЕ ПЛАТЕЖА - ДИАГНОСТИКА EMAIL:")
+        logger.info(f"   📧 Email из формы: '{email}' (тип: {type(email)})")
+        logger.info(f"   👤 Email пользователя из БД: '{current_user.email}' (тип: {type(current_user.email)})")
+        logger.info(f"   📞 Телефон из формы: '{phone}' (тип: {type(phone)})")
+        logger.info(f"   👤 Имя из формы: '{name}' (тип: {type(name)})")
+        
         # Генерируем уникальный номер заказа
         order_id = generate_order_id()
         
@@ -368,6 +380,13 @@ async def create_payment(
         # Получаем URL для оплаты от Тинькофф
         # Используем email пользователя из аккаунта, если не передан явно
         user_email = email or current_user.email
+        
+        # 📧 ФИНАЛЬНАЯ ДИАГНОСТИКА EMAIL
+        logger.info(f"📧 ИТОГОВЫЙ EMAIL ДЛЯ ЧЕКА: '{user_email}' (тип: {type(user_email)})")
+        if user_email:
+            logger.info(f"✅ Email найден! Будет создан Receipt для Tinkoff")
+        else:
+            logger.warning(f"❌ Email НЕ НАЙДЕН! Чек НЕ будет сформирован!")
         
         payment_url = await init_payment_tinkoff(
             order_id=order_id,

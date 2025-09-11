@@ -115,6 +115,11 @@ export default function Balance() {
       const formData = new FormData();
       formData.append('amount', parseFloat(rechargeAmount));
       formData.append('description', `Пополнение баланса ReplyX на ${rechargeAmount} руб.`);
+      
+      // Добавляем email пользователя для формирования чека
+      if (user && user.email) {
+        formData.append('email', user.email);
+      }
 
       const response = await fetch(`${API_URL}/api/payments/create-payment`, {
         method: 'POST',
