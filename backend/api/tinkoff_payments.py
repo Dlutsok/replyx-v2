@@ -437,8 +437,8 @@ async def init_payment_tinkoff(order_id: str, amount: int, description: str, cus
     
     if receipt_contact:  # Если есть контакт для отправки чека
         receipt = {
-            'FfdVersion': '1.05',  # Явно указываем версию ФФД для PROD
-            receipt_contact_type: receipt_contact,
+            'FfdVersion': '1.2',  # ФФД 1.2 для T-Pay/СБП совместимости
+            'Email': email,  # Гарантируем ровно один контакт - Email
             'Taxation': 'usn_income',  # УСН доходы (подходит для большинства ИП/ООО)
             'Items': [{
                 'Name': description,
@@ -446,8 +446,9 @@ async def init_payment_tinkoff(order_id: str, amount: int, description: str, cus
                 'Quantity': 1,
                 'Amount': amount,  # Общая сумма = цена * количество
                 'Tax': 'none',  # Без НДС (подходит для услуг на УСН)
-                'PaymentMethod': 'full_payment',  # Полная оплата
-                'PaymentObject': 'payment'  # Для пополнения баланса - payment, а не service
+                'PaymentMethod': 'advance',  # Предоплата (для T-Pay/СБП)
+                'PaymentObject': 'service',  # Услуга (для T-Pay/СБП)
+                'MeasurementUnit': 'pc'  # 🔴 ОБЯЗАТЕЛЬНО для ФФД 1.2: единица измерения (штуки)
             }],
             'Payments': {
                 'Electronic': amount  # 🔴 КРИТИЧНО: сумма безналичного платежа = Amount из Init
@@ -460,14 +461,16 @@ async def init_payment_tinkoff(order_id: str, amount: int, description: str, cus
         logger.info(f"📧 Чеки будут отправляться с серверов T-Bank (стандартный режим)")
         
         data['Receipt'] = receipt
-        logger.info(f"📄 ✅ СОЗДАН RECEIPT ДЛЯ КАССОВОГО ЧЕКА (ФФД 1.05):")
-        logger.info(f"   📧 {receipt_contact_type} в Receipt: '{receipt_contact}'")
+        logger.info(f"📄 ✅ СОЗДАН RECEIPT ДЛЯ КАССОВОГО ЧЕКА (ФФД 1.2):")
+        logger.info(f"   📧 Email в Receipt: '{email}' (гарантированно Email)")
         logger.info(f"   💰 Сумма: {amount} копеек")
         logger.info(f"   📝 Описание: '{description}'")
         logger.info(f"   🏪 Налогообложение: usn_income")
         logger.info(f"   💳 Payments.Electronic: {amount} копеек (= Amount)")
-        logger.info(f"   📦 PaymentObject: payment (пополнение баланса)")
-        logger.info(f"   📄 FfdVersion: 1.05")
+        logger.info(f"   💰 PaymentMethod: advance (предоплата)")
+        logger.info(f"   📦 PaymentObject: service (для T-Pay/СБП)")
+        logger.info(f"   📏 MeasurementUnit: pc (штуки)")
+        logger.info(f"   📄 FfdVersion: 1.2 (современная версия)")
         logger.info(f"   📧 Отправитель: T-Bank (стандартный режим)")
     else:
         logger.warning(f"⚠️ ❌ НЕТ КОНТАКТОВ ДЛЯ RECEIPT - КАССОВЫЙ ЧЕК НЕ БУДЕТ СФОРМИРОВАН!")
