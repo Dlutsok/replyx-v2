@@ -114,7 +114,7 @@ export default function Balance() {
       // Используем метод с перенаправлением на сайт Тинькофф
       const formData = new FormData();
       formData.append('amount', parseFloat(rechargeAmount));
-      formData.append('description', `Пополнение баланса ReplyX на ${rechargeAmount}₽`);
+      formData.append('description', `Пополнение баланса ReplyX на ${rechargeAmount} руб.`);
 
       const response = await fetch(`${API_URL}/api/payments/create-payment`, {
         method: 'POST',
