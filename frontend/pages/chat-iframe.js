@@ -489,7 +489,11 @@ export default function ChatIframe() {
   // Определяем мобильное устройство
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
+      // Используем только безопасные методы без cross-origin доступа
+      const userAgent = navigator.userAgent;
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+      const screenWidth = window.screen ? window.screen.width : 1024; // fallback для desktop
+      setIsMobile(screenWidth <= 768 || isMobileDevice);
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
@@ -1496,7 +1500,7 @@ export default function ChatIframe() {
                 style={{
                   color: '#6b7280',
                   padding: '8px',
-                  marginLeft: 'auto',
+                  marginLeft: isMobile ? '0' : 'auto',
                   fontSize: '14px',
                   fontWeight: '600',
                   letterSpacing: '0.5px',
@@ -1538,6 +1542,46 @@ export default function ChatIframe() {
                   </div>
                 )}
               </div>
+              
+              {/* Кнопка закрытия для мобильных устройств */}
+              {isMobile && (
+                <button
+                  type="button"
+                  aria-label="Minimize"
+                  onClick={() => {
+                    // Закрываем чат (аналогично логике в widget.js)
+                    if (window.parent && window.parent.postMessage) {
+                      window.parent.postMessage({ type: 'CLOSE_CHAT' }, '*');
+                    }
+                  }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginLeft: 'auto',
+                    borderRadius: '4px',
+                    transition: 'background-color 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = '#f3f4f6'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                >
+                  <svg 
+                    fill="#6b7280" 
+                    height="20" 
+                    viewBox="0 0 20 20" 
+                    width="20" 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    aria-hidden="true"
+                  >
+                    <path d="M5.275 16L4 14.725L8.725 10L4 5.275L5.275 4L10 8.725L14.725 4L16 5.275L11.275 10L16 14.725L14.725 16L10 11.275L5.275 16Z"></path>
+                    <path d="M0 0h24v24H0z" fill="none"></path>
+                  </svg>
+                </button>
+              )}
             </div>
 
             {/* Область сообщений в стилистике скриншота */}

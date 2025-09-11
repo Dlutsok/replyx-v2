@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 
 # Используем настройки из app_config
 from core.app_config import (
-    YANDEX_SMTP_USER, YANDEX_SMTP_PASS, 
     SMTP_SERVER, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD,
     FROM_EMAIL, FROM_NAME, FRONTEND_URL
 )
@@ -32,25 +31,17 @@ BASE_URL = FRONTEND_URL
 
 class EmailService:
     def __init__(self):
-        # Приоритет: Yandex SMTP -> другие настройки
-        self.use_yandex = bool(YANDEX_SMTP_USER and YANDEX_SMTP_PASS)
-        
-        if self.use_yandex:
-            self.smtp_server = "smtp.yandex.ru"
-            self.smtp_port = 465
-            self.username = YANDEX_SMTP_USER
-            self.password = YANDEX_SMTP_PASS
-            self.from_email = YANDEX_SMTP_USER
-        else:
-            self.smtp_server = SMTP_SERVER
-            self.smtp_port = SMTP_PORT
-            self.username = SMTP_USERNAME
-            self.password = SMTP_PASSWORD
-            self.from_email = FROM_EMAIL
+        # Используем единую почтовую систему info@replyx.ru
+        self.smtp_server = SMTP_SERVER
+        self.smtp_port = SMTP_PORT
+        self.username = SMTP_USERNAME
+        self.password = SMTP_PASSWORD
+        self.from_email = FROM_EMAIL
+        self.from_name = FROM_NAME or "ReplyX"
 
-        # Режим шифрования: SSL для 465, STARTTLS для 587, иначе без TLS
+        # Режим шифрования: SSL для 465, STARTTLS для 587/2525, иначе без TLS
         self.use_ssl = str(self.smtp_port) == "465"
-        self.use_starttls = str(self.smtp_port) == "587"
+        self.use_starttls = str(self.smtp_port) in ["587", "2525"]
             
         self.from_name = FROM_NAME
         
@@ -89,13 +80,13 @@ class EmailService:
                 msg['From'] = f"{self.from_name} <{self.from_email}>" if self.from_name else self.from_email
                 msg['To'] = to_email
             
-            # Отправляем сообщение с учетом SSL/STARTTLS
+            # Отправляем сообщение с учетом SSL/STARTTLS и таймаутами
             if self.use_ssl:
-                with smtplib.SMTP_SSL(self.smtp_server, self.smtp_port) as server:
+                with smtplib.SMTP_SSL(self.smtp_server, self.smtp_port, timeout=10) as server:
                     server.login(self.username, self.password)
                     server.send_message(msg)
             else:
-                with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
+                with smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=10) as server:
                     server.ehlo()
                     if self.use_starttls:
                         server.starttls()

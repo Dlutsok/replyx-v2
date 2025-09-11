@@ -47,11 +47,9 @@ const PricingBlockSection = () => {
 
   return (
     <motion.section
-      className={`lg:mt-20 ${DESIGN_TOKENS.colors.sectionBg} pb-0 md:pb-20`}
+      className={`lg:mt-20 ${DESIGN_TOKENS.colors.sectionBg} pb-0`}
       {...DESIGN_TOKENS.animation.default}
     >
-      {/* Адаптивные отступы: мобильные без отступа (pb-0), десктоп с отступом (pb-6) */}
-      <div className="pb-0 md:pb-6"></div>
       <div className={`${DESIGN_TOKENS.spacing.maxWidth} ${DESIGN_TOKENS.spacing.containerPadding}`}>
         {/* Заголовок секции */}
         <motion.div
@@ -69,7 +67,7 @@ const PricingBlockSection = () => {
             }}>честная цена</span>
           </h2>
           <p className={`${DESIGN_TOKENS.typography.sectionSubtitle} max-w-3xl`}>
-            Никаких подписок и лимитов. Платите только за то, что используете
+            Экономия на колл-центре до 70%. Платите только за обработанные сообщения без абонентской платы
           </p>
         </motion.div>
 
@@ -86,7 +84,7 @@ const PricingBlockSection = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
             >
               <div className="mb-6">
-                <div className="text-center mb-6">
+                <div className="text-left mb-6">
                   <h3 className="text-xl font-bold text-gray-900 mb-2">
                     Тарифы конкурентов
                   </h3>
@@ -246,7 +244,7 @@ const PricingBlockSection = () => {
             {...DESIGN_TOKENS.animation.withDelay(0.2)}
           >
             <div className="mb-8">
-              <div className="text-center mb-6">
+              <div className="text-left mb-6">
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">
                   Тарифы конкурентов
                 </h3>

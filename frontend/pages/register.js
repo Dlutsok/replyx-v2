@@ -256,7 +256,8 @@ export default function Register() {
                 </div>
               )}
 
-              <button
+              {/* Dev режим: регистрация временно отключена */}
+              {/* <button
                 type="submit"
                 disabled={isLoading}
                 className={`w-full rounded-xl px-6 py-3 text-white font-semibold transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-primary-200 ${
@@ -266,7 +267,12 @@ export default function Register() {
                 }`}
               >
                 {isLoading ? 'Регистрируем...' : 'Зарегистрироваться'}
-              </button>
+              </button> */}
+              
+              {/* Временная заглушка */}
+              <div className="w-full rounded-xl px-6 py-3 text-center bg-gray-100 text-gray-600 font-semibold">
+                Регистрация временно недоступна
+              </div>
 
             </form>
 

@@ -400,6 +400,16 @@ class CacheStatsInfo(BaseModel):
     total_keys: int
     expires_keys: int
     connected_clients: int
+    # Дополнительные метрики
+    total_commands_processed: int = 0
+    keyspace_hits: int = 0
+    keyspace_misses: int = 0
+    uptime_in_seconds: int = 0
+    redis_version: str = "Unknown"
+    role: str = "Unknown"
+    instantaneous_ops_per_sec: int = 0
+    evicted_keys: int = 0
+    expired_keys: int = 0
 
 class CacheInfoResponse(BaseModel):
     """Информация о кэше Redis"""

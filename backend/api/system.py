@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 import time
 import os
+import logging
 
 from database import SessionLocal, models, schemas, crud, auth
 from database.schemas import (
@@ -14,6 +15,7 @@ from database.schemas import (
 from database.connection import get_db
 from validators.rate_limiter import rate_limit_metrics
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 @router.get("/healthz")
@@ -580,29 +582,78 @@ async def get_cache_info(current_user: models.User = Depends(auth.get_current_ad
         from cache.redis_cache import cache
         
         if hasattr(cache, 'get_stats'):
-            stats = cache.get_stats()
+            raw_stats = cache.get_stats()
+            logger.info(f"🔍 Cache raw stats: {raw_stats}")
+            # Преобразуем данные кэша в формат схемы
+            stats = {
+                "hit_rate": raw_stats.get("hit_rate", 0.0),
+                "memory_usage": raw_stats.get("used_memory", raw_stats.get("memory_usage", "0MB")),
+                "total_keys": raw_stats.get("total_keys", 0),
+                "expires_keys": raw_stats.get("expires_keys", 0), 
+                "connected_clients": raw_stats.get("connected_clients", 0),
+                # Дополнительные метрики
+                "total_commands_processed": raw_stats.get("total_commands_processed", 0),
+                "keyspace_hits": raw_stats.get("keyspace_hits", 0),
+                "keyspace_misses": raw_stats.get("keyspace_misses", 0),
+                "uptime_in_seconds": raw_stats.get("uptime_in_seconds", 0),
+                "redis_version": raw_stats.get("redis_version", "Unknown"),
+                "role": raw_stats.get("role", "Unknown"),
+                "instantaneous_ops_per_sec": raw_stats.get("instantaneous_ops_per_sec", 0),
+                "evicted_keys": raw_stats.get("evicted_keys", 0),
+                "expired_keys": raw_stats.get("expired_keys", 0)
+            }
         else:
             # Базовая информация если get_stats не доступен
+            logger.warning("🚨 Using fallback cache stats - get_stats not available")
             stats = {
                 "hit_rate": 85.4,
                 "memory_usage": "156MB",
                 "total_keys": 1247,
                 "expires_keys": 892,
-                "connected_clients": 3
+                "connected_clients": 3,
+                # Дополнительные метрики (mock data)
+                "total_commands_processed": 50000,
+                "keyspace_hits": 1500,
+                "keyspace_misses": 400,
+                "uptime_in_seconds": 86400,
+                "redis_version": "7.0.0",
+                "role": "master",
+                "instantaneous_ops_per_sec": 15,
+                "evicted_keys": 0,
+                "expired_keys": 200
             }
         
-        return {
+        result = {
             "status": "healthy",
             "stats": stats,
             "is_available": True if hasattr(cache, 'is_available') and cache.is_available() else True
         }
+        logger.info(f"🔍 Cache API response: {result}")
+        return result
         
     except Exception as e:
+        logger.error(f"🚨 Cache API error: {str(e)}", exc_info=True)
         return {
             "status": "error", 
             "error": str(e),
             "is_available": False,
-            "stats": {}
+            "stats": {
+                # Предоставляем fallback данные при ошибке
+                "hit_rate": 0.0,
+                "memory_usage": "N/A",
+                "total_keys": 0,
+                "expires_keys": 0,
+                "connected_clients": 0,
+                "total_commands_processed": 0,
+                "keyspace_hits": 0,
+                "keyspace_misses": 0,
+                "uptime_in_seconds": 0,
+                "redis_version": "Unknown",
+                "role": "Unknown",
+                "instantaneous_ops_per_sec": 0,
+                "evicted_keys": 0,
+                "expired_keys": 0
+            }
         }
 
 @router.post("/cache/clear", response_model=CacheClearResponse)

@@ -20,7 +20,7 @@ export const useSystemAPI = () => {
 
       const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
       
-      const response = await fetch(`${API_URL}${endpoint}`, {
+      const response = await fetch(`${endpoint}`, {
         method: options.method || 'GET',
         credentials: 'include', // Включаем cookies
         headers: {

@@ -99,7 +99,7 @@ const DeleteConfirmModal = ({ token, onClose, onConfirm }) => {
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Модели:</span>
                 <div className={styles.modelsContainer}>
-                  {token.model_access.split(',').map((model, index) => (
+                  {(token.model_access || '').split(',').filter(model => model.trim()).map((model, index) => (
                     <span key={index} className={styles.modelTag}>
                       {model.trim()}
                     </span>

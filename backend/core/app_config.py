@@ -7,8 +7,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from .secrets import (
     get_secret_key, get_site_secret, get_db_password, 
-    get_openai_api_key, get_yandex_smtp_credentials, 
-    get_secret, validate_secrets
+    get_openai_api_key, get_secret, validate_secrets
 )
 
 # Определяем пути к .env файлам (приоритет: backend/.env, затем корень проекта)
@@ -62,15 +61,12 @@ CORS_ORIGINS = [
     if origin.strip() != "*"
 ]
 
-# Настройки email (с поддержкой файловых секретов)
-YANDEX_SMTP_USER, YANDEX_SMTP_PASS = get_yandex_smtp_credentials()
-
-# Дополнительные SMTP настройки
-SMTP_SERVER = os.getenv('SMTP_SERVER', 'smtp.yandex.ru')
-SMTP_PORT = int(os.getenv('SMTP_PORT', '465'))
-SMTP_USERNAME = os.getenv('SMTP_USERNAME', YANDEX_SMTP_USER or '')
-SMTP_PASSWORD = os.getenv('SMTP_PASSWORD', YANDEX_SMTP_PASS or '')
-FROM_EMAIL = os.getenv('FROM_EMAIL', YANDEX_SMTP_USER or SMTP_USERNAME)
+# Настройки email (единая система info@replyx.ru)
+SMTP_SERVER = os.getenv('SMTP_SERVER', 'smtp.timeweb.ru')
+SMTP_PORT = int(os.getenv('SMTP_PORT', '2525'))
+SMTP_USERNAME = os.getenv('SMTP_USERNAME', 'info@replyx.ru')
+SMTP_PASSWORD = os.getenv('SMTP_PASSWORD', '')
+FROM_EMAIL = os.getenv('FROM_EMAIL', 'info@replyx.ru')
 FROM_NAME = os.getenv('FROM_NAME', 'ReplyX')
 
 # URL для фронтенда (используется в email ссылках)

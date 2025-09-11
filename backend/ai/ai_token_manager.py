@@ -199,12 +199,9 @@ class AITokenManager:
         # Получаем лучший токен (embeddings работают только с OpenAI)
         token = self.get_best_token("gpt-4o-mini", user_id)  # Используем любую модель для получения токена
         if not token:
-            # fallback на переменную окружения
-            openai_token = os.getenv('OPENAI_API_KEY')
-            if not openai_token:
-                raise Exception("Нет доступных токенов для генерации embeddings")
+            raise Exception("Нет доступных токенов для генерации embeddings")
         
-        api_key = token.token if token else openai_token
+        api_key = token.token
         embedding_model = model if model.startswith('text-embedding') else 'text-embedding-3-small'
         
         # Используем прокси систему для embeddings
@@ -603,15 +600,7 @@ def get_available_token(db: Session, model: str = "gpt-4o-mini"):
                 'model': model
             }
         
-        # Если нет токенов в пуле, используем переменную окружения
-        openai_token = os.getenv('OPENAI_API_KEY')
-        if openai_token:
-            return {
-                'token': openai_token,
-                'id': None,
-                'model': model
-            }
-        
+        # Если нет токенов в пуле, возвращаем None
         return None
     except Exception as e:
         print(f"Ошибка получения AI токена: {e}")

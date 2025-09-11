@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const HeroWidget = () => {
   const [messages, setMessages] = useState([]);
@@ -9,64 +9,83 @@ const HeroWidget = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [widgetTheme, setWidgetTheme] = useState('purple');
 
+  const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+  const lastMessageTimeRef = useRef(Date.now());
+
   const themes = {
     purple: {
-      primary: '#4b5563',
+      primary: '#6366f1',
       secondary: '#e9d5ff',
       accent: '#6d28d9',
-      gradient: 'linear-gradient(135deg, #4b5563 0%, #374151 100%)',
+      gradient: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
       light: '#faf5ff'
     }
   };
 
   const currentTheme = themes[widgetTheme];
 
+  // Auto-scroll function
+  const scrollToBottom = () => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
+  };
+
+  // Auto-scroll when messages or typing state changes
+  useEffect(() => {
+    // Small delay to ensure DOM is updated
+    const timeoutId = setTimeout(() => {
+      scrollToBottom();
+    }, 50);
+
+    return () => clearTimeout(timeoutId);
+  }, [messages, isTyping]);
+
   const demoMessages = [
     {
       id: '1',
       sender: 'assistant',
-      text: 'Здравствуйте! Я ReplyX AI-ассистент. Помогаю компаниям автоматизировать поддержку клиентов. Интегрируюсь с CRM, сайтом и мессенджерами. Чем могу помочь?',
+      text: 'Здравствуйте! Я ReplyX AI-ассистент. Подстраиваюсь под любой бизнес — от интернет-магазинов до клиник.',
       timestamp: new Date().toISOString()
     },
     {
       id: '2',
       sender: 'user',
-      text: 'Расскажите подробнее о ваших услугах. Сколько стоит внедрение?',
+      text: 'А как вы понимаете специфику нашей компании?',
       timestamp: new Date(Date.now() + 2000).toISOString()
     },
     {
       id: '3',
       sender: 'assistant',
-      text: '🚀 **ReplyX — оплата только за результат:**\n\n💰 **Простая модель оплаты:**\n• **5 рублей за сообщение**\n• **Без абонентской платы**\n• **Без скрытых комиссий**\n• **Платишь только за то, что работает**\n\n📊 **Пример расчета для интернет-магазина:**\n• **500 чатов в месяц** = 2,500₽\n• **2,000 чатов в месяц** = 10,000₽\n• **10,000 чатов в месяц** = 50,000₽\n\n⚡ **Что входит:**\n• AI-ассистент 24/7\n• Интеграция с вашей CRM\n• Аналитика и отчеты\n• Техническая поддержка\n\n🎯 **Экономия до 80% на поддержке клиентов**',
+      text: 'Достаточно загрузить Ваши документы: инструкции, каталоги, описания услуг. Я обучаюсь на них и начинаю отвечать как эксперт именно вашей компании.',
       timestamp: new Date(Date.now() + 4000).toISOString()
     },
     {
       id: '4',
       sender: 'user',
-      text: 'А можно ли интегрировать с нашей 1С и Telegram ботом?',
+      text: 'А если информации много?',
       timestamp: new Date(Date.now() + 6000).toISOString()
     },
     {
       id: '5',
       sender: 'assistant',
-      text: '✅ **Да, полная интеграция поддерживается:**\n\n🔗 **Интеграции в комплекте:**\n• **1С:Предприятие** — синхронизация заказов\n• **Telegram Bot** — автоматические ответы\n• **WhatsApp Business** — корпоративный чат\n• **ВКонтакте** — сообщества и группы\n• **Instagram** — Direct сообщения\n\n🛠️ **Дополнительные интеграции:**\n• amoCRM, Bitrix24, Salesforce\n• Zendesk, Freshdesk, LiveChat\n• API для кастомных решений\n\n⚙️ **Внедрение:** 2-4 недели, обучение команды включено',
+      text: '⚡ Легко. Поддерживаю до 100 000 страниц данных и нахожу нужный ответ за секунды.',
       timestamp: new Date(Date.now() + 8000).toISOString()
     },
     {
       id: '6',
       sender: 'user',
-      text: 'Как быстро AI обучается на наших данных? И что по безопасности?',
+      text: 'И это всё работает без программистов?',
       timestamp: new Date(Date.now() + 10000).toISOString()
     },
     {
       id: '7',
       sender: 'assistant',
-      text: '💡 **Почему ReplyX выгоднее традиционных решений:**\n\n💰 **Экономия с оплатой за сообщение:**\n• **Нет фиксированных платежей**\n• **Платишь только за реальных клиентов**\n• **Масштабируешься без переплат**\n• **ROI виден в каждом чате**\n\n⚡ **Технологии и безопасность:**\n• **Обучение AI:** 2-4 часа\n• **Шифрование:** AES-256\n• **Хранение:** РФ (VK Cloud)\n• **Соответствие:** 152-ФЗ, GDPR\n\n📊 **Показатели эффективности:**\n• **Точность:** 94%\n• **Скорость:** <2 секунды\n• **Экономия:** до 80% бюджета\n• **Обработка:** 100,000+ чатов/день\n\n🎯 **Начни с 1,000₽ тестового бюджета!**\n\nХочешь протестировать на своем сайте? 🚀',
+      text: 'Да. Вы сами загружаете материалы, вставляете код виджета на сайт — и готово. Я начинаю работать за 15 минут после старта.',
       timestamp: new Date(Date.now() + 12000).toISOString()
     }
   ];
-
-  const messageDelays = [0, 2000, 4000, 6000, 8000, 10000, 12000];
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -77,19 +96,22 @@ const HeroWidget = () => {
             setIsTyping(false);
             setMessages(prev => [...prev, demoMessages[currentMessageIndex]]);
             setCurrentMessageIndex(prev => prev + 1);
-          }, 1500);
+            lastMessageTimeRef.current = Date.now();
+          }, 700);
         } else {
           setMessages(prev => [...prev, demoMessages[currentMessageIndex]]);
           setCurrentMessageIndex(prev => prev + 1);
+          lastMessageTimeRef.current = Date.now();
         }
       } else {
-        // Перезапуск через 8 секунд после последнего сообщения
+        // Перезапуск через 4 секунды после последнего сообщения
         setTimeout(() => {
           setMessages([]);
           setCurrentMessageIndex(0);
-        }, 8000);
+          lastMessageTimeRef.current = Date.now();
+        }, 4000);
       }
-    }, messageDelays[currentMessageIndex] || 2000);
+    }, currentMessageIndex === 0 ? 0 : 2700);
 
     return () => clearTimeout(timer);
   }, [currentMessageIndex]);
@@ -177,21 +199,21 @@ const HeroWidget = () => {
       min-height: 0;
       max-height: 100%;
       overflow-y: auto;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      scroll-behavior: smooth;
     }
 
     .hero-messages-container::-webkit-scrollbar {
-      width: 4px;
+      display: none;
     }
 
     .hero-messages-container::-webkit-scrollbar-track {
-      background: transparent;
+      display: none;
     }
 
     .hero-messages-container::-webkit-scrollbar-thumb {
-      background: rgba(0, 0, 0, 0.1);
-      border-radius: 4px;
+      display: none;
     }
 
     .hero-message-bubble {
@@ -423,7 +445,7 @@ const HeroWidget = () => {
           </div>
 
           {/* Messages Area */}
-          <div className="hero-messages-container">
+          <div className="hero-messages-container" ref={messagesContainerRef}>
             {messages.map((message, index) => (
               <motion.div
                 key={message.id}
@@ -454,6 +476,9 @@ const HeroWidget = () => {
                 </div>
               </motion.div>
             )}
+
+            {/* Invisible element for auto-scroll */}
+            <div ref={messagesEndRef} />
           </div>
 
           {/* Input Area */}

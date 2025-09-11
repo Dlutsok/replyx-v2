@@ -534,6 +534,37 @@
           }
         }
         
+        .replyx-mobile-fullscreen-container {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          background: #ffffff;
+          z-index: 2147483646;
+          pointer-events: auto;
+          display: flex;
+          flex-direction: column;
+        }
+        
+        .replyx-mobile-fullscreen-container .replyx-widget-button {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          width: 40px;
+          height: 40px;
+          background: rgba(0, 0, 0, 0.1);
+          color: #333;
+          z-index: 2147483647;
+        }
+        
+        .replyx-mobile-fullscreen-container iframe {
+          width: 100% !important;
+          height: 100% !important;
+          border: none !important;
+          border-radius: 0 !important;
+        }
+        
         .replyx-notification-badge {
           position: absolute;
           top: -5px;
@@ -698,6 +729,11 @@
       `;
     },
     
+    // Проверка мобильного устройства
+    isMobileDevice: function() {
+      return window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    },
+    
     // Разворачиваем чат (Safari-совместимо)
     expand: function() {
       try {
@@ -716,7 +752,22 @@
         this.button = button;
         
         const chatContainer = document.createElement('div');
-        chatContainer.className = 'replyx-chat-container';
+        // На мобильных используем полноэкранный режим
+        if (this.isMobileDevice()) {
+          chatContainer.className = 'replyx-mobile-fullscreen-container';
+          // Блокируем скролл страницы на мобильных
+          document.body.style.overflow = 'hidden';
+          
+          // Добавляем обработчик Escape для закрытия полноэкранного чата
+          this.escapeHandler = (e) => {
+            if (e.key === 'Escape') {
+              this.minimize();
+            }
+          };
+          document.addEventListener('keydown', this.escapeHandler);
+        } else {
+          chatContainer.className = 'replyx-chat-container';
+        }
         
         // Safari-совместимое создание iframe
         const iframe = document.createElement('iframe');
@@ -800,6 +851,9 @@
             if (event.data && event.data.type === 'replyX_minimize') {
               console.log('[DEBUG] Widget received replyX_minimize message');
               this.minimize();
+            } else if (event.data && event.data.type === 'CLOSE_CHAT') {
+              console.log('[DEBUG] Widget received CLOSE_CHAT message');
+              this.minimize();
             }
           } catch (error) {
             // no-op
@@ -819,6 +873,17 @@
     // Сворачиваем чат
     minimize: function() {
       console.log('[DEBUG] Widget minimize() called');
+      
+      // Восстанавливаем скролл страницы если был заблокирован
+      if (this.isMobileDevice()) {
+        document.body.style.overflow = '';
+        // Удаляем обработчик Escape
+        if (this.escapeHandler) {
+          document.removeEventListener('keydown', this.escapeHandler);
+          this.escapeHandler = null;
+        }
+      }
+      
       this.container.innerHTML = '';
       this.isMinimized = true;
       this.createFloatingWidget();

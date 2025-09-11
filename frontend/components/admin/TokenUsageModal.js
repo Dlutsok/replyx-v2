@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FiX, FiTrendingUp, FiTrendingDown, FiActivity, FiClock, FiCheckCircle, FiAlertCircle, FiBarChart2 } from 'react-icons/fi';
+import { getApiUrl } from '../../utils/apiUrl';
 import styles from '../../styles/components/TokenUsageModal.module.css';
 
 const TokenUsageModal = ({ token, onClose }) => {
@@ -18,8 +19,7 @@ const TokenUsageModal = ({ token, onClose }) => {
       setError(null);
       
       const authToken = localStorage.getItem('token');
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru';
-      const response = await fetch(`${apiUrl}/api/admin/ai-tokens/${token.id}/usage`, {
+      const response = await fetch(`/api/admin/ai-tokens/${token.id}/usage`, {
         headers: {
           'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json'

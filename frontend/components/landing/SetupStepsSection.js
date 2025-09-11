@@ -110,7 +110,7 @@ const SetupStepsSection = () => {
             }}>полной автоматизации</span>
           </h2>
           <p className={`${DESIGN_TOKENS.typography.sectionSubtitle} max-w-3xl`}>
-            Простая и интуитивная настройка AI-ассистента без технических навыков
+            Простая настройка чат-ассистента на сайт за 15 минут. Интеграция с CRM, 1С, Telegram без программистов
           </p>
         </motion.div>
 

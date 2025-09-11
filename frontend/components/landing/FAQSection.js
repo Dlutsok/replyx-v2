@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
-import { FiPlus, FiMinus, FiMessageSquare, FiClock, FiShield, FiDollarSign, FiSettings, FiUsers, FiX, FiSend, FiMail } from 'react-icons/fi';
+import { FiPlus, FiMinus, FiMessageSquare, FiClock, FiShield, FiDollarSign, FiSettings, FiUsers, FiX, FiSend, FiMail, FiShoppingBag, FiHeart, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { DESIGN_TOKENS } from '../../constants/designSystem';
 import SectionWrapper from '../common/SectionWrapper';
 
@@ -38,6 +38,7 @@ const faqCustomStyles = `
 
 const FAQSection = () => {
   const [openFAQ, setOpenFAQ] = useState(0); // Первый вопрос открыт по умолчанию
+  const [showAllFAQs, setShowAllFAQs] = useState(false); // Показывать все вопросы или только первые 5
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -129,6 +130,26 @@ const FAQSection = () => {
       icon: FiUsers,
       question: "Заменит ли ReplyX всех наших операторов?",
       answer: "Нет, цель ReplyX — помочь команде, а не заменить её. Он берёт на себя рутинные вопросы (95% запросов), а сложные случаи передаёт специалистам. Это позволяет операторам заниматься действительно важными задачами."
+    },
+    {
+      icon: FiShoppingBag,
+      question: "Можно ли использовать AI-ассистента для интернет-магазина?",
+      answer: "Да, ReplyX интегрируется с каталогом и CRM, консультирует клиентов и принимает заказы онлайн. AI знает ваш ассортимент, цены, условия доставки и может обрабатывать заказы в автоматическом режиме."
+    },
+    {
+      icon: FiHeart,
+      question: "Подходит ли ReplyX для медицинских клиник?",
+      answer: "Да, AI помогает автоматизировать запись пациентов и ответы на типовые вопросы. Все данные обрабатываются по ФЗ-152. ReplyX может консультировать по услугам, ценам и расписанию, а сложные случаи передавать специалистам."
+    },
+    {
+      icon: FiMessageSquare,
+      question: "Можно ли интегрировать с 1С и Telegram?",
+      answer: "Да, есть готовые интеграции: 1С:Предприятие, Telegram Bot, WhatsApp, CRM-системы (amoCRM, Bitrix24). Виджет устанавливается на сайт за 5 минут без программистов, а Telegram-ассистент подключается через API. Подробнее смотрите блоки 'Запуск за 15 минут' и 'AI в Telegram' выше."
+    },
+    {
+      icon: FiSettings,
+      question: "Можно ли настроить виджет под бренд компании?",
+      answer: "Да, AI-ассистент ReplyX полностью адаптируется под ваш фирменный стиль. Вы можете настроить цвета, добавить логотип, задать приветственное сообщение. Виджет станет частью вашего бренда и органично впишется в дизайн сайта. Подробнее смотрите блок 'Кастомизация виджета' выше."
     }
   ];
 
@@ -146,12 +167,12 @@ const FAQSection = () => {
         <div className="relative z-10">
           <SectionWrapper.Header
             title="Часто задаваемые вопросы"
-            subtitle="Отвечаем на главные вопросы о внедрении и использовании ReplyX"
+            subtitle="Отвечаем на вопросы об автоматизации поддержки клиентов 24/7 и интеграции с CRM, 1С, Telegram"
           />
 
         {/* FAQ список */}
         <div className="max-w-[1200px] mx-auto">
-          {faqs.map((faq, index) => (
+          {(showAllFAQs ? faqs : faqs.slice(0, 5)).map((faq, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
@@ -213,6 +234,25 @@ const FAQSection = () => {
               </div>
             </motion.div>
           ))}
+
+          {/* Кнопка "Показать еще" */}
+          {!showAllFAQs && faqs.length > 5 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: 0.2 }}
+              className="text-center mt-8"
+            >
+              <button
+                onClick={() => setShowAllFAQs(!showAllFAQs)}
+                className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[#6334E5] to-blue-600 text-white font-semibold rounded-2xl transition-all duration-300 hover:shadow-lg hover:shadow-[#6334E5]/30 hover:scale-105 active:scale-95"
+              >
+                <span>{showAllFAQs ? 'Скрыть вопросы' : `Показать еще ${faqs.length - 5} вопросов`}</span>
+                {showAllFAQs ? <FiChevronUp className="w-5 h-5" /> : <FiChevronDown className="w-5 h-5" />}
+              </button>
+            </motion.div>
+          )}
         </div>
 
         {/* Креативный блок обратной связи */}
@@ -259,16 +299,6 @@ const FAQSection = () => {
                 </span>
               </motion.button>
 
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="group px-8 py-4 border-2 border-[#6334E5]/30 text-[#6334E5] font-semibold rounded-2xl hover:bg-[#6334E5]/10 hover:border-[#6334E5]/40 transition-all duration-300"
-              >
-                <span className="flex items-center gap-2">
-                  <FiMessageSquare className="w-5 h-5" />
-                  Онлайн-чат
-                </span>
-              </motion.button>
             </div>
 
             {/* Статус доступности */}
@@ -424,13 +454,13 @@ const FAQSection = () => {
               Часто задаваемые вопросы
             </h2>
             <p className="text-base text-gray-600 max-w-2xl mt-3 leading-relaxed">
-              Отвечаем на главные вопросы о внедрении и использовании ReplyX
+              Отвечаем на вопросы об автоматизации поддержки клиентов 24/7 и интеграции с CRM, 1С, Telegram
             </p>
           </div>
 
           {/* FAQ список */}
           <div className="max-w-[1200px] mx-auto">
-            {faqs.map((faq, index) => (
+            {(showAllFAQs ? faqs : faqs.slice(0, 5)).map((faq, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 15 }}
@@ -490,6 +520,25 @@ const FAQSection = () => {
                 </div>
               </motion.div>
             ))}
+
+            {/* Кнопка "Показать еще" для мобильной версии */}
+            {!showAllFAQs && faqs.length > 5 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: 0.2 }}
+                className="text-center mt-6"
+              >
+                <button
+                  onClick={() => setShowAllFAQs(!showAllFAQs)}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#6334E5] to-blue-600 text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-[#6334E5]/30 hover:scale-105 active:scale-95 text-sm"
+                >
+                  <span>{showAllFAQs ? 'Скрыть вопросы' : `Показать еще ${faqs.length - 5} вопросов`}</span>
+                  {showAllFAQs ? <FiChevronUp className="w-4 h-4" /> : <FiChevronDown className="w-4 h-4" />}
+                </button>
+              </motion.div>
+            )}
           </div>
 
           {/* Финальный CTA блок */}
@@ -536,16 +585,6 @@ const FAQSection = () => {
                   </span>
                 </motion.button>
 
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="group px-6 py-3 border-2 border-[#6334E5]/30 text-[#6334E5] font-semibold rounded-xl hover:bg-[#6334E5]/10 hover:border-[#6334E5]/40 transition-all duration-300 text-base w-full max-w-xs"
-                >
-                  <span className="flex items-center justify-center gap-2">
-                    <FiMessageSquare className="w-4 h-4" />
-                    Онлайн-чат
-                  </span>
-                </motion.button>
               </div>
 
               {/* Статус доступности */}

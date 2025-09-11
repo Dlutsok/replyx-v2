@@ -147,7 +147,7 @@ const HeroContent = () => {
   return (
     <div className="space-y-8">
       {/* Новый профессиональный заголовок */}
-      <motion.h1 
+      <motion.h1
         className={`${DESIGN_TOKENS.typography.h1} text-left text-3xl sm:text-4xl md:text-5xl`}
         {...DESIGN_TOKENS.animation.withDelay(0.1)}
       >

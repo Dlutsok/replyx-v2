@@ -132,12 +132,38 @@ class RedisCache:
             return 0
     
     def get_stats(self) -> Dict[str, Any]:
-        """Получение статистики Redis"""
+        """Получение расширенной статистики Redis"""
         if not self.is_available():
             return {"status": "unavailable"}
         
         try:
             info = self.redis_client.info()
+            
+            # Получаем информацию о keyspace (количество ключей)
+            total_keys = 0
+            expires_keys = 0
+            keyspace_info = info.get('keyspace', {})
+            
+            for db_name, db_info in keyspace_info.items():
+                if isinstance(db_info, dict):
+                    total_keys += db_info.get('keys', 0)
+                    expires_keys += db_info.get('expires', 0)
+                elif isinstance(db_info, str):
+                    # Парсим строку формата "keys=X,expires=Y"
+                    parts = db_info.split(',')
+                    for part in parts:
+                        if 'keys=' in part:
+                            total_keys += int(part.split('=')[1])
+                        elif 'expires=' in part:
+                            expires_keys += int(part.split('=')[1])
+            
+            # Вычисляем дополнительные метрики
+            hit_rate = round(
+                info.get('keyspace_hits', 0) / max(
+                    info.get('keyspace_hits', 0) + info.get('keyspace_misses', 0), 1
+                ) * 100, 2
+            )
+            
             return {
                 "status": "connected",
                 "used_memory": info.get('used_memory_human', 'N/A'),
@@ -145,11 +171,16 @@ class RedisCache:
                 "total_commands_processed": info.get('total_commands_processed', 0),
                 "keyspace_hits": info.get('keyspace_hits', 0),
                 "keyspace_misses": info.get('keyspace_misses', 0),
-                "hit_rate": round(
-                    info.get('keyspace_hits', 0) / max(
-                        info.get('keyspace_hits', 0) + info.get('keyspace_misses', 0), 1
-                    ) * 100, 2
-                )
+                "hit_rate": hit_rate,
+                "total_keys": total_keys,
+                "expires_keys": expires_keys,
+                # Дополнительные метрики
+                "uptime_in_seconds": info.get('uptime_in_seconds', 0),
+                "redis_version": info.get('redis_version', 'Unknown'),
+                "role": info.get('role', 'Unknown'),
+                "instantaneous_ops_per_sec": info.get('instantaneous_ops_per_sec', 0),
+                "evicted_keys": info.get('evicted_keys', 0),
+                "expired_keys": info.get('expired_keys', 0)
             }
         except Exception as e:
             logger.warning(f"Ошибка получения статистики Redis: {e}")

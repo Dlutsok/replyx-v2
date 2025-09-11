@@ -82,13 +82,10 @@ class AIProvidersManager:
     def initialize_providers(self):
         """Инициализация доступных AI провайдеров (опционально через HTTP-прокси)"""
         
-        # OpenAI с отказоустойчивым прокси
-        openai_key = os.getenv('OPENAI_API_KEY')
-        if openai_key:
-            self.providers[AIProvider.OPENAI] = OpenAIProvider(openai_key)
-            logger.info("✅ OpenAI провайдер инициализирован с отказоустойчивым прокси")
-        else:
-            logger.error("❌ OPENAI_API_KEY не настроен!")
+        # OpenAI провайдер (используем токены из БД через token manager)
+        # Инициализируем без API ключа - будем получать токены динамически
+        self.providers[AIProvider.OPENAI] = OpenAIProvider(api_key="dynamic")
+        logger.info("✅ OpenAI провайдер инициализирован (токены из БД через AI Token Pool)")
         
         # YandexGPT (отключен пользователем)
         # yandex_key = os.getenv('YANDEX_API_KEY')
@@ -253,9 +250,10 @@ class BaseAIProvider:
 class OpenAIProvider(BaseAIProvider):
     """OpenAI провайдер с отказоустойчивым proxy pool"""
     
-    def __init__(self, api_key: str, proxy_url: Optional[str] = None):
+    def __init__(self, api_key: str = None, proxy_url: Optional[str] = None):
         super().__init__("OpenAI")
-        self.api_key = api_key
+        self.use_token_pool = api_key == "dynamic" or api_key is None
+        self.api_key = api_key if not self.use_token_pool else None
         self.base_url = "https://api.openai.com/v1"
         
         # Используем новый ProxyManager вместо single proxy
@@ -271,8 +269,19 @@ class OpenAIProvider(BaseAIProvider):
     async def get_completion(self, messages: List[Dict], model: str = "gpt-4o-mini", **kwargs) -> Dict:
         """Получение ответа с отказоустойчивым прокси и идемпотентностью"""
         
+        # Получаем токен из пула или используем фиксированный
+        if self.use_token_pool:
+            from .ai_token_manager import ai_token_manager
+            user_id = kwargs.get('user_id', 1)  # default user if not provided
+            token_info = ai_token_manager.get_best_token(model, user_id)
+            if not token_info:
+                raise Exception("Нет доступных токенов в AI Token Pool")
+            api_key = token_info.token
+        else:
+            api_key = self.api_key
+        
         headers = {
-            "Authorization": f"Bearer {self.api_key}",
+            "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
         }
         

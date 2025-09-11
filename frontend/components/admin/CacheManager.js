@@ -136,6 +136,58 @@ const CacheManager = ({ autoRefresh = true }) => {
               </div>
             </div>
           </div>
+          
+          {/* Дополнительные метрики */}
+          <div className={styles.healthCard}>
+            <div className={styles.healthCardHeader}>
+              <div className={styles.healthCardInfo}>
+                <div className={styles.healthCardIcon}>
+                  <FiSettings size={24} />
+                </div>
+                <div>
+                  <h3 className={styles.healthCardTitle}>Операций/сек</h3>
+                  <p className={styles.healthCardSubtitle}>Мгновенная нагрузка</p>
+                </div>
+              </div>
+              <div className={styles.metricValue}>
+                {metrics?.instantaneous_ops_per_sec || 0}
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.healthCard}>
+            <div className={styles.healthCardHeader}>
+              <div className={styles.healthCardInfo}>
+                <div className={styles.healthCardIcon}>
+                  <FiRefreshCw size={24} />
+                </div>
+                <div>
+                  <h3 className={styles.healthCardTitle}>Всего команд</h3>
+                  <p className={styles.healthCardSubtitle}>За время работы</p>
+                </div>
+              </div>
+              <div className={styles.metricValue}>
+                {formatKeysCount(metrics?.total_commands_processed || 0)}
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.healthCard}>
+            <div className={styles.healthCardHeader}>
+              <div className={styles.healthCardInfo}>
+                <div className={styles.healthCardIcon}>
+                  <FiAlertCircle size={24} />
+                </div>
+                <div>
+                  <h3 className={styles.healthCardTitle}>Вытесненные ключи</h3>
+                  <p className={styles.healthCardSubtitle}>Evicted keys</p>
+                </div>
+              </div>
+              <div className={styles.metricValue}>
+                {metrics?.evicted_keys || 0}
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -223,6 +275,42 @@ const CacheManager = ({ autoRefresh = true }) => {
                 <span className={styles.bodyTextMuted}>Подключенные клиенты</span>
                 <span className={styles.metricValue}>
                   {metrics.connected_clients || 0}
+                </span>
+              </div>
+              <div className={styles.summaryMetric}>
+                <span className={styles.bodyTextMuted}>Версия Redis</span>
+                <span className={styles.metricValue}>
+                  {metrics.redis_version || 'N/A'}
+                </span>
+              </div>
+              <div className={styles.summaryMetric}>
+                <span className={styles.bodyTextMuted}>Роль сервера</span>
+                <span className={styles.metricValue}>
+                  {metrics.role || 'Unknown'}
+                </span>
+              </div>
+              <div className={styles.summaryMetric}>
+                <span className={styles.bodyTextMuted}>Cache hits</span>
+                <span className={styles.metricValue}>
+                  {formatKeysCount(metrics.keyspace_hits || 0)}
+                </span>
+              </div>
+              <div className={styles.summaryMetric}>
+                <span className={styles.bodyTextMuted}>Cache misses</span>
+                <span className={styles.metricValue}>
+                  {formatKeysCount(metrics.keyspace_misses || 0)}
+                </span>
+              </div>
+              <div className={styles.summaryMetric}>
+                <span className={styles.bodyTextMuted}>Истекшие ключи</span>
+                <span className={styles.metricValue}>
+                  {formatKeysCount(metrics.expired_keys || 0)}
+                </span>
+              </div>
+              <div className={styles.summaryMetric}>
+                <span className={styles.bodyTextMuted}>Время работы</span>
+                <span className={styles.metricValue}>
+                  {Math.floor((metrics.uptime_in_seconds || 0) / 3600)}ч
                 </span>
               </div>
               <div className={styles.summaryMetric}>

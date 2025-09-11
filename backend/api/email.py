@@ -24,7 +24,7 @@ PROJECT_ROOT = Path(__file__).parent.parent.parent
 ENV_PATH = PROJECT_ROOT / '.env'
 load_dotenv(dotenv_path=ENV_PATH)
 
-from core.app_config import YANDEX_SMTP_USER, YANDEX_SMTP_PASS
+from core.app_config import SMTP_USERNAME, SMTP_PASSWORD
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

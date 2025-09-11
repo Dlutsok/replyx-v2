@@ -196,11 +196,9 @@ def get_llm(dry_run: bool = False, provider_override: str = None) -> BaseLLM:
     # Производственные провайдеры
     try:
         if provider == "openai":
-            api_key = os.getenv("OPENAI_API_KEY")
-            if not api_key:
-                logger.warning("OPENAI_API_KEY not found, falling back to FakeLLM")
-                return FakeLLM()
-            return OpenAILLM(api_key)
+            # Используем AI Token Pool вместо env переменной
+            logger.info("OpenAI LLM будет использовать токены из AI Token Pool")
+            return OpenAILLM(api_key="from_token_pool")
             
         elif provider == "anthropic":
             api_key = os.getenv("ANTHROPIC_API_KEY")

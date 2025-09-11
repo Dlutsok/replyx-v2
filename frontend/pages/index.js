@@ -519,8 +519,8 @@ export default function Landing() {
   return (
     <div className={landingStyles.landingPage}>
       <Head>
-        <title>ReplyX — Помогаем человечеству шагнуть в будущее.</title>
-        <meta name="description" content="ReplyX — AI‑ассистент нового поколения. Помогаем человечеству шагнуть в будущее через инновации искусственного интеллекта. Автоматизация, эффективность, прогресс." />
+        <title>AI-ассистент ReplyX — автоматизация поддержки клиентов 24/7</title>
+        <meta name="description" content="ReplyX — универсальный AI-ассистент для бизнеса. Автоматизация поддержки клиентов, интеграция с CRM, 1С, Telegram и мессенджерами. Запуск за 15 минут, без программистов." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
         {/* Manrope Font для виджета */}

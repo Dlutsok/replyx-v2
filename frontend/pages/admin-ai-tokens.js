@@ -7,6 +7,7 @@ import AddTokenModal from '../components/admin/AddTokenModal';
 import EditTokenModal from '../components/admin/EditTokenModal';
 import TokenUsageModal from '../components/admin/TokenUsageModal';
 import DeleteConfirmModal from '../components/admin/DeleteConfirmModal';
+import { getApiUrl } from '../utils/apiUrl';
 import styles from '../styles/pages/AdminAITokens.module.css';
 
 const AdminAITokensPage = () => {
@@ -53,7 +54,7 @@ const AdminAITokensPage = () => {
       const token = await ensureAuthToken();
       if (!token) return; // Если токен отсутствует, пользователь будет перенаправлен
       
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru';
+      const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/api/admin/ai-tokens`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -86,7 +87,7 @@ const AdminAITokensPage = () => {
       const token = await ensureAuthToken();
       if (!token) return; // Если токен отсутствует, пользователь будет перенаправлен
       
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru';
+      const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/api/admin/ai-tokens`, {
         method: 'POST',
         headers: {
@@ -113,7 +114,7 @@ const AdminAITokensPage = () => {
       const token = await ensureAuthToken();
       if (!token) return; // Если токен отсутствует, пользователь будет перенаправлен
       
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru';
+      const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/api/admin/ai-tokens/${tokenId}`, {
         method: 'PUT',
         headers: {
@@ -141,7 +142,7 @@ const AdminAITokensPage = () => {
       const token = await ensureAuthToken();
       if (!token) return; // Если токен отсутствует, пользователь будет перенаправлен
       
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru';
+      const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/api/admin/ai-tokens/${tokenId}`, {
         method: 'DELETE',
         headers: {

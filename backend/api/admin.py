@@ -170,8 +170,8 @@ def get_ai_token_usage(token_id: int, current_user: models.User = Depends(auth.g
         func.count(models.AITokenUsage.id).label('requests'),
         func.sum(models.AITokenUsage.total_tokens).label('tokens'),
         func.avg(models.AITokenUsage.response_time).label('avg_response_time'),
-        func.sum(func.case([(models.AITokenUsage.success == True, 1)], else_=0)).label('successful_requests'),
-        func.sum(func.case([(models.AITokenUsage.success == False, 1)], else_=0)).label('failed_requests')
+        func.sum(case((models.AITokenUsage.success == True, 1), else_=0)).label('successful_requests'),
+        func.sum(case((models.AITokenUsage.success == False, 1), else_=0)).label('failed_requests')
     ).filter(
         models.AITokenUsage.token_id == token_id,
         models.AITokenUsage.created_at >= thirty_days_ago
