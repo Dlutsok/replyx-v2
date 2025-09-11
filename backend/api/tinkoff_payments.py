@@ -6,7 +6,6 @@ from database.models import User, Payment
 from core.auth import get_current_user
 from validators.rate_limiter import rate_limit_api, rate_limit_by_ip
 from datetime import datetime, timedelta
-from pydantic import BaseModel
 import uuid
 import os
 import logging
@@ -51,6 +50,10 @@ def mask_terminal_key(terminal_key: str) -> str:
     if not terminal_key or len(terminal_key) <= 8:
         return terminal_key
     return f"{terminal_key[:8]}***"
+
+def _mask_signature(signature: str) -> str:
+    """Маскирует подпись для безопасного логирования"""
+    return f"{signature[:8]}...{signature[-6:]}" if isinstance(signature, str) and len(signature) > 14 else "***СКРЫТА***"
 
 # IP адреса T-Bank для webhook уведомлений (согласно документации)
 TINKOFF_WEBHOOK_IPS = [
@@ -193,10 +196,22 @@ def tinkoff_normalize_value(value):
         return 'true' if value else 'false'  # булевы значения в нижнем регистре
     return str(value)
 
-def calculate_signature(data: dict) -> str:
-    """Вычисление подписи для запроса к Т-Банк согласно документации"""
-    # Исключаем поля которые не участвуют в подписи согласно документации Tinkoff
-    signature_excluded_fields = ['token', 'Token', 'Receipt', 'DATA', 'Email', 'Phone', 'Name']
+def calculate_signature(data: dict, exclude_customer_fields: bool = True) -> str:
+    """Вычисление подписи для запроса к Т-Банк согласно документации
+    
+    Args:
+        data: Данные для подписи
+        exclude_customer_fields: Исключать ли Email/Phone/Name из подписи 
+                               (True для Init, False для Customer методов)
+    """
+    # Базовые исключения для всех методов
+    signature_excluded_fields = ['token', 'Token', 'Receipt', 'DATA']
+    
+    # Для Init исключаем Email/Phone/Name (они не участвуют в подписи)
+    # Для Customer методов включаем их в подпись
+    if exclude_customer_fields:
+        signature_excluded_fields.extend(['Email', 'Phone', 'Name'])
+    
     items = [(k, v) for k, v in data.items() 
              if k not in signature_excluded_fields and v is not None and str(v).strip() != '']
     
@@ -210,15 +225,19 @@ def calculate_signature(data: dict) -> str:
     normalized_values = [tinkoff_normalize_value(v) for _, v in items]
     concatenated_string = ''.join(normalized_values)
     
-    # Детальное логирование для диагностики
-    safe_items = [(k, tinkoff_normalize_value(v)) for k, v in items if k != 'Password']
-    safe_keys = [k for k, _ in safe_items]
-    safe_values = [v for _, v in safe_items]
-    logger.info(f"   🔐 ПОДПИСЬ (исправленная):")
-    logger.info(f"   Поля В подписи: {safe_keys}")
-    logger.info(f"   Поля ИСКЛЮЧЕНЫ из подписи: {signature_excluded_fields}")
-    logger.info(f"   Нормализованные значения: {safe_values}")
-    logger.info(f"   Длина строки для подписи: {len(concatenated_string)} символов")
+    # Детальное логирование для диагностики (только в debug режиме)
+    if TINKOFF_DEBUG_LOGGING:
+        safe_items = [(k, tinkoff_normalize_value(v)) for k, v in items if k != 'Password']
+        safe_keys = [k for k, _ in safe_items]
+        safe_values = [v for _, v in safe_items]
+        logger.info(f"   🔐 ПОДПИСЬ (DEBUG):")
+        logger.info(f"   Поля В подписи: {safe_keys}")
+        logger.info(f"   Поля ИСКЛЮЧЕНЫ: {signature_excluded_fields}")
+        logger.info(f"   Исключаем Email/Phone/Name: {exclude_customer_fields} (true=Init/false=Customer)")
+        logger.info(f"   Нормализованные значения: {safe_values}")
+        logger.info(f"   Длина строки для подписи: {len(concatenated_string)} символов")
+    else:
+        logger.debug(f"   🔐 Подпись рассчитана, поля в подписи: {len(items)-1}, длина: {len(concatenated_string)} символов")
     # NOTE: Строку подписи не логируем - содержит секретный ключ
     
     # Вычисляем SHA256 хэш
@@ -229,16 +248,28 @@ def _tinkoff_call(method: str, payload: dict) -> requests.Response:
     Универсальный вызов к T-Bank API с подписью
     """
     body = {**payload, "TerminalKey": TINKOFF_TERMINAL_KEY}
-    body["Token"] = calculate_signature(body)
+    
+    # Для Customer методов включаем Email/Phone/Name в подпись
+    is_customer_method = method in {"AddCustomer", "UpdateCustomer", "GetCustomer"}
+    body["Token"] = calculate_signature(body, exclude_customer_fields=not is_customer_method)
     
     logger.debug(f"🌐 T-Bank API вызов: {method}")
-    logger.debug(f"   Payload: {json.dumps({k: v for k, v in body.items() if k != 'Token'}, ensure_ascii=False)}")
+    
+    # Безопасное логирование payload без Token и с маскированным TerminalKey
+    safe_payload = {k: v for k, v in body.items() if k != 'Token'}
+    if "TerminalKey" in safe_payload:
+        safe_payload["TerminalKey"] = mask_terminal_key(str(safe_payload["TerminalKey"]))
+    logger.debug(f"   Payload: {json.dumps(safe_payload, ensure_ascii=False)}")
+    logger.debug(f"   Customer fields in signature: {is_customer_method}")
     
     return requests.post(
         f"{TINKOFF_API_URL}{method}", 
         json=body, 
         timeout=TINKOFF_REQUEST_TIMEOUT,
-        headers={'Content-Type': 'application/json'}
+        headers={
+            'Content-Type': 'application/json',
+            'X-Request-ID': f"cust-{payload.get('CustomerKey', 'unknown')}"  # Трассировка customer вызовов
+        }
     )
 
 def sync_customer_to_tinkoff(user_id: int, email: str = None, phone: str = None):
@@ -249,33 +280,67 @@ def sync_customer_to_tinkoff(user_id: int, email: str = None, phone: str = None)
     try:
         payload = {"CustomerKey": str(user_id)}
         
-        # Передаем оба варианта названий полей для максимальной совместимости
+        # ВАЖНО: передаем верхнеуровневые поля (участвуют в подписи для Customer методов)
         if email:
-            payload.update({"Email": email, "CustomerEmail": email})
+            payload["Email"] = email  # основное поле для T-Bank
+            payload["CustomerEmail"] = email  # дополнительно для совместимости
             
         if phone:
             normalized_phone = normalize_phone(phone)
-            payload.update({"Phone": normalized_phone, "CustomerPhone": normalized_phone})
+            payload["Phone"] = normalized_phone  # основное поле для T-Bank
+            payload["CustomerPhone"] = normalized_phone  # дополнительно для совместимости
             
         # Проверяем существование покупателя
+        method = "AddCustomer"  # по умолчанию создаем
         try:
             response = _tinkoff_call("GetCustomer", {"CustomerKey": str(user_id)})
-            method = "UpdateCustomer" if response.status_code == 200 and response.json().get("Success") else "AddCustomer"
-            logger.info(f"{'🔄 Обновляем' if method == 'UpdateCustomer' else '➕ Создаем'} профиль покупателя {user_id} в T-Bank")
-        except Exception:
-            method = "AddCustomer"
-            logger.info(f"➕ Создаем профиль покупателя {user_id} в T-Bank (fallback)")
+            if response.status_code == 200:
+                result = response.json()
+                if result.get("Success"):
+                    method = "UpdateCustomer"
+                    logger.info(f"🔄 Покупатель {user_id} существует, обновляем профиль")
+                else:
+                    logger.info(f"➕ Покупатель {user_id} не найден, создаем новый профиль")
+            else:
+                logger.info(f"➕ Ошибка GetCustomer {response.status_code}, создаем покупателя {user_id}")
+        except Exception as e:
+            logger.info(f"➕ Исключение GetCustomer ({e}), создаем покупателя {user_id}")
             
+        # Выполняем Add/UpdateCustomer
         response = _tinkoff_call(method, payload)
         
-        if response.status_code == 200 and response.json().get("Success"):
-            logger.info(f"✅ Профиль покупателя {user_id} синхронизирован с T-Bank")
-            return True
+        if response.status_code == 200:
+            result = response.json()
+            if result.get("Success"):
+                logger.info(f"✅ Профиль покупателя {user_id} синхронизирован с T-Bank ({method})")
+                return True
+            else:
+                # Детальное логирование ошибки от T-Bank
+                code = result.get("ErrorCode")
+                msg = result.get("Message")
+                logger.warning(f"⚠️ T-Bank отклонил {method} для покупателя {user_id}:")
+                logger.warning(f"   ErrorCode={code} Message={msg}")
+                logger.warning(f"   Полный ответ: {json.dumps(result, ensure_ascii=False)}")
+                
+                # Fallback: если UpdateCustomer не прошел, пробуем AddCustomer
+                if method == "UpdateCustomer":
+                    logger.info(f"🔄 Пробуем AddCustomer как fallback для покупателя {user_id}")
+                    response = _tinkoff_call("AddCustomer", payload)
+                    if response.status_code == 200:
+                        result = response.json()
+                        if result.get("Success"):
+                            logger.info(f"✅ Профиль покупателя {user_id} создан через fallback AddCustomer")
+                            return True
+                        else:
+                            fallback_code = result.get("ErrorCode")
+                            fallback_msg = result.get("Message")
+                            logger.warning(f"⚠️ Fallback AddCustomer тоже отклонен:")
+                            logger.warning(f"   ErrorCode={fallback_code} Message={fallback_msg}")
         else:
-            logger.warning(f"⚠️ Customer sync rejected: {getattr(response, 'text', 'Unknown error')}")
+            logger.warning(f"⚠️ HTTP ошибка {method}: {response.status_code} - {response.text}")
             
     except Exception as e:
-        logger.info(f"ℹ️ Customer sync best-effort: {e}")
+        logger.info(f"ℹ️ Customer sync best-effort exception: {e}")
         
     return False
 
@@ -287,8 +352,8 @@ def verify_webhook_signature(data: dict, received_token: str) -> bool:
         # Используем исправленную функцию calculate_signature с нормализацией булевых значений
         expected_token = calculate_signature(data)
         
-        logger.info(f"   Получено от Т-Банк: {received_token}")
-        logger.info(f"   Ожидалось (исправленное): {expected_token}")
+        logger.info(f"   Получено от Т-Банк: {_mask_signature(received_token)}")
+        logger.info(f"   Ожидалось (исправленное): {_mask_signature(expected_token)}")
         
         if str(received_token).lower() == str(expected_token).lower():
             logger.info("✅ Подпись webhook'а совпала!")
@@ -410,6 +475,10 @@ async def init_payment_tinkoff(order_id: str, amount: int, description: str, cus
             logger.info(f"   👤 {key}: {value}")
         elif key in ['Email', 'Phone', 'Name']:
             logger.info(f"   👤 {key}: {value}")
+        elif key == 'TerminalKey':
+            logger.info(f"   🔑 {key}: {mask_terminal_key(str(value))}")
+        elif key == 'Token':
+            logger.info(f"   🔐 {key}: ***СКРЫТ***")
         else:
             logger.info(f"   🔑 {key}: {value}")
     
@@ -417,29 +486,39 @@ async def init_payment_tinkoff(order_id: str, amount: int, description: str, cus
     logger.info(f"🔐 СОЗДАНИЕ ПОДПИСИ INIT для {order_id}:")
     logger.info(f"   Все поля для Init: {sorted([k for k in data.keys()])}")
     
-    # Показываем какие поля участвуют в подписи
+    # Показываем какие поля участвуют в подписи (для Init исключаем Email/Phone/Name)
     signature_excluded_fields_local = ['Receipt', 'DATA', 'Email', 'Phone', 'Name', 'Token']
     signature_fields = [k for k in data.keys() if k not in signature_excluded_fields_local]
     excluded_fields_present = [k for k in data.keys() if k in signature_excluded_fields_local]
-    logger.info(f"   Поля ВКЛЮЧЕНЫ в подпись: {sorted(signature_fields)}")
-    logger.info(f"   Поля ИСКЛЮЧЕНЫ из подписи: {excluded_fields_present}")
+    logger.info(f"   Поля ВКЛЮЧЕНЫ в подпись Init: {sorted(signature_fields)}")
+    logger.info(f"   Поля ИСКЛЮЧЕНЫ из подписи Init: {excluded_fields_present}")
+    logger.info(f"   ℹ️ Для Customer методов Email/Phone/Name включаются в подпись")
     
     token = calculate_signature(data)
     data['Token'] = token
     
-    logger.info(f"   Подпись Init: {token}")
+    logger.info(f"   Подпись Init: ***СКРЫТА***")
     logger.info(f"Инициация платежа {order_id} на сумму {amount} копеек")
     
     try:
-        # 📤 ЛОГИРУЕМ ПОЛНЫЙ JSON ЗАПРОС К TINKOFF
+        # 📤 ЛОГИРУЕМ ПОЛНЫЙ JSON ЗАПРОС К TINKOFF (БЕЗОПАСНО)
         logger.info(f"🌐 ОТПРАВЛЯЕМ HTTP ЗАПРОС К TINKOFF:")
         logger.info(f"   URL: {TINKOFF_API_URL}Init")
-        logger.info(f"   JSON данные: {json.dumps(data, ensure_ascii=False, indent=2)}")
+        
+        # Безопасный дамп без Token и с маскированным TerminalKey
+        safe_data = {**data}
+        safe_data.pop("Token", None)
+        if "TerminalKey" in safe_data:
+            safe_data["TerminalKey"] = mask_terminal_key(str(safe_data["TerminalKey"]))
+        logger.info(f"   JSON данные: {json.dumps(safe_data, ensure_ascii=False, indent=2)}")
         
         response = requests.post(
             f"{TINKOFF_API_URL}Init",
             json=data,
-            headers={'Content-Type': 'application/json'},
+            headers={
+                'Content-Type': 'application/json',
+                'X-Request-ID': order_id  # Трассировка запросов
+            },
             timeout=TINKOFF_REQUEST_TIMEOUT
         )
         
@@ -572,12 +651,12 @@ async def create_payment(
         db.refresh(payment)
         
         # Инициируем платеж через API Тинькофф
-        amount_kopecks = int(amount * 100)  # Т-Банк принимает сумму в копейках
+        amount_kopecks = int(round(amount * 100))  # Т-Банк принимает сумму в копейках (округляем, не усекаем)
         
         logger.info(f"Создан платеж {order_id} для пользователя {current_user.id} на сумму {amount} руб.")
         logger.info(f"Терминал: {mask_terminal_key(TINKOFF_TERMINAL_KEY)}")
         logger.info(f"Sandbox режим: {TINKOFF_SANDBOX_MODE}")
-        logger.debug(f"API URL: {TINKOFF_API_URL}")
+        logger.info(f"API URL: {TINKOFF_API_URL}")
         
         # Получаем URL для оплаты от Тинькофф
         # Используем email пользователя из аккаунта, если не передан явно
@@ -846,11 +925,11 @@ async def tinkoff_notification(
         
         # 🔐 КРИТИЧЕСКАЯ ПРОВЕРКА ПОДПИСИ (основная защита)
         logger.info(f"🔐 ПРОВЕРКА ПОДПИСИ для {order_id}")
-        logger.info(f"🔐 Получена подпись от T-Bank: {received_token[:16]}...{received_token[-8:]}")
+        logger.info(f"🔐 Получена подпись от T-Bank: {_mask_signature(received_token)}")
         
         if not verify_webhook_signature(notification_data, received_token):
             logger.error(f"🚨 КРИТИЧЕСКАЯ ОШИБКА: Неверная подпись webhook для {order_id}")
-            logger.error(f"❌ Получена подпись: {received_token}")
+            logger.error(f"❌ Получена подпись: {_mask_signature(received_token)}")
             logger.error(f"❌ IP источника: {client_ip}")
             logger.error(f"❌ Все данные webhook: {notification_data}")
             raise HTTPException(
@@ -875,11 +954,13 @@ async def tinkoff_notification(
             return {"Status": "OK"}  # Возвращаем успех для T-Bank
         
         # Маппинг статусов Тинькофф на наши статусы
+        # NOTE: для PayType='O' (одностадийный) AUTHORIZED = успешная оплата
+        # Для двухстадийных платежей AUTHORIZED = 'pending' (ожидает подтверждения)
         status_mapping = {
             'NEW': 'pending',
             'FORM_SHOWED': 'pending', 
             'AUTHORIZING': 'pending',
-            'AUTHORIZED': 'success',
+            'AUTHORIZED': 'success',  # одностадийный платеж завершен
             'CONFIRMED': 'success',
             'PARTIAL_REFUNDED': 'partial_refund',
             'REFUNDED': 'refunded',
