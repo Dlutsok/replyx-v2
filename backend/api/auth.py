@@ -20,22 +20,6 @@ router = APIRouter()
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
-@router.get("/test-smtp-connectivity")
-async def test_smtp_connectivity():
-    """Диагностика SMTP подключения на проде"""
-    try:
-        result = email_service._test_smtp_connectivity()
-        return {
-            "status": "completed",
-            "timestamp": datetime.utcnow().isoformat(),
-            "connectivity": result
-        }
-    except Exception as e:
-        return {
-            "status": "error", 
-            "error": str(e),
-            "timestamp": datetime.utcnow().isoformat()
-        }
 
 def generate_confirmation_code():
     """Генерирует код подтверждения email"""

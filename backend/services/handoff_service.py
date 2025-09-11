@@ -13,7 +13,7 @@ from sqlalchemy.exc import IntegrityError
 
 from database import models
 from schemas.handoff import HandoffStatusOut, HandoffQueueItem, HandoffStatus
-from core.app_config import HANDOFF_RECIPIENTS, FRONTEND_URL
+from core.app_config import FRONTEND_URL
 from services.events_pubsub import publish_dialog_event
 
 # Handoff configuration constants
@@ -576,38 +576,32 @@ class HandoffService:
         self.db.add(audit)
 
     async def _send_handoff_notifications(self, dialog, reason: str, last_user_text: str = None):
-        """Send email notifications to operators (async)."""
+        """Send email notifications to widget owner (async)."""
         try:
             from integrations.email_service import email_service
             
-            # Get admin users or use configured recipients
-            recipients = None
-            if HANDOFF_RECIPIENTS:
-                recipients = [email.strip() for email in HANDOFF_RECIPIENTS.split(',') if email.strip()]
+            # Get widget owner email from dialog.user_id (this is the owner, not the visitor)
+            widget_owner = self.db.query(models.User).filter(
+                models.User.id == dialog.user_id
+            ).first()
             
-            if not recipients:
-                admins = self.db.query(models.User).filter(
-                    models.User.role == 'admin'
-                ).all()
-                recipients = [admin.email for admin in admins if admin.email]
-            
-            if not recipients:
-                logger.warning("No recipients found for handoff notifications - no admin users with email addresses")
+            if not widget_owner or not widget_owner.email:
+                logger.warning(f"No email found for widget owner (user_id={dialog.user_id}) for dialog {dialog.id}")
                 return
             
-            for email in recipients:
-                # Используем синхронный метод email_service
-                success = email_service.send_handoff_notification(
-                    to_email=email,
-                    dialog_id=dialog.id,
-                    reason=reason,
-                    user_preview=last_user_text or "",
-                    timestamp=None  # will use current time
-                )
-                if success:
-                    logger.info(f"Handoff notification sent to {email} for dialog {dialog.id}")
-                else:
-                    logger.error(f"Failed to send handoff notification to {email} for dialog {dialog.id}")
+            # Send notification to widget owner
+            success = email_service.send_handoff_notification(
+                to_email=widget_owner.email,
+                dialog_id=dialog.id,
+                reason=reason,
+                user_preview=last_user_text or "",
+                timestamp=None  # will use current time
+            )
+            
+            if success:
+                logger.info(f"Handoff notification sent to widget owner {widget_owner.email} for dialog {dialog.id}")
+            else:
+                logger.error(f"Failed to send handoff notification to widget owner {widget_owner.email} for dialog {dialog.id}")
                 
         except Exception as e:
             logger.error(f"Error sending handoff notifications: {str(e)}")
