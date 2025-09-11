@@ -390,8 +390,7 @@ async def init_payment_tinkoff(order_id: str, amount: int, description: str, cus
         'SuccessURL': success_url,
         'FailURL': fail_url,
         'Language': 'ru',
-        'PayType': 'O',
-        'OperationInitiatorType': 'Customer'  # 🔴 КРИТИЧНО для СБП и T-Pay: инициатор платежа - клиент
+        'PayType': 'O'
     }
     
     # 👤 ИНФОРМАЦИЯ О ПОКУПАТЕЛЕ ДЛЯ ЛК TINKOFF MERCHANT
@@ -420,10 +419,13 @@ async def init_payment_tinkoff(order_id: str, amount: int, description: str, cus
         customer_data['Name'] = name
         logger.info(f"👤 Имя покупателя добавлено (верхний уровень + DATA): '{name}'")
     
-    # Добавляем объект DATA только если есть информация о покупателе
-    if customer_data:
-        data['DATA'] = customer_data
-        logger.info(f"📋 Объект DATA создан для ЛК мерчанта: {customer_data}")
+    # Добавляем OperationInitiatorType для корректной CIT/MIT классификации карточных платежей
+    customer_data['OperationInitiatorType'] = '0'  # CIT CNC - разовая оплата без сохранения реквизитов
+    
+    # Добавляем объект DATA (всегда, так как теперь содержит OperationInitiatorType)
+    data['DATA'] = customer_data
+    logger.info(f"📋 Объект DATA создан: {customer_data}")
+    logger.info(f"💳 OperationInitiatorType: 0 (CIT CNC - для карточных платежей, игнорируется для T-Pay/СБП)")
     
     # Добавляем объект Receipt для онлайн-кассы (54-ФЗ)
     receipt_contact = None
@@ -516,7 +518,6 @@ async def init_payment_tinkoff(order_id: str, amount: int, description: str, cus
     excluded_fields_present = [k for k in data.keys() if k in signature_excluded_fields_local]
     logger.info(f"   Поля ВКЛЮЧЕНЫ в подпись Init: {sorted(signature_fields)}")
     logger.info(f"   Поля ИСКЛЮЧЕНЫ из подписи Init: {excluded_fields_present}")
-    logger.info(f"   🔴 OperationInitiatorType: Customer (КРИТИЧНО для СБП/T-Pay)")
     logger.info(f"   ℹ️ Для Customer методов Email/Phone/Name включаются в подпись")
     
     token = calculate_signature(data)
