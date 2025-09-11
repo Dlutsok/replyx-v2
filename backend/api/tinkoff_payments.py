@@ -27,10 +27,12 @@ TINKOFF_SECRET_KEY = os.getenv('TINKOFF_SECRET_KEY', 'your_secret_key_here')
 TINKOFF_SANDBOX_MODE = os.getenv('TINKOFF_SANDBOX_MODE', 'true').lower() == 'true'
 TINKOFF_MOCK_MODE = os.getenv('TINKOFF_MOCK_MODE', 'false').lower() == 'true'  # Mock режим отключен
 
-# API URLs
-TINKOFF_SANDBOX_API_URL = os.getenv('TINKOFF_SANDBOX_API_URL', 'https://rest-api-test.tinkoff.ru/v2/')
+# API URLs - ПРАВИЛЬНАЯ ЛОГИКА согласно документации Tinkoff
+# TINKOFF_SANDBOX_MODE=true  → тестирование (тестовый терминал + боевая среда)
+# TINKOFF_SANDBOX_MODE=false → продакшн (боевой терминал + боевая среда)
+TINKOFF_TEST_API_URL = os.getenv('TINKOFF_TEST_API_URL', 'https://securepay.tinkoff.ru/v2/')
 TINKOFF_PRODUCTION_API_URL = os.getenv('TINKOFF_PRODUCTION_API_URL', 'https://securepay.tinkoff.ru/v2/')
-TINKOFF_API_URL = TINKOFF_SANDBOX_API_URL if TINKOFF_SANDBOX_MODE else TINKOFF_PRODUCTION_API_URL
+TINKOFF_API_URL = TINKOFF_TEST_API_URL if TINKOFF_SANDBOX_MODE else TINKOFF_PRODUCTION_API_URL
 
 # Дополнительные настройки
 TINKOFF_REQUEST_TIMEOUT = int(os.getenv('TINKOFF_REQUEST_TIMEOUT', '30'))
@@ -102,6 +104,18 @@ def validate_tinkoff_config():
 # Проверяем конфигурацию при загрузке модуля
 _config_valid = validate_tinkoff_config()
 
+# Логируем текущую конфигурацию для понимания режима работы
+if TINKOFF_SANDBOX_MODE:
+    logger.info(f"🧪 TINKOFF ТЕСТОВЫЙ РЕЖИМ:")
+    logger.info(f"   Terminal: {TINKOFF_TERMINAL_KEY[:8]}*** (должен содержать DEMO)")
+    logger.info(f"   API URL: {TINKOFF_API_URL}")
+    logger.info(f"   Режим: Тестирование с тестовым терминалом")
+else:
+    logger.info(f"🚀 TINKOFF ПРОДАКШН РЕЖИМ:")
+    logger.info(f"   Terminal: {TINKOFF_TERMINAL_KEY[:8]}*** (боевой терминал)")
+    logger.info(f"   API URL: {TINKOFF_API_URL}")
+    logger.info(f"   Режим: Продакшн с боевым терминалом")
+
 def generate_order_id():
     """Генерация уникального номера заказа"""
     return f"replyx_{int(datetime.utcnow().timestamp())}_{str(uuid.uuid4())[:8]}"
@@ -114,9 +128,9 @@ def tinkoff_normalize_value(value):
 
 def calculate_signature(data: dict) -> str:
     """Вычисление подписи для запроса к Т-Банк согласно документации"""
-    # Исключаем поле подписи, пустые значения и None
+    # Исключаем поля которые не участвуют в подписи согласно документации Tinkoff
     items = [(k, v) for k, v in data.items() 
-             if k not in ['token', 'Token'] and v is not None and str(v).strip() != '']
+             if k not in ['token', 'Token', 'Receipt'] and v is not None and str(v).strip() != '']
     
     # Добавляем секретный ключ как Password (согласно документации Т-Банк)
     items.append(('Password', TINKOFF_SECRET_KEY))
@@ -184,13 +198,25 @@ async def init_payment_tinkoff(order_id: str, amount: int, description: str, cus
         'PayType': 'O'
     }
     
-    # Добавляем данные для чека (54-ФЗ), если предоставлены
-    if email:
-        data['EMAIL'] = email
-    if phone:
-        data['PHONE'] = phone
-    # Имя покупателя может быть добавлено через Receipt, но это более сложная структура
-    # Для базовой интеграции пока добавим только email и phone
+    # Добавляем объект Receipt для онлайн-кассы (54-ФЗ)
+    if email:  # Если есть email пользователя, создаем полноценный чек
+        receipt = {
+            'Email': email,
+            'Taxation': 'usn_income',  # УСН доходы (подходит для большинства ИП/ООО)
+            'Items': [{
+                'Name': description,
+                'Price': amount,  # Цена в копейках
+                'Quantity': 1,
+                'Amount': amount,  # Общая сумма = цена * количество
+                'Tax': 'none',  # Без НДС (подходит для услуг на УСН)
+                'PaymentMethod': 'full_payment',  # Полная оплата
+                'PaymentObject': 'service'  # Услуга
+            }]
+        }
+        data['Receipt'] = receipt
+        logger.info(f"📄 Добавлен Receipt для email: {email}")
+    else:
+        logger.warning(f"⚠️ Нет email для Receipt - чек не будет сформирован")
     
     # Добавляем NotificationURL только если он задан и доступен из интернета
     notification_url = os.getenv('TINKOFF_NOTIFICATION_URL', '').strip()
@@ -199,8 +225,12 @@ async def init_payment_tinkoff(order_id: str, amount: int, description: str, cus
     
     # Добавляем токен (подпись)
     logger.info(f"🔐 СОЗДАНИЕ ПОДПИСИ INIT для {order_id}:")
-    logger.info(f"   Поля для Init: {sorted([k for k in data.keys()])}")
-    logger.info(f"   Значения Init: {[str(data[k]) for k in sorted(data.keys())]}")
+    logger.info(f"   Все поля для Init: {sorted([k for k in data.keys()])}")
+    
+    # Показываем какие поля участвуют в подписи (без Receipt)
+    signature_fields = [k for k in data.keys() if k not in ['Receipt']]
+    logger.info(f"   Поля для подписи: {sorted(signature_fields)}")
+    logger.info(f"   Receipt исключен из подписи: {'Receipt' in data}")
     
     token = calculate_signature(data)
     data['Token'] = token
@@ -336,6 +366,9 @@ async def create_payment(
         logger.debug(f"API URL: {TINKOFF_API_URL}")
         
         # Получаем URL для оплаты от Тинькофф
+        # Используем email пользователя из аккаунта, если не передан явно
+        user_email = email or current_user.email
+        
         payment_url = await init_payment_tinkoff(
             order_id=order_id,
             amount=amount_kopecks,
@@ -343,7 +376,7 @@ async def create_payment(
             customer_key=str(current_user.id),
             success_url=success_url,
             fail_url=fail_url,
-            email=email,
+            email=user_email,  # Передаем email пользователя для Receipt
             phone=phone,
             name=name
         )
@@ -519,13 +552,12 @@ async def tinkoff_notification(
         client_ip = request.headers.get('x-forwarded-for', request.client.host if request.client else 'unknown')
         logger.info(f"Webhook от Т-Банк с IP: {client_ip}")
         
-        # 🔒 ПРОВЕРКА IP WHITELIST T-BANK
+        # 🔒 МЯГКАЯ ПРОВЕРКА IP T-BANK (только предупреждение)
         if not is_tinkoff_ip(client_ip):
-            logger.error(f"🚨 БЛОКИРОВКА: Webhook с неавторизованного IP {client_ip}")
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Access denied: IP not in T-Bank whitelist"
-            )
+            logger.warning(f"⚠️ ВНИМАНИЕ: Webhook с IP {client_ip} не из известного whitelist T-Bank")
+            logger.warning(f"🔐 Полагаемся на проверку подписи для безопасности")
+        else:
+            logger.info(f"✅ Webhook с проверенного IP T-Bank: {client_ip}")
 
         # Получаем данные из запроса (поддерживаем JSON и form-data)
         content_type = request.headers.get('content-type', '')
@@ -535,7 +567,12 @@ async def tinkoff_notification(
             form_data = await request.form()
             notification_data = dict(form_data)
         
-        logger.info(f"Получено уведомление от Тинькофф: OrderId={notification_data.get('OrderId')}, Status={notification_data.get('Status')}")
+        logger.info(f"📨 ПОЛУЧЕН WEBHOOK ОТ T-BANK:")
+        logger.info(f"   OrderId: {notification_data.get('OrderId')}")
+        logger.info(f"   Status: {notification_data.get('Status')}")
+        logger.info(f"   PaymentId: {notification_data.get('PaymentId')}")
+        logger.info(f"   IP: {client_ip}")
+        logger.info(f"   Content-Type: {content_type}")
         
         # Детальное логирование для анализа подписи
         logger.info(f"🔍 WEBHOOK АНАЛИЗ от IP {client_ip}:")
@@ -560,16 +597,18 @@ async def tinkoff_notification(
         payment_id = notification_data['PaymentId']
         received_token = notification_data['Token']
         
-        # Проверяем подпись (токен) для безопасности
+        # 🔐 КРИТИЧЕСКАЯ ПРОВЕРКА ПОДПИСИ (основная защита)
         logger.info(f"🔐 ПРОВЕРКА ПОДПИСИ для {order_id}")
+        logger.info(f"🔐 Получена подпись от T-Bank: {received_token[:16]}...{received_token[-8:]}")
         
         if not verify_webhook_signature(notification_data, received_token):
-            logger.error(f"❌ Неверная подпись уведомления для заказа {order_id}")
+            logger.error(f"🚨 КРИТИЧЕСКАЯ ОШИБКА: Неверная подпись webhook для {order_id}")
             logger.error(f"❌ Получена подпись: {received_token}")
             logger.error(f"❌ IP источника: {client_ip}")
+            logger.error(f"❌ Все данные webhook: {notification_data}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid signature"
+                detail="Invalid webhook signature - security violation"
             )
         
         logger.info(f"✅ Подпись webhook'а проверена успешно")
@@ -637,7 +676,12 @@ async def tinkoff_notification(
                 description=f"Пополнение через Т-Банк (заказ {order_id})"
             )
             
-            logger.info(f"Платеж {order_id} успешно завершен через webhook, баланс пополнен на {payment.amount} руб.")
+            logger.info(f"🎉 ПЛАТЕЖ УСПЕШНО ЗАВЕРШЕН:")
+            logger.info(f"   OrderId: {order_id}")
+            logger.info(f"   Сумма: {payment.amount} руб.")
+            logger.info(f"   Пользователь: {payment.user_id}")
+            logger.info(f"   PaymentId: {payment_id}")
+            logger.info(f"   🏦 Баланс пополнен на {payment.amount} руб.")
         
         # Если платеж отклонен/отменен - отмечаем время завершения
         elif new_status in ['failed', 'canceled', 'expired'] and old_status not in ['failed', 'canceled', 'expired']:
@@ -683,8 +727,99 @@ async def get_payment_history(
         "status": p.status,
         "description": p.description,
         "created_at": p.created_at,
-        "completed_at": p.completed_at
+        "completed_at": p.completed_at,
+        "payment_id": p.tinkoff_payment_id
     } for p in payments]
+
+@router.post("/cancel/{order_id}")
+async def cancel_payment(
+    order_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Отмена/возврат платежа через Tinkoff Cancel API"""
+    try:
+        # Ищем платеж в БД
+        payment = db.query(Payment).filter(
+            Payment.order_id == order_id,
+            Payment.user_id == current_user.id
+        ).first()
+        
+        if not payment:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Платеж не найден"
+            )
+        
+        if not payment.tinkoff_payment_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="У платежа нет PaymentId от Tinkoff"
+            )
+        
+        # Данные для Cancel запроса
+        cancel_data = {
+            'TerminalKey': TINKOFF_TERMINAL_KEY,
+            'PaymentId': payment.tinkoff_payment_id
+        }
+        
+        # Добавляем подпись
+        token = calculate_signature(cancel_data)
+        cancel_data['Token'] = token
+        
+        logger.info(f"🔄 ОТМЕНА ПЛАТЕЖА {order_id} (PaymentId: {payment.tinkoff_payment_id})")
+        
+        # Отправляем запрос Cancel к Tinkoff
+        response = requests.post(
+            f"{TINKOFF_API_URL}Cancel",
+            json=cancel_data,
+            headers={'Content-Type': 'application/json'},
+            timeout=TINKOFF_REQUEST_TIMEOUT
+        )
+        
+        logger.info(f"Отправлен Cancel запрос для {order_id} (статус {response.status_code})")
+        
+        if response.status_code == 200:
+            result = response.json()
+            if result.get('Success'):
+                # Обновляем статус в БД
+                payment.status = 'canceled'
+                payment.completed_at = datetime.utcnow()
+                db.commit()
+                
+                logger.info(f"✅ Платеж {order_id} успешно отменен")
+                
+                return {
+                    "success": True,
+                    "message": "Платеж успешно отменен",
+                    "order_id": order_id,
+                    "payment_id": payment.tinkoff_payment_id,
+                    "status": "canceled"
+                }
+            else:
+                error_code = result.get('ErrorCode', 'UNKNOWN')
+                error_message = result.get('Message', 'Неизвестная ошибка')
+                logger.error(f"❌ Ошибка отмены платежа {order_id}: {error_code} - {error_message}")
+                
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Ошибка отмены: {error_message}"
+                )
+        else:
+            logger.error(f"❌ HTTP ошибка при отмене платежа {order_id}: {response.status_code}")
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Ошибка соединения с платежной системой"
+            )
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Исключение при отмене платежа {order_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Внутренняя ошибка сервера"
+        )
 
 
 # ==========================================
