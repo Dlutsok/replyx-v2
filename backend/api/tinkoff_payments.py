@@ -5,13 +5,12 @@ from database.connection import get_db
 from database.models import User, Payment
 from core.auth import get_current_user
 from validators.rate_limiter import rate_limit_api, rate_limit_by_ip
-from datetime import datetime
+from datetime import datetime, timedelta
 from pydantic import BaseModel
 import uuid
 import os
 import logging
 import hashlib
-import hmac
 import requests
 import json
 import ipaddress
@@ -28,14 +27,30 @@ TINKOFF_SANDBOX_MODE = os.getenv('TINKOFF_SANDBOX_MODE', 'true').lower() == 'tru
 TINKOFF_MOCK_MODE = os.getenv('TINKOFF_MOCK_MODE', 'false').lower() == 'true'  # Mock режим отключен
 
 # API URLs - ПРАВИЛЬНАЯ ЛОГИКА согласно документации Tinkoff
-# TINKOFF_SANDBOX_MODE=true  → тестирование (тестовый терминал + боевая среда)
-# TINKOFF_SANDBOX_MODE=false → продакшн (боевой терминал + боевая среда)
-TINKOFF_TEST_API_URL = os.getenv('TINKOFF_TEST_API_URL', 'https://securepay.tinkoff.ru/v2/')
+TINKOFF_TEST_API_URL = os.getenv('TINKOFF_TEST_API_URL', 'https://rest-api-test.tinkoff.ru/v2/')
 TINKOFF_PRODUCTION_API_URL = os.getenv('TINKOFF_PRODUCTION_API_URL', 'https://securepay.tinkoff.ru/v2/')
-TINKOFF_API_URL = TINKOFF_TEST_API_URL if TINKOFF_SANDBOX_MODE else TINKOFF_PRODUCTION_API_URL
+
+def _choose_api_base(terminal_key: str, sandbox_flag: bool) -> str:
+    """
+    Железобетонный выбор базового URL:
+    - если ключ заканчивается на DEMO — всегда тестовый контур
+    - иначе — продакшн
+    флаг sandbox используется как дополнительная «подстраховка»
+    """
+    if (terminal_key or "").endswith("DEMO") or sandbox_flag:
+        return TINKOFF_TEST_API_URL.rstrip('/') + '/'
+    return TINKOFF_PRODUCTION_API_URL.rstrip('/') + '/'
+
+TINKOFF_API_URL = _choose_api_base(TINKOFF_TERMINAL_KEY, TINKOFF_SANDBOX_MODE)
 
 # Дополнительные настройки
 TINKOFF_REQUEST_TIMEOUT = int(os.getenv('TINKOFF_REQUEST_TIMEOUT', '30'))
+
+def mask_terminal_key(terminal_key: str) -> str:
+    """Маскирует TerminalKey для безопасного логирования"""
+    if not terminal_key or len(terminal_key) <= 8:
+        return terminal_key
+    return f"{terminal_key[:8]}***"
 
 # IP адреса T-Bank для webhook уведомлений (согласно документации)
 TINKOFF_WEBHOOK_IPS = [
@@ -46,6 +61,26 @@ TINKOFF_WEBHOOK_IPS = [
     '212.49.24.206/32', # Тестовый IP T-Bank (обнаружен в логах webhook'ов)
     '212.233.80.7/32',  # Продакшн IP T-Bank (обнаружен 10.09.2025)
 ]
+
+def extract_client_ip(forwarded_for_header: str, fallback_ip: str) -> str:
+    """
+    Извлекает настоящий IP клиента из X-Forwarded-For заголовка
+    X-Forwarded-For может содержать цепочку: "client, proxy1, proxy2"
+    Нам нужен первый IP в цепочке
+    """
+    if not forwarded_for_header:
+        return fallback_ip
+    
+    # Берем первый IP из списка (до первой запятой)
+    first_ip = forwarded_for_header.split(',')[0].strip()
+    
+    # Проверяем что это валидный IP
+    try:
+        ipaddress.ip_address(first_ip)
+        return first_ip
+    except ValueError:
+        logger.warning(f"⚠️ Некорректный IP в X-Forwarded-For: '{first_ip}', используем fallback: '{fallback_ip}'")
+        return fallback_ip
 
 def is_tinkoff_ip(client_ip: str) -> bool:
     """Проверка принадлежности IP к T-Bank whitelist"""
@@ -75,12 +110,22 @@ TINKOFF_DEBUG_LOGGING = os.getenv('TINKOFF_DEBUG_LOGGING', 'false').lower() == '
 def validate_tinkoff_config():
     """Проверка корректности конфигурации Тинькофф"""
     errors = []
+    warnings = []
     
     if TINKOFF_TERMINAL_KEY == 'your_terminal_key_here' or not TINKOFF_TERMINAL_KEY:
         errors.append("TINKOFF_TERMINAL_KEY не настроен")
         
     if TINKOFF_SECRET_KEY == 'your_secret_key_here' or not TINKOFF_SECRET_KEY:
         errors.append("TINKOFF_SECRET_KEY не настроен")
+        
+    # Проверяем согласованность ключа и URL
+    is_demo_key = (TINKOFF_TERMINAL_KEY or "").endswith("DEMO")
+    is_test_url = TINKOFF_API_URL.startswith("https://rest-api-test.")
+    
+    if is_demo_key and not is_test_url:
+        warnings.append("DEMO терминал используется с продакшн URL - может не работать")
+    elif not is_demo_key and is_test_url:
+        warnings.append("Боевой терминал используется с тестовым URL - может не работать")
         
     if not TINKOFF_SANDBOX_MODE and not TINKOFF_MOCK_MODE:
         # В продакшене требуются реальные URLs
@@ -98,6 +143,10 @@ def validate_tinkoff_config():
         for error in errors:
             logger.error(f"  - {error}")
         logger.error("Проверьте файл .env и документацию .env.tinkoff.example")
+    
+    if warnings:
+        for warning in warnings:
+            logger.warning(f"⚠️ {warning}")
         
     return len(errors) == 0
 
@@ -105,20 +154,38 @@ def validate_tinkoff_config():
 _config_valid = validate_tinkoff_config()
 
 # Логируем текущую конфигурацию для понимания режима работы
-if TINKOFF_SANDBOX_MODE:
-    logger.info(f"🧪 TINKOFF ТЕСТОВЫЙ РЕЖИМ:")
-    logger.info(f"   Terminal: {TINKOFF_TERMINAL_KEY[:8]}*** (должен содержать DEMO)")
-    logger.info(f"   API URL: {TINKOFF_API_URL}")
-    logger.info(f"   Режим: Тестирование с тестовым терминалом")
+if TINKOFF_API_URL.startswith("https://rest-api-test."):
+    logger.info("🧪 Режим: SANDBOX (DEMO терминал, тестовый контур)")
 else:
-    logger.info(f"🚀 TINKOFF ПРОДАКШН РЕЖИМ:")
-    logger.info(f"   Terminal: {TINKOFF_TERMINAL_KEY[:8]}*** (боевой терминал)")
-    logger.info(f"   API URL: {TINKOFF_API_URL}")
-    logger.info(f"   Режим: Продакшн с боевым терминалом")
+    logger.info("🚀 Режим: PROD (боевой терминал, боевой контур)")
+logger.info(f"   Terminal: {mask_terminal_key(TINKOFF_TERMINAL_KEY)}")
+logger.info(f"   API URL: {TINKOFF_API_URL}")
 
 def generate_order_id():
     """Генерация уникального номера заказа"""
     return f"replyx_{int(datetime.utcnow().timestamp())}_{str(uuid.uuid4())[:8]}"
+
+def normalize_phone(phone: str) -> str:
+    """
+    Нормализация телефона к формату E.164 (+7XXXXXXXXXX)
+    для корректной обработки кассой
+    """
+    if not phone:
+        return phone
+    
+    # Убираем все лишние символы
+    digits_only = ''.join(filter(str.isdigit, phone))
+    
+    # Приводим к формату +7XXXXXXXXXX
+    if digits_only.startswith('8') and len(digits_only) == 11:
+        return f"+7{digits_only[1:]}"
+    elif digits_only.startswith('7') and len(digits_only) == 11:
+        return f"+{digits_only}"
+    elif len(digits_only) == 10:
+        return f"+7{digits_only}"
+    
+    # Возвращаем как есть, если не удалось нормализовать
+    return phone
 
 def tinkoff_normalize_value(value):
     """Нормализация значений для подписи согласно требованиям Т-Банк"""
@@ -129,8 +196,9 @@ def tinkoff_normalize_value(value):
 def calculate_signature(data: dict) -> str:
     """Вычисление подписи для запроса к Т-Банк согласно документации"""
     # Исключаем поля которые не участвуют в подписи согласно документации Tinkoff
+    signature_excluded_fields = ['token', 'Token', 'Receipt', 'DATA', 'Email', 'Phone', 'Name']
     items = [(k, v) for k, v in data.items() 
-             if k not in ['token', 'Token', 'Receipt'] and v is not None and str(v).strip() != '']
+             if k not in signature_excluded_fields and v is not None and str(v).strip() != '']
     
     # Добавляем секретный ключ как Password (согласно документации Т-Банк)
     items.append(('Password', TINKOFF_SECRET_KEY))
@@ -147,13 +215,69 @@ def calculate_signature(data: dict) -> str:
     safe_keys = [k for k, _ in safe_items]
     safe_values = [v for _, v in safe_items]
     logger.info(f"   🔐 ПОДПИСЬ (исправленная):")
-    logger.info(f"   Ключи: {safe_keys}")
+    logger.info(f"   Поля В подписи: {safe_keys}")
+    logger.info(f"   Поля ИСКЛЮЧЕНЫ из подписи: {signature_excluded_fields}")
     logger.info(f"   Нормализованные значения: {safe_values}")
     logger.info(f"   Длина строки для подписи: {len(concatenated_string)} символов")
     # NOTE: Строку подписи не логируем - содержит секретный ключ
     
     # Вычисляем SHA256 хэш
     return hashlib.sha256(concatenated_string.encode('utf-8')).hexdigest()
+
+def _tinkoff_call(method: str, payload: dict) -> requests.Response:
+    """
+    Универсальный вызов к T-Bank API с подписью
+    """
+    body = {**payload, "TerminalKey": TINKOFF_TERMINAL_KEY}
+    body["Token"] = calculate_signature(body)
+    
+    logger.debug(f"🌐 T-Bank API вызов: {method}")
+    logger.debug(f"   Payload: {json.dumps({k: v for k, v in body.items() if k != 'Token'}, ensure_ascii=False)}")
+    
+    return requests.post(
+        f"{TINKOFF_API_URL}{method}", 
+        json=body, 
+        timeout=TINKOFF_REQUEST_TIMEOUT,
+        headers={'Content-Type': 'application/json'}
+    )
+
+def sync_customer_to_tinkoff(user_id: int, email: str = None, phone: str = None):
+    """
+    Best-effort синхронизация покупателя с T-Bank для привязки контактов к CustomerKey.
+    Это поможет отображать email в ЛК мерчанта для всех заказов этого покупателя.
+    """
+    try:
+        payload = {"CustomerKey": str(user_id)}
+        
+        # Передаем оба варианта названий полей для максимальной совместимости
+        if email:
+            payload.update({"Email": email, "CustomerEmail": email})
+            
+        if phone:
+            normalized_phone = normalize_phone(phone)
+            payload.update({"Phone": normalized_phone, "CustomerPhone": normalized_phone})
+            
+        # Проверяем существование покупателя
+        try:
+            response = _tinkoff_call("GetCustomer", {"CustomerKey": str(user_id)})
+            method = "UpdateCustomer" if response.status_code == 200 and response.json().get("Success") else "AddCustomer"
+            logger.info(f"{'🔄 Обновляем' if method == 'UpdateCustomer' else '➕ Создаем'} профиль покупателя {user_id} в T-Bank")
+        except Exception:
+            method = "AddCustomer"
+            logger.info(f"➕ Создаем профиль покупателя {user_id} в T-Bank (fallback)")
+            
+        response = _tinkoff_call(method, payload)
+        
+        if response.status_code == 200 and response.json().get("Success"):
+            logger.info(f"✅ Профиль покупателя {user_id} синхронизирован с T-Bank")
+            return True
+        else:
+            logger.warning(f"⚠️ Customer sync rejected: {getattr(response, 'text', 'Unknown error')}")
+            
+    except Exception as e:
+        logger.info(f"ℹ️ Customer sync best-effort: {e}")
+        
+    return False
 
 def verify_webhook_signature(data: dict, received_token: str) -> bool:
     """Проверка подписи webhook'а от Тинькофф с правильной нормализацией булевых значений"""
@@ -198,10 +322,51 @@ async def init_payment_tinkoff(order_id: str, amount: int, description: str, cus
         'PayType': 'O'
     }
     
+    # 👤 ИНФОРМАЦИЯ О ПОКУПАТЕЛЕ ДЛЯ ЛК TINKOFF MERCHANT
+    # Добавляем верхнеуровневые поля + объект DATA для максимальной совместимости
+    customer_data = {}
+    
+    if email:
+        # Верхнеуровневое поле Email - отображается заметно в карточке заказа
+        data['Email'] = email
+        # Также добавляем в DATA для полной совместимости 
+        customer_data['Email'] = email
+        # Семантический ключ для некоторых витрин ЛК T-Bank
+        customer_data['CustomerEmail'] = email
+        logger.info(f"👤 Email покупателя добавлен (верхний уровень + DATA.Email + DATA.CustomerEmail): '{email}'")
+    
+    if phone:
+        normalized_phone = normalize_phone(phone)
+        data['Phone'] = normalized_phone
+        customer_data['Phone'] = normalized_phone
+        if normalized_phone != phone:
+            logger.info(f"📞 Телефон нормализован: '{phone}' → '{normalized_phone}'")
+        logger.info(f"📞 Телефон покупателя добавлен (верхний уровень + DATA): '{normalized_phone}'")
+        
+    if name:
+        data['Name'] = name
+        customer_data['Name'] = name
+        logger.info(f"👤 Имя покупателя добавлено (верхний уровень + DATA): '{name}'")
+    
+    # Добавляем объект DATA только если есть информация о покупателе
+    if customer_data:
+        data['DATA'] = customer_data
+        logger.info(f"📋 Объект DATA создан для ЛК мерчанта: {customer_data}")
+    
     # Добавляем объект Receipt для онлайн-кассы (54-ФЗ)
-    if email:  # Если есть email пользователя, создаем полноценный чек
+    receipt_contact = None
+    receipt_contact_type = None
+    
+    if email:
+        receipt_contact = email
+        receipt_contact_type = "Email"
+    elif phone:
+        receipt_contact = normalize_phone(phone)  
+        receipt_contact_type = "Phone"
+    
+    if receipt_contact:  # Если есть контакт для отправки чека
         receipt = {
-            'Email': email,
+            receipt_contact_type: receipt_contact,
             'Taxation': 'usn_income',  # УСН доходы (подходит для большинства ИП/ООО)
             'Items': [{
                 'Name': description,
@@ -214,28 +379,50 @@ async def init_payment_tinkoff(order_id: str, amount: int, description: str, cus
             }]
         }
         data['Receipt'] = receipt
-        logger.info(f"📄 ✅ СОЗДАН RECEIPT ДЛЯ ЧЕКА:")
-        logger.info(f"   📧 Email в Receipt: '{email}'")
+        logger.info(f"📄 ✅ СОЗДАН RECEIPT ДЛЯ КАССОВОГО ЧЕКА:")
+        logger.info(f"   📧 {receipt_contact_type} в Receipt: '{receipt_contact}'")
         logger.info(f"   💰 Сумма: {amount} копеек")
         logger.info(f"   📝 Описание: '{description}'")
         logger.info(f"   🏪 Налогообложение: usn_income")
     else:
-        logger.warning(f"⚠️ ❌ НЕТ EMAIL ДЛЯ RECEIPT - ЧЕК НЕ БУДЕТ СФОРМИРОВАН!")
-        logger.warning(f"   📧 Переданный email: '{email}' (тип: {type(email)})")
+        logger.warning(f"⚠️ ❌ НЕТ КОНТАКТОВ ДЛЯ RECEIPT - КАССОВЫЙ ЧЕК НЕ БУДЕТ СФОРМИРОВАН!")
+        logger.warning(f"   📧 Email: '{email}' | 📞 Phone: '{phone}'")
     
     # Добавляем NotificationURL только если он задан и доступен из интернета
     notification_url = os.getenv('TINKOFF_NOTIFICATION_URL', '').strip()
     if notification_url and not notification_url.startswith('http://localhost'):
         data['NotificationURL'] = notification_url
     
+    # 📧 ДИАГНОСТИКА ПОЛНОГО ОБЪЕКТА ДАННЫХ ДЛЯ TINKOFF
+    logger.info(f"📤 ПОЛНЫЙ ОБЪЕКТ ДАННЫХ ДЛЯ ОТПРАВКИ В TINKOFF:")
+    logger.info(f"   ℹ️ Контакты передаются в трех местах для максимальной совместимости:")
+    logger.info(f"      1. Верхний уровень (Email/Phone/Name) - заметное отображение в карточке")
+    logger.info(f"      2. 'DATA.Email/CustomerEmail' - информация о покупателе для ЛК мерчанта") 
+    logger.info(f"      3. 'Receipt' - контакт для отправки кассового чека")
+    logger.info(f"   🔄 После успешного платежа: синхронизация CustomerKey с профилем покупателя")
+    logger.info(f"   ⚠️ Email в ЛК может не отобразиться для текущего заказа (особенно T-Wallet),")
+    logger.info(f"      но будет доступен в чеке и появится при следующих платежах")
+    logger.info(f"   🌐 API URL: {TINKOFF_API_URL}")
+    for key, value in data.items():
+        if key == 'Receipt':
+            logger.info(f"   📄 {key}: {value}")
+        elif key == 'DATA':
+            logger.info(f"   👤 {key}: {value}")
+        elif key in ['Email', 'Phone', 'Name']:
+            logger.info(f"   👤 {key}: {value}")
+        else:
+            logger.info(f"   🔑 {key}: {value}")
+    
     # Добавляем токен (подпись)
     logger.info(f"🔐 СОЗДАНИЕ ПОДПИСИ INIT для {order_id}:")
     logger.info(f"   Все поля для Init: {sorted([k for k in data.keys()])}")
     
-    # Показываем какие поля участвуют в подписи (без Receipt)
-    signature_fields = [k for k in data.keys() if k not in ['Receipt']]
-    logger.info(f"   Поля для подписи: {sorted(signature_fields)}")
-    logger.info(f"   Receipt исключен из подписи: {'Receipt' in data}")
+    # Показываем какие поля участвуют в подписи
+    signature_excluded_fields_local = ['Receipt', 'DATA', 'Email', 'Phone', 'Name', 'Token']
+    signature_fields = [k for k in data.keys() if k not in signature_excluded_fields_local]
+    excluded_fields_present = [k for k in data.keys() if k in signature_excluded_fields_local]
+    logger.info(f"   Поля ВКЛЮЧЕНЫ в подпись: {sorted(signature_fields)}")
+    logger.info(f"   Поля ИСКЛЮЧЕНЫ из подписи: {excluded_fields_present}")
     
     token = calculate_signature(data)
     data['Token'] = token
@@ -244,6 +431,11 @@ async def init_payment_tinkoff(order_id: str, amount: int, description: str, cus
     logger.info(f"Инициация платежа {order_id} на сумму {amount} копеек")
     
     try:
+        # 📤 ЛОГИРУЕМ ПОЛНЫЙ JSON ЗАПРОС К TINKOFF
+        logger.info(f"🌐 ОТПРАВЛЯЕМ HTTP ЗАПРОС К TINKOFF:")
+        logger.info(f"   URL: {TINKOFF_API_URL}Init")
+        logger.info(f"   JSON данные: {json.dumps(data, ensure_ascii=False, indent=2)}")
+        
         response = requests.post(
             f"{TINKOFF_API_URL}Init",
             json=data,
@@ -253,12 +445,22 @@ async def init_payment_tinkoff(order_id: str, amount: int, description: str, cus
         
         logger.info(f"Отправлен запрос к Тинькофф Init для заказа {order_id}")
         logger.info(f"Получен ответ от Тинькофф (статус {response.status_code})")
+        
+        # 📥 ЛОГИРУЕМ ПОЛНЫЙ ОТВЕТ ОТ TINKOFF
+        try:
+            response_json = response.json()
+            logger.info(f"🌐 ОТВЕТ ОТ TINKOFF:")
+            logger.info(f"   JSON ответ: {json.dumps(response_json, ensure_ascii=False, indent=2)}")
+        except:
+            logger.info(f"🌐 ОТВЕТ ОТ TINKOFF (не JSON): {response.text}")
+        
         if response.status_code != 200:
             logger.error(f"Детали ошибки от Тинькофф: {response.text}")
         
         if response.status_code == 200:
             result = response.json()
             if result.get('Success') and result.get('PaymentURL'):
+                logger.info(f"Получен PaymentURL от Тинькофф: {result['PaymentURL']}")
                 return result['PaymentURL']
             else:
                 error_code = result.get('ErrorCode', 'UNKNOWN_ERROR')
@@ -373,13 +575,18 @@ async def create_payment(
         amount_kopecks = int(amount * 100)  # Т-Банк принимает сумму в копейках
         
         logger.info(f"Создан платеж {order_id} для пользователя {current_user.id} на сумму {amount} руб.")
-        logger.info(f"Терминал: {TINKOFF_TERMINAL_KEY[:8]}***")
+        logger.info(f"Терминал: {mask_terminal_key(TINKOFF_TERMINAL_KEY)}")
         logger.info(f"Sandbox режим: {TINKOFF_SANDBOX_MODE}")
         logger.debug(f"API URL: {TINKOFF_API_URL}")
         
         # Получаем URL для оплаты от Тинькофф
         # Используем email пользователя из аккаунта, если не передан явно
         user_email = email or current_user.email
+        
+        # 🔄 СОХРАНЯЕМ РЕАЛЬНЫЙ EMAIL, КОТОРЫЙ УЙДЕТ В INIT
+        # Чтобы в webhook/complete_payment мы видели тот же email для синхронизации
+        payment.customer_email = user_email
+        db.commit()
         
         # 📧 ФИНАЛЬНАЯ ДИАГНОСТИКА EMAIL
         logger.info(f"📧 ИТОГОВЫЙ EMAIL ДЛЯ ЧЕКА: '{user_email}' (тип: {type(user_email)})")
@@ -404,7 +611,6 @@ async def create_payment(
         payment.payment_url = payment_url
         db.commit()
         
-        logger.info(f"Получен PaymentURL от Тинькофф: {payment_url}")
         
         # Возвращаем JSON с URL для перенаправления
         return JSONResponse(content={
@@ -521,6 +727,15 @@ async def complete_payment(
         
         # Обновляем статус платежа
         if success:
+            # 🔒 ЗАЩИТА ОТ ДВОЙНОГО ТОПАПА: проверяем что платеж еще не успешный
+            if payment.status == 'success':
+                logger.warning(f"⚠️ Платеж {order_id} уже был помечен как успешный, пропускаем дублированный топап")
+                return {
+                    "success": True,
+                    "message": "Платеж уже был обработан",
+                    "payment_status": payment.status
+                }
+            
             payment.status = 'success'
             payment.completed_at = datetime.utcnow()
             if payment_id:
@@ -533,6 +748,15 @@ async def complete_payment(
                 user_id=payment.user_id,
                 amount=float(payment.amount),
                 description=f"Пополнение через Т-Банк (заказ {order_id})"
+            )
+            
+            # 🎯 РЕЗЕРВНАЯ СИНХРОНИЗАЦИЯ ПРОФИЛЯ ПОКУПАТЕЛЯ (на случай если webhook не дошел)
+            # Если ngrok упал или webhook не дошел, контакт всё равно "прилипнет" к CustomerKey
+            # Дублируем вызов как fallback для frontend-пути оплаты
+            sync_customer_to_tinkoff(
+                user_id=payment.user_id,
+                email=payment.customer_email,
+                phone=payment.customer_phone
             )
             
             logger.info(f"Платеж {order_id} успешно завершен, баланс пополнен на {payment.amount} руб.")
@@ -567,9 +791,13 @@ async def tinkoff_notification(
     Вызывается автоматически при изменении статуса платежа
     """
     try:
-        # Логируем источник и проверяем IP
-        client_ip = request.headers.get('x-forwarded-for', request.client.host if request.client else 'unknown')
+        # Логируем источник и проверяем IP 
+        forwarded_for = request.headers.get('x-forwarded-for', '')
+        fallback_ip = request.client.host if request.client else 'unknown'
+        client_ip = extract_client_ip(forwarded_for, fallback_ip)
         logger.info(f"Webhook от Т-Банк с IP: {client_ip}")
+        if forwarded_for:
+            logger.info(f"X-Forwarded-For: {forwarded_for} → выбран: {client_ip}")
         
         # 🔒 МЯГКАЯ ПРОВЕРКА IP T-BANK (только предупреждение)
         if not is_tinkoff_ip(client_ip):
@@ -701,6 +929,17 @@ async def tinkoff_notification(
             logger.info(f"   Пользователь: {payment.user_id}")
             logger.info(f"   PaymentId: {payment_id}")
             logger.info(f"   🏦 Баланс пополнен на {payment.amount} руб.")
+            
+            # 🎯 СИНХРОНИЗИРУЕМ ПРОФИЛЬ ПОКУПАТЕЛЯ В T-BANK (best-effort)
+            # Это поможет отображать email в ЛК для будущих заказов этого CustomerKey
+            # ⚠️ ВАЖНО: для уже проведенного платежа email может не отобразиться задним числом
+            # в карточке заказа (особенно для T-Wallet), но будет доступен в чеке и 
+            # появится в ЛК при следующих платежах с тем же CustomerKey
+            sync_customer_to_tinkoff(
+                user_id=payment.user_id,
+                email=payment.customer_email,
+                phone=payment.customer_phone
+            )
         
         # Если платеж отклонен/отменен - отмечаем время завершения
         elif new_status in ['failed', 'canceled', 'expired'] and old_status not in ['failed', 'canceled', 'expired']:
