@@ -25,6 +25,9 @@ TINKOFF_SECRET_KEY = os.getenv('TINKOFF_SECRET_KEY', 'your_secret_key_here')
 TINKOFF_SANDBOX_MODE = os.getenv('TINKOFF_SANDBOX_MODE', 'true').lower() == 'true'
 TINKOFF_MOCK_MODE = os.getenv('TINKOFF_MOCK_MODE', 'false').lower() == 'true'  # Mock режим отключен
 
+# Email отправителя чеков (обязательно для PROD фискализации)
+TINKOFF_EMAIL_COMPANY = os.getenv('TINKOFF_EMAIL_COMPANY', '').strip()
+
 # API URLs - ПРАВИЛЬНАЯ ЛОГИКА согласно документации Tinkoff
 TINKOFF_TEST_API_URL = os.getenv('TINKOFF_TEST_API_URL', 'https://rest-api-test.tinkoff.ru/v2/')
 TINKOFF_PRODUCTION_API_URL = os.getenv('TINKOFF_PRODUCTION_API_URL', 'https://securepay.tinkoff.ru/v2/')
@@ -61,6 +64,7 @@ TINKOFF_WEBHOOK_IPS = [
     '185.71.77.0/27',  # Резервный диапазон T-Bank (продакшн)
     '77.75.153.0/25',  # Дополнительный диапазон (продакшн)
     '91.194.226.0/23', # Новый диапазон 2024+ (продакшн)
+    '91.218.132.0/24', # Новый диапазон T-Bank (обнаружен 11.09.2025 в продакшне)
     '212.49.24.206/32', # Тестовый IP T-Bank (обнаружен в логах webhook'ов)
     '212.233.80.7/32',  # Продакшн IP T-Bank (обнаружен 10.09.2025)
 ]
@@ -120,6 +124,11 @@ def validate_tinkoff_config():
         
     if TINKOFF_SECRET_KEY == 'your_secret_key_here' or not TINKOFF_SECRET_KEY:
         errors.append("TINKOFF_SECRET_KEY не настроен")
+        
+    # Проверяем EmailCompany для продакшена
+    if not TINKOFF_SANDBOX_MODE and not TINKOFF_MOCK_MODE:
+        if not TINKOFF_EMAIL_COMPANY:
+            warnings.append("TINKOFF_EMAIL_COMPANY не настроен - чеки могут не отправляться клиентам в PROD")
         
     # Проверяем согласованность ключа и URL
     is_demo_key = (TINKOFF_TERMINAL_KEY or "").endswith("DEMO")
@@ -443,12 +452,23 @@ async def init_payment_tinkoff(order_id: str, amount: int, description: str, cus
                 'PaymentObject': 'service'  # Услуга
             }]
         }
+        
+        # 🔴 КРИТИЧЕСКИ ВАЖНО ДЛЯ PROD: Email отправителя чеков
+        # Без EmailCompany чек формируется, но письмо клиенту не отправляется
+        if TINKOFF_EMAIL_COMPANY:
+            receipt['EmailCompany'] = TINKOFF_EMAIL_COMPANY
+            logger.info(f"📧 EmailCompany добавлен для отправки чеков: '{TINKOFF_EMAIL_COMPANY}'")
+        elif not TINKOFF_SANDBOX_MODE:
+            logger.warning(f"⚠️ PROD режим: EmailCompany не настроен - чеки могут не отправляться клиентам!")
+            logger.warning(f"   Добавьте TINKOFF_EMAIL_COMPANY в .env (например: support@replyx.ru)")
+        
         data['Receipt'] = receipt
         logger.info(f"📄 ✅ СОЗДАН RECEIPT ДЛЯ КАССОВОГО ЧЕКА:")
         logger.info(f"   📧 {receipt_contact_type} в Receipt: '{receipt_contact}'")
         logger.info(f"   💰 Сумма: {amount} копеек")
         logger.info(f"   📝 Описание: '{description}'")
         logger.info(f"   🏪 Налогообложение: usn_income")
+        logger.info(f"   📧 EmailCompany: {TINKOFF_EMAIL_COMPANY if TINKOFF_EMAIL_COMPANY else 'НЕ НАСТРОЕН'}")
     else:
         logger.warning(f"⚠️ ❌ НЕТ КОНТАКТОВ ДЛЯ RECEIPT - КАССОВЫЙ ЧЕК НЕ БУДЕТ СФОРМИРОВАН!")
         logger.warning(f"   📧 Email: '{email}' | 📞 Phone: '{phone}'")
