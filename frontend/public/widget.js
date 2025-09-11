@@ -527,10 +527,25 @@
         @media (max-width: 480px) {
           .replyx-chat-container {
             width: 89vw;
-            height: 79vh;
-            bottom: 84px;
+            height: 79dvh;
+            height: calc(79vh - env(safe-area-inset-bottom));
+            bottom: calc(84px + env(safe-area-inset-bottom));
             right: 20px;
             border-radius: 16px;
+          }
+        }
+        
+        /* Fallback for mobile browsers that don't support dvh */
+        @supports not (height: 100dvh) {
+          .replyx-mobile-fullscreen-container {
+            height: 100vh;
+            height: calc(100vh - env(safe-area-inset-bottom));
+          }
+          
+          @media (max-width: 480px) {
+            .replyx-chat-container {
+              height: calc(79vh - env(safe-area-inset-bottom) - 20px);
+            }
           }
         }
         
@@ -539,12 +554,13 @@
           top: 0;
           left: 0;
           width: 100vw;
-          height: 100vh;
+          height: 100dvh;
           background: #ffffff;
           z-index: 2147483646;
           pointer-events: auto;
           display: flex;
           flex-direction: column;
+          padding-bottom: env(safe-area-inset-bottom);
         }
         
         .replyx-mobile-fullscreen-container .replyx-widget-button {

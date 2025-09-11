@@ -292,7 +292,7 @@ def logout(
     return {"message": "Успешный выход из системы"}
 
 
-@router.post("/forgot-password")
+@router.post("/auth/forgot-password")
 @rate_limit_api(100, 60)  # 100 попыток в минуту (тестовый режим)
 def forgot_password(request_data: schemas.PasswordResetRequest, request: Request, db: Session = Depends(get_db)):
     """Отправка ссылки для сброса пароля"""
@@ -323,7 +323,7 @@ def forgot_password(request_data: schemas.PasswordResetRequest, request: Request
     return {"message": "Если аккаунт с таким email существует, на него будет отправлена ссылка для сброса пароля"}
 
 
-@router.post("/reset-password")
+@router.post("/auth/reset-password")
 @rate_limit_api(100, 60)  # 100 попыток в минуту (тестовый режим)
 def reset_password(request_data: schemas.PasswordResetConfirm, request: Request, db: Session = Depends(get_db)):
     """Сброс пароля по токену"""
@@ -350,7 +350,7 @@ def reset_password(request_data: schemas.PasswordResetConfirm, request: Request,
     return {"message": "Пароль успешно изменён"}
 
 
-@router.post("/validate-reset-token")
+@router.post("/auth/validate-reset-token")
 @rate_limit_api(100, 60)  # 100 попыток в минуту (тестовый режим)
 def validate_reset_token(request: schemas.TokenValidationRequest, db: Session = Depends(get_db)):
     """Проверяет действительность токена сброса пароля"""
