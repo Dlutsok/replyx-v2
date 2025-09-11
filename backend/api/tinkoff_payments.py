@@ -446,8 +446,8 @@ async def init_payment_tinkoff(order_id: str, amount: int, description: str, cus
                 'Quantity': 1,
                 'Amount': amount,  # Общая сумма = цена * количество
                 'Tax': 'none',  # Без НДС (подходит для услуг на УСН)
-                'PaymentMethod': 'advance',  # Предоплата (для T-Pay/СБП)
-                'PaymentObject': 'service',  # Услуга (для T-Pay/СБП)
+                'PaymentMethod': 'full_payment',  # Полный расчет (для всех способов оплаты)
+                'PaymentObject': 'service',  # Услуга
                 'MeasurementUnit': 'pc'  # 🔴 ОБЯЗАТЕЛЬНО для ФФД 1.2: единица измерения (штуки)
             }],
             'Payments': {
@@ -467,8 +467,8 @@ async def init_payment_tinkoff(order_id: str, amount: int, description: str, cus
         logger.info(f"   📝 Описание: '{description}'")
         logger.info(f"   🏪 Налогообложение: usn_income")
         logger.info(f"   💳 Payments.Electronic: {amount} копеек (= Amount)")
-        logger.info(f"   💰 PaymentMethod: advance (предоплата)")
-        logger.info(f"   📦 PaymentObject: service (для T-Pay/СБП)")
+        logger.info(f"   💰 PaymentMethod: full_payment (полный расчет)")
+        logger.info(f"   📦 PaymentObject: service (услуга)")
         logger.info(f"   📏 MeasurementUnit: pc (штуки)")
         logger.info(f"   📄 FfdVersion: 1.2 (современная версия)")
         logger.info(f"   📧 Отправитель: T-Bank (стандартный режим)")
