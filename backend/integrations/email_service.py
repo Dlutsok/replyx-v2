@@ -80,19 +80,31 @@ class EmailService:
                 msg['From'] = f"{self.from_name} <{self.from_email}>" if self.from_name else self.from_email
                 msg['To'] = to_email
             
-            # Отправляем сообщение с учетом SSL/STARTTLS и таймаутами
+            # Отправляем сообщение с учетом SSL/STARTTLS и увеличенным таймаутом
+            logger.info(f"Подключение к SMTP серверу {self.smtp_server}:{self.smtp_port} (SSL={self.use_ssl}, STARTTLS={self.use_starttls})")
+            
             if self.use_ssl:
-                with smtplib.SMTP_SSL(self.smtp_server, self.smtp_port, timeout=10) as server:
+                with smtplib.SMTP_SSL(self.smtp_server, self.smtp_port, timeout=30) as server:
+                    server.set_debuglevel(0)  # Включаем отладку при необходимости
+                    logger.info("SSL соединение установлено")
                     server.login(self.username, self.password)
+                    logger.info("SMTP авторизация успешна")
                     server.send_message(msg)
+                    logger.info("Сообщение отправлено")
             else:
-                with smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=10) as server:
+                with smtplib.SMTP(self.smtp_server, self.smtp_port, timeout=30) as server:
+                    server.set_debuglevel(0)  # Включаем отладку при необходимости
+                    logger.info("SMTP соединение установлено")
                     server.ehlo()
                     if self.use_starttls:
+                        logger.info("Активируем STARTTLS")
                         server.starttls()
                         server.ehlo()
+                        logger.info("STARTTLS активирован")
                     server.login(self.username, self.password)
+                    logger.info("SMTP авторизация успешна")
                     server.send_message(msg)
+                    logger.info("Сообщение отправлено")
 
             logger.info(
                 f"Email успешно отправлен на {to_email} (server={self.smtp_server}:{self.smtp_port}, ssl={self.use_ssl}, starttls={self.use_starttls})"
