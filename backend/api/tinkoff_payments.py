@@ -440,6 +440,7 @@ async def init_payment_tinkoff(order_id: str, amount: int, description: str, cus
     
     if receipt_contact:  # Если есть контакт для отправки чека
         receipt = {
+            'FfdVersion': '1.05',  # Явно указываем версию ФФД для PROD
             receipt_contact_type: receipt_contact,
             'Taxation': 'usn_income',  # УСН доходы (подходит для большинства ИП/ООО)
             'Items': [{
@@ -449,8 +450,11 @@ async def init_payment_tinkoff(order_id: str, amount: int, description: str, cus
                 'Amount': amount,  # Общая сумма = цена * количество
                 'Tax': 'none',  # Без НДС (подходит для услуг на УСН)
                 'PaymentMethod': 'full_payment',  # Полная оплата
-                'PaymentObject': 'service'  # Услуга
-            }]
+                'PaymentObject': 'payment'  # Для пополнения баланса - payment, а не service
+            }],
+            'Payments': {
+                'Electronic': amount  # 🔴 КРИТИЧНО: сумма безналичного платежа = Amount из Init
+            }
         }
         
         # 🔴 КРИТИЧЕСКИ ВАЖНО ДЛЯ PROD: Email отправителя чеков
@@ -463,11 +467,14 @@ async def init_payment_tinkoff(order_id: str, amount: int, description: str, cus
             logger.warning(f"   Добавьте TINKOFF_EMAIL_COMPANY в .env (например: support@replyx.ru)")
         
         data['Receipt'] = receipt
-        logger.info(f"📄 ✅ СОЗДАН RECEIPT ДЛЯ КАССОВОГО ЧЕКА:")
+        logger.info(f"📄 ✅ СОЗДАН RECEIPT ДЛЯ КАССОВОГО ЧЕКА (ФФД 1.05):")
         logger.info(f"   📧 {receipt_contact_type} в Receipt: '{receipt_contact}'")
         logger.info(f"   💰 Сумма: {amount} копеек")
         logger.info(f"   📝 Описание: '{description}'")
         logger.info(f"   🏪 Налогообложение: usn_income")
+        logger.info(f"   💳 Payments.Electronic: {amount} копеек (= Amount)")
+        logger.info(f"   📦 PaymentObject: payment (пополнение баланса)")
+        logger.info(f"   📄 FfdVersion: 1.05")
         logger.info(f"   📧 EmailCompany: {TINKOFF_EMAIL_COMPANY if TINKOFF_EMAIL_COMPANY else 'НЕ НАСТРОЕН'}")
     else:
         logger.warning(f"⚠️ ❌ НЕТ КОНТАКТОВ ДЛЯ RECEIPT - КАССОВЫЙ ЧЕК НЕ БУДЕТ СФОРМИРОВАН!")
