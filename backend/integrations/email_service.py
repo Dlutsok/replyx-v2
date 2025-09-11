@@ -167,9 +167,16 @@ class EmailService:
 
     def send_test_email(self, to_email: str) -> Dict:
         """Пытается отправить тестовое письмо и возвращает диагностику."""
+        import socket
+        import telnetlib
+        
+        # Проверяем сетевую связность
+        connectivity_test = self._test_smtp_connectivity()
+        
         subject = "Тест отправки email"
         html = f"<p>Это тестовое письмо от ReplyX.</p><p>SMTP: {self.smtp_server}:{self.smtp_port}, SSL={self.use_ssl}, STARTTLS={self.use_starttls}</p>"
         ok = self._send_email(to_email, subject, html, "Тестовое письмо")
+        
         return {
             "success": ok,
             "server": self.smtp_server,
@@ -178,7 +185,62 @@ class EmailService:
             "starttls": self.use_starttls,
             "username_configured": bool(self.username),
             "from_email": self.from_email,
+            "connectivity": connectivity_test
         }
+        
+    def _test_smtp_connectivity(self) -> Dict:
+        """Тестирует сетевое подключение к SMTP серверу"""
+        import socket
+        import telnetlib
+        
+        result = {
+            "dns_resolution": False,
+            "tcp_connection": False,
+            "smtp_banner": False,
+            "error": None
+        }
+        
+        try:
+            # 1. Проверяем DNS разрешение
+            import socket
+            ip = socket.gethostbyname(self.smtp_server)
+            result["dns_resolution"] = True
+            result["resolved_ip"] = ip
+            logger.info(f"DNS resolved: {self.smtp_server} -> {ip}")
+            
+            # 2. Проверяем TCP подключение
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(10)
+            connection_result = sock.connect_ex((self.smtp_server, self.smtp_port))
+            sock.close()
+            
+            if connection_result == 0:
+                result["tcp_connection"] = True
+                logger.info(f"TCP connection successful to {self.smtp_server}:{self.smtp_port}")
+                
+                # 3. Проверяем SMTP banner
+                try:
+                    tn = telnetlib.Telnet(self.smtp_server, self.smtp_port, timeout=10)
+                    banner = tn.read_until(b'\n', timeout=5).decode('utf-8', errors='ignore')
+                    tn.close()
+                    result["smtp_banner"] = True
+                    result["banner"] = banner.strip()
+                    logger.info(f"SMTP banner received: {banner.strip()}")
+                except Exception as e:
+                    logger.warning(f"SMTP banner test failed: {e}")
+                    result["banner_error"] = str(e)
+            else:
+                result["tcp_error"] = f"Connection failed with code {connection_result}"
+                logger.error(f"TCP connection failed: {connection_result}")
+                
+        except socket.gaierror as e:
+            result["error"] = f"DNS resolution failed: {e}"
+            logger.error(f"DNS resolution failed for {self.smtp_server}: {e}")
+        except Exception as e:
+            result["error"] = f"Connectivity test error: {e}"
+            logger.error(f"SMTP connectivity test error: {e}")
+            
+        return result
     
     def _is_handoff_throttled(self, dialog_id: int) -> bool:
         """Проверяет, не слишком ли часто отправляются handoff письма для диалога"""

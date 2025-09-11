@@ -20,6 +20,23 @@ router = APIRouter()
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
+@router.get("/test-smtp-connectivity")
+async def test_smtp_connectivity():
+    """Диагностика SMTP подключения на проде"""
+    try:
+        result = email_service._test_smtp_connectivity()
+        return {
+            "status": "completed",
+            "timestamp": datetime.utcnow().isoformat(),
+            "connectivity": result
+        }
+    except Exception as e:
+        return {
+            "status": "error", 
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
 def generate_confirmation_code():
     """Генерирует код подтверждения email"""
     import random
@@ -294,7 +311,7 @@ def logout(
 
 @router.post("/auth/forgot-password")
 @rate_limit_api(100, 60)  # 100 попыток в минуту (тестовый режим)
-def forgot_password(request_data: schemas.PasswordResetRequest, request: Request, db: Session = Depends(get_db)):
+def forgot_password_new(request_data: schemas.PasswordResetRequest, request: Request, db: Session = Depends(get_db)):
     """Отправка ссылки для сброса пароля"""
     user = db.query(models.User).filter(models.User.email == request_data.email.lower()).first()
     
@@ -508,3 +525,25 @@ def validate_access_token(
         "email": current_user.email,
         "role": getattr(current_user, 'role', 'user')
     }
+
+# ==========================================
+# ОБРАТНАЯ СОВМЕСТИМОСТЬ - СТАРЫЕ ПУТИ 
+# ==========================================
+
+@router.post("/forgot-password")
+@rate_limit_api(100, 60)
+def forgot_password_legacy(request_data: schemas.PasswordResetRequest, request: Request, db: Session = Depends(get_db)):
+    """Отправка ссылки для сброса пароля (старый путь для локальной разработки)"""
+    return forgot_password_new(request_data, request, db)
+
+@router.post("/reset-password") 
+@rate_limit_api(100, 60)
+def reset_password_legacy(request_data: schemas.PasswordResetConfirm, request: Request, db: Session = Depends(get_db)):
+    """Сброс пароля по токену (старый путь для локальной разработки)"""
+    return reset_password(request_data, request, db)
+
+@router.post("/validate-reset-token")
+@rate_limit_api(100, 60)
+def validate_reset_token_legacy(request: schemas.TokenValidationRequest, db: Session = Depends(get_db)):
+    """Проверяет действительность токена сброса пароля (старый путь для локальной разработки)"""
+    return validate_reset_token(request, db)
