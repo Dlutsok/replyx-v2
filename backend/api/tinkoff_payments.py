@@ -125,10 +125,7 @@ def validate_tinkoff_config():
     if TINKOFF_SECRET_KEY == 'your_secret_key_here' or not TINKOFF_SECRET_KEY:
         errors.append("TINKOFF_SECRET_KEY не настроен")
         
-    # Проверяем EmailCompany для продакшена
-    if not TINKOFF_SANDBOX_MODE and not TINKOFF_MOCK_MODE:
-        if not TINKOFF_EMAIL_COMPANY:
-            warnings.append("TINKOFF_EMAIL_COMPANY не настроен - чеки могут не отправляться клиентам в PROD")
+    # EmailCompany больше не требуется - используем стандартный режим T-Bank
         
     # Проверяем согласованность ключа и URL
     is_demo_key = (TINKOFF_TERMINAL_KEY or "").endswith("DEMO")
@@ -457,14 +454,10 @@ async def init_payment_tinkoff(order_id: str, amount: int, description: str, cus
             }
         }
         
-        # 🔴 КРИТИЧЕСКИ ВАЖНО ДЛЯ PROD: Email отправителя чеков
-        # Без EmailCompany чек формируется, но письмо клиенту не отправляется
-        if TINKOFF_EMAIL_COMPANY:
-            receipt['EmailCompany'] = TINKOFF_EMAIL_COMPANY
-            logger.info(f"📧 EmailCompany добавлен для отправки чеков: '{TINKOFF_EMAIL_COMPANY}'")
-        elif not TINKOFF_SANDBOX_MODE:
-            logger.warning(f"⚠️ PROD режим: EmailCompany не настроен - чеки могут не отправляться клиентам!")
-            logger.warning(f"   Добавьте TINKOFF_EMAIL_COMPANY в .env (например: support@replyx.ru)")
+        # 📧 ОТПРАВКА ЧЕКОВ: используем стандартный режим T-Bank
+        # EmailCompany НЕ добавляем - пусть чеки отправляет сам Tinkoff
+        # Это надежнее и не требует настройки SPF/DKIM на нашем домене
+        logger.info(f"📧 Чеки будут отправляться с серверов T-Bank (стандартный режим)")
         
         data['Receipt'] = receipt
         logger.info(f"📄 ✅ СОЗДАН RECEIPT ДЛЯ КАССОВОГО ЧЕКА (ФФД 1.05):")
@@ -475,7 +468,7 @@ async def init_payment_tinkoff(order_id: str, amount: int, description: str, cus
         logger.info(f"   💳 Payments.Electronic: {amount} копеек (= Amount)")
         logger.info(f"   📦 PaymentObject: payment (пополнение баланса)")
         logger.info(f"   📄 FfdVersion: 1.05")
-        logger.info(f"   📧 EmailCompany: {TINKOFF_EMAIL_COMPANY if TINKOFF_EMAIL_COMPANY else 'НЕ НАСТРОЕН'}")
+        logger.info(f"   📧 Отправитель: T-Bank (стандартный режим)")
     else:
         logger.warning(f"⚠️ ❌ НЕТ КОНТАКТОВ ДЛЯ RECEIPT - КАССОВЫЙ ЧЕК НЕ БУДЕТ СФОРМИРОВАН!")
         logger.warning(f"   📧 Email: '{email}' | 📞 Phone: '{phone}'")
