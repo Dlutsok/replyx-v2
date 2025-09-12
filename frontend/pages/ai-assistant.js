@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useAuth, useModalState } from '@/hooks';
 import { useNotifications } from '../hooks/useNotifications';
@@ -13,6 +14,19 @@ import {
 } from 'react-icons/fi';
 
 export default function AIAssistant() {
+  return (
+    <>
+      <Head>
+        <title>AI-ассистент недоступен для поисковых систем</title>
+        <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+        <meta name="description" content="Страница личного кабинета недоступна для индексации" />
+      </Head>
+      <AIAssistantContent />
+    </>
+  );
+}
+
+function AIAssistantContent() {
   // Аутентификация и роутинг
   const { user } = useAuth();
   const router = useRouter();

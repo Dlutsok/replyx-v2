@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
+import Head from 'next/head';
 import { motion } from 'framer-motion';
 import { FiRefreshCw, FiMessageSquare, FiStar, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 
@@ -24,6 +25,19 @@ import styles from '../styles/pages/Dialogs.module.css';
 import dashStyles from '../styles/pages/Dashboard.module.css';
 
 export default function Dialogs() {
+  return (
+    <>
+      <Head>
+        <title>Диалоги недоступны для поисковых систем</title>
+        <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+        <meta name="description" content="Страница личного кабинета недоступна для индексации" />
+      </Head>
+      <DialogsContent />
+    </>
+  );
+}
+
+function DialogsContent() {
   // Принудительная перезагрузка стилей при маунте компонента
   useEffect(() => {
     // Принудительная перерисовка для загрузки CSS модулей

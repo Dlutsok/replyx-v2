@@ -32,9 +32,29 @@ const nextConfig = {
     },
   }),
   
-  // Заголовки безопасности (БЕЗ CORS - используем DynamicCORSMiddleware в бэкенде)
+  // Заголовки безопасности и SEO (БЕЗ CORS - используем DynamicCORSMiddleware в бэкенде)
   async headers() {
     return [
+      {
+        // SEO заголовки для публичных страниц
+        source: '/((?!dashboard|admin|dialogs|balance|usage|database-explorer|ai-assistant|ai-tokens|login|register|forgot-password|reset-password|verify-email|logout|chat-iframe|test-admin-tokens|payment-success|payment-error|assistant).*)',
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'index, follow',
+          },
+        ],
+      },
+      {
+        // SEO блокировка для страниц личного кабинета
+        source: '/(dashboard|admin|dialogs|balance|usage|database-explorer|ai-assistant|ai-tokens|login|register|forgot-password|reset-password|verify-email|logout|chat-iframe|test-admin-tokens|payment-success|payment-error|assistant)/:path*',
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'noindex, nofollow',
+          },
+        ],
+      },
       {
         // Для iframe страниц - только базовые заголовки безопасности (CSP устанавливается динамически через backend)
         source: '/chat-iframe',
@@ -46,6 +66,10 @@ const nextConfig = {
           {
             key: 'Referrer-Policy', 
             value: 'origin-when-cross-origin',
+          },
+          {
+            key: 'X-Robots-Tag',
+            value: 'noindex, nofollow',
           },
         ],
       },

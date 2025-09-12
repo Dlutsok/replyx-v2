@@ -872,7 +872,13 @@ function DatabaseExplorer() {
 
 
   return (
-    <div>
+    <>
+      <Head>
+        <title>База данных недоступна для поисковых систем</title>
+        <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+        <meta name="description" content="Административная страница недоступна для индексации" />
+      </Head>
+      <div>
       <div className="bg-white px-4 sm:px-6 xl:px-8 pt-4 sm:pt-6 xl:pt-8 pb-4 sm:pb-6 xl:pb-8 rounded-2xl">
         {/* Welcome Section - Dashboard Style */}
         <div className="bg-white rounded-xl border border-gray-200 p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8 mb-4 sm:mb-6">
@@ -1516,6 +1522,7 @@ function DatabaseExplorer() {
         )}
       </div>
     </div>
+    </>
   );
 }
 

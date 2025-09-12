@@ -522,7 +522,61 @@ export default function Landing() {
         <title>AI-ассистент ReplyX — автоматизация поддержки клиентов 24/7</title>
         <meta name="description" content="ReplyX — универсальный AI-ассистент для бизнеса. Автоматизация поддержки клиентов, интеграция с CRM, 1С, Telegram и мессенджерами. Запуск за 15 минут, без программистов." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="robots" content="index, follow" />
         <link rel="icon" href="/favicon.ico" />
+        
+        {/* JSON-LD структурированные данные */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              "name": "ReplyX",
+              "description": "AI-ассистент для автоматизации поддержки клиентов 24/7. Интеграция с CRM, 1С, Telegram и мессенджерами.",
+              "url": "https://replyx.ru",
+              "applicationCategory": "BusinessApplication",
+              "operatingSystem": "Web",
+              "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "RUB",
+                "description": "Бесплатный тарифный план доступен"
+              },
+              "provider": {
+                "@type": "Organization",
+                "name": "ReplyX",
+                "url": "https://replyx.ru",
+                "logo": "https://replyx.ru/logo.svg"
+              },
+              "featureList": [
+                "Автоматизация поддержки клиентов",
+                "Интеграция с Telegram",
+                "Интеграция с CRM системами",
+                "Интеграция с 1С",
+                "AI-чат-бот для сайта",
+                "Обработка естественного языка"
+              ],
+              "screenshot": "https://replyx.ru/og-image.png"
+            })
+          }}
+        />
+        
+        {/* Open Graph теги */}
+        <meta property="og:title" content="AI-ассистент ReplyX — автоматизация поддержки клиентов 24/7" />
+        <meta property="og:description" content="ReplyX — универсальный AI-ассистент для бизнеса. Автоматизация поддержки клиентов, интеграция с CRM, 1С, Telegram и мессенджерами. Запуск за 15 минут, без программистов." />
+        <meta property="og:image" content="https://replyx.ru/og-image.png" />
+        <meta property="og:url" content="https://replyx.ru/" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="ReplyX" />
+        <meta property="og:locale" content="ru_RU" />
+
+        {/* Twitter Cards */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="AI-ассистент ReplyX — автоматизация поддержки клиентов 24/7" />
+        <meta name="twitter:description" content="ReplyX — универсальный AI-ассистент для бизнеса. Автоматизация поддержки клиентов, интеграция с CRM, 1С, Telegram и мессенджерами. Запуск за 15 минут, без программистов." />
+        <meta name="twitter:image" content="https://replyx.ru/og-image.png" />
+        
         {/* Manrope Font для виджета */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

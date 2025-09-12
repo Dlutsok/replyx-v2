@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Head from 'next/head';
 import { withAuth } from '../hooks/useAuth';
 import AdminDashboard from '@/components/layout/AdminDashboard';
 import { 
@@ -9,6 +10,19 @@ import {
 import styles from '../styles/pages/AdminPanel.module.css';
 
 const AdminPanel = () => {
+  return (
+    <>
+      <Head>
+        <title>Админ-панель недоступна для поисковых систем</title>
+        <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+        <meta name="description" content="Административная страница недоступна для индексации" />
+      </Head>
+      <AdminPanelContent />
+    </>
+  );
+};
+
+const AdminPanelContent = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [systemHealth, setSystemHealth] = useState(null);
   const [realtimeStats, setRealtimeStats] = useState(null);
