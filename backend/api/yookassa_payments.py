@@ -172,7 +172,9 @@ async def create_payment(
                             "currency": "RUB"
                         },
                         "quantity": "1",
-                        "vat_code": 1  # НДС не облагается
+                        "vat_code": 1,  # НДС не облагается
+                        "payment_subject": "service",  # Обязательное поле для YooKassa
+                        "payment_mode": "full_payment"  # Полная предоплата
                     }
                 ]
             }
