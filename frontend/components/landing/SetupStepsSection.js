@@ -326,36 +326,6 @@ const SetupStepsSection = () => {
                       </p>
                     </div>
 
-                    {/* Индикатор прогресса */}
-                    <div className="mt-4 pt-3 border-t border-gray-100">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-500">Прогресс</span>
-                        <span className={`text-xs font-medium ${
-                          step.status === 'completed' ? 'text-green-600' :
-                          step.status === 'current' ? 'text-[#6334E5]' : 'text-gray-400'
-                        }`}>
-                          {step.status === 'completed' ? '100%' :
-                           step.status === 'current' ? '50%' : '0%'}
-                        </span>
-                      </div>
-                      <div className="mt-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                        <motion.div
-                          className={`h-full rounded-full transition-all duration-500 ${
-                            step.status === 'completed'
-                              ? 'bg-gradient-to-r from-green-400 to-emerald-500'
-                              : step.status === 'current'
-                              ? 'bg-gradient-to-r from-[#6334E5] to-violet-500'
-                              : 'bg-gray-200'
-                          }`}
-                          initial={{ width: 0 }}
-                          animate={{
-                            width: step.status === 'completed' ? '100%' :
-                                   step.status === 'current' ? '50%' : '0%'
-                          }}
-                          transition={{ duration: 0.8, delay: index * 0.1 }}
-                        />
-                      </div>
-                    </div>
 
                     {/* CTA для текущего шага */}
                     {step.status === 'current' && (
@@ -481,11 +451,11 @@ const SetupStepsSection = () => {
               >
                 <span className="absolute inset-0 bg-gradient-to-r from-[#6334E5] via-[#6334E5] to-[#6334E5] opacity-0 hover:opacity-20 transition-opacity duration-300" />
                 <span className="relative z-10 flex items-center justify-center gap-2">
-                  <span>🚀 Начать настройку</span>
+                  <span>Начать настройку</span>
                 </span>
               </button>
-              <p className="text-xs text-gray-500 text-center mt-3">
-                Первые 100 сообщений бесплатно
+              <p className="text-xs text-green-600 text-center mt-3">
+                Первые 50 сообщений бесплатно
               </p>
             </div>
           </motion.div>

@@ -170,7 +170,7 @@ class BalanceService:
         balance = self.get_balance(user_id)
         return balance >= service_price.price
     
-    def give_welcome_bonus(self, user_id: int, amount: float = 500.0) -> Optional[BalanceTransaction]:
+    def give_welcome_bonus(self, user_id: int, amount: float = 250.0) -> Optional[BalanceTransaction]:
         """Начислить приветственный бонус новому пользователю"""
         user = self.db.query(User).filter(User.id == user_id).first()
         if not user:

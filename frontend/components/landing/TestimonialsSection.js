@@ -285,7 +285,7 @@ const TestimonialsSection = () => {
                 {/* CTA кнопка */}
                 <div className="flex justify-center mb-6 sm:mb-8 xl:mb-6">
                   <button className="px-6 sm:px-8 xl:px-6 py-3 sm:py-4 xl:py-3 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#6334E5]/20 h-12 sm:h-14 xl:h-12 relative overflow-hidden bg-gradient-to-r from-[#6334E5] via-violet-600 to-indigo-600 hover:from-[#5028c2] hover:via-violet-700 hover:to-indigo-700 text-base sm:text-lg xl:text-base">
-                    <span className="absolute inset-0 z-0 animate-wave-gradient bg-gradient-to-r from-violet-400 via-fuchsia-500 to-violet-400" />
+                    <span className="absolute inset-0 z-0 animate-wave-gradient bg-gradient-to-r from-[#6334E5] via-[#7C3AED] to-[#6334E5]" />
                     <span className="relative z-10 flex items-center gap-3">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -298,23 +298,6 @@ const TestimonialsSection = () => {
                   </button>
                 </div>
 
-                {/* Социальное доказательство */}
-                <div className="border-t border-gray-200 pt-6 sm:pt-8 xl:pt-6">
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8 xl:gap-6 text-sm text-gray-600">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span className="font-medium">500+ компаний</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="font-medium">4.9/5 рейтинг</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-[#6334E5] rounded-full"></div>
-                      <span className="font-medium">14 дней бесплатно</span>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -376,8 +359,8 @@ const TestimonialsSection = () => {
 
                 {/* CTA кнопка */}
                 <div className="flex justify-center mb-4">
-                  <button className="px-6 py-3 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#6334E5]/20 h-12 relative overflow-hidden bg-gradient-to-r from-[#6334E5] via-violet-600 to-indigo-600 hover:from-[#5028c2] hover:via-violet-700 hover:to-indigo-700 text-base">
-                    <span className="absolute inset-0 z-0 animate-wave-gradient bg-gradient-to-r from-violet-400 via-fuchsia-500 to-violet-400" />
+                  <button className="px-6 py-3 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#6334E5]/20 h-12 relative overflow-hidden bg-gradient-to-r from-[#6334E5] via-[#6334E5] to-[#6334E5] hover:from-[#5028c2] hover:via-[#5028c2] hover:to-[#5028c2] text-base">
+                    <span className="absolute inset-0 z-0 animate-wave-gradient bg-gradient-to-r from-[#6334E5] via-[#7C3AED] to-[#6334E5]" />
                     <span className="relative z-10 flex items-center gap-2">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -390,23 +373,6 @@ const TestimonialsSection = () => {
                   </button>
                 </div>
 
-                {/* Социальное доказательство */}
-                <div className="border-t border-gray-200 pt-4">
-                  <div className="flex flex-col items-center justify-center gap-3 text-sm text-gray-600">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span className="font-medium">500+ компаний</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="font-medium">4.9/5 рейтинг</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-[#6334E5] rounded-full"></div>
-                      <span className="font-medium">14 дней бесплатно</span>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>

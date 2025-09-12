@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks';
 import { useNotifications } from '../hooks/useNotifications';
 import LoadingSpinner, { LoadingButton } from '../components/common/LoadingSpinner';
 import {
-  FiCheck, FiShield, FiDollarSign, FiMessageSquare, FiActivity, FiCreditCard, FiBriefcase, FiTrendingUp, FiSettings
+  FiDollarSign, FiMessageSquare, FiActivity, FiCreditCard, FiBriefcase, FiTrendingUp, FiZap
 } from 'react-icons/fi';
 
 import { API_URL } from '../config/api';
@@ -111,7 +111,7 @@ export default function Balance() {
     try {
       const token = localStorage.getItem('token');
       
-      // Используем метод с перенаправлением на сайт Тинькофф
+      // Используем метод с перенаправлением на платежную систему
       const formData = new FormData();
       formData.append('amount', parseFloat(rechargeAmount));
       formData.append('description', `Пополнение баланса ReplyX на ${rechargeAmount} руб.`);
@@ -132,7 +132,7 @@ export default function Balance() {
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.redirect_url) {
-          // Перенаправляем на страницу оплаты Тинькофф
+          // Перенаправляем на страницу оплаты
           window.location.href = data.redirect_url;
         } else {
           throw new Error(data.error || 'Ошибка создания платежа');
@@ -215,263 +215,228 @@ export default function Balance() {
         <meta name="robots" content="noindex, nofollow" />
       </Head>
 
-      <div className="bg-white px-4 sm:px-6 xl:px-8 pt-4 sm:pt-6 xl:pt-8 pb-4 sm:pb-6 xl:pb-8 rounded-2xl">
+      <div className="bg-white px-4 sm:px-6 xl:px-8 pt-4 sm:pt-6 xl:pt-8 pb-4 sm:pb-6 xl:pb-8 rounded-2xl animate-fade-in">
         <div>
-          {/* Заголовок страницы */}
+          {/* Заголовок страницы - в стиле Dashboard */}
           <div className="bg-white rounded-xl border border-gray-200 p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8 mb-4 sm:mb-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-center">
-                <FiDollarSign className="text-[#6334E5]" size={18} />
+            <div className="flex flex-col md:flex-row items-start justify-between gap-3 sm:gap-4 md:gap-5 lg:gap-6 xl:gap-8">
+              {/* Левая часть - приветствие и информация */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start sm:items-center gap-3 mb-2">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 lg:w-11 lg:h-11 xl:w-12 xl:h-12 bg-gray-50 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+                    <FiDollarSign className="text-[#6334E5]" size={20} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-col gap-1 sm:gap-2">
+                      <h1 className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-semibold text-gray-900 break-words leading-tight">
+                        Управление балансом
+                      </h1>
+                    </div>
+                    <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                      Пополните счет и отслеживайте расходы на AI-сервисы
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div>
-                <h1 className="text-xl font-semibold text-gray-900 mb-1">Баланс</h1>
-                <p className="text-sm text-gray-600">Управление балансом и пополнение счета</p>
+              
+              {/* Правая часть - статус баланса */}
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 bg-gray-50">
+                <div className={`w-2 h-2 rounded-full ${
+                  userBalance > 0 ? 'bg-green-500' : 'bg-orange-500'
+                }`}></div>
+                <span className={`text-sm font-medium ${
+                  userBalance > 0 ? 'text-green-700' : 'text-orange-700'
+                }`}>
+                  {userBalance > 0 ? 'Активен' : 'Требует пополнения'}
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Основная информация о балансе */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
-            {/* Текущий баланс */}
-            <div className="bg-white border border-gray-200 rounded-xl p-5 sm:p-6 transition-all hover:border-gray-300">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-center">
-                  <FiBriefcase className="text-[#6334E5]" size={18} />
-                </div>
-                <div>
-                  <div className="text-lg font-semibold text-gray-900">Ваш баланс</div>
-                  <div className="text-sm text-gray-600">Доступные средства</div>
-                </div>
-              </div>
+          {/* Главная информация - современные карточки */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 mb-6 animate-slide-up">
+            {/* Текущий баланс - компактная карточка */}
+            <div className="xl:col-span-1 bg-gradient-to-br from-white via-white to-gray-50/50 border border-gray-200 rounded-2xl p-5 sm:p-6 relative overflow-hidden">
+              {/* Декоративный элемент */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#6334E5]/5 rounded-full -translate-y-16 translate-x-16"></div>
               
-              {/* Основная сумма баланса */}
-              <div className="text-center mb-6">
-                <div className="text-4xl font-bold text-gray-900 mb-2">
-                  {(userBalance || 0).toLocaleString('ru-RU')}₽
-                </div>
-              </div>
-
-              {/* Статус и дополнительная информация */}
-              <div className="space-y-3">
-                {/* Статус баланса */}
-                <div className={`flex items-center justify-center gap-2 p-3 rounded-xl border ${
-                  userBalance > 0 
-                    ? 'bg-green-50 border-green-200' 
-                    : 'bg-orange-50 border-orange-200'
-                }`}>
-                  <div className={`w-2 h-2 rounded-full ${
-                    userBalance > 0 ? 'bg-green-500' : 'bg-orange-500'
-                  }`}></div>
-                  <span className={`font-medium text-sm ${
-                    userBalance > 0 ? 'text-green-700' : 'text-orange-700'
-                  }`}>
-                    {userBalance > 0 ? 'Баланс активен' : 'Требуется пополнение'}
-                  </span>
-                </div>
-
-                {/* Быстрые факты */}
-                <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Стоимость сообщения</span>
-                      <span className="font-semibold text-gray-900">5₽</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Остаток сообщений</span>
-                      <span className="font-semibold text-gray-900">{Math.floor((userBalance || 0) / 5)}</span>
-                    </div>
-                    {userBalance > 0 && (
-                      <div className="flex justify-between items-center pt-2 border-t border-gray-200">
-                        <span className="text-gray-600">Хватит примерно на</span>
-                        <span className="font-semibold text-[#6334E5]">
-                          {Math.floor((userBalance || 0) / 2500)} месяцев
-                        </span>
-                      </div>
-                    )}
+              <div className="relative h-full flex flex-col justify-center">
+                {/* Заголовок сверху */}
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 bg-[#6334E5]/10 rounded-xl flex items-center justify-center">
+                    <FiBriefcase className="text-[#6334E5]" size={18} />
+                  </div>
+                  <div>
+                    <div className="text-lg font-semibold text-gray-900">Текущий баланс</div>
+                    <div className="text-sm text-gray-600">Доступные средства</div>
                   </div>
                 </div>
-
-                {/* Быстрая ссылка на историю */}
-                <div className="pt-2">
-                  <button 
-                    onClick={() => {
-                      const historyElement = document.querySelector('#transaction-history');
-                      if (historyElement) {
-                        historyElement.scrollIntoView({ behavior: 'smooth' });
-                      }
-                    }}
-                    className="w-full flex items-center justify-center gap-2 p-2.5 text-sm font-medium text-gray-600 hover:text-[#6334E5] hover:bg-[#6334E5]/10 rounded-lg transition-colors"
-                  >
-                    <FiActivity size={14} />
-                    <span>Смотреть историю операций</span>
-                  </button>
+                
+                {/* Основной контент по центру вертикально */}
+                <div className="flex-1 flex flex-col justify-center text-center">
+                  <div className="text-4xl font-bold text-gray-900 mb-4 tracking-tight">
+                    {(userBalance || 0).toLocaleString('ru-RU')}
+                    <span className="text-xl text-gray-500 ml-1">₽</span>
+                  </div>
+                  
+                  {/* Метрики */}
+                  <div className="flex justify-center items-center gap-8">
+                    <div className="text-center">
+                      <div className="text-xl font-bold text-[#6334E5]">{Math.floor((userBalance || 0) / 5)}</div>
+                      <div className="text-xs text-gray-500">сообщений</div>
+                    </div>
+                    <div className="w-px h-8 bg-gray-200"></div>
+                    <div className="text-center">
+                      <div className="text-xl font-bold text-emerald-600">5₽</div>
+                      <div className="text-xs text-gray-500">за сообщение</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Пополнить баланс */}
-            <div className="lg:col-span-2 bg-white border border-gray-200 rounded-xl p-5 sm:p-6 transition-all hover:border-gray-300">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-center">
-                  <FiTrendingUp className="text-[#6334E5]" size={18} />
+            {/* Пополнение баланса - компактная форма */}
+            <div className="xl:col-span-2 bg-white border border-gray-200 rounded-2xl p-5 sm:p-6">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
+                  <FiTrendingUp className="text-emerald-600" size={18} />
                 </div>
                 <div>
                   <div className="text-lg font-semibold text-gray-900">Пополнение баланса</div>
-                  <div className="text-sm text-gray-600">Выберите сумму или введите свою</div>
+                  <div className="text-sm text-gray-600">Безопасные платежи</div>
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                {/* Основная форма пополнения */}
-                <div className="lg:col-span-3 space-y-5">
-                  {/* Поле ввода суммы */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Сумма пополнения
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="number"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                        placeholder="1000"
-                        min="1"
-                        max="50000"
-                        className="w-full px-4 py-3 text-xl font-medium border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent transition-all text-center"
-                      />
-                      <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg">₽</div>
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1 text-center">
-                      Минимум 1₽ • Максимум 50,000₽
-                    </div>
-                  </div>
-
-                  {/* Быстрые суммы */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">
-                      Популярные суммы
-                    </label>
-                    <div className="grid grid-cols-4 gap-3">
-                      {[500, 1000, 2500, 5000].map((sum) => (
-                        <button
-                          key={sum}
-                          onClick={() => setAmount(sum.toString())}
-                          className={`p-3 rounded-xl text-center transition-all border ${
-                            amount === sum.toString()
-                              ? 'bg-[#6334E5] text-white border-[#6334E5] shadow-sm'
-                              : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50'
-                          }`}
-                        >
-                          <div className="text-lg font-semibold">{sum}₽</div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Кнопка пополнения */}
-                  <div className="pt-2">
-                    <LoadingButton
-                      onClick={() => handleRecharge(amount)}
-                      loading={loading}
-                      disabled={!amount || parseFloat(amount) < 1}
-                      className="w-full py-3.5 text-base font-semibold bg-[#6334E5] hover:bg-[#5028c2] disabled:bg-gray-300 text-white rounded-xl transition-colors flex items-center justify-center gap-2"
-                    >
-                      <FiCreditCard size={18} />
-                      {loading ? 'Подготовка к оплате...' : 'Пополнить баланс'}
-                    </LoadingButton>
-                    
-                    {amount && parseFloat(amount) >= 1 && (
-                      <div className="text-center text-sm text-gray-600 mt-2">
-                        Вы получите ≈ {Math.floor(parseFloat(amount) / 5)} сообщений
-                      </div>
-                    )}
+              <div className="space-y-5">
+                {/* Поле ввода суммы - компактное */}
+                <div>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      placeholder="1000"
+                      min="1"
+                      max="50000"
+                      className="w-full px-4 py-3 text-2xl font-bold border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-3 focus:ring-[#6334E5]/20 focus:border-[#6334E5] transition-all text-center bg-gray-50"
+                    />
+                    <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl font-bold">₽</div>
                   </div>
                   
-                  {/* Сообщения об ошибках/успехе */}
-                  {message && (
-                    <div className={`p-4 rounded-xl text-sm border ${
-                      messageType === 'success'
-                        ? 'bg-green-50 text-green-800 border-green-200'
-                        : messageType === 'info' 
-                        ? 'bg-blue-50 text-blue-800 border-blue-200'
-                        : 'bg-red-50 text-red-800 border-red-200'
-                    }`}>
-                      {message}
+                  {amount && parseFloat(amount) >= 1 && (
+                    <div className="mt-2 text-center">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#6334E5]/10 text-[#6334E5] rounded-lg text-xs font-medium">
+                        <FiZap size={12} />
+                        {Math.floor(parseFloat(amount) / 5)} сообщений
+                      </div>
                     </div>
                   )}
+                </div>
 
+                {/* Быстрые суммы - компактные кнопки */}
+                <div>
+                  <div className="text-sm font-medium text-gray-700 mb-3">Популярные суммы</div>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[500, 1000, 2500, 5000].map((sum) => (
+                      <button
+                        key={sum}
+                        onClick={() => setAmount(sum.toString())}
+                        className={`p-2 rounded-lg text-center transition-all duration-200 border ${
+                          amount === sum.toString()
+                            ? 'bg-[#6334E5] text-white border-[#6334E5] shadow-md'
+                            : 'bg-white border-gray-200 text-gray-700'
+                        }`}
+                      >
+                        <div className="text-sm font-bold">{sum.toLocaleString('ru-RU')}₽</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Кнопка пополнения - компактная */}
+                <div>
+                  <LoadingButton
+                    onClick={() => handleRecharge(amount)}
+                    loading={loading}
+                    disabled={!amount || parseFloat(amount) < 1}
+                    className="w-full py-3 text-base font-semibold bg-gradient-to-r from-[#6334E5] to-[#7C3AED] disabled:from-gray-300 disabled:to-gray-400 text-white rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+                  >
+                    <FiCreditCard size={16} />
+                    <span>{loading ? 'Подготовка к оплате...' : 'Пополнить баланс'}</span>
+                  </LoadingButton>
+                  
+                  <div className="text-xs text-gray-500 mt-2 text-center">
+                    Минимум 1₽ • Максимум 50,000₽ • Без комиссий
+                  </div>
                 </div>
                 
-                {/* Боковая информация */}
-                <div className="lg:col-span-2 space-y-4">
-                  {/* Безопасность */}
-                  <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <FiShield className="text-[#6334E5]" size={16} />
-                      <h4 className="font-medium text-gray-900">Безопасность</h4>
-                    </div>
-                    <div className="space-y-2 text-sm text-gray-600">
-                      <div className="flex items-start gap-2">
-                        <FiCheck size={14} className="text-green-600 mt-0.5 flex-shrink-0" />
-                        <span>SSL шифрование</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <FiCheck size={14} className="text-green-600 mt-0.5 flex-shrink-0" />
-                        <span>Мгновенное зачисление</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <FiCheck size={14} className="text-green-600 mt-0.5 flex-shrink-0" />
-                        <span>Возврат средств</span>
-                      </div>
-                    </div>
+                {/* Сообщения об ошибках/успехе */}
+                {message && (
+                  <div className={`p-3 rounded-lg text-sm border ${
+                    messageType === 'success'
+                      ? 'bg-green-50 text-green-800 border-green-200'
+                      : messageType === 'info' 
+                      ? 'bg-blue-50 text-blue-800 border-blue-200'
+                      : 'bg-red-50 text-red-800 border-red-200'
+                  }`}>
+                    {message}
                   </div>
-
-                  {/* Тарификация */}
-                  <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <FiSettings className="text-[#6334E5]" size={16} />
-                      <h4 className="font-medium text-gray-900">Тарифы</h4>
-                    </div>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">За сообщение</span>
-                        <span className="font-semibold text-gray-900">5₽</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Минимум</span>
-                        <span className="font-semibold text-gray-900">100₽</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Абонплата</span>
-                        <span className="font-semibold text-green-600">0₽</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
 
 
-          {/* История операций */}
-          <div id="transaction-history" className="bg-white border border-gray-200 rounded-xl p-5 sm:p-6 mb-6 transition-all hover:border-gray-300">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-center">
-                <FiActivity className="text-[#6334E5]" size={18} />
+          {/* История операций - современный дизайн */}
+          <div id="transaction-history" className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-indigo-100 rounded-2xl flex items-center justify-center">
+                  <FiActivity className="text-indigo-600" size={20} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900">История операций</h3>
+                  <p className="text-sm text-gray-600">Все транзакции и операции с балансом</p>
+                </div>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">История операций</h3>
+              
+              {/* Счетчик операций */}
+              <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-xl">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-sm font-medium text-gray-700">
+                  {transactions.length} операций
+                </span>
+              </div>
             </div>
             {dataLoading ? (
               <div className="flex justify-center py-12">
                 <LoadingSpinner size="sm" text="Загрузка транзакций..." />
               </div>
             ) : transactions.length === 0 ? (
-              <div className="text-center py-16">
-                <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <FiActivity size={24} className="text-gray-400" />
+              <div className="text-center py-20">
+                <div className="relative mx-auto mb-8 w-24 h-24">
+                  <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl flex items-center justify-center">
+                    <FiActivity size={32} className="text-gray-400" />
+                  </div>
+                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-[#6334E5] rounded-full flex items-center justify-center">
+                    <FiZap size={16} className="text-white" />
+                  </div>
                 </div>
-                <p className="text-gray-600 mb-2">История транзакций пуста</p>
-                <p className="text-sm text-gray-500">Совершите первое пополнение баланса</p>
+                <h4 className="text-lg font-semibold text-gray-900 mb-2">История операций пуста</h4>
+                <p className="text-gray-600 mb-6">Совершите первое пополнение баланса, чтобы начать использовать платформу</p>
+                <button 
+                  onClick={() => {
+                    const form = document.querySelector('input[type="number"]');
+                    if (form) {
+                      form.focus();
+                      form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                  }}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#6334E5] hover:bg-[#5028c2] text-white font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
+                >
+                  <FiCreditCard size={18} />
+                  <span>Пополнить баланс</span>
+                </button>
               </div>
             ) : (
               <div className="overflow-hidden">
@@ -497,35 +462,41 @@ export default function Balance() {
                     const status = getTransactionStatus(transaction);
                     return (
                       <div key={transaction.id}>
-                        {/* Мобильная версия */}
-                        <div className="md:hidden bg-gray-50 border border-gray-200 rounded-lg p-4 hover:bg-gray-100 transition-colors">
-                          <div className="space-y-3">
-                            <div className="flex justify-between items-start">
-                              <div className="text-sm text-gray-500">Дата</div>
-                              <div className="text-sm text-gray-900 font-medium">
-                                {formatDate(transaction.created_at)}
+                        {/* Мобильная версия - улучшенная карточка */}
+                        <div className="md:hidden bg-white border border-gray-200 rounded-xl p-5 hover:shadow-lg transition-all duration-200 hover:border-gray-300">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center gap-3 flex-1">
+                              <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center">
+                                <FiActivity size={16} className="text-gray-600" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-gray-900 text-sm">
+                                  {formatTransactionType(transaction.transaction_type)}
+                                </div>
+                                <div className="text-xs text-gray-500 mt-1">
+                                  {formatDate(transaction.created_at)}
+                                </div>
                               </div>
                             </div>
-                            <div className="flex justify-between items-start">
-                              <div className="text-sm text-gray-500">Тип</div>
-                              <div className="text-sm text-gray-900 font-medium">
-                                {formatTransactionType(transaction.transaction_type)}
-                              </div>
-                            </div>
-                            <div className="flex justify-between items-start">
-                              <div className="text-sm text-gray-500">Сумма</div>
-                              <div className={`text-sm font-semibold ${
-                                transaction.amount > 0 ? 'text-green-600' : 'text-gray-600'
+                            
+                            <div className="text-right">
+                              <div className={`text-lg font-semibold ${
+                                transaction.amount > 0 ? 'text-green-600' : 'text-gray-900'
                               }`}>
                                 {transaction.amount > 0 ? '+' : ''}{Math.abs(transaction.amount).toLocaleString('ru-RU')}₽
                               </div>
-                            </div>
-                            <div className="flex justify-between items-start">
-                              <div className="text-sm text-gray-500">Статус</div>
-                              <div className="text-sm text-gray-900 font-medium">
-                                {status.text}
+                              <div className="text-xs text-gray-500 mt-1">
+                                Баланс: {Math.abs(transaction.balance_after).toLocaleString('ru-RU')}₽
                               </div>
                             </div>
+                          </div>
+                          
+                          <div className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium ${
+                            transaction.amount > 0 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-gray-100 text-gray-700'
+                          }`}>
+                            {status.text}
                           </div>
                         </div>
 

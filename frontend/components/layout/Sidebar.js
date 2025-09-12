@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import { FiCpu } from 'react-icons/fi';
 import { useAuth } from '@/hooks';
 import { useSmartProgress } from '../../hooks/useSmartProgress';
 import styles from '../../styles/layout/Sidebar.module.css';
@@ -114,12 +115,7 @@ const ChatIcon = () => (
 );
 
 const BotIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" style={{ minWidth: '24px', minHeight: '24px' }} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M9 12l2 2 4-4"/>
-    <path d="M21 12c.552 0 1-.448 1-1V8c0-.552-.448-1-1-1h-1V6a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v1H3c-.552 0-1 .448-1 1v3c0 .552.448 1 1 1h1v7a4 4 0 0 0 4 4h8a4 4 0 0 0 4-4v-7h1z"/>
-    <circle cx="9" cy="9" r="1"/>
-    <circle cx="15" cy="9" r="1"/>
-  </svg>
+  <FiCpu size={24} style={{ minWidth: '24px', minHeight: '24px' }} />
 );
 
 const WalletIcon = () => (

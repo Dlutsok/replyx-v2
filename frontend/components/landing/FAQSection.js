@@ -246,7 +246,7 @@ const FAQSection = () => {
             >
               <button
                 onClick={() => setShowAllFAQs(!showAllFAQs)}
-                className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[#6334E5] to-blue-600 text-white font-semibold rounded-2xl transition-all duration-300 hover:shadow-lg hover:shadow-[#6334E5]/30 hover:scale-105 active:scale-95"
+                className="inline-flex items-center gap-3 px-6 py-3 text-gray-700 font-medium rounded-lg border border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
               >
                 <span>{showAllFAQs ? 'Скрыть вопросы' : `Показать еще ${faqs.length - 5} вопросов`}</span>
                 {showAllFAQs ? <FiChevronUp className="w-5 h-5" /> : <FiChevronDown className="w-5 h-5" />}
@@ -532,7 +532,7 @@ const FAQSection = () => {
               >
                 <button
                   onClick={() => setShowAllFAQs(!showAllFAQs)}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#6334E5] to-blue-600 text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-[#6334E5]/30 hover:scale-105 active:scale-95 text-sm"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 text-gray-700 font-medium rounded-lg border border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 text-sm"
                 >
                   <span>{showAllFAQs ? 'Скрыть вопросы' : `Показать еще ${faqs.length - 5} вопросов`}</span>
                   {showAllFAQs ? <FiChevronUp className="w-4 h-4" /> : <FiChevronDown className="w-4 h-4" />}

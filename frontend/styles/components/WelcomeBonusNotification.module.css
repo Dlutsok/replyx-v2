@@ -42,14 +42,14 @@
   justify-content: center;
   width: 48px;
   height: 48px;
-  background: linear-gradient(135deg, #7C3AED 0%, #6A3AE3 100%);
+  background: transparent;
   border-radius: 0.75rem;
   margin-bottom: 16px;
 }
 
 .icon {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   color: white;
   stroke-width: 2;
 }
@@ -73,7 +73,7 @@
 /* Блок с бонусом */
 .bonusCard {
   background: linear-gradient(135deg, #FAFBFF 0%, #F5F3FF 100%);
-  border: 1px solid rgba(124, 77, 255, 0.1);
+  border: 1px solid rgba(99, 52, 229, 0.1);
   border-radius: 0.75rem;
   padding: 20px;
   margin-bottom: 20px;
@@ -88,7 +88,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(124, 77, 255, 0.03) 0%, rgba(106, 58, 227, 0.01) 100%);
+  background: linear-gradient(135deg, rgba(99, 52, 229, 0.03) 0%, rgba(80, 40, 194, 0.01) 100%);
   pointer-events: none;
 }
 
@@ -105,10 +105,10 @@
   justify-content: center;
   width: 44px;
   height: 44px;
-  background: linear-gradient(135deg, #7C3AED 0%, #6A3AE3 100%);
+  background: #8B5CF6;
   border-radius: 0.75rem;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(124, 77, 255, 0.2);
+  box-shadow: 0 2px 8px rgba(99, 52, 229, 0.2);
 }
 
 .bonusIcon {
@@ -133,7 +133,7 @@
 .bonusAmount {
   font-size: 20px;
   font-weight: 700;
-  color: #7C3AED;
+  color: #6334E5;
   line-height: 1.2;
   margin-bottom: 2px;
 }
@@ -169,7 +169,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: linear-gradient(135deg, #7C3AED 0%, #6A3AE3 100%);
+  background: #6334E5;
   color: white;
   border: none;
   border-radius: 0.75rem;
@@ -177,7 +177,7 @@
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 16px rgba(124, 77, 255, 0.4), 0 2px 8px rgba(0, 0, 0, 0.1);
+  /* box-shadow removed */
   position: relative;
   overflow: hidden;
   letter-spacing: 0.01em;
@@ -185,14 +185,14 @@
 }
 
 .claimButton:hover:not(:disabled) {
-  background: linear-gradient(135deg, #6A3AE3 0%, #5B2BC7 100%);
-  box-shadow: 0 6px 20px rgba(124, 77, 255, 0.5), 0 3px 12px rgba(0, 0, 0, 0.15);
+  background: #5028c2;
+  /* box-shadow removed */
   transform: translateY(-2px);
 }
 
 .claimButton:active:not(:disabled) {
   transform: translateY(0px);
-  box-shadow: 0 3px 12px rgba(124, 77, 255, 0.4), 0 1px 4px rgba(0, 0, 0, 0.1);
+  /* box-shadow removed */
 }
 
 .claimButton:disabled {

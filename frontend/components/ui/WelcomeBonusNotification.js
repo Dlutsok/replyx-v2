@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { FiGift } from 'react-icons/fi';
 import { useNotifications } from '../../hooks/useNotifications';
 import styles from '../../styles/components/WelcomeBonusNotification.module.css';
 
@@ -82,10 +83,18 @@ export default function WelcomeBonusNotification() {
         {/* Верхняя часть */}
         <div className={styles.header}>
           <div className={styles.iconContainer}>
-            <svg className={styles.icon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-              <path d="M2 17l10 5 10-5"/>
-              <path d="M2 12l10 5 10-5"/>
+            <svg className={styles.icon} viewBox="0 0 200 200" fill="none">
+              <g clipPath="url(#clip0_1_3)">
+                <path fillRule="evenodd" clipRule="evenodd" d="M15.0271 32.4393C28.9459 31.8336 42.9639 31.6315 57.0814 31.8324C68.0006 42.729 78.5626 54.0577 88.7662 65.8179C82.0139 73.3354 75.1009 80.618 68.0271 87.6657C50.2554 69.1449 32.5885 50.7362 15.0271 32.4393Z" fill="#6334E6"/>
+                <path fillRule="evenodd" clipRule="evenodd" d="M78.9729 32.4393C92.8917 31.8336 106.91 31.6315 121.027 31.8324C142.322 53.9624 163.542 76.2151 184.685 98.5897C185.069 98.9944 185.069 99.3986 184.685 99.8034C177.772 107.086 170.859 114.369 163.946 121.651C135.697 91.792 107.373 62.0546 78.9729 32.4393Z" fill="#6334E6"/>
+                <path fillRule="evenodd" clipRule="evenodd" d="M57.0814 166.561C42.9639 166.761 28.9459 166.559 15.0271 165.954C43.2433 136.431 71.4715 106.897 99.7119 77.3486C107.066 85.541 113.992 91.1777 120.739 98.5896C121.123 98.9944 121.123 99.3986 120.739 99.8033C99.5961 122.178 78.3765 144.431 57.0814 166.561Z" fill="#6334E6"/>
+                <path fillRule="evenodd" clipRule="evenodd" d="M121.027 166.561C106.91 166.762 92.8917 166.559 78.9729 165.954C96.6277 147.558 114.294 129.149 131.973 110.727C139.19 117.824 146.103 125.208 152.712 132.879C142.442 144.406 131.88 155.633 121.027 166.561Z" fill="#6334E6"/>
+              </g>
+              <defs>
+                <clipPath id="clip0_1_3">
+                  <rect width="200" height="200" fill="white"/>
+                </clipPath>
+              </defs>
             </svg>
           </div>
           <h2 className={styles.title}>Добро пожаловать в ReplyX!</h2>
@@ -96,16 +105,12 @@ export default function WelcomeBonusNotification() {
         <div className={styles.bonusCard}>
           <div className={styles.bonusMain}>
             <div className={styles.bonusIconWrapper}>
-              <svg className={styles.bonusIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                <path d="M2 17l10 5 10-5"/>
-                <path d="M2 12l10 5 10-5"/>
-              </svg>
+              <FiGift className={styles.bonusIcon} />
             </div>
             <div className={styles.bonusContent}>
               <h3 className={styles.bonusTitle}>Приветственный бонус</h3>
               <div className={styles.bonusAmount}>{bonusInfo.bonus_amount} ₽</div>
-              <p className={styles.bonusSubtext}>~30–35 AI сообщений</p>
+              <p className={styles.bonusSubtext}>~50 AI сообщений</p>
             </div>
           </div>
         </div>
@@ -130,13 +135,6 @@ export default function WelcomeBonusNotification() {
             ) : (
               'Активировать бонус'
             )}
-          </button>
-          <button
-            className={styles.skipButton}
-            onClick={() => setShow(false)}
-            disabled={claiming}
-          >
-            Пропустить
           </button>
         </div>
       </div>

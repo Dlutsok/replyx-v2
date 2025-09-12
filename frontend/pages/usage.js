@@ -133,7 +133,7 @@ function UsageMetrics({ stats, total, dashboardMetrics }) {
     },
     {
       title: 'РАСХОДЫ ЗА МЕСЯЦ',
-      value: `${(stats.thisMonth || 0).toLocaleString('ru-RU')} ₽`,
+      value: `${(messagesProcessed * 5).toLocaleString('ru-RU')} ₽`,
       icon: FiCalendar,
       change: '0%'
     },

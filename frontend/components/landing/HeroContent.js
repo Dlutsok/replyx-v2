@@ -200,7 +200,7 @@ const HeroContent = () => {
 
         {/* Зеленая надпись под кнопкой */}
         <p className="text-center md:text-left text-green-500 text-sm font-normal mt-4">
-          Первые 100 сообщений бесплатно
+          Первые 50 сообщений бесплатно
         </p>
       </motion.div>
 
