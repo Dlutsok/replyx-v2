@@ -1,5 +1,5 @@
 // API для получения статистики использования AI токенов (только для админов)
-import { API_URL } from '../../../../config/api';
+import { API_URL } from '../../../../../config/api';
 
 export default async function handler(req, res) {
     if (req.method !== 'GET') {
