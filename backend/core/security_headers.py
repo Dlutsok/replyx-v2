@@ -22,7 +22,7 @@ class SecurityHeadersMiddleware:
             # Content Security Policy (обновлен для поддержки ЮKassa и Яндекс.Метрики)
             "Content-Security-Policy": (
                 "default-src 'self'; "
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://fonts.googleapis.com https://cdnjs.cloudflare.com https://yookassa.ru https://*.yoomoney.ru https://mc.yandex.ru https://mc.yandex.com; "
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://fonts.googleapis.com https://cdnjs.cloudflare.com https://yookassa.ru https://*.yoomoney.ru https://mc.yandex.ru https://mc.yandex.com https://yastatic.net; "
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://yookassa.ru https://*.yoomoney.ru; "
                 "font-src 'self' https://fonts.gstatic.com data:; "
                 "img-src 'self' data: blob: https: https://yookassa.ru https://*.yoomoney.ru https://mc.yandex.ru https://mc.yandex.com; "
