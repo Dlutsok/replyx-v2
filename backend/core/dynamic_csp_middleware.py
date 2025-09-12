@@ -157,14 +157,14 @@ class DynamicCSPMiddleware(BaseHTTPMiddleware):
         
         frame_ancestors = " ".join(unique_domains)
         
-        # Полный CSP заголовок для iframe
+        # Полный CSP заголовок для iframe (с поддержкой Яндекс.Метрики)
         csp = (
             f"frame-ancestors {frame_ancestors}; "
             "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; "
-            "style-src 'self' 'unsafe-inline' https:; "
-            "img-src 'self' data: blob: https:; "
-            "connect-src 'self' https: wss: ws:; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://yookassa.ru https://*.yoomoney.ru https://mc.yandex.ru; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://yookassa.ru https://*.yoomoney.ru; "
+            "img-src 'self' data: blob: https: https://mc.yandex.ru; "
+            "connect-src 'self' https: wss: ws: https://mc.yandex.ru; "
             "font-src 'self' https: data:; "
         )
         
