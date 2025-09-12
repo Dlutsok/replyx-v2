@@ -19,14 +19,14 @@ class SecurityHeadersMiddleware:
             # Referrer Policy
             "Referrer-Policy": "strict-origin-when-cross-origin",
             
-            # Content Security Policy (обновлен для поддержки ЮKassa)
+            # Content Security Policy (обновлен для поддержки ЮKassa и Яндекс.Метрики)
             "Content-Security-Policy": (
                 "default-src 'self'; "
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://yookassa.ru https://*.yoomoney.ru; "
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://fonts.googleapis.com https://cdnjs.cloudflare.com https://yookassa.ru https://*.yoomoney.ru https://mc.yandex.ru; "
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://yookassa.ru https://*.yoomoney.ru; "
                 "font-src 'self' https://fonts.gstatic.com data:; "
-                "img-src 'self' data: blob: https: https://yookassa.ru https://*.yoomoney.ru; "
-                "connect-src 'self' https://replyx.ru https://www.replyx.ru wss://replyx.ru wss://www.replyx.ru http://localhost:* https: wss: ws: https://yookassa.ru https://*.yoomoney.ru; "
+                "img-src 'self' data: blob: https: https://yookassa.ru https://*.yoomoney.ru https://mc.yandex.ru; "
+                "connect-src 'self' https://replyx.ru https://www.replyx.ru wss://replyx.ru wss://www.replyx.ru http://localhost:* https: wss: ws: https://yookassa.ru https://*.yoomoney.ru https://mc.yandex.ru; "
                 "frame-src 'self' https://yookassa.ru https://*.yoomoney.ru; "
                 "frame-ancestors 'self'; "
                 "base-uri 'self'; "
