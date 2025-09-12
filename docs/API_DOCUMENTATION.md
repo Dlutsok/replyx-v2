@@ -1,8 +1,9 @@
-# ChatAI MVP 11 - API Documentation
+# ReplyX MVP 13 - API Documentation
 
-**Версия API:** v1  
+**Версия API:** v1.3  
 **Базовый URL:** `https://api.replyx.ru` (production) | `http://localhost:8000` (development)  
-**Дата:** 01 сентября 2025  
+**Дата:** 11 сентября 2025  
+**Последнее обновление:** Синхронизировано с кодовой базой MVP 13  
 
 ---
 
@@ -12,11 +13,17 @@
 2. [Пользователи](#пользователи)
 3. [Ассистенты](#ассистенты)
 4. [Диалоги](#диалоги)
-5. [Документы и знания](#документы-и-знания)
-6. [Биллинг](#биллинг)
-7. [Административные API](#административные-api)
-8. [WebSocket API](#websocket-api)
-9. [Коды ошибок](#коды-ошибок)
+5. [Handoff система](#handoff-система)
+6. [Документы и знания](#документы-и-знания)
+7. [Платежи (Tinkoff)](#платежи-tinkoff)
+8. [Биллинг](#биллинг)
+9. [Email система](#email-система)
+10. [Server-Sent Events (SSE)](#server-sent-events-sse)
+11. [Административные API](#административные-api)
+12. [WebSocket API](#websocket-api)
+13. [Система поддержки](#система-поддержки)
+14. [Мониторинг и аналитика](#мониторинг-и-аналитика)
+15. [Коды ошибок](#коды-ошибок)
 
 ---
 
@@ -308,6 +315,125 @@ X-Site-Token: <site_token>
 
 ---
 
+## 🔄 Handoff система
+
+Система передачи диалогов операторам с поддержкой идемпотентности и защитой от конкурентного доступа.
+
+### POST /api/dialogs/{dialog_id}/handoff/request
+Запрос передачи оператору с защитой от дублирования
+
+**Request:**
+```json
+{
+  "reason": "keyword",
+  "request_id": "uuid-v4-string",
+  "last_user_text": "Хочу поговорить с человеком"
+}
+```
+
+**Response:**
+```json
+{
+  "status": "requested",
+  "dialog_id": 123,
+  "reason": "keyword",
+  "queue_position": 2,
+  "estimated_wait_time": "5-10 минут",
+  "request_id": "uuid-v4-string",
+  "created_at": "2025-09-11T10:00:00Z"
+}
+```
+
+**Rate limits:** Max 3 запроса в минуту на диалог
+
+### POST /api/dialogs/{dialog_id}/handoff/takeover
+Принятие диалога оператором с проверкой конкуренции
+
+**Headers:** `Authorization: Bearer <jwt_token>`
+
+**Request:**
+```json
+{
+  "operator_comment": "Принимаю диалог в работу"
+}
+```
+
+**Response:**
+```json
+{
+  "status": "active",
+  "dialog_id": 123,
+  "operator": {
+    "id": 5,
+    "name": "Анна Смирнова",
+    "email": "anna@company.com"
+  },
+  "taken_at": "2025-09-11T10:05:00Z"
+}
+```
+
+### POST /api/dialogs/{dialog_id}/handoff/release
+Освобождение диалога оператором
+
+**Request:**
+```json
+{
+  "resolution": "completed",
+  "operator_comment": "Вопрос решен",
+  "return_to_ai": true
+}
+```
+
+### POST /api/dialogs/{dialog_id}/handoff/cancel
+Отмена запроса передачи
+
+**Request:**
+```json
+{
+  "cancel_reason": "user_left",
+  "comment": "Пользователь покинул чат"
+}
+```
+
+### GET /api/operator/queue
+Получение очереди handoff запросов для оператора
+
+**Response:**
+```json
+{
+  "queue": [
+    {
+      "dialog_id": 123,
+      "user_info": {
+        "name": "Иван Петров",
+        "platform": "telegram"
+      },
+      "reason": "keyword",
+      "wait_time": "00:05:30",
+      "priority": "normal",
+      "last_message": "Нужна помощь оператора",
+      "created_at": "2025-09-11T10:00:00Z"
+    }
+  ],
+  "total_in_queue": 5,
+  "estimated_wait_time": "10-15 минут"
+}
+```
+
+### POST /api/operator/heartbeat
+Поддержание присутствия оператора в системе
+
+**Request:**
+```json
+{
+  "status": "available",
+  "current_load": 3,
+  "max_capacity": 5
+}
+```
+
+---
+
 ## 📄 Документы и знания
 
 ### POST /api/documents/upload
@@ -373,6 +499,115 @@ X-Site-Token: <site_token>
 
 ---
 
+## 💳 Платежи (Tinkoff)
+
+Интеграция с эквайрингом Т-Банк для обработки платежей.
+
+### POST /api/payments/create
+Создание платежа в системе Т-Банк
+
+**Request:**
+```json
+{
+  "amount": 1000.00,
+  "description": "Пополнение баланса",
+  "return_url": "https://example.com/success",
+  "fail_url": "https://example.com/failed",
+  "customer_email": "user@example.com"
+}
+```
+
+**Response:**
+```json
+{
+  "payment_id": "2024091123",
+  "payment_url": "https://securepay.tinkoff.ru/new/...",
+  "amount": 1000.00,
+  "status": "NEW",
+  "terminal_key": "TestDemo",
+  "created_at": "2025-09-11T10:00:00Z"
+}
+```
+
+### GET /api/payments/{payment_id}/status
+Получение статуса платежа
+
+**Response:**
+```json
+{
+  "payment_id": "2024091123",
+  "status": "CONFIRMED",
+  "amount": 1000.00,
+  "success": true,
+  "error_code": null,
+  "details": {
+    "pan": "430000******0777",
+    "exp_date": "1122",
+    "card_id": "12345"
+  },
+  "confirmed_at": "2025-09-11T10:05:00Z"
+}
+```
+
+### POST /api/payments/webhook
+Обработка уведомлений от Т-Банк (внутренний endpoint)
+
+**Security:** Проверка IP whitelist и подписи
+
+**Request (от T-Bank):**
+```json
+{
+  "TerminalKey": "TestDemo",
+  "OrderId": "2024091123",
+  "Success": true,
+  "Status": "CONFIRMED",
+  "PaymentId": "987654321",
+  "ErrorCode": "0",
+  "Amount": 100000,
+  "Pan": "430000******0777",
+  "Token": "signature_hash"
+}
+```
+
+### POST /api/payments/{payment_id}/refund
+Возврат платежа (только для админов)
+
+**Request:**
+```json
+{
+  "amount": 500.00,
+  "reason": "Возврат по запросу клиента"
+}
+```
+
+### GET /api/payments/history
+История платежей пользователя
+
+**Query Parameters:**
+- `limit` - лимит записей (default: 50)
+- `offset` - смещение для пагинации
+- `status` - фильтр по статусу (NEW, CONFIRMED, REJECTED, etc.)
+
+**Response:**
+```json
+{
+  "payments": [
+    {
+      "payment_id": "2024091123",
+      "amount": 1000.00,
+      "status": "CONFIRMED",
+      "description": "Пополнение баланса",
+      "created_at": "2025-09-11T10:00:00Z",
+      "confirmed_at": "2025-09-11T10:05:00Z"
+    }
+  ],
+  "total": 15,
+  "has_more": false
+}
+```
+
+---
+
 ## 💰 Биллинг
 
 ### GET /api/balance
@@ -434,6 +669,138 @@ X-Site-Token: <site_token>
   "amount": 1000.0,
   "payment_method": "card",
   "return_url": "https://example.com/success"
+}
+```
+
+---
+
+## 📧 Email система
+
+API для отправки и управления email уведомлениями.
+
+### POST /api/email/test_send
+Тестовая отправка email для диагностики SMTP
+
+**Request:**
+```json
+{
+  "to": "test@example.com"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Письмо успешно отправлено",
+  "smtp_server": "smtp.yandex.ru",
+  "sent_at": "2025-09-11T10:00:00Z"
+}
+```
+
+### POST /api/email/confirm_email
+Подтверждение email по коду
+
+**Request:**
+```json
+{
+  "email": "user@example.com",
+  "code": "123456"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Email успешно подтвержден",
+  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+  "user": {
+    "id": 123,
+    "email": "user@example.com",
+    "is_email_confirmed": true
+  }
+}
+```
+
+### POST /api/email/resend_confirmation
+Повторная отправка кода подтверждения
+
+**Request:**
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+**Rate limit:** 1 запрос в минуту на email
+
+### POST /api/email/contact-form
+Отправка сообщения через контактную форму
+
+**Request:**
+```json
+{
+  "name": "Иван Иванов",
+  "email": "ivan@example.com",
+  "subject": "Вопрос по тарифам",
+  "message": "Подскажите про корпоративные тарифы",
+  "phone": "+7-900-123-45-67"
+}
+```
+
+---
+
+## 📡 Server-Sent Events (SSE)
+
+Real-time события через HTTP streams для виджетов и админ панели.
+
+### GET /api/dialogs/{dialog_id}/events
+SSE stream событий диалога
+
+**Query Parameters:**
+- `token` - JWT токен для админ панели
+- `site_token` - Site token для авторизованных виджетов  
+- `assistant_id` - ID ассистента для гостевого режима
+- `guest_id` - ID гостя для статистики
+
+**Headers:**
+- `Last-Event-ID` - ID последнего полученного события для восстановления
+
+**Response Stream:**
+```
+data: {"type": "connection.established", "client_id": "widget_123_abc", "timestamp": "2025-09-11T10:00:00Z"}
+
+data: {"type": "dialog.message.created", "dialog_id": 123, "message": {"id": 456, "text": "Привет!", "sender": "user"}, "timestamp": "2025-09-11T10:01:00Z"}
+
+data: {"type": "handoff.requested", "dialog_id": 123, "reason": "keyword", "queue_position": 2, "timestamp": "2025-09-11T10:02:00Z"}
+
+data: __ping__
+```
+
+**Поддерживаемые события:**
+- `connection.established` - Установлено соединение
+- `dialog.message.created` - Новое сообщение в диалоге
+- `handoff.requested` - Запрошена передача оператору
+- `handoff.started` - Оператор принял диалог
+- `handoff.released` - Диалог возвращен к ИИ
+- `operator.typing` - Оператор печатает
+- `connection.ping` - Heartbeat ping
+
+### GET /api/sse/stats
+Статистика SSE соединений (только админ)
+
+**Response:**
+```json
+{
+  "total_connections": 45,
+  "connections_by_type": {
+    "admin": 12,
+    "widget": 28,
+    "site": 5
+  },
+  "average_duration": "00:15:30",
+  "events_sent_today": 1250
 }
 ```
 
@@ -609,6 +976,184 @@ const ws = new WebSocket('wss://api.replyx.ru/ws/dialogs/{dialog_id}?token={jwt_
 
 ---
 
+## 🎧 Система поддержки
+
+API для работы с системой технической поддержки.
+
+### POST /api/support/ticket
+Создание тикета в службу поддержки
+
+**Request:**
+```json
+{
+  "subject": "Проблема с платежами",
+  "message": "Не могу пополнить баланс через карту",
+  "priority": "medium",
+  "category": "billing",
+  "user_email": "user@example.com",
+  "attachments": ["screenshot.png"]
+}
+```
+
+**Response:**
+```json
+{
+  "ticket_id": "TICKET-2025-001234",
+  "status": "created",
+  "priority": "medium",
+  "estimated_response_time": "2-4 часа",
+  "created_at": "2025-09-11T10:00:00Z"
+}
+```
+
+### GET /api/support/tickets
+Список тикетов пользователя
+
+**Query Parameters:**
+- `status` - фильтр по статусу (open, in_progress, closed)
+- `priority` - фильтр по приоритету (low, medium, high, urgent)
+
+### POST /api/support/tickets/{ticket_id}/reply
+Ответ на тикет
+
+**Request:**
+```json
+{
+  "message": "Дополнительная информация по проблеме",
+  "attachments": ["details.txt"]
+}
+```
+
+---
+
+## 📊 Мониторинг и аналитика
+
+API для мониторинга системы и получения аналитики.
+
+### GET /api/system/health
+Проверка состояния системы
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "timestamp": "2025-09-11T10:00:00Z",
+  "services": {
+    "database": {
+      "status": "healthy",
+      "response_time": "15ms",
+      "active_connections": 25,
+      "pool_size": 50
+    },
+    "redis": {
+      "status": "healthy",
+      "memory_usage": "45.2MB",
+      "connected_clients": 12
+    },
+    "ai_providers": {
+      "openai": {
+        "status": "healthy",
+        "response_time": "850ms",
+        "success_rate": "99.5%"
+      },
+      "yandexgpt": {
+        "status": "degraded", 
+        "response_time": "2100ms",
+        "success_rate": "95.2%"
+      }
+    },
+    "websocket_gateway": {
+      "status": "healthy",
+      "active_connections": 156,
+      "total_connections": 1024,
+      "uptime": "5d 12h 30m"
+    }
+  }
+}
+```
+
+### GET /api/admin/analytics/overview
+Общая аналитика системы (только админ)
+
+**Query Parameters:**
+- `period` - период (day, week, month)
+- `from_date` - начальная дата
+- `to_date` - конечная дата
+
+**Response:**
+```json
+{
+  "period": "week",
+  "metrics": {
+    "total_users": 1245,
+    "new_users": 89,
+    "active_dialogs": 456,
+    "total_messages": 12567,
+    "revenue": {
+      "total": 89450.50,
+      "by_service": {
+        "widget_messages": 45220.30,
+        "telegram_messages": 32150.20,
+        "balance_top_ups": 12080.00
+      }
+    },
+    "ai_usage": {
+      "total_tokens": 2450000,
+      "cost": 1225.50,
+      "by_model": {
+        "gpt-4o-mini": 1800000,
+        "gpt-4o": 450000,
+        "yandexgpt": 200000
+      }
+    }
+  }
+}
+```
+
+### GET /api/admin/proxy/monitoring
+Мониторинг AI прокси системы (только админ)
+
+**Response:**
+```json
+{
+  "proxy_pools": [
+    {
+      "pool_id": "openai-primary",
+      "status": "healthy",
+      "active_tokens": 8,
+      "total_requests": 12450,
+      "success_rate": 99.2,
+      "avg_response_time": 850,
+      "current_load": "medium"
+    }
+  ],
+  "failover_stats": {
+    "total_failovers": 23,
+    "last_failover": "2025-09-11T09:45:00Z",
+    "most_common_error": "rate_limit_exceeded"
+  }
+}
+```
+
+### POST /api/start-analytics/event
+Отправка аналитического события
+
+**Request:**
+```json
+{
+  "event_type": "onboarding_step_completed",
+  "user_id": 123,
+  "session_id": "session_abc123",
+  "properties": {
+    "step": 2,
+    "duration": 45,
+    "source": "main_flow"
+  }
+}
+```
+
+---
+
 ## ⚠️ Коды ошибок
 
 ### HTTP статус коды
@@ -661,6 +1206,38 @@ const ws = new WebSocket('wss://api.replyx.ru/ws/dialogs/{dialog_id}?token={jwt_
 - `INVALID_TELEGRAM_TOKEN` - Некорректный токен Telegram
 - `BOT_ALREADY_EXISTS` - Бот с таким токеном уже существует
 - `BOT_STARTUP_FAILED` - Ошибка запуска бота
+
+#### Handoff система
+- `HANDOFF_ALREADY_REQUESTED` - Запрос на передачу уже существует
+- `HANDOFF_RATE_LIMIT` - Превышен лимит запросов на передачу
+- `OPERATOR_CAPACITY_EXCEEDED` - Превышена максимальная нагрузка оператора
+- `HANDOFF_CONFLICT` - Конфликт при принятии диалога (уже принят другим оператором)
+- `HANDOFF_NOT_FOUND` - Запрос на handoff не найден
+
+#### Платежи (Tinkoff)
+- `PAYMENT_CREATION_FAILED` - Ошибка создания платежа в T-Bank
+- `PAYMENT_NOT_FOUND` - Платеж не найден
+- `INVALID_PAYMENT_AMOUNT` - Некорректная сумма платежа
+- `PAYMENT_ALREADY_PROCESSED` - Платеж уже обработан
+- `WEBHOOK_SIGNATURE_INVALID` - Некорректная подпись webhook
+- `WEBHOOK_IP_NOT_ALLOWED` - IP адрес не в whitelist T-Bank
+
+#### Email система
+- `EMAIL_NOT_CONFIRMED` - Email не подтвержден
+- `CONFIRMATION_CODE_EXPIRED` - Код подтверждения истек
+- `EMAIL_SEND_FAILED` - Ошибка отправки email
+- `SMTP_CONNECTION_FAILED` - Ошибка подключения к SMTP серверу
+
+#### SSE соединения
+- `SSE_AUTH_FAILED` - Ошибка авторизации SSE соединения
+- `SSE_CONNECTION_LIMIT` - Превышен лимит SSE соединений
+- `INVALID_LAST_EVENT_ID` - Некорректный Last-Event-ID
+
+#### AI система
+- `AI_PROVIDER_UNAVAILABLE` - AI провайдер недоступен
+- `AI_TOKEN_LIMIT_EXCEEDED` - Превышен лимит AI токенов
+- `AI_REQUEST_TIMEOUT` - Таймаут запроса к AI провайдеру
+- `AI_PROXY_FAILOVER` - Сбой в системе прокси AI запросов
 
 ---
 
@@ -757,6 +1334,33 @@ ws.send(JSON.stringify({
 
 ---
 
-*Документация обновлена: 01 сентября 2025*  
-*Версия API: 1.0*  
+---
+
+## 📝 Changelog API
+
+### v1.3 (Текущая) - 11 сентября 2025
+- ✅ Добавлена полная Handoff система с идемпотентностью
+- ✅ Интеграция платежей Tinkoff с webhook обработкой
+- ✅ Server-Sent Events (SSE) для real-time коммуникации
+- ✅ Расширенная Email система с подтверждением
+- ✅ Система поддержки и тикетинг
+- ✅ Мониторинг AI прокси системы
+- ✅ Аналитика и метрики производительности
+
+### v1.2 (Предыдущая) - 05 сентября 2025
+- Улучшенная система диалогов
+- Оптимизация WebSocket соединений
+- Обновленная система биллинга
+
+### v1.1 (Планируется)
+- GraphQL API для сложных запросов
+- Webhook endpoints для внешних интеграций
+- Расширенная система уведомлений
+- Bulk операции для управления ассистентами
+
+---
+
+*Документация обновлена: 11 сентября 2025*  
+*Версия API: 1.3*  
+*Статус: Синхронизировано с MVP 13*  
 *Контакт: tech@replyx.ru*

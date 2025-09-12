@@ -532,7 +532,7 @@ def create_user_admin(
             raise HTTPException(status_code=400, detail="Email и пароль обязательны")
         
         # Проверяем, что пользователь с таким email не существует
-        existing_user = db.query(models.User).filter(models.User.email == email).first()
+        existing_user = db.query(models.User).filter(models.User.email == email.lower()).first()
         if existing_user:
             raise HTTPException(status_code=400, detail="Пользователь с таким email уже существует")
         
@@ -549,7 +549,7 @@ def create_user_admin(
         hashed_password = get_password_hash(password)
         
         new_user = models.User(
-            email=email,
+            email=email.lower(),  # Приводим к нижнему регистру для консистентности
             hashed_password=hashed_password,
             first_name=first_name,
             role=role,

@@ -1,8 +1,5 @@
 // API для получения статистики использования AI токенов (только для админов)
-
-const getBackendUrl = () => {
-    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-};
+import { API_URL } from '../../../../config/api';
 
 export default async function handler(req, res) {
     if (req.method !== 'GET') {
@@ -17,8 +14,7 @@ export default async function handler(req, res) {
             return res.status(401).json({ detail: 'Authorization header required' });
         }
 
-        const backendUrl = getBackendUrl();
-        const response = await fetch(`${backendUrl}/api/admin/ai-tokens/${tokenId}/usage`, {
+        const response = await fetch(`${API_URL}/api/admin/ai-tokens/${tokenId}/usage`, {
             method: 'GET',
             headers: {
                 'Authorization': authToken,

@@ -1,9 +1,5 @@
 // API для отправки ссылки восстановления пароля
-
-// Серверный URL для бэкенда (в развитии используем localhost:8000)
-const getBackendUrl = () => {
-    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-};
+import { API_URL } from '../../../config/api';
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -11,8 +7,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        const backendUrl = getBackendUrl();
-        const response = await fetch(`${backendUrl}/api/forgot-password`, {
+        const response = await fetch(`${API_URL}/api/forgot-password`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
