@@ -59,6 +59,15 @@ const LoadingSpinner = ({
   );
 
   if (overlay) {
+    // Скрыть overlay для Webvisor (Яндекс.Метрика)
+    const isWebvisor = typeof window !== 'undefined' && 
+      (window.navigator?.userAgent?.includes('YandexMetrica') || 
+       window.parent !== window); // iframe detection
+    
+    if (isWebvisor) {
+      return null;
+    }
+    
     return (
       <div className="fixed inset-0 bg-white bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50">
         <div className="bg-white p-6 rounded-lg shadow-lg border">

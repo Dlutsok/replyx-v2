@@ -33,7 +33,15 @@ export default function Document() {
                   k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
               })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=104132878', 'ym');
 
-              ym(104132878, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
+              ym(104132878, 'init', {
+                webvisor:true, 
+                clickmap:true, 
+                trackLinks:true,
+                accurateTrackBounce:true,
+                ecommerce:"dataLayer",
+                childIframe:true,
+                trackHash:true
+              });
             `,
           }}
         />
