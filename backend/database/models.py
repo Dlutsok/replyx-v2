@@ -443,20 +443,28 @@ class ServicePrice(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 class Payment(Base):
-    """Платежи через Т-Банк"""
+    """Платежи через ЮKassa (совместимость с T-Bank)"""
     __tablename__ = 'payments'
     
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    order_id = Column(String, unique=True, nullable=False)  # Уникальный номер заказа для Т-Банк
+    order_id = Column(String, unique=True, nullable=False)  # Уникальный номер заказа
     amount = Column(NUMERIC(12, 2), nullable=False)  # Сумма в рублях
     currency = Column(String(3), nullable=False, default='RUB')  # Валюта платежа
-    # Расширенные статусы согласно документации Тинькофф
-    status = Column(String, default='pending')  # Все возможные статусы: pending, success, failed, canceled, expired, partial_refund, refunded, reversed, partial_reversed, unknown
-    tinkoff_status = Column(String, nullable=True)  # Оригинальный статус от Тинькофф: NEW, FORM_SHOWED, AUTHORIZING, AUTHORIZED, CONFIRMED, etc.
-    payment_method = Column(String, default='tinkoff')  # Метод оплаты
+    
+    # Статусы платежа
+    status = Column(String, default='pending')  # Наши статусы: pending, processing, completed, cancelled, failed
+    
+    # ЮKassa поля (новые)
+    yookassa_payment_id = Column(String, nullable=True)  # ID платежа от ЮKassa
+    yookassa_status = Column(String, nullable=True)  # Оригинальный статус от ЮKassa: pending, waiting_for_capture, succeeded, canceled
+    
+    # T-Bank поля (deprecated, оставлены для совместимости с продакшн БД)
+    tinkoff_status = Column(String, nullable=True)  # DEPRECATED
+    tinkoff_payment_id = Column(String, nullable=True)  # DEPRECATED
+    
+    payment_method = Column(String, default='yookassa')  # Метод оплаты
     description = Column(String, nullable=True)  # Описание платежа
-    tinkoff_payment_id = Column(String, nullable=True)  # ID платежа от Т-Банк (PaymentId)
     
     # URLs для обработки результатов
     success_url = Column(String, nullable=True)  # URL успешной оплаты

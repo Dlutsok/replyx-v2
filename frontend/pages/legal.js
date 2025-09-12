@@ -610,10 +610,39 @@ export default function LegalPage() {
                       color: '#374151',
                       marginBottom: '0.5rem'
                     }}>
+                      Банковские реквизиты
+                    </h4>
+                    <p style={{color: '#64748b', fontSize: '0.9rem', marginBottom: '0.25rem'}}>
+                      <strong>Расчётный счёт:</strong> 40802810200008681473
+                    </p>
+                    <p style={{color: '#64748b', fontSize: '0.9rem', marginBottom: '0.25rem'}}>
+                      <strong>Банк:</strong> АО «ТБанк»
+                    </p>
+                    <p style={{color: '#64748b', fontSize: '0.9rem', marginBottom: '0.25rem'}}>
+                      <strong>ИНН банка:</strong> 7710140679
+                    </p>
+                    <p style={{color: '#64748b', fontSize: '0.9rem', marginBottom: '0.25rem'}}>
+                      <strong>БИК:</strong> 044525974
+                    </p>
+                    <p style={{color: '#64748b', fontSize: '0.9rem'}}>
+                      <strong>Корр. счёт:</strong> 30101810145250000974
+                    </p>
+                    <p style={{color: '#64748b', fontSize: '0.9rem'}}>
+                      <strong>Адрес банка:</strong> 127287, г. Москва, ул. Хуторская 2-я, д. 38А, стр. 26
+                    </p>
+                  </div>
+
+                  <div>
+                    <h4 style={{
+                      fontSize: '1rem',
+                      fontWeight: '600',
+                      color: '#374151',
+                      marginBottom: '0.5rem'
+                    }}>
                       Связь с нами
                     </h4>
                     <p style={{color: '#64748b', fontSize: '0.9rem', marginBottom: '0.25rem'}}>
-                      <strong>Email:</strong> <a href="mailto:support@replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a>
+                      <strong>Email:</strong> <a href="mailto:info@replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>info@replyx.ru</a>
                     </p>
                     <p style={{color: '#64748b', fontSize: '0.9rem'}}>
                       <strong>Телефон:</strong> <a href="tel:+79933349913" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>+7 (993) 334-99-13</a>

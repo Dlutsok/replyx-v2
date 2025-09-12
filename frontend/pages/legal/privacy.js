@@ -450,10 +450,34 @@ export default function LegalPrivacyPage() {
                     <strong>Оператор:</strong> Индивидуальный предприниматель Луцок Дан
                   </p>
                   <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
+                    <strong>ИНН:</strong> 330303450398
+                  </p>
+                  <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
+                    <strong>ОГРНИП:</strong> 325508100484721
+                  </p>
+                  <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
                     <strong>Адрес:</strong> 141107, Россия, Московская область, г. Щёлково, ул. Неделина, д. 26, кв. 104
                   </p>
                   <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
-                    <strong>E-mail:</strong> <a href="mailto:support@replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a>
+                    <strong>Расчётный счёт:</strong> 40802810200008681473
+                  </p>
+                  <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
+                    <strong>Банк:</strong> АО «ТБанк»
+                  </p>
+                  <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
+                    <strong>ИНН банка:</strong> 7710140679
+                  </p>
+                  <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
+                    <strong>БИК:</strong> 044525974
+                  </p>
+                  <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
+                    <strong>Корр. счёт:</strong> 30101810145250000974
+                  </p>
+                  <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
+                    <strong>Адрес банка:</strong> 127287, г. Москва, ул. Хуторская 2-я, д. 38А, стр. 26
+                  </p>
+                  <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
+                    <strong>E-mail:</strong> <a href="mailto:info@replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>info@replyx.ru</a>
                   </p>
                   <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
                     <strong>Телефон:</strong> <a href="tel:+79933349913" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>+7 (993) 334-99-13</a>

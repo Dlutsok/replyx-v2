@@ -109,12 +109,15 @@ const AdminPaymentsPage = () => {
 
   const formatDate = (dateString) => {
     if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('ru-RU', {
+    // Создаем дату из UTC строки и конвертируем в местное время
+    const date = new Date(dateString + (dateString.includes('Z') ? '' : 'Z'));
+    return date.toLocaleDateString('ru-RU', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      timeZone: 'Europe/Moscow' // Московское время
     });
   };
 
@@ -127,10 +130,18 @@ const AdminPaymentsPage = () => {
 
   const getStatusColor = (status) => {
     const colors = {
-      success: '#10B981',
+      // Наши внутренние статусы
       pending: '#F59E0B',
+      processing: '#3B82F6',
+      completed: '#10B981',
+      cancelled: '#6B7280',
       failed: '#EF4444',
+      // Статусы YooKassa
+      waiting_for_capture: '#F59E0B',
+      succeeded: '#10B981',
       canceled: '#6B7280',
+      // Для обратной совместимости
+      success: '#10B981',
       expired: '#9CA3AF'
     };
     return colors[status] || '#6B7280';
@@ -138,10 +149,18 @@ const AdminPaymentsPage = () => {
 
   const getStatusText = (status) => {
     const texts = {
-      success: 'Успешно',
+      // Наши внутренние статусы
       pending: 'Ожидает',
+      processing: 'Обработка',
+      completed: 'Завершен',
+      cancelled: 'Отменен',
       failed: 'Ошибка',
+      // Статусы YooKassa
+      waiting_for_capture: 'Ожидает подтверждения',
+      succeeded: 'Успешно',
       canceled: 'Отменен',
+      // Для обратной совместимости
+      success: 'Успешно',
       expired: 'Истек'
     };
     return texts[status] || status;
@@ -256,10 +275,13 @@ const AdminPaymentsPage = () => {
                 className={styles.filterSelect}
               >
                 <option value="all">Все</option>
-                <option value="success">Успешные</option>
+                <option value="completed">Завершенные</option>
+                <option value="succeeded">Успешные</option>
                 <option value="pending">Ожидают</option>
+                <option value="processing">Обработка</option>
                 <option value="failed">Неуспешные</option>
-                <option value="canceled">Отмененные</option>
+                <option value="cancelled">Отмененные</option>
+                <option value="canceled">Отмененные (YooKassa)</option>
               </select>
             </div>
             
@@ -354,7 +376,7 @@ const AdminPaymentsPage = () => {
                     <div className={styles.methodCell}>
                       <FiCreditCard className={styles.methodIcon} />
                       <div className={styles.methodInfo}>
-                        <span className={styles.methodName}>Тинькофф Банк</span>
+                        <span className={styles.methodName}>YooKassa</span>
                         {payment.card_mask && (
                           <span className={styles.cardMask}>{payment.card_mask}</span>
                         )}
@@ -371,11 +393,7 @@ const AdminPaymentsPage = () => {
                     >
                       {getStatusText(payment.status)}
                     </span>
-                    {payment.tinkoff_status && payment.tinkoff_status !== payment.status && (
-                      <div className={styles.tinkoffStatus}>
-                        Тинькофф: {payment.tinkoff_status}
-                      </div>
-                    )}
+                    {/* Removed T-Bank status - switching to YooKassa */}
                   </td>
                   <td>
                     <div className={styles.actionsCell}>
@@ -487,8 +505,16 @@ const AdminPaymentsPage = () => {
                   <div className={styles.detailGroup}>
                     <h3>Техническая информация</h3>
                     <div className={styles.detailRow}>
-                      <span>ID Тинькофф:</span>
-                      <span>{selectedPayment.payment.tinkoff_payment_id || '-'}</span>
+                      <span>ID YooKassa:</span>
+                      <span>{selectedPayment.payment.yookassa_payment_id || '-'}</span>
+                    </div>
+                    <div className={styles.detailRow}>
+                      <span>Статус YooKassa:</span>
+                      <span>{selectedPayment.payment.yookassa_status || '-'}</span>
+                    </div>
+                    <div className={styles.detailRow}>
+                      <span>Метод оплаты:</span>
+                      <span>{selectedPayment.payment.payment_method || '-'}</span>
                     </div>
                     <div className={styles.detailRow}>
                       <span>Создан:</span>

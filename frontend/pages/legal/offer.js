@@ -511,7 +511,7 @@ export default function LegalOfferPage() {
                   <p style={{margin: '0.4rem 0'}}><strong>БИК:</strong> 044525974</p>
                   <p style={{margin: '0.4rem 0'}}><strong>Корр. счёт:</strong> 30101810145250000974</p>
                   <p style={{margin: '0.4rem 0'}}><strong>Адрес банка:</strong> 127287, г. Москва, ул. Хуторская 2-я, д. 38А, стр. 26</p>
-                  <p style={{margin: '0.4rem 0'}}><strong>Поддержка:</strong> <a href="mailto:support@replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a></p>
+                  <p style={{margin: '0.4rem 0'}}><strong>Поддержка:</strong> <a href="mailto:info@replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>info@replyx.ru</a></p>
                   <p style={{margin: '0.4rem 0'}}><strong>Контакты:</strong> <a href="mailto:info@replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>info@replyx.ru</a>, <a href="tel:+79933349913" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>+7 (993) 334-99-13</a></p>
                 </div>
               </section>

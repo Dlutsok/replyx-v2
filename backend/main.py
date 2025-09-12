@@ -170,7 +170,7 @@ from api.handoff import router as handoff_router, operator_router as operator_ha
 from api.qa_knowledge import router as qa_knowledge_router
 from api.database_admin import router as database_admin_router
 from api.start_analytics import router as start_analytics_router
-from api.tinkoff_payments import router as tinkoff_payments_router
+from api.yookassa_payments import router as yookassa_payments_router
 from api.debug_sse import router as debug_sse_router  # Renamed from debug_websocket
 from api.sse import router as sse_router
 from api.proxy_monitoring import router as proxy_monitoring_router
@@ -195,7 +195,7 @@ app.include_router(operator_handoff_router, prefix="/api")
 app.include_router(qa_knowledge_router, prefix="/api")
 app.include_router(database_admin_router, prefix="/api")
 app.include_router(start_analytics_router, prefix="/api/start")
-app.include_router(tinkoff_payments_router)
+app.include_router(yookassa_payments_router)
 app.include_router(debug_sse_router, prefix="/api")
 app.include_router(proxy_monitoring_router, prefix="/api")
 app.include_router(sse_router)

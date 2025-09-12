@@ -2143,10 +2143,11 @@ def get_payments(
                 'amount': float(payment.amount),
                 'currency': payment.currency,
                 'status': payment.status,
-                'tinkoff_status': payment.tinkoff_status,
+                # YooKassa поля
+                'yookassa_status': payment.yookassa_status,
+                'yookassa_payment_id': payment.yookassa_payment_id,
                 'payment_method': payment.payment_method,
                 'description': payment.description,
-                'tinkoff_payment_id': payment.tinkoff_payment_id,
                 
                 # Информация о пользователе
                 'user_id': payment.user_id,
@@ -2341,10 +2342,11 @@ def get_payment_details(
                 'amount': float(payment.amount),
                 'currency': payment.currency,
                 'status': payment.status,
-                'tinkoff_status': payment.tinkoff_status,
+                # YooKassa поля
+                'yookassa_status': payment.yookassa_status,
+                'yookassa_payment_id': payment.yookassa_payment_id,
                 'payment_method': payment.payment_method,
                 'description': payment.description,
-                'tinkoff_payment_id': payment.tinkoff_payment_id,
                 
                 # URLs
                 'success_url': payment.success_url,
