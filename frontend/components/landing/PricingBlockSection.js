@@ -47,6 +47,7 @@ const PricingBlockSection = () => {
 
   return (
     <motion.section
+      id="pricing"
       className={`lg:mt-20 ${DESIGN_TOKENS.colors.sectionBg} pb-0`}
       {...DESIGN_TOKENS.animation.default}
     >

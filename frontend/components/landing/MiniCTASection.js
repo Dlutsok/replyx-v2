@@ -38,9 +38,22 @@ export default function MiniCTASection({
         </div>
 
         <div className="flex w-full sm:w-auto md:items-center">
-          <Button className="w-full sm:w-auto" variant="primary" onClick={() => router.push('/register')}>
-            {primaryText}
-          </Button>
+          <button 
+            onClick={() => router.push('/register')}
+            className="relative overflow-hidden new-button-effect bg-[#6334E5] hover:bg-primary-700 text-white px-6 sm:px-8 xl:px-6 py-3 sm:py-4 xl:py-3 font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#6334E5]/20 h-12 sm:h-14 xl:h-12 w-full sm:w-auto text-base sm:text-lg xl:text-base"
+            style={{transform: 'none'}}
+          >
+            <span className="absolute inset-0 z-0 animate-wave-gradient bg-gradient-to-r from-[#6334E5] via-[#7C3AED] to-[#6334E5]"></span>
+            <span className="relative z-10 flex items-center gap-3">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+              </svg>
+              {primaryText}
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </span>
+          </button>
         </div>
       </motion.div>
     </SectionWrapper>

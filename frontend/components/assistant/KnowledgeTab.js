@@ -468,7 +468,7 @@ export default function KnowledgeTab({
                   />
                   <button
                     onClick={() => document.getElementById('document-upload').click()}
-                    className="w-full sm:w-auto px-4 py-2 bg-[#6334E5] hover:bg-[#5028c2] text-white rounded-lg transition-colors text-sm sm:text-base"
+                    className="w-full sm:w-auto px-3 sm:px-4 py-2 bg-[#6334E5] hover:bg-[#5028c2] text-white rounded-lg transition-colors text-sm sm:text-base"
                     disabled={uploading}
                   >
                     {uploading ? 'Загрузка...' : 'Выбрать файл'}
@@ -481,7 +481,7 @@ export default function KnowledgeTab({
               <div className="px-4 py-3 sm:px-6 sm:py-4 border-t border-gray-200 flex justify-end gap-3">
                 <button
                   onClick={() => setUploadModal(false)}
-                  className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg transition-colors"
+                  className="px-3 sm:px-4 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg transition-colors"
                 >
                   Отмена
                 </button>
@@ -508,7 +508,7 @@ export default function KnowledgeTab({
                       value={websiteUrl}
                       onChange={(e) => setWebsiteUrl(e.target.value)}
                       placeholder="https://example.com/page"
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent"
+                      className="w-full px-2 sm:px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent text-sm sm:text-base"
                     />
                   </div>
                   <div className="text-sm text-gray-600">
@@ -522,7 +522,7 @@ export default function KnowledgeTab({
                     setUrlModal(false);
                     setWebsiteUrl('');
                   }}
-                  className="w-full sm:w-auto px-4 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-200 rounded-lg transition-colors"
+                  className="w-full sm:w-auto px-3 sm:px-4 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-200 rounded-lg transition-colors"
                   disabled={urlLoading}
                 >
                   Отмена
@@ -533,7 +533,7 @@ export default function KnowledgeTab({
                       handleWebsiteUpload(websiteUrl.trim());
                     }
                   }}
-                  className="w-full sm:w-auto px-4 py-2 text-sm bg-[#6334E5] hover:bg-[#5028c2] text-white rounded-lg transition-colors disabled:opacity-50"
+                  className="w-full sm:w-auto px-3 sm:px-4 py-2 text-sm bg-[#6334E5] hover:bg-[#5028c2] text-white rounded-lg transition-colors disabled:opacity-50"
                   disabled={!websiteUrl.trim() || urlLoading}
                 >
                   {urlLoading ? 'Индексирую...' : 'Добавить страницу'}

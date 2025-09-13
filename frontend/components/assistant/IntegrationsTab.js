@@ -160,29 +160,21 @@ export default function IntegrationsTab({
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
         <div>
           <h3 className="text-lg font-semibold text-gray-900">Активные интеграции</h3>
           <p className="text-sm text-gray-600">Управляйте каналами общения с пользователями</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="px-4 py-2 bg-[#6334E5] text-white rounded-2xl hover:bg-[#5028c2] transition-all duration-150 flex items-center gap-2 font-medium"
+            className="w-full sm:w-auto px-3 sm:px-4 py-2 bg-[#6334E5] text-white rounded-2xl hover:bg-[#5028c2] transition-all duration-150 flex items-center justify-center gap-2 font-medium text-sm sm:text-base"
             onClick={() => setShowIntegrationsModal(true)}
           >
             <FiPlus size={16} />
-            Добавить интеграцию
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="px-4 py-2 border border-solid border-gray-200/60 text-gray-600 bg-white rounded-2xl hover:bg-gray-50 hover:border-gray-200/70 transition-all duration-150 flex items-center gap-2"
-            onClick={onRefreshData}
-          >
-            <FiRefreshCw size={16} />
-            Обновить
+            <span className="hidden sm:inline">Добавить интеграцию</span>
+            <span className="sm:hidden">Добавить</span>
           </motion.button>
         </div>
       </div>
@@ -203,18 +195,24 @@ export default function IntegrationsTab({
         <div className="grid gap-4">
           {/* Интеграция сайта (виджет) - по умолчанию первая */}
           {siteEnabled && (
-            <div key={`site-${assistant.id}`} className="bg-white p-6 rounded-2xl border border-solid border-gray-200/60 hover:border-gray-200/70 transition-all duration-150">
+            <div key={`site-${assistant.id}`} className="bg-white p-4 sm:p-6 rounded-2xl border border-solid border-gray-200/60 hover:border-gray-200/70 transition-all duration-150">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center border border-solid border-green-200/60">
                     <FiGlobe size={20} className="text-green-600" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">Веб‑виджет</h4>
+                    <div className="flex items-center gap-3">
+                      <h4 className="font-semibold text-gray-900">Веб‑виджет</h4>
+                      <span className="inline-flex sm:hidden items-center px-2 py-1 rounded-2xl text-xs font-medium bg-green-50 text-green-700 border border-solid border-green-200/60">
+                        <FiCheck size={12} className="mr-1" />
+                        Активен
+                      </span>
+                    </div>
                     <p className="text-sm text-gray-600">site</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="hidden sm:flex items-center gap-3">
                   <span className="inline-flex items-center px-3 py-1 rounded-2xl text-xs font-medium bg-green-50 text-green-700 border border-solid border-green-200/60">
                     <FiCheck size={12} className="mr-1" />
                     Активен
@@ -224,7 +222,7 @@ export default function IntegrationsTab({
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={handleShowWidgetSettings}
-                      className="px-3 py-1 bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-medium rounded-2xl transition-all duration-150 flex items-center gap-1 border border-solid border-gray-200/60"
+                      className="px-2 sm:px-3 py-1 bg-gray-50 hover:bg-gray-100 text-gray-700 text-xs font-medium rounded-2xl transition-all duration-150 flex items-center gap-1 border border-solid border-gray-200/60"
                     >
                       <FiSettings size={12} />
                       Редактировать
@@ -233,7 +231,7 @@ export default function IntegrationsTab({
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={handleShowEmbedCode}
-                      className={`px-3 py-1 text-xs font-medium rounded-2xl transition-all duration-150 flex items-center gap-1 border ${
+                      className={`px-2 sm:px-3 py-1 text-xs font-medium rounded-2xl transition-all duration-150 flex items-center gap-1 border ${
                         !assistant.allowed_domains || assistant.allowed_domains.trim() === ''
                           ? 'bg-gray-50 hover:bg-gray-100 text-gray-600 cursor-help border-gray-200/60'
                           : 'bg-[#6334E5] hover:bg-[#5028c2] text-white border-[#6334E5]'
@@ -250,9 +248,40 @@ export default function IntegrationsTab({
                   </div>
                 </div>
               </div>
-              <div className="mt-4">
+              
+              {/* Mobile buttons - only visible on mobile */}
+              <div className="sm:hidden flex flex-col gap-2 mt-3">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleShowWidgetSettings}
+                  className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 text-gray-700 text-sm font-medium rounded-2xl transition-all duration-150 flex items-center justify-center gap-2 border border-solid border-gray-200/60"
+                >
+                  <FiSettings size={16} />
+                  Редактировать
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleShowEmbedCode}
+                  className={`w-full px-4 py-3 text-sm font-medium rounded-2xl transition-all duration-150 flex items-center justify-center gap-2 border ${
+                    !assistant.allowed_domains || assistant.allowed_domains.trim() === ''
+                      ? 'bg-gray-50 hover:bg-gray-100 text-gray-600 cursor-help border-gray-200/60'
+                      : 'bg-[#6334E5] hover:bg-[#5028c2] text-white border-[#6334E5]'
+                  }`}
+                  title={!assistant.allowed_domains || assistant.allowed_domains.trim() === ''
+                    ? 'Сначала настройте разрешенные домены'
+                    : 'Получить код для вставки на сайт'}
+                >
+                  <FiCopy size={16} />
+                  {!assistant.allowed_domains || assistant.allowed_domains.trim() === ''
+                    ? 'Настройте домены'
+                    : 'Показать код'}
+                </motion.button>
+              </div>
+              <div className="mt-3 sm:mt-4">
                 {!assistant.allowed_domains || assistant.allowed_domains.trim() === '' ? (
-                  <div className="flex items-center gap-2 p-3 bg-amber-50 border border-solid border-amber-200/60 rounded-2xl">
+                  <div className="flex items-start gap-2 p-3 bg-amber-50 border border-solid border-amber-200/60 rounded-2xl">
                     <div className="w-5 h-5 bg-amber-100 rounded-2xl flex items-center justify-center">
                       <span className="text-amber-600 text-xs font-bold">!</span>
                     </div>
@@ -266,7 +295,7 @@ export default function IntegrationsTab({
                     </div>
                   </div>
                 ) : (
-                  <div className="flex gap-6 text-sm text-gray-600">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 text-sm text-gray-600">
                     <span>Статус: настроен</span>
                     <span>Тип: JavaScript виджет</span>
                     <span>Домены: {assistant.allowed_domains}</span>
@@ -483,7 +512,7 @@ export default function IntegrationsTab({
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-[9999] p-4"
+            className="fixed inset-0 bg-black/50 backdrop-blur-md flex sm:items-center justify-center z-[9999] p-4 overflow-y-auto"
             onClick={(e) => {
               if (e.target === e.currentTarget) {
                 setShowIntegrationsModal(false);
@@ -492,34 +521,35 @@ export default function IntegrationsTab({
           >
             {/* Modal content */}
             <div
-              className="bg-white rounded-3xl max-w-4xl w-full shadow-2xl transform transition-all duration-300 ease-out scale-100 relative z-[10000] animate-in fade-in slide-in-from-bottom-4 border border-solid border-gray-100/60 overflow-hidden"
+              className="bg-white rounded-3xl max-w-4xl w-full shadow-2xl transform transition-all duration-300 ease-out scale-100 relative z-[10000] animate-in fade-in slide-in-from-bottom-4 border border-solid border-gray-100/60 overflow-hidden sm:max-w-4xl sm:rounded-3xl max-w-full rounded-2xl my-4 sm:my-0"
             >
               {/* Header */}
-              <div className="px-8 py-6 border-b border-gray-100/60">
+              <div className="px-4 sm:px-8 py-4 sm:py-6 border-b border-gray-100/60">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-1">
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
                       Выберите тип интеграции
                     </h3>
-                    <p className="text-gray-600 text-sm">
+                    <p className="text-gray-600 text-xs sm:text-sm">
                       Подключите ассистента к популярным платформам для общения с пользователями
                     </p>
                   </div>
                   <button
                     onClick={() => setShowIntegrationsModal(false)}
-                    className="w-10 h-10 rounded-xl border border-gray-200/60 bg-gray-50/50 hover:bg-gray-100/50 transition-all duration-200 flex items-center justify-center text-gray-500 hover:text-gray-700"
+                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl border border-gray-200/60 bg-gray-50/50 hover:bg-gray-100/50 transition-all duration-200 flex items-center justify-center text-gray-500 hover:text-gray-700"
                   >
-                    <FiX size={18} />
+                    <FiX size={16} className="sm:hidden" />
+                    <FiX size={18} className="hidden sm:block" />
                   </button>
                 </div>
               </div>
 
               {/* Content */}
-              <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="p-4 sm:p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
                   {/* Telegram интеграция */}
                   <div
-                    className={`bg-white border-2 border-gray-200/60 rounded-2xl p-4 transition-all duration-300 ${
+                    className={`bg-white border-2 border-gray-200/60 rounded-2xl p-3 sm:p-4 transition-all duration-300 ${
                       hasTelegramBot 
                         ? 'opacity-60 cursor-not-allowed hover:opacity-70' 
                         : 'hover:border-blue-200 hover:bg-blue-50/30 hover:shadow-lg cursor-pointer'
@@ -531,8 +561,8 @@ export default function IntegrationsTab({
                       }
                     }}
                   >
-                    <div className="flex flex-col items-center text-center gap-3">
-                      <div className="w-14 h-14 rounded-full flex items-center justify-center border border-solid shadow-md transition-colors duration-300 overflow-hidden">
+                    <div className="flex flex-col items-center text-center gap-2 sm:gap-3">
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center border border-solid shadow-md transition-colors duration-300 overflow-hidden">
                         <img
                           src="/telegram-svgrepo-com.svg"
                           alt="Telegram"
@@ -540,16 +570,17 @@ export default function IntegrationsTab({
                         />
                       </div>
                       <div className="flex-1">
-                        <h4 className={`text-base font-semibold mb-1 ${hasTelegramBot ? 'text-gray-400' : 'text-gray-900'}`}>
+                        <h4 className={`text-sm sm:text-base font-semibold mb-1 ${hasTelegramBot ? 'text-gray-400' : 'text-gray-900'}`}>
                           Telegram бот
                         </h4>
-                        <p className={`text-xs mb-3 leading-tight ${hasTelegramBot ? 'text-gray-400' : 'text-gray-600'}`}>
+                        <p className={`text-xs mb-2 sm:mb-3 leading-tight ${hasTelegramBot ? 'text-gray-400' : 'text-gray-600'}`}>
                           Бот в Telegram для общения с пользователями
                         </p>
                         <div className="flex flex-wrap items-center justify-center gap-1">
                           {hasTelegramBot ? (
                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-solid border-blue-200/60">
-                              <FiCheck size={12} className="mr-1" />
+                              <FiCheck size={10} className="mr-1 sm:hidden" />
+                              <FiCheck size={12} className="mr-1 hidden sm:block" />
                               Подключено
                             </span>
                           ) : (
@@ -563,14 +594,15 @@ export default function IntegrationsTab({
                   </div>
 
                   {/* VKontakte (скоро) */}
-                  <div className="bg-white border-2 border-gray-200/60 rounded-2xl p-4 opacity-60 cursor-not-allowed hover:opacity-70 transition-all duration-300">
-                    <div className="flex flex-col items-center text-center gap-3">
-                      <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center border border-solid border-gray-200/60">
-                        <FaVk size={20} className="text-gray-400" />
+                  <div className="bg-white border-2 border-gray-200/60 rounded-2xl p-3 sm:p-4 opacity-60 cursor-not-allowed hover:opacity-70 transition-all duration-300">
+                    <div className="flex flex-col items-center text-center gap-2 sm:gap-3">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-xl flex items-center justify-center border border-solid border-gray-200/60">
+                        <FaVk size={16} className="text-gray-400 sm:hidden" />
+                        <FaVk size={20} className="text-gray-400 hidden sm:block" />
                       </div>
                       <div className="flex-1">
-                        <h4 className="text-base font-semibold text-gray-400 mb-1">VKontakte</h4>
-                        <p className="text-gray-400 text-xs mb-3 leading-tight">
+                        <h4 className="text-sm sm:text-base font-semibold text-gray-400 mb-1">VKontakte</h4>
+                        <p className="text-gray-400 text-xs mb-2 sm:mb-3 leading-tight">
                           Сообщества и личные сообщения VK
                         </p>
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700 border border-solid border-orange-200">
@@ -581,16 +613,19 @@ export default function IntegrationsTab({
                   </div>
 
                   {/* Max (скоро) */}
-                  <div className="bg-white border-2 border-gray-200/60 rounded-2xl p-4 opacity-60 cursor-not-allowed hover:opacity-70 transition-all duration-300">
-                    <div className="flex flex-col items-center text-center gap-3">
-                      <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center border border-solid border-gray-200/60">
-                        <svg width="20" height="20" viewBox="0 0 42 42" fill="none" className="text-gray-400">
+                  <div className="bg-white border-2 border-gray-200/60 rounded-2xl p-3 sm:p-4 opacity-60 cursor-not-allowed hover:opacity-70 transition-all duration-300">
+                    <div className="flex flex-col items-center text-center gap-2 sm:gap-3">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-xl flex items-center justify-center border border-solid border-gray-200/60">
+                        <svg width="16" height="16" viewBox="0 0 42 42" fill="none" className="text-gray-400 sm:hidden">
+                          <path fill="currentColor" fillRule="evenodd" d="M21.47 41.88c-4.11 0-6.02-.6-9.34-3-2.1 2.7-8.75 4.81-9.04 1.2 0-2.71-.6-5-1.28-7.5C1 29.5.08 26.07.08 21.1.08 9.23 9.82.3 21.36.3c11.55 0 20.6 9.37 20.6 20.91a20.6 20.6 0 0 1-20.49 20.67Zm.17-31.32c-5.62-.29-10 3.6-10.97 9.7-.8 5.05.62 11.2 1.83 11.52.58.14 2.04-1.04 2.95-1.95a10.4 10.4 0 0 0 5.08 1.81 10.7 10.7 0 0 0 11.19-9.97 10.7 10.7 0 0 0-10.08-11.1Z" clipRule="evenodd"/>
+                        </svg>
+                        <svg width="20" height="20" viewBox="0 0 42 42" fill="none" className="text-gray-400 hidden sm:block">
                           <path fill="currentColor" fillRule="evenodd" d="M21.47 41.88c-4.11 0-6.02-.6-9.34-3-2.1 2.7-8.75 4.81-9.04 1.2 0-2.71-.6-5-1.28-7.5C1 29.5.08 26.07.08 21.1.08 9.23 9.82.3 21.36.3c11.55 0 20.6 9.37 20.6 20.91a20.6 20.6 0 0 1-20.49 20.67Zm.17-31.32c-5.62-.29-10 3.6-10.97 9.7-.8 5.05.62 11.2 1.83 11.52.58.14 2.04-1.04 2.95-1.95a10.4 10.4 0 0 0 5.08 1.81 10.7 10.7 0 0 0 11.19-9.97 10.7 10.7 0 0 0-10.08-11.1Z" clipRule="evenodd"/>
                         </svg>
                       </div>
                       <div className="flex-1">
-                        <h4 className="text-base font-semibold text-gray-400 mb-1">Max</h4>
-                        <p className="text-gray-400 text-xs mb-3 leading-tight">
+                        <h4 className="text-sm sm:text-base font-semibold text-gray-400 mb-1">Max</h4>
+                        <p className="text-gray-400 text-xs mb-2 sm:mb-3 leading-tight">
                           Расширенные коммуникации
                         </p>
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700 border border-solid border-orange-200">
@@ -601,10 +636,16 @@ export default function IntegrationsTab({
                   </div>
 
                   {/* Avito (скоро) */}
-                  <div className="bg-white border-2 border-gray-200/60 rounded-2xl p-4 opacity-60 cursor-not-allowed hover:opacity-70 transition-all duration-300">
-                    <div className="flex flex-col items-center text-center gap-3">
-                      <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center border border-solid border-gray-200/60">
-                        <svg width="20" height="20" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400">
+                  <div className="bg-white border-2 border-gray-200/60 rounded-2xl p-3 sm:p-4 opacity-60 cursor-not-allowed hover:opacity-70 transition-all duration-300">
+                    <div className="flex flex-col items-center text-center gap-2 sm:gap-3">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-xl flex items-center justify-center border border-solid border-gray-200/60">
+                        <svg width="16" height="16" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400 sm:hidden">
+                          <circle cx="10.595" cy="5.225" r="3.325" fill="#965EEB"></circle>
+                          <circle cx="22.245" cy="7.235" r="7.235" fill="#0AF"></circle>
+                          <circle cx="8.9" cy="18.6" r="8.9" fill="#04E061"></circle>
+                          <circle cx="24.325" cy="21.005" r="5.375" fill="#FF4053"></circle>
+                        </svg>
+                        <svg width="20" height="20" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-400 hidden sm:block">
                           <circle cx="10.595" cy="5.225" r="3.325" fill="#965EEB"></circle>
                           <circle cx="22.245" cy="7.235" r="7.235" fill="#0AF"></circle>
                           <circle cx="8.9" cy="18.6" r="8.9" fill="#04E061"></circle>
@@ -612,8 +653,8 @@ export default function IntegrationsTab({
                         </svg>
                       </div>
                       <div className="flex-1">
-                        <h4 className="text-base font-semibold text-gray-400 mb-1">Avito</h4>
-                        <p className="text-gray-400 text-xs mb-3 leading-tight">
+                        <h4 className="text-sm sm:text-base font-semibold text-gray-400 mb-1">Avito</h4>
+                        <p className="text-gray-400 text-xs mb-2 sm:mb-3 leading-tight">
                           Автоматизация общения с покупателями
                         </p>
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700 border border-solid border-orange-200">

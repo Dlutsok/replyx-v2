@@ -59,17 +59,6 @@ export default function AnalyticsTab({ stats, loading, onRefreshData }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="px-4 py-2 border border-solid border-gray-200/60 text-gray-600 bg-white rounded-2xl hover:bg-gray-50 hover:border-gray-200/70 transition-all duration-150 flex items-center gap-2"
-          onClick={onRefreshData}
-        >
-          <FiActivity size={16} />
-          Обновить данные
-        </motion.button>
-      </div>
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
@@ -78,7 +67,7 @@ export default function AnalyticsTab({ stats, loading, onRefreshData }) {
       ) : (
         <>
           {/* Metrics Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {metrics.map((metric, index) => {
               const Icon = metric.icon;
               return (

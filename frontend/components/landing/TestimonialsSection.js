@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/router';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Autoplay } from 'swiper/modules';
 import { DESIGN_TOKENS } from '../../constants/designSystem';
@@ -53,6 +54,7 @@ const customNavigationStyles = `
 `;
 
 const TestimonialsSection = () => {
+  const router = useRouter();
   // Add custom styles for navigation buttons
   React.useEffect(() => {
     const style = document.createElement('style');
@@ -80,7 +82,7 @@ const TestimonialsSection = () => {
       position: 'Руководитель отдела продаж',
       company: 'E-commerce Plus',
       rating: 5,
-      text: 'Увеличение продаж на 65% за 3 месяца использования. Клиенты довольны мгновенными ответами, а мы обработали в 2 раза больше запросов.',
+      text: 'Клиенты довольны мгновенными ответами на вопросы. Поддержка теперь работает 24/7, обрабатывая в 2 раза больше обращений.',
       avatar: 'MI'
     },
     {
@@ -89,7 +91,7 @@ const TestimonialsSection = () => {
       position: 'Главный врач',
       company: 'MedCenter Pro',
       rating: 5,
-      text: 'AI-ассистент работает круглосуточно, автоматически записывая пациентов на прием. Мы сократили время на административные задачи на 70%.',
+      text: 'AI-ассистент отвечает на основные вопросы о наших услугах круглосуточно. Пациенты получают быструю помощь, нагрузка на администраторов сократилась на 70%.',
       avatar: 'DS'
     },
     {
@@ -98,7 +100,7 @@ const TestimonialsSection = () => {
       position: 'Директор по маркетингу',
       company: 'RetailHub',
       rating: 5,
-      text: 'Простая интеграция и понятная цена. За 15 минут настроили чат-бот, который обрабатывает 80% входящих запросов. Рекомендую!',
+      text: 'Простая интеграция и понятная цена. За 15 минут настроили поддержку, которая отвечает на 80% вопросов клиентов. Наша команда свободна!',
       avatar: 'EK'
     },
     {
@@ -107,7 +109,7 @@ const TestimonialsSection = () => {
       position: 'Владелец бизнеса',
       company: 'ServicePro',
       rating: 5,
-      text: 'Отличная альтернатива дорогим CRM-системам. Платим только за сообщения, нет абонентской платы. ROI уже в первый месяц использования.',
+      text: 'Отличная альтернатива дорогой поддержке. Платим только за сообщения, нет абонентской платы. Автоматические ответы экономят массу времени.',
       avatar: 'IM'
     },
     {
@@ -122,7 +124,7 @@ const TestimonialsSection = () => {
   ];
 
   return (
-    <section className={`${DESIGN_TOKENS.colors.sectionBg} pt-16`}>
+    <section id="testimonials" className={`${DESIGN_TOKENS.colors.sectionBg} pt-16`}>
       {/* Адаптивный отступ: мобильные без отступа (pb-0), десктоп с отступом (pb-6) */}
       <div className="pb-0 md:pb-6"></div>
       <div className={`${DESIGN_TOKENS.spacing.maxWidth} ${DESIGN_TOKENS.spacing.containerPadding}`}>
@@ -279,13 +281,19 @@ const TestimonialsSection = () => {
 
                 {/* Описание */}
                 <p className="text-lg sm:text-xl xl:text-lg text-gray-600 mb-6 sm:mb-8 xl:mb-6 leading-relaxed">
-                  От малого бизнеса до корпораций — автоматизируйте поддержку и фокусируйтесь на росте
+                  От малого бизнеса до крупных корпораций — автоматизируйте клиентскую поддержку с помощью AI-ассистента и фокусируйтесь на развитии своего бизнеса
                 </p>
 
                 {/* CTA кнопка */}
                 <div className="flex justify-center mb-6 sm:mb-8 xl:mb-6">
-                  <button className="px-6 sm:px-8 xl:px-6 py-3 sm:py-4 xl:py-3 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#6334E5]/20 h-12 sm:h-14 xl:h-12 relative overflow-hidden bg-gradient-to-r from-[#6334E5] via-violet-600 to-indigo-600 hover:from-[#5028c2] hover:via-violet-700 hover:to-indigo-700 text-base sm:text-lg xl:text-base">
-                    <span className="absolute inset-0 z-0 animate-wave-gradient bg-gradient-to-r from-[#6334E5] via-[#7C3AED] to-[#6334E5]" />
+                  <button 
+                    onClick={() => router.push('/register')}
+                    className="relative overflow-hidden new-button-effect bg-[#6334E5] hover:bg-primary-700 text-white px-6 sm:px-8 xl:px-6 py-3 sm:py-4 xl:py-3 font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#6334E5]/20 h-12 sm:h-14 xl:h-12 text-base sm:text-lg xl:text-base"
+                    style={{transform: 'none'}}
+                  >
+                    <span className="absolute inset-0 z-0 hoverEffect">
+                      <div></div>
+                    </span>
                     <span className="relative z-10 flex items-center gap-3">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -359,8 +367,14 @@ const TestimonialsSection = () => {
 
                 {/* CTA кнопка */}
                 <div className="flex justify-center mb-4">
-                  <button className="px-6 py-3 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#6334E5]/20 h-12 relative overflow-hidden bg-gradient-to-r from-[#6334E5] via-[#6334E5] to-[#6334E5] hover:from-[#5028c2] hover:via-[#5028c2] hover:to-[#5028c2] text-base">
-                    <span className="absolute inset-0 z-0 animate-wave-gradient bg-gradient-to-r from-[#6334E5] via-[#7C3AED] to-[#6334E5]" />
+                  <button 
+                    onClick={() => router.push('/register')}
+                    className="relative overflow-hidden new-button-effect bg-[#6334E5] hover:bg-primary-700 text-white px-6 py-3 font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#6334E5]/20 h-12 text-base"
+                    style={{transform: 'none'}}
+                  >
+                    <span className="absolute inset-0 z-0 hoverEffect">
+                      <div></div>
+                    </span>
                     <span className="relative z-10 flex items-center gap-2">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />

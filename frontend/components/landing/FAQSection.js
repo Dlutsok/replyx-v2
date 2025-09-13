@@ -132,21 +132,6 @@ const FAQSection = () => {
       answer: "Нет, цель ReplyX — помочь команде, а не заменить её. Он берёт на себя рутинные вопросы (95% запросов), а сложные случаи передаёт специалистам. Это позволяет операторам заниматься действительно важными задачами."
     },
     {
-      icon: FiShoppingBag,
-      question: "Можно ли использовать AI-ассистента для интернет-магазина?",
-      answer: "Да, ReplyX интегрируется с каталогом и CRM, консультирует клиентов и принимает заказы онлайн. AI знает ваш ассортимент, цены, условия доставки и может обрабатывать заказы в автоматическом режиме."
-    },
-    {
-      icon: FiHeart,
-      question: "Подходит ли ReplyX для медицинских клиник?",
-      answer: "Да, AI помогает автоматизировать запись пациентов и ответы на типовые вопросы. Все данные обрабатываются по ФЗ-152. ReplyX может консультировать по услугам, ценам и расписанию, а сложные случаи передавать специалистам."
-    },
-    {
-      icon: FiMessageSquare,
-      question: "Можно ли интегрировать с 1С и Telegram?",
-      answer: "Да, есть готовые интеграции: 1С:Предприятие, Telegram Bot, WhatsApp, CRM-системы (amoCRM, Bitrix24). Виджет устанавливается на сайт за 5 минут без программистов, а Telegram-ассистент подключается через API. Подробнее смотрите блоки 'Запуск за 15 минут' и 'AI в Telegram' выше."
-    },
-    {
       icon: FiSettings,
       question: "Можно ли настроить виджет под бренд компании?",
       answer: "Да, AI-ассистент ReplyX полностью адаптируется под ваш фирменный стиль. Вы можете настроить цвета, добавить логотип, задать приветственное сообщение. Виджет станет частью вашего бренда и органично впишется в дизайн сайта. Подробнее смотрите блок 'Кастомизация виджета' выше."
@@ -167,7 +152,7 @@ const FAQSection = () => {
         <div className="relative z-10">
           <SectionWrapper.Header
             title="Часто задаваемые вопросы"
-            subtitle="Отвечаем на вопросы об автоматизации поддержки клиентов 24/7 и интеграции с CRM, 1С, Telegram"
+            subtitle="Отвечаем на вопросы об автоматизации поддержки клиентов 24/7"
           />
 
         {/* FAQ список */}
@@ -248,7 +233,7 @@ const FAQSection = () => {
                 onClick={() => setShowAllFAQs(!showAllFAQs)}
                 className="inline-flex items-center gap-3 px-6 py-3 text-gray-700 font-medium rounded-lg border border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
               >
-                <span>{showAllFAQs ? 'Скрыть вопросы' : `Показать еще ${faqs.length - 5} вопросов`}</span>
+                <span>{showAllFAQs ? 'Скрыть вопросы' : `Показать еще ${faqs.length - 5} вопроса`}</span>
                 {showAllFAQs ? <FiChevronUp className="w-5 h-5" /> : <FiChevronDown className="w-5 h-5" />}
               </button>
             </motion.div>
@@ -289,13 +274,16 @@ const FAQSection = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsModalOpen(true)}
-                className="group relative px-8 py-4 bg-gradient-to-r from-[#6334E5] to-blue-600 text-white font-semibold rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl overflow-hidden"
+                className="relative overflow-hidden new-button-effect bg-[#6334E5] hover:bg-primary-700 text-white px-6 py-2.5 font-medium transition-all duration-150 focus:outline-none h-11 text-base inline-flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-[#6334E5]/30 disabled:opacity-50 disabled:cursor-not-allowed rounded-[0.9rem] w-full sm:w-auto"
+                tabIndex={0}
+                style={{transform: 'none'}}
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-[#6334E5] to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <span className="relative flex items-center gap-3">
-                  <FiMail className="w-5 h-5" />
+                <span className="absolute inset-0 z-0 hoverEffect">
+                  <div></div>
+                </span>
+                <span className="relative z-10 flex items-center gap-2">
+                  <FiMail className="w-4 h-4" />
                   Написать нам
-                  <FiSend className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
                 </span>
               </motion.button>
 
@@ -454,7 +442,7 @@ const FAQSection = () => {
               Часто задаваемые вопросы
             </h2>
             <p className="text-base text-gray-600 max-w-2xl mt-3 leading-relaxed">
-              Отвечаем на вопросы об автоматизации поддержки клиентов 24/7 и интеграции с CRM, 1С, Telegram
+              Отвечаем на вопросы об автоматизации поддержки клиентов 24/7
             </p>
           </div>
 
@@ -575,13 +563,16 @@ const FAQSection = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setIsModalOpen(true)}
-                  className="group relative px-6 py-3 bg-gradient-to-r from-[#6334E5] to-blue-600 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl overflow-hidden text-base w-full max-w-xs"
+                  className="relative overflow-hidden new-button-effect bg-[#6334E5] hover:bg-primary-700 text-white px-6 py-2.5 font-medium transition-all duration-150 focus:outline-none h-11 text-base inline-flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-[#6334E5]/30 disabled:opacity-50 disabled:cursor-not-allowed rounded-[0.9rem] w-full max-w-xs"
+                  tabIndex={0}
+                  style={{transform: 'none'}}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#6334E5] to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <span className="relative flex items-center justify-center gap-2">
+                  <span className="absolute inset-0 z-0 hoverEffect">
+                    <div></div>
+                  </span>
+                  <span className="relative z-10 flex items-center gap-2">
                     <FiMail className="w-4 h-4" />
                     Написать нам
-                    <FiSend className="w-3 h-3 group-hover:translate-x-1 transition-transform duration-300" />
                   </span>
                 </motion.button>
 

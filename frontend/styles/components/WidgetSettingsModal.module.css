@@ -993,7 +993,7 @@
   box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
 }
 
-/* REAL WIDGET PREVIEW - Exact copy from chat-iframe.js styles */
+/* REAL WIDGET PREVIEW - Only for settings modal preview panel */
 .widgetPreviewContainer {
   height: 100%;
   display: flex;
@@ -1017,12 +1017,38 @@
   margin: 0 auto;
 }
 
+/* Mobile adaptation - proportionally smaller preview widget ONLY in settings modal */
+@media (max-width: 768px) {
+  .widgetPreviewContainer .realChatWidget {
+    width: 280px;
+    height: 520px;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  }
+  
+  /* Hide close button container on mobile in preview */
+  .widgetPreviewContainer .closeButton {
+    display: none !important;
+  }
+  
+  /* Hide the entire close button container */
+  .widgetPreviewContainer div[style*="justify-content: flex-end"][style*="margin"] {
+    display: none !important;
+  }
+}
+
 /* Header exactly like chat-iframe.js */
 .chatHeader {
   display: flex;
   align-items: center;
   padding: 16px 20px;
   background: white;
+}
+
+@media (max-width: 768px) {
+  .widgetPreviewContainer .chatHeader {
+    padding: 10px 14px;
+  }
 }
 
 .avatar {
@@ -1101,6 +1127,12 @@
   scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
 }
 
+@media (max-width: 768px) {
+  .widgetPreviewContainer .messagesContainer {
+    padding: 12px 0;
+  }
+}
+
 .messagesContainer::-webkit-scrollbar {
   width: 4px;
 }
@@ -1146,6 +1178,15 @@
   transition: margin 0.28s ease-in-out;
 }
 
+@media (max-width: 768px) {
+  .widgetPreviewContainer .messageBubble {
+    padding: 8px 12px;
+    font-size: 13px;
+    line-height: 18px;
+    border-radius: 16px;
+  }
+}
+
 .userMessage {
   background: #3b82f6;
   color: white;
@@ -1160,6 +1201,18 @@
   margin-left: 16px;
   margin-right: auto;
   border-bottom-left-radius: 6px;
+}
+
+@media (max-width: 768px) {
+  .widgetPreviewContainer .userMessage {
+    margin-right: 12px;
+    border-bottom-right-radius: 4px;
+  }
+  
+  .widgetPreviewContainer .assistantMessage {
+    margin-left: 12px;
+    border-bottom-left-radius: 4px;
+  }
 }
 
 .messageContent {
@@ -1205,6 +1258,16 @@
   padding: 0 20px;
 }
 
+@media (max-width: 768px) {
+  .widgetPreviewContainer .inputSeparator {
+    margin: 0 16px;
+  }
+  
+  .widgetPreviewContainer .inputRow {
+    padding: 0 16px;
+  }
+}
+
 .chatInputField {
   flex: 1;
   border: none;
@@ -1244,6 +1307,12 @@
 /* Footer with emoji and branding */
 .inputFooter {
   padding: 0 16px 16px 16px;
+}
+
+@media (max-width: 768px) {
+  .widgetPreviewContainer .inputFooter {
+    padding: 0 12px 12px 12px;
+  }
 }
 
 .footerContent {

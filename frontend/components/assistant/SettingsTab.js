@@ -40,7 +40,7 @@ export default function SettingsTab({
         )}
       </div>
 
-      <div className="bg-white p-6 rounded-2xl border border-solid border-gray-200/60 space-y-6">
+      <div className="bg-white p-4 sm:p-6 rounded-2xl border border-solid border-gray-200/60 space-y-6">
         {/* Основные настройки */}
         <div>
           <h4 className="text-md font-semibold text-gray-900 mb-4">Основные настройки</h4>
@@ -55,7 +55,7 @@ export default function SettingsTab({
                 value={assistantSettings.name || ''}
                 onChange={(e) => handleChange('name', e.target.value)}
                 placeholder="Введите название..."
-                className="w-full px-4 py-3 border border-solid border-gray-200/60 rounded-2xl focus:ring-2 focus:ring-[#6334E5] focus:border-[#6334E5] transition-all duration-150 bg-white"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-solid border-gray-200/60 rounded-2xl focus:ring-2 focus:ring-[#6334E5] focus:border-[#6334E5] transition-all duration-150 bg-white text-sm sm:text-base"
               />
             </div>
 
@@ -68,7 +68,7 @@ export default function SettingsTab({
                 onChange={(e) => handleChange('description', e.target.value)}
                 placeholder="Описание ассистента..."
                 rows={3}
-                className="w-full px-4 py-3 border border-solid border-gray-200/60 rounded-2xl focus:ring-2 focus:ring-[#6334E5] focus:border-[#6334E5] transition-all duration-150 bg-white resize-none"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-solid border-gray-200/60 rounded-2xl focus:ring-2 focus:ring-[#6334E5] focus:border-[#6334E5] transition-all duration-150 bg-white resize-none text-sm sm:text-base"
               />
             </div>
 
@@ -79,7 +79,7 @@ export default function SettingsTab({
               <select
                 value={assistantSettings.ai_model || 'gpt-4o-mini'}
                 onChange={(e) => handleChange('ai_model', e.target.value)}
-                className="w-full px-4 py-3 border border-solid border-gray-200/60 rounded-2xl focus:ring-2 focus:ring-[#6334E5] focus:border-[#6334E5] transition-all duration-150 bg-white"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-solid border-gray-200/60 rounded-2xl focus:ring-2 focus:ring-[#6334E5] focus:border-[#6334E5] transition-all duration-150 bg-white text-sm sm:text-base"
               >
                 {aiModels.map(model => (
                   <option key={model.value} value={model.value}>
@@ -87,7 +87,7 @@ export default function SettingsTab({
                   </option>
                 ))}
               </select>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-xs sm:text-sm text-gray-500 mt-1">
                 {aiModels.find(m => m.value === (assistantSettings.ai_model || 'gpt-4o-mini'))?.description}
               </p>
             </div>
@@ -124,10 +124,10 @@ export default function SettingsTab({
               value={assistantSettings.system_prompt || ''}
               onChange={(e) => handleChange('system_prompt', e.target.value)}
               placeholder="Вы полезный AI-ассистент, который помогает пользователям с их вопросами..."
-              rows={8}
-              className="w-full px-4 py-3 border border-solid border-gray-200/60 rounded-2xl focus:ring-2 focus:ring-[#6334E5] focus:border-[#6334E5] transition-all duration-150 bg-white font-mono text-sm resize-none"
+              rows={6}
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-solid border-gray-200/60 rounded-2xl focus:ring-2 focus:ring-[#6334E5] focus:border-[#6334E5] transition-all duration-150 bg-white font-mono text-xs sm:text-sm resize-none"
             />
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-xs sm:text-sm text-gray-500 mt-2">
               Это сообщение определяет, как ассистент будет себя вести и отвечать на вопросы.
               Будьте конкретными в инструкциях.
             </p>
@@ -139,11 +139,11 @@ export default function SettingsTab({
           <h4 className="text-md font-semibold text-gray-900 mb-4">Дополнительные настройки</h4>
 
           <div className="space-y-4">
-            <div className="p-4 rounded-2xl bg-gray-50/50 border border-solid border-gray-200/40 hover:bg-gray-50 hover:border-gray-200/60 transition-all duration-150">
+            <div className="p-3 sm:p-4 rounded-2xl bg-gray-50/50 border border-solid border-gray-200/40 hover:bg-gray-50 hover:border-gray-200/60 transition-all duration-150">
               <label className="flex items-center justify-between">
-                <div>
+                <div className="flex-1 mr-3">
                   <span className="text-sm font-medium text-gray-700">Интеграция с сайтом</span>
-                  <p className="text-sm text-gray-500">Разрешить использование в веб-виджете</p>
+                  <p className="text-xs sm:text-sm text-gray-500">Разрешить использование в веб-виджете</p>
                 </div>
                 <div
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
@@ -158,11 +158,11 @@ export default function SettingsTab({
               </label>
             </div>
 
-            <div className="p-4 rounded-2xl bg-gray-50/50 border border-solid border-gray-200/40 hover:bg-gray-50 hover:border-gray-200/60 transition-all duration-150">
+            <div className="p-3 sm:p-4 rounded-2xl bg-gray-50/50 border border-solid border-gray-200/40 hover:bg-gray-50 hover:border-gray-200/60 transition-all duration-150">
               <label className="flex items-center justify-between">
-                <div>
+                <div className="flex-1 mr-3">
                   <span className="text-sm font-medium text-gray-700">Логирование диалогов</span>
-                  <p className="text-sm text-gray-500">Сохранять историю разговоров для аналитики</p>
+                  <p className="text-xs sm:text-sm text-gray-500">Сохранять историю разговоров для аналитики</p>
                 </div>
                 <div
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
@@ -180,12 +180,12 @@ export default function SettingsTab({
         </div>
 
         {/* Информация */}
-        <div className="bg-gray-50/50 p-4 rounded-2xl border border-solid border-gray-200/60">
+        <div className="bg-gray-50/50 p-3 sm:p-4 rounded-2xl border border-solid border-gray-200/60">
           <h5 className="text-sm font-semibold text-gray-700 mb-2">Информация</h5>
-          <div className="text-sm text-gray-600 space-y-1">
+          <div className="text-xs sm:text-sm text-gray-600 space-y-1">
             <p><strong>Создан:</strong> {assistant?.created_at ? new Date(assistant.created_at).toLocaleString('ru-RU') : 'Неизвестно'}</p>
             <p><strong>Обновлен:</strong> {assistant?.updated_at ? new Date(assistant.updated_at).toLocaleString('ru-RU') : 'Неизвестно'}</p>
-            <p><strong>ID:</strong> {assistant?.id || 'Неизвестно'}</p>
+            <p className="break-all"><strong>ID:</strong> {assistant?.id || 'Неизвестно'}</p>
           </div>
         </div>
 
@@ -194,7 +194,7 @@ export default function SettingsTab({
           <motion.button
             whileHover={{ scale: dirty && !saving ? 1.02 : 1 }}
             whileTap={{ scale: dirty && !saving ? 0.98 : 1 }}
-            className={`w-full sm:w-auto px-6 py-3 rounded-2xl font-medium flex items-center justify-center gap-2 transition-all duration-150 ${
+            className={`w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 rounded-2xl font-medium flex items-center justify-center gap-2 transition-all duration-150 text-sm sm:text-base ${
               saving || !dirty
                 ? 'bg-gray-50 text-gray-500 cursor-not-allowed border border-solid border-gray-200/60'
                 : 'bg-[#6334E5] text-white hover:bg-[#5028c2] border border-solid border-[#6334E5]'

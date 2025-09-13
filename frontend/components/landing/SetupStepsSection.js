@@ -23,14 +23,14 @@ const SetupStepsSection = () => {
     {
       id: 1,
       title: 'Создайте ассистента',
-      description: 'Настройте AI-ассистента с готовым шаблоном',
+      description: 'Настройте AI-ассистента правильно',
       icon: FiUserPlus,
       status: 'pending',
       color: 'gray'
     },
     {
       id: 2,
-      title: 'Документы загружены',
+      title: 'Загрузите документы',
       description: 'Добавьте файлы для обучения',
       icon: FiFileText,
       status: 'pending',
@@ -38,7 +38,7 @@ const SetupStepsSection = () => {
     },
     {
       id: 3,
-      title: 'Виджет установлен',
+      title: 'Установите виджет',
       description: 'Получите код и разместите на сайте',
       icon: FiCode,
       status: 'pending',
@@ -46,7 +46,7 @@ const SetupStepsSection = () => {
     },
     {
       id: 4,
-      title: 'Система протестирована',
+      title: 'Протестируйте систему',
       description: 'Проверьте работу в тестовом диалоге',
       icon: FiCheckCircle,
       status: 'pending',
@@ -110,7 +110,7 @@ const SetupStepsSection = () => {
             }}>полной автоматизации</span>
           </h2>
           <p className={`${DESIGN_TOKENS.typography.sectionSubtitle} max-w-3xl`}>
-            Простая настройка чат-ассистента на сайт за 15 минут. Интеграция с CRM, 1С, Telegram без программистов
+            Простая настройка чат-ассистента на сайт за 15 минут. Интеграция без программистов
           </p>
         </motion.div>
 
@@ -469,9 +469,12 @@ const SetupStepsSection = () => {
           >
             <button
               onClick={() => router.push('/register')}
-              className="px-8 py-2.5 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#6334E5]/30 h-11 relative overflow-hidden bg-gradient-to-r from-[#6334E5] via-violet-600 to-indigo-600 hover:from-[#6334E5] hover:via-violet-700 hover:to-indigo-700"
+              className="relative overflow-hidden new-button-effect bg-[#6334E5] hover:bg-primary-700 text-white px-8 py-2.5 font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#6334E5]/30 h-11"
+              style={{transform: 'none'}}
             >
-              <span className="absolute inset-0 z-0 animate-wave-gradient bg-gradient-to-r from-[#6334E5] via-[#6334E5] to-[#6334E5] opacity-30 hover:opacity-60 transition-opacity duration-300" />
+              <span className="absolute inset-0 z-0 hoverEffect">
+                <div></div>
+              </span>
               <span className="relative z-10">Начать настройку</span>
             </button>
           </motion.div>

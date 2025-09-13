@@ -165,7 +165,7 @@ const HeroContent = () => {
         style={{marginTop: '0.75rem'}}
         {...DESIGN_TOKENS.animation.withDelay(0.2)}
       >
-      Виджет на сайт за 5 минут без программистов
+      Виджет на сайт за 15 минут без программистов
       </motion.p>
 
       {/* Бейджи с ключевыми метриками */}

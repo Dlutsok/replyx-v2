@@ -461,16 +461,17 @@ export default function AssistantPage() {
                 </div>
               </div>
               
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <button
                   onClick={() => {
                     setActiveTab('settings');
                     router.push(`/assistant/${id}?tab=settings`, undefined, { shallow: true });
                   }}
-                  className="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-solid border-gray-200/60 rounded-[16px] hover:bg-gray-50 hover:border-gray-200/70 transition-all duration-150"
+                  className="px-3 py-2 sm:px-4 sm:py-2 text-sm font-medium text-gray-600 bg-white border border-solid border-gray-200/60 rounded-[16px] hover:bg-gray-50 hover:border-gray-200/70 transition-all duration-150 flex items-center gap-1 sm:gap-2"
                 >
-                  <FiEdit3 size={16} className="inline mr-2" />
-                  Редактировать
+                  <FiEdit3 size={14} className="sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Редактировать</span>
+                  <span className="sm:hidden">Править</span>
                 </button>
               </div>
             </div>
@@ -563,21 +564,21 @@ const OverviewTab = ({ assistant, stats, documents, bots, channels }) => {
   return (
     <div className="space-y-6">
       {/* Welcome Section - Dashboard Style */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-        <div className="flex flex-col md:flex-row items-start justify-between gap-6">
+      <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-6">
+        <div className="flex flex-col md:flex-row items-start justify-between gap-4 sm:gap-6">
           {/* Левая часть - приветствие и информация */}
           <div className="flex-1 min-w-0">
             <div className="flex items-start gap-3 mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-[#6334E5]/10 to-[#6334E5]/20 rounded-xl border border-[#6334E5]/30/60 flex items-center justify-center flex-shrink-0">
-                <FiCpu size={20} className="text-[#6334E5]" />
+              <div className="w-10 sm:w-12 h-10 sm:h-12 bg-gradient-to-br from-[#6334E5]/10 to-[#6334E5]/20 rounded-xl border border-[#6334E5]/30/60 flex items-center justify-center flex-shrink-0">
+                <FiCpu size={18} className="text-[#6334E5] sm:w-5 sm:h-5" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-col gap-1 mb-2">
-                  <h2 className="text-xl font-semibold text-gray-900 break-words leading-tight">
+                  <h2 className="text-lg sm:text-xl font-semibold text-gray-900 break-words leading-tight">
                     Обзор ассистента {assistant.name}
                   </h2>
                 </div>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
                   {assistant.description || 'Управляйте вашим AI-ассистентом и отслеживайте его работу'}
                 </p>
               </div>
@@ -587,51 +588,51 @@ const OverviewTab = ({ assistant, stats, documents, bots, channels }) => {
       </div>
 
       {/* Метрики - Dashboard Style */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white border border-gray-200 rounded-xl p-5 transition-all duration-150 hover:border-gray-300 hover:shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl flex items-center justify-center">
-              <FiMessageCircle size={20} className="text-blue-600" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-5 transition-all duration-150 hover:border-gray-300 hover:shadow-sm">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-10 sm:w-12 h-10 sm:h-12 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl flex items-center justify-center">
+              <FiMessageCircle size={18} className="text-blue-600 sm:w-5 sm:h-5" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Диалогов</p>
-              <p className="text-2xl font-bold text-gray-900">{formatNumber(stats?.totalConversations || 0)}</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900">{formatNumber(stats?.totalConversations || 0)}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-xl p-5 transition-all duration-150 hover:border-gray-300 hover:shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-green-50 to-green-100 rounded-xl flex items-center justify-center">
-              <FiUsers size={20} className="text-green-600" />
+        <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-5 transition-all duration-150 hover:border-gray-300 hover:shadow-sm">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-10 sm:w-12 h-10 sm:h-12 bg-gradient-to-br from-green-50 to-green-100 rounded-xl flex items-center justify-center">
+              <FiUsers size={18} className="text-green-600 sm:w-5 sm:h-5" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Пользователей</p>
-              <p className="text-2xl font-bold text-gray-900">{formatNumber(stats?.activeUsers || 0)}</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900">{formatNumber(stats?.activeUsers || 0)}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-xl p-5 transition-all duration-150 hover:border-gray-300 hover:shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-[#6334E5]/10 to-[#6334E5]/20 rounded-xl flex items-center justify-center">
-              <FiUpload size={20} className="text-[#6334E5]" />
+        <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-5 transition-all duration-150 hover:border-gray-300 hover:shadow-sm">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-10 sm:w-12 h-10 sm:h-12 bg-gradient-to-br from-[#6334E5]/10 to-[#6334E5]/20 rounded-xl flex items-center justify-center">
+              <FiUpload size={18} className="text-[#6334E5] sm:w-5 sm:h-5" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Документов</p>
-              <p className="text-2xl font-bold text-gray-900">{formatNumber(documents?.length || 0)}</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900">{formatNumber(documents?.length || 0)}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-xl p-5 transition-all duration-150 hover:border-gray-300 hover:shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl flex items-center justify-center">
-              <FiGlobe size={20} className="text-yellow-600" />
+        <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-5 transition-all duration-150 hover:border-gray-300 hover:shadow-sm">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-10 sm:w-12 h-10 sm:h-12 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl flex items-center justify-center">
+              <FiGlobe size={18} className="text-yellow-600 sm:w-5 sm:h-5" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Интеграций</p>
-              <p className="text-2xl font-bold text-gray-900">{formatNumber(integrationsCount)}</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900">{formatNumber(integrationsCount)}</p>
             </div>
           </div>
         </div>
@@ -665,18 +666,18 @@ const OverviewTab = ({ assistant, stats, documents, bots, channels }) => {
         </div>
 
         {/* Content */}
-        <div className="p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="p-4 sm:p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {/* Основная информация */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
               <div>
-                <h4 className="text-2xl font-bold text-gray-900 mb-3 leading-tight">{assistant.name}</h4>
-                <p className="text-gray-600 leading-relaxed text-sm">
+                <h4 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 sm:mb-3 leading-tight">{assistant.name}</h4>
+                <p className="text-gray-600 leading-relaxed text-xs sm:text-sm">
                   {assistant.description || 'AI-ассистент для автоматизации коммуникаций и обработки запросов'}
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Модель ИИ</label>
                   <div className="flex items-center gap-2">
@@ -695,13 +696,13 @@ const OverviewTab = ({ assistant, stats, documents, bots, channels }) => {
             </div>
 
             {/* Техническая информация */}
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div>
-                <h5 className="text-sm font-semibold text-gray-900 mb-4">Технические детали</h5>
-                <div className="space-y-4">
+                <h5 className="text-sm font-semibold text-gray-900 mb-3 sm:mb-4">Технические детали</h5>
+                <div className="space-y-3 sm:space-y-4">
                   <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                    <span className="text-sm text-gray-600">Создан</span>
-                    <span className="text-sm font-medium text-gray-900">
+                    <span className="text-xs sm:text-sm text-gray-600">Создан</span>
+                    <span className="text-xs sm:text-sm font-medium text-gray-900">
                       {new Date(assistant.created_at).toLocaleDateString('ru-RU', {
                         day: 'numeric',
                         month: 'short',
@@ -711,8 +712,8 @@ const OverviewTab = ({ assistant, stats, documents, bots, channels }) => {
                   </div>
 
                   <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                    <span className="text-sm text-gray-600">Обновлен</span>
-                    <span className="text-sm font-medium text-gray-900">
+                    <span className="text-xs sm:text-sm text-gray-600">Обновлен</span>
+                    <span className="text-xs sm:text-sm font-medium text-gray-900">
                       {new Date(assistant.updated_at).toLocaleDateString('ru-RU', {
                         day: 'numeric',
                         month: 'short',
@@ -722,7 +723,7 @@ const OverviewTab = ({ assistant, stats, documents, bots, channels }) => {
                   </div>
 
                   <div className="flex justify-between items-center py-2">
-                    <span className="text-sm text-gray-600">Статус</span>
+                    <span className="text-xs sm:text-sm text-gray-600">Статус</span>
                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                       assistant.is_active
                         ? 'bg-green-50 text-green-700'
@@ -752,57 +753,6 @@ const OverviewTab = ({ assistant, stats, documents, bots, channels }) => {
         </div>
       </div>
 
-      {/* Recent Activity Widget - Dashboard Style */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg flex items-center justify-center">
-            <FiActivity size={18} className="text-blue-600" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900">Последние действия</h3>
-        </div>
-
-        <div className="space-y-4">
-          {documents?.length > 0 && (
-            <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
-              <div className="w-8 h-8 bg-[#6334E5]/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <FiUpload size={14} className="text-[#6334E5]" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-gray-900">Загружен документ</p>
-                <p className="text-xs text-gray-500">
-                  {documents.length} документ{documents.length === 1 ? '' : documents.length < 5 ? 'а' : 'ов'} в базе знаний
-                </p>
-              </div>
-            </div>
-          )}
-
-          {integrationsCount > 0 && (
-            <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
-              <div className="w-8 h-8 bg-yellow-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                <FiGlobe size={14} className="text-yellow-600" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-gray-900">Настроены интеграции</p>
-                <p className="text-xs text-gray-500">
-                  {integrationsCount} активн{integrationsCount === 1 ? 'ая' : 'ые'} интеграци{integrationsCount === 1 ? 'я' : 'и'}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {(!documents?.length && !integrationsCount) && (
-            <div className="text-center py-8">
-              <div className="w-12 h-12 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl flex items-center justify-center mx-auto mb-4 border border-gray-200">
-                <FiActivity className="w-6 h-6 text-gray-400" />
-              </div>
-              <h4 className="text-gray-900 text-sm font-semibold mb-2">Пока нет активности</h4>
-              <p className="text-gray-600 text-sm mb-4">
-                Начните работу с ассистентом, и здесь появится история действий
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
     </div>
   );
 };
