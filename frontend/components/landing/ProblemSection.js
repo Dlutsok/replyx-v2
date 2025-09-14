@@ -152,7 +152,7 @@ const ProblemSection = () => {
   return (
     <SectionWrapper id="solutions">
       <SectionWrapper.Header
-        className="mt-0 md:mt-20"
+        className="mt-[20px] md:mt-20"
         title={
           <>
             Каждое обращение — быстрый и точный ответ с <span style={{

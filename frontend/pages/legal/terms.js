@@ -2,54 +2,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
+import LandingHeader from '../../components/LandingHeader';
 import landingStyles from '../../styles/pages/Landing.module.css';
-
-// Header компонент в стиле главной страницы
-function TermsHeader() {
-  const router = useRouter();
-
-  return (
-    <header className={landingStyles.header}>
-      <div className={landingStyles.headerContainer}>
-        <div className={landingStyles.logo} onClick={() => router.push('/')}>
-          <svg className={landingStyles.logoIcon} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M9 12l2 2 4-4"></path>
-            <path d="M21 12c.552 0 1-.448 1-1V8c0-.552-.448-1-1-1h-1V6a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v1H3c-.552 0-1 .448-1 1v3c0 .552.448 1 1 1h1v7a4 4 0 0 0 4 4h8a4 4 0 0 0 4-4v-7h1z"></path>
-            <circle cx="9" cy="9" r="1"></circle>
-            <circle cx="15" cy="9" r="1"></circle>
-          </svg>
-          <span className={landingStyles.logoText}>ReplyX</span>
-        </div>
-
-        <nav className={landingStyles.nav}>
-          <button
-            className={landingStyles.navLink}
-            onClick={() => router.push('/')}
-          >
-            Главная
-          </button>
-        </nav>
-
-        <div className={landingStyles.headerActions}>
-          <button
-            className={landingStyles.loginButton}
-            onClick={() => router.push('/login')}
-          >
-            Войти
-          </button>
-          <button
-            className="px-6 py-2.5 text-white font-semibold rounded-[0.9rem] transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-[#6334E5]/30 h-11 relative overflow-hidden"
-            onClick={() => router.push('/register')}
-            style={{background: 'linear-gradient(90deg, #6334E5, #6334E5)'}}
-          >
-            <span className="absolute inset-0 z-0 animate-wave-gradient" style={{background: 'linear-gradient(90deg, #6334E5, #6334E5)'}} />
-            <span className="relative z-10">Начать бесплатно</span>
-          </button>
-        </div>
-      </div>
-    </header>
-  );
-}
 
 // Футер с лендинга
 function TermsFooter() {
@@ -373,7 +327,7 @@ export default function LegalTermsPage() {
       </Head>
 
       <div className={landingStyles.landingPage}>
-        <TermsHeader />
+        <LandingHeader />
 
         {/* Content */}
         <div style={containerStyle}>

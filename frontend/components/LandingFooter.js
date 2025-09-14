@@ -1,13 +1,27 @@
-import { useState, useEffect } from 'react';
+import React from 'react';
 import { useRouter } from 'next/router';
-import Head from 'next/head';
 import Link from 'next/link';
-import LandingHeader from '../../components/LandingHeader';
-import landingStyles from '../../styles/pages/Landing.module.css';
+import landingStyles from '../styles/pages/Landing.module.css';
 
-// Футер с лендинга
-function CookiesFooter() {
+export default function LandingFooter() {
   const router = useRouter();
+
+  // Проверяем, находимся ли на главной странице
+  const isHomePage = router.pathname === '/';
+
+  // Функция для обработки клика по якорным ссылкам
+  const handleAnchorClick = (anchor) => {
+    if (isHomePage) {
+      // Если на главной странице, просто скроллим к секции
+      const element = document.querySelector(anchor);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      // Если не на главной странице, переходим на главную с якорем
+      router.push(`/${anchor}`);
+    }
+  };
 
   return (
     <footer className={landingStyles.whiteFooter}>
@@ -67,15 +81,27 @@ function CookiesFooter() {
                 >
                   Продукт
                 </button>
-                <a href="#features" className={landingStyles.whiteFooterLink}>
+                <button
+                  onClick={() => handleAnchorClick('#features')}
+                  className={landingStyles.whiteFooterLink}
+                  style={{background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0, display: 'block'}}
+                >
                   Возможности
-                </a>
-                <a href="#pricing" className={landingStyles.whiteFooterLink}>
+                </button>
+                <button
+                  onClick={() => handleAnchorClick('#pricing')}
+                  className={landingStyles.whiteFooterLink}
+                  style={{background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0, display: 'block'}}
+                >
                   Цена
-                </a>
-                <a href="#testimonials" className={landingStyles.whiteFooterLink}>
+                </button>
+                <button
+                  onClick={() => handleAnchorClick('#testimonials')}
+                  className={landingStyles.whiteFooterLink}
+                  style={{background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0, display: 'block'}}
+                >
                   Отзывы
-                </a>
+                </button>
               </div>
 
               {/* Колонка 2: Информация */}
@@ -205,15 +231,27 @@ function CookiesFooter() {
               >
                 Продукт
               </button>
-              <a href="#features" className={landingStyles.whiteFooterLink}>
+              <button
+                onClick={() => handleAnchorClick('#features')}
+                className={landingStyles.whiteFooterLink}
+                style={{background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0, display: 'block'}}
+              >
                 Возможности
-              </a>
-              <a href="#pricing" className={landingStyles.whiteFooterLink}>
+              </button>
+              <button
+                onClick={() => handleAnchorClick('#pricing')}
+                className={landingStyles.whiteFooterLink}
+                style={{background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0, display: 'block'}}
+              >
                 Цена
-              </a>
-              <a href="#testimonials" className={landingStyles.whiteFooterLink}>
+              </button>
+              <button
+                onClick={() => handleAnchorClick('#testimonials')}
+                className={landingStyles.whiteFooterLink}
+                style={{background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', padding: 0, display: 'block'}}
+              >
                 Отзывы
-              </a>
+              </button>
             </div>
 
             {/* Колонка 2: Информация */}
@@ -287,267 +325,5 @@ function CookiesFooter() {
         </div>
       </div>
     </footer>
-  );
-}
-
-export default function LegalCookiesPage() {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  const containerStyle = {
-    width: 'calc(100% - 2rem)',
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: isMobile ? '1rem 0' : '2rem 0'
-  };
-
-  const contentStyle = {
-    background: 'white',
-    padding: isMobile ? '1.5rem 1rem' : '3rem 2rem',
-    borderRadius: '0.75rem',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)',
-    margin: '0 0.5rem'
-  };
-
-  return (
-    <>
-      <Head>
-        <title>Политика использования cookie - ReplyX</title>
-        <meta name="description" content="Политика использования cookie сервиса ReplyX. Узнайте, как мы используем cookie-файлы для улучшения вашего опыта." />
-        <meta name="robots" content="index, follow" />
-      </Head>
-
-      <div className={landingStyles.landingPage}>
-        <LandingHeader />
-
-        {/* Content */}
-        <div style={containerStyle}>
-          <div style={contentStyle}>
-            <h1 style={{
-              fontSize: '2rem',
-              fontWeight: '700',
-              color: '#6334E5',
-              textAlign: 'center',
-              marginBottom: '2rem'
-            }}>
-              Политика использования cookie сервиса ReplyX
-            </h1>
-
-            <p style={{
-              textAlign: 'center',
-              color: '#64748b',
-              marginBottom: '3rem',
-              fontSize: '0.9rem'
-            }}>
-              Последнее обновление: 08.09.2025, г. Щёлково, Московская область
-            </p>
-
-            <div style={{lineHeight: '1.6', color: '#374151'}}>
-
-              <section style={{marginBottom: '2rem'}}>
-                <h2 style={{
-                  fontSize: '1.3rem',
-                  fontWeight: '600',
-                  color: '#6334E5',
-                  marginBottom: '1rem'
-                }}>
-                  1. Общие сведения
-                </h2>
-                <p style={{marginBottom: '1rem'}}>
-                  1.1. Настоящий документ регулирует использование файлов cookie на сайте <a href="https://replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}} target="_blank" rel="noopener noreferrer">https://replyx.ru</a> и в веб-приложениях платформы ReplyX.
-                </p>
-                <p style={{marginBottom: '1rem'}}>
-                  1.2. Оператор персональных данных: Индивидуальный предприниматель Луцок Дан, ОГРНИП 325508100484721, ИНН 330303450398.
-                  Адрес: 141107, Россия, Московская область, г. Щёлково, ул. Неделина, д. 26, кв. 104.
-                  E-mail: <a href="mailto:support@replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a>, Телефон: <a href="tel:+79933349913" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>+7 (993) 334-99-13</a>.
-                </p>
-                <p>
-                  1.3. Настоящая Политика является приложением к <a href="/legal/privacy" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>Политике конфиденциальности</a>.
-                </p>
-              </section>
-
-              <section style={{marginBottom: '2rem'}}>
-                <h2 style={{
-                  fontSize: '1.3rem',
-                  fontWeight: '600',
-                  color: '#6334E5',
-                  marginBottom: '1rem'
-                }}>
-                  2. Определение и правовое основание
-                </h2>
-                <p style={{marginBottom: '1rem'}}>
-                  2.1. Cookie — небольшие текстовые файлы, которые сохраняются браузером на устройстве Пользователя.
-                </p>
-                <p>
-                  2.2. Правовое основание обработки cookie:
-                  <br />- строго необходимые cookie обрабатываются для исполнения договора (п. 2 ч. 1 ст. 6 ФЗ-152);
-                  <br />- функциональные, аналитические и маркетинговые cookie применяются только на основании согласия Пользователя (ст. 12 ФЗ-152).
-                </p>
-              </section>
-
-              <section style={{marginBottom: '2rem'}}>
-                <h2 style={{
-                  fontSize: '1.3rem',
-                  fontWeight: '600',
-                  color: '#6334E5',
-                  marginBottom: '1rem'
-                }}>
-                  3. Категории файлов cookie
-                </h2>
-                <p>
-                  ReplyX может использовать следующие категории cookie:
-                  <br />- <strong>Строго необходимые:</strong> обеспечивают авторизацию, поддержку сессии и безопасность (например, replyx_session, csrf_token). Хранятся до закрытия браузера.
-                  <br />- <strong>Функциональные:</strong> сохраняют настройки интерфейса (например, выбранный язык), срок хранения — до 30 дней.
-                  <br />- <strong>Аналитические:</strong> помогают анализировать использование сайта и Личного кабинета (например, Яндекс.Метрика: _ym_uid, _ym_d), срок хранения — до 365 дней.
-                  <br />- <strong>Маркетинговые:</strong> могут использоваться для персонализации предложений (применяются только после согласия Пользователя).
-                </p>
-              </section>
-
-              <section style={{marginBottom: '2rem'}}>
-                <h2 style={{
-                  fontSize: '1.3rem',
-                  fontWeight: '600',
-                  color: '#6334E5',
-                  marginBottom: '1rem'
-                }}>
-                  4. Получение и отзыв согласия
-                </h2>
-                <p style={{marginBottom: '1rem'}}>
-                  4.1. При первом посещении сайта отображается баннер об использовании cookie.
-                </p>
-                <p style={{marginBottom: '1rem'}}>
-                  4.2. До получения согласия устанавливаются только строго необходимые cookie.
-                </p>
-                <p style={{marginBottom: '1rem'}}>
-                  4.3. Нажатие кнопки «Принять» или продолжение использования сайта означает согласие Пользователя на обработку cookie.
-                </p>
-                <p>
-                  4.4. Согласие может быть отозвано в любой момент через настройки браузера.
-                </p>
-              </section>
-
-              <section style={{marginBottom: '2rem'}}>
-                <h2 style={{
-                  fontSize: '1.3rem',
-                  fontWeight: '600',
-                  color: '#6334E5',
-                  marginBottom: '1rem'
-                }}>
-                  5. Управление cookie
-                </h2>
-                <p style={{marginBottom: '1rem'}}>
-                  Пользователь может удалить или ограничить использование cookie через настройки браузера:
-                  <br />- <strong>Chrome:</strong> Настройки → Конфиденциальность и безопасность → Файлы cookie и другие данные сайтов;
-                  <br />- <strong>Firefox:</strong> Настройки → Приватность и защита → Cookie и данные сайтов;
-                  <br />- <strong>Safari:</strong> Настройки → Конфиденциальность.
-                </p>
-                <p>
-                  Отключение строго необходимых cookie может привести к некорректной работе Сервиса.
-                </p>
-              </section>
-
-              <section style={{marginBottom: '2rem'}}>
-                <h2 style={{
-                  fontSize: '1.3rem',
-                  fontWeight: '600',
-                  color: '#6334E5',
-                  marginBottom: '1rem'
-                }}>
-                  6. Права Пользователя
-                </h2>
-                <p style={{marginBottom: '1rem'}}>
-                  6.1. Пользователь вправе запросить сведения об обработке cookie-данных, потребовать их исправления, блокирования или удаления.
-                </p>
-                <p>
-                  6.2. Запрос направляется на <a href="mailto:support@replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>support@replyx.ru</a>. Срок ответа — до 10 рабочих дней.
-                </p>
-              </section>
-
-              <section style={{marginBottom: '2rem'}}>
-                <h2 style={{
-                  fontSize: '1.3rem',
-                  fontWeight: '600',
-                  color: '#6334E5',
-                  marginBottom: '1rem'
-                }}>
-                  7. Обновление Политики
-                </h2>
-                <p style={{marginBottom: '1rem'}}>
-                  7.1. ReplyX вправе изменять настоящую Политику в любой момент.
-                </p>
-                <p>
-                  7.2. Новая редакция публикуется на <a href="/legal" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>сайте</a> и вступает в силу со дня размещения.
-                </p>
-              </section>
-
-              <section>
-                <h2 style={{
-                  fontSize: '1.3rem',
-                  fontWeight: '600',
-                  color: '#6334E5',
-                  marginBottom: '1rem'
-                }}>
-                  8. Контакты
-                </h2>
-                <div style={{
-                  background: '#f8fafc',
-                  padding: '1.5rem',
-                  borderRadius: '0.5rem',
-                  border: '1px solid #e2e8f0'
-                }}>
-                  <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
-                    <strong>Оператор:</strong> Индивидуальный предприниматель Луцок Дан
-                  </p>
-                  <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
-                    <strong>ИНН:</strong> 330303450398
-                  </p>
-                  <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
-                    <strong>ОГРНИП:</strong> 325508100484721
-                  </p>
-                  <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
-                    <strong>Адрес:</strong> 141107, Россия, Московская область, г. Щёлково, ул. Неделина, д. 26, кв. 104
-                  </p>
-                  <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
-                    <strong>Расчётный счёт:</strong> 40802810200008681473
-                  </p>
-                  <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
-                    <strong>Банк:</strong> АО «ТБанк»
-                  </p>
-                  <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
-                    <strong>ИНН банка:</strong> 7710140679
-                  </p>
-                  <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
-                    <strong>БИК:</strong> 044525974
-                  </p>
-                  <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
-                    <strong>Корр. счёт:</strong> 30101810145250000974
-                  </p>
-                  <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
-                    <strong>Адрес банка:</strong> 127287, г. Москва, ул. Хуторская 2-я, д. 38А, стр. 26
-                  </p>
-                  <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
-                    <strong>E-mail:</strong> <a href="mailto:info@replyx.ru" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>info@replyx.ru</a>
-                  </p>
-                  <p style={{margin: '0.5rem 0', fontWeight: '500'}}>
-                    <strong>Телефон:</strong> <a href="tel:+79933349913" style={{color: '#6334E5', textDecoration: 'none', fontWeight: '500'}}>+7 (993) 334-99-13</a>
-                  </p>
-                </div>
-              </section>
-            </div>
-          </div>
-        </div>
-
-        <CookiesFooter />
-      </div>
-    </>
   );
 }
