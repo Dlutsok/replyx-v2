@@ -114,7 +114,7 @@ const Dashboard = React.memo(function Dashboard() {
   const [stylesLoaded, setStylesLoaded] = useState(false);
 
   const { user, logout } = useAuth();
-  const { metrics, balance, bots, assistants, loading, error: dataError, refetch } = useDashboardData();
+  const { metrics, balance, bots, assistants, weeklyMetrics, loading, error: dataError, refetch } = useDashboardData();
   const { isAllStepsCompleted } = useSmartProgress();
 
   // Мемоизация функций для предотвращения пересоздания
@@ -393,6 +393,8 @@ const Dashboard = React.memo(function Dashboard() {
                 metrics={metrics}
                 loading={loading}
                 onRefresh={refetch}
+                assistants={assistants}
+                weeklyMetrics={weeklyMetrics}
               />
             </LazyWidgetWrapper>
           )}

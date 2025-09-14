@@ -86,7 +86,8 @@ export default function Login() {
       showError(result.error);
       setIsLoading(false);
     } else {
-      showSuccess('Успешный вход в систему!');
+      // Успешный вход в систему без уведомления
+      setIsLoading(false);
     }
   };
 
@@ -94,8 +95,12 @@ export default function Login() {
     <>
       <Head>
         <title>Вход в аккаунт - ReplyX</title>
-        <meta name="description" content="Войдите в свой аккаунт ReplyX для доступа к AI-ассистентам и управлению диалогами." />
-        <meta name="robots" content="noindex, nofollow" />
+        <meta name="description" content="Войдите в свой аккаунт ReplyX для доступа к AI-ассистентам и управлению диалогами с клиентами." />
+        <meta name="robots" content="index, follow" />
+        <meta property="og:title" content="Вход в аккаунт - ReplyX" />
+        <meta property="og:description" content="Войдите в свой аккаунт ReplyX для доступа к AI-ассистентам и управлению диалогами с клиентами." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://replyx.ru/login" />
       </Head>
       <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white">
       {/* Левая панель с градиентным фоном в стиле дашборда */}

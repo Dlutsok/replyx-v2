@@ -190,6 +190,87 @@ def _generate_summary_and_index_sync(doc_id: int, user_id: int, assistant_id: Op
     except Exception as e:
         logger.warning(f"[SYNC_SUMMARY_INDEX] failed for doc_id={doc_id}: {e}")
 
+
+def analyze_document_internal(doc_id: int, user: models.User, db: Session):
+    """Внутренняя функция анализа документа (вынесена для background task)"""
+    doc = db.query(models.Document).filter(models.Document.id == doc_id).first()
+    if not doc:
+        return None
+
+    # Проверяем лимит пользователя
+    from services.balance_service import BalanceService
+    balance_service = BalanceService(db)
+
+    if not balance_service.can_use_document_analysis(user.id):
+        return {"error": "Превышен лимит анализа документов"}
+
+    # Проводим анализ (тяжелая операция)
+    try:
+        file_path = f"./storage/documents/{doc.filename}"
+
+        if doc.filename.endswith('.pdf'):
+            import PyPDF2
+            with open(file_path, 'rb') as pdf_file:
+                pdf_reader = PyPDF2.PdfReader(pdf_file)
+                text = ""
+                for page in pdf_reader.pages:
+                    text += page.extract_text()
+        else:
+            with open(file_path, 'r', encoding='utf-8') as file:
+                text = file.read()
+
+        # AI анализ текста
+        from ai.ai_token_manager import ai_token_manager
+        analysis = ai_token_manager.make_openai_request(
+            messages=[{
+                "role": "user",
+                "content": f"Проанализируй документ и выдели ключевые моменты:\n\n{text[:8000]}"
+            }],
+            user_id=user.id
+        )
+
+        # Сохраняем результат
+        doc.analysis_result = analysis.choices[0].message.content if analysis.choices else "Анализ не удался"
+        db.commit()
+
+        # Списываем токены
+        balance_service.consume_document_analysis(user.id)
+
+        return {"status": "success", "analysis": doc.analysis_result}
+
+    except Exception as e:
+        logger.error(f"Analysis failed for doc {doc_id}: {e}")
+        return {"error": str(e)}
+
+
+def _background_analyze_document(doc_id: int, user_id: int):
+    """Background task для анализа документов без блокировки event loop"""
+    from database.connection import SessionLocal
+
+    db = SessionLocal()
+    try:
+        logger.info(f"🧵 Starting background analysis for doc_id={doc_id}")
+
+        # Получаем пользователя и документ
+        user = db.query(models.User).filter(models.User.id == user_id).first()
+        doc = db.query(models.Document).filter(models.Document.id == doc_id).first()
+
+        if not user or not doc:
+            logger.error(f"User {user_id} or document {doc_id} not found")
+            return
+
+        # Выполняем анализ (вынесли тяжелую работу из event loop)
+        result = analyze_document_internal(doc_id, user, db)
+
+        logger.info(f"✅ Background analysis completed for doc_id={doc_id}")
+        return result
+
+    except Exception as e:
+        logger.error(f"[BG_ANALYZE] failed for doc_id={doc_id}: {e}")
+    finally:
+        db.close()
+
+
 # get_db импортируется из database.connection
 
 # Helper functions to avoid circular imports
@@ -1002,7 +1083,12 @@ def get_document_summary_status(doc_id: int, current_user: models.User = Depends
         }
 
 @router.post("/analyze-document/{doc_id}")
-def analyze_document(doc_id: int, current_user: models.User = Depends(auth.get_current_user), db: Session = Depends(get_db)):
+async def analyze_document(
+    doc_id: int,
+    background_tasks: BackgroundTasks,
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
     print(f"[analyze_document] User {current_user.id} ({current_user.email}) requests analysis for doc_id={doc_id}")
     doc = db.query(models.Document).filter(models.Document.id == doc_id, models.Document.user_id == current_user.id).first()
     if not doc:

@@ -882,8 +882,84 @@ async def ws_bridge_health():
         
     except Exception as e:
         return {
-            "status": "error", 
+            "status": "error",
             "error": str(e),
             "timestamp": datetime.utcnow().isoformat(),
             "service": "ws-bridge"
         }
+
+@router.get("/metrics/weekly")
+async def get_weekly_metrics(
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Получить реальную статистику сообщений за последние 7 дней"""
+    from datetime import datetime, timedelta
+    from sqlalchemy import func, and_
+
+    try:
+        # Получаем дату 7 дней назад
+        week_ago = datetime.utcnow() - timedelta(days=7)
+
+        # Сначала проверим, есть ли вообще сообщения у пользователя
+        total_user_messages = (
+            db.query(func.count(models.DialogMessage.id))
+            .join(models.Dialog, models.DialogMessage.dialog_id == models.Dialog.id)
+            .filter(models.Dialog.user_id == current_user.id)
+            .scalar()
+        )
+
+        logger.info(f"User {current_user.id} has {total_user_messages} total messages")
+
+        # Получаем статистику по дням за последние 7 дней
+        daily_stats = (
+            db.query(
+                func.date(models.DialogMessage.timestamp).label('date'),
+                func.count(models.DialogMessage.id).label('message_count')
+            )
+            .join(models.Dialog, models.DialogMessage.dialog_id == models.Dialog.id)
+            .filter(
+                and_(
+                    models.Dialog.user_id == current_user.id,
+                    models.DialogMessage.timestamp >= week_ago,
+                    models.DialogMessage.sender == 'assistant'  # Считаем только ответы ассистента
+                )
+            )
+            .group_by(func.date(models.DialogMessage.timestamp))
+            .order_by(func.date(models.DialogMessage.timestamp))
+            .all()
+        )
+
+        logger.info(f"Found {len(daily_stats)} days with messages for user {current_user.id}")
+
+        # Создаем массив за последние 7 дней с нулевыми значениями
+        result = []
+        for i in range(7):
+            date = (datetime.utcnow() - timedelta(days=6-i)).date()
+            messages_count = 0
+
+            # Ищем реальные данные для этого дня
+            for stat in daily_stats:
+                if stat.date == date:
+                    messages_count = stat.message_count
+                    break
+
+            result.append({
+                "date": date.isoformat(),
+                "day_name": date.strftime('%a').lower(),  # пн, вт, ср...
+                "messages": messages_count
+            })
+
+        # Подсчитываем общую статистику
+        total_messages = sum(day['messages'] for day in result)
+
+        return {
+            "daily_stats": result,
+            "total_messages": total_messages,
+            "avg_response_time": 0,  # Пока что просто 0, потом добавим расчет
+            "period": "7_days"
+        }
+
+    except Exception as e:
+        logger.error(f"Error getting weekly metrics: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

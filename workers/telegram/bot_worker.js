@@ -589,7 +589,9 @@ class BotWorker {
                 telegram_chat_id: telegramChatId
             });
 
-            const response = await axios.get(`${BACKEND_API_URL}/api/bot/dialogs?${searchParams}`);
+            const response = await axios.get(`${BACKEND_API_URL}/api/bot/dialogs?${searchParams}`, {
+                timeout: 10000  // 10 секунд
+            });
             const dialogs = response.data;
 
             if (dialogs.length > 0) {
@@ -612,7 +614,9 @@ class BotWorker {
                 language_code: userInfo.language_code
             };
 
-            const createResponse = await axios.post(`${BACKEND_API_URL}/api/bot/dialogs`, createData);
+            const createResponse = await axios.post(`${BACKEND_API_URL}/api/bot/dialogs`, createData, {
+                timeout: 10000  // 10 секунд
+            });
             return createResponse.data;
 
         } catch (error) {
@@ -641,6 +645,8 @@ class BotWorker {
             await axios.post(`${BACKEND_API_URL}/api/bot/dialogs/${dialogId}/messages`, {
                 sender: sender,
                 text: text
+            }, {
+                timeout: 10000  // 10 секунд
             });
         } catch (error) {
             this.sendLog('error', `Ошибка сохранения сообщения: ${error.message}`);
@@ -657,6 +663,8 @@ class BotWorker {
                 message: text,
                 assistant_id: assistant.id,
                 dialog_id: dialogId
+            }, {
+                timeout: 60000  // 60 секунд для AI запроса
             });
             
             return response.data.response || 'Извините, не смог обработать ваш запрос.';

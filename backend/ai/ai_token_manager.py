@@ -374,11 +374,12 @@ class AITokenManager:
         
         raise Exception(f"Ошибка генерации embedding: {last_error}")
     
-    def make_openai_request(self, messages: List[dict], model: str = "gpt-4", 
+    def make_openai_request(self, messages: List[dict], model: str = "gpt-4",
                            user_id: int = None, assistant_id: int = None,
                            temperature: float = 0.9, max_tokens: int = None,
                            presence_penalty: float = 0.3, frequency_penalty: float = 0.3,
-                           is_embedding: bool = False, input_text: str = None):
+                           is_embedding: bool = False, input_text: str = None,
+                           is_widget: bool = False):
         """
         Выполнить запрос к AI с автоматическим выбором токена и провайдера
         Поддерживает fallback между OpenAI через прокси и другими провайдерами
@@ -417,7 +418,8 @@ class AITokenManager:
                                 messages=messages,
                                 model=model,
                                 temperature=temperature,
-                                max_tokens=max_tokens
+                                max_tokens=max_tokens,
+                                is_widget=is_widget
                             ))
                         finally:
                             new_loop.close()
@@ -433,7 +435,8 @@ class AITokenManager:
                         messages=messages,
                         model=model,
                         temperature=temperature,
-                        max_tokens=max_tokens
+                        max_tokens=max_tokens,
+                        is_widget=is_widget
                     ))
                 
                 response_time = time.time() - start_time

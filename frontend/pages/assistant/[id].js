@@ -240,7 +240,7 @@ export default function AssistantPage() {
       const token = localStorage.getItem('token');
       
       const response = await fetch(`${API_URL}/api/assistants/${id}`, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

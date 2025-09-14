@@ -266,7 +266,7 @@ class OpenAIProvider(BaseAIProvider):
         logger.info(f"🔗 OpenAI инициализирован с {metrics['total_proxies']} прокси, "
                    f"{metrics['available_proxies']} доступны")
     
-    async def get_completion(self, messages: List[Dict], model: str = "gpt-4o-mini", **kwargs) -> Dict:
+    async def get_completion(self, messages: List[Dict], model: str = "gpt-4o-mini", is_widget: bool = False, **kwargs) -> Dict:
         """Получение ответа с отказоустойчивым прокси и идемпотентностью"""
         
         # Получаем токен из пула или используем фиксированный
@@ -304,7 +304,7 @@ class OpenAIProvider(BaseAIProvider):
         
         for attempt in range(max_attempts):
             # Получаем доступный прокси для запроса (асинхронный клиент)
-            proxy_url, client_kwargs = self.proxy_manager.get_proxy_for_request(is_stream=is_stream, is_async=True)
+            proxy_url, client_kwargs = self.proxy_manager.get_proxy_for_request(is_stream=is_stream, is_async=True, is_widget=is_widget)
             
             if not proxy_url:
                 # Все прокси недоступны

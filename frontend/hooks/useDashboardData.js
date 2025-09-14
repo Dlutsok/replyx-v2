@@ -75,6 +75,7 @@ export const useDashboardData = () => {
   // Мемоизация конфигурации запросов
   const requestConfigs = useMemo(() => ({
     metrics: { url: '/api/metrics?period=month', headers },
+    weeklyMetrics: { url: '/api/metrics/weekly', headers },
     bots: { url: '/api/bot-instances', headers },
     dialogs: { url: '/api/dialogs?limit=10', headers },
     balance: { url: '/api/balance/stats', headers },
@@ -106,7 +107,7 @@ export const useDashboardData = () => {
         }
       });
 
-      const [metrics, bots, dialogs, balance, assistants, systemHealth] = await Promise.all(requests);
+      const [metrics, weeklyMetrics, bots, dialogs, balance, assistants, systemHealth] = await Promise.all(requests);
       
       // Добавляем фолбек данные если API не вернул данные
       const fallbackMetrics = metrics || {
@@ -144,9 +145,11 @@ export const useDashboardData = () => {
       // Расчетов производительности (убрали useMemo - он не должен быть внутри функции)
       // Проверяем различные возможные статусы активных диалогов
       const possibleActiveStatuses = ['active', 'ongoing', 'in_progress', 'open', 'waiting'];
-      const activeDialogsCount = fallbackDialogs.filter(d => 
+      // Используем только реальные диалоги из API, не fallback
+      const realDialogs = dialogs?.items || dialogs || [];
+      const activeDialogsCount = Array.isArray(realDialogs) ? realDialogs.filter(d =>
         possibleActiveStatuses.includes(d.status?.toLowerCase())
-      ).length;
+      ).length : 0;
       
       const performanceData = {
         messages_per_hour: Math.floor((fallbackMetrics.periodMessages || 0) * 24 / 30),
@@ -163,14 +166,14 @@ export const useDashboardData = () => {
         }
       };
 
-      // Используем реальные данные из API, если доступны
-      const realMetrics = metrics && Object.keys(metrics).length > 0 ? metrics : fallbackMetrics;
+      // Используем реальные данные из API, если доступны, иначе нулевые значения
+      const realMetrics = metrics && Object.keys(metrics).length > 0 ? metrics : {};
       
       const finalMetrics = {
         // Реальные основные метрики из API
         active_dialogs: activeDialogsCount,
         messages_processed: realMetrics.periodMessages || realMetrics.totalMessages || realMetrics.messages || 0,
-        avg_response_time: realMetrics.avgResponseTime ? realMetrics.avgResponseTime.toFixed(1) : (fallbackMetrics.avgResponseTime || 1.2).toFixed(1),
+        avg_response_time: realMetrics.avgResponseTime ? realMetrics.avgResponseTime.toFixed(1) : 0,
         
         // Тренды из API или fallback
         dialogs_trend: realMetrics.changes?.dialogs !== undefined ? 
@@ -206,6 +209,7 @@ export const useDashboardData = () => {
           recent_transactions: fallbackBalance.recent_transactions || []
         },
         assistants: assistants || [],
+        weeklyMetrics: weeklyMetrics || null,
         systemHealth,
         realtimeStats: {
           activeUsers: Math.floor((metrics?.totalMessages || 0) / 50),

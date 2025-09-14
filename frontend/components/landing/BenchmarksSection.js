@@ -319,25 +319,24 @@ const BenchmarksSection = () => {
           <div className="overflow-x-auto pb-4 mb-6" ref={scrollContainerRef}>
             <div className="flex gap-3" style={{width: 'max-content'}}>
               {allMetrics.slice(0, 6).map((metric, index) => (
-                <motion.div
+                <div
                   key={index}
-                  {...DESIGN_TOKENS.animation.withDelay(0.1 + index * 0.1)}
-                  className={`bg-white rounded-xl px-3 py-2 shadow-sm border transition-all duration-300 cursor-pointer flex-shrink-0 min-w-[180px] relative ${
+                  className={`bg-white rounded-xl px-3 py-2 shadow-sm border flex-shrink-0 min-w-[180px] relative ${
                     activeTab === index
                       ? 'border-[#6334E5] shadow-md bg-[#6334E5]/10/50'
-                      : 'border-gray-200 hover:shadow-md hover:border-[#6334E5]/30'
+                      : 'border-gray-200'
                   }`}
                   data-tab-index={index}
                   onClick={() => handleTabClick(index)}
                 >
                   <div className="flex items-center gap-2">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                       activeTab === index
                         ? 'bg-[#6334E5]/10'
                         : colorClasses[metric.color].bg
                     }`}>
                       <metric.icon
-                        className={`w-5 h-5 transition-colors ${
+                        className={`w-5 h-5 ${
                           activeTab === index
                             ? 'text-[#6334E5]'
                             : colorClasses[metric.color].icon
@@ -352,17 +351,14 @@ const BenchmarksSection = () => {
                   {activeTab === index && (
                     <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-6 h-1 bg-[#6334E5] rounded-full"></div>
                   )}
-                </motion.div>
+                </div>
               ))}
             </div>
           </div>
 
           {/* Контент таба для мобильной версии */}
-          <motion.div
+          <div
             key={activeTab}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
             className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm"
           >
             <div className="mb-4">
@@ -388,7 +384,7 @@ const BenchmarksSection = () => {
                 </div>
               ))}
             </div>
-          </motion.div>
+          </div>
         </div>
 
         {/* Десктопная версия - сетка */}

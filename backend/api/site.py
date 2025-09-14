@@ -1030,7 +1030,9 @@ async def generate_ai_response(dialog_id: int, current_user: models.User, db: Se
                 })
                 logger.info(f"Added {len(context_parts)} chunks to web widget context ({total_tokens} tokens)")
         
-        completion = ai_token_manager.make_openai_request(
+        # 🚀 КРИТИЧНО: Оборачиваем синхронный AI запрос в async чтобы не блокировать event loop
+        completion = await asyncio.to_thread(
+            ai_token_manager.make_openai_request,
             messages=prompt_messages,
             model=ai_model,
             user_id=current_user.id,
@@ -1038,7 +1040,8 @@ async def generate_ai_response(dialog_id: int, current_user: models.User, db: Se
             temperature=0.9,
             max_tokens=1000,
             presence_penalty=0.3,
-            frequency_penalty=0.3
+            frequency_penalty=0.3,
+            is_widget=True  # 🚀 Используем более быстрый timeout для виджета (15сек вместо 30сек)
         )
         
         response = completion.choices[0].message.content.strip()

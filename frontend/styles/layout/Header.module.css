@@ -415,14 +415,14 @@
 
   .profileButton,
   .notificationButton {
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
   }
-  
+
   .profileIcon,
   .notificationIcon {
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
   }
   
   .notificationsDropdown {

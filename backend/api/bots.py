@@ -5,6 +5,7 @@ import logging
 import requests
 import json
 import subprocess
+import asyncio
 from datetime import datetime
 
 from database import SessionLocal
@@ -519,7 +520,7 @@ async def add_bot_dialog_message(dialog_id: int, data: dict, db: Session = Depen
     }
 
 @router.post("/bot/ai-response")
-def get_bot_ai_response(data: dict, db: Session = Depends(get_db)):
+async def get_bot_ai_response(data: dict, db: Session = Depends(get_db)):
     """Генерация AI ответа для бота (без авторизации пользователя)"""
     from services.balance_service import BalanceService
     
@@ -665,8 +666,9 @@ def get_bot_ai_response(data: dict, db: Session = Depends(get_db)):
         # Добавляем системный промпт
         prompt_messages.insert(0, {"role": "system", "content": system_prompt})
         
-        # Генерируем AI ответ
-        completion = ai_token_manager.make_openai_request(
+        # Генерируем AI ответ (async чтобы не блокировать event loop)
+        completion = await asyncio.to_thread(
+            ai_token_manager.make_openai_request,
             messages=prompt_messages,
             model=ai_model,
             user_id=user_id,

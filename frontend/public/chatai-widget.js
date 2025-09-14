@@ -187,7 +187,6 @@
       
       iframeSrc += params.join('&');
       
-      console.log('[ReplyX Widget] Loading iframe with src:', iframeSrc);
       
       iframe.setAttribute('src', iframeSrc);
       iframe.setAttribute('frameborder', '0');
@@ -227,7 +226,6 @@
       }, { passive: false });
       
       iframe.addEventListener('load', () => {
-        console.log('[ReplyX Widget] Iframe loaded successfully');
         // Устанавливаем focus на iframe после загрузки
         setTimeout(() => {
           iframe.focus();

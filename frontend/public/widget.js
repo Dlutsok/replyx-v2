@@ -102,14 +102,6 @@
     devKey: getParam(urlParams, 'devKey', null)
   };
   
-  // Debug логирование конфигурации
-  console.log('[ReplyX Widget] Configuration:', {
-    host: config.host,
-    apiUrl: config.apiUrl,
-    scriptSrc: scriptSrc,
-    userAgent: navigator.userAgent,
-    isSafari: /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
-  });
   
   // Цветовые темы
   const themes = {
@@ -220,15 +212,12 @@
         const result = await response.json();
         
         if (result.success) {
-          console.log('[ReplyX Widget] ✅ Настройки получены:', result.config);
           return result.config;
         } else {
-          console.warn('[ReplyX Widget] Не удалось получить настройки:', result.reason);
           return null;
         }
         
       } catch (error) {
-        console.warn('[ReplyX Widget] Ошибка получения настроек:', error);
         return null;
       }
     },
@@ -236,7 +225,6 @@
     // Валидация домена и инициализация
     validateDomainAndInit: async function() {
       if (!this.config.siteToken) {
-        console.warn('[ReplyX Widget] Отсутствует токен сайта');
         return;
       }
       
@@ -245,18 +233,15 @@
       try {
         const tokenParts = this.config.siteToken.split('.');
         if (tokenParts.length !== 3) {
-          console.error('[ReplyX Widget] Неверный формат токена');
           return;
         }
         
         payload = JSON.parse(atob(tokenParts[1]));
         
         if (!payload.allowed_domains) {
-          console.warn('[ReplyX Widget] В токене отсутствуют разрешенные домены');
           return;
         }
       } catch (error) {
-        console.error('[ReplyX Widget] Ошибка декодирования токена:', error);
         return;
       }
       
@@ -273,7 +258,6 @@
       );
       
       if (!isLocallyAllowed) {
-        console.error('[ReplyX Widget] Локальная проверка не пройдена');
         return;
       }
       
@@ -297,7 +281,6 @@
       try {
         widgetConfig = await this.fetchWidgetConfig();
       } catch (error) {
-        console.warn('[ReplyX Widget] Используем настройки по умолчанию из-за ошибки:', error);
         // Продолжаем с настройками по умолчанию
       }
       
@@ -319,7 +302,6 @@
     // Валидация домена с проверкой на сервере
     validateDomain: function() {
       if (!this.config.siteToken) {
-        console.warn('[ReplyX Widget] Отсутствует токен сайта');
         return false;
       }
       
@@ -327,14 +309,12 @@
       try {
         const tokenParts = this.config.siteToken.split('.');
         if (tokenParts.length !== 3) {
-          console.error('[ReplyX Widget] Неверный формат токена');
           return false;
         }
         
         const payload = JSON.parse(atob(tokenParts[1]));
         
         if (!payload.allowed_domains) {
-          console.warn('[ReplyX Widget] В токене отсутствуют разрешенные домены');
           return false;
         }
         
@@ -345,8 +325,6 @@
           .map(domain => domain.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, ''))
           .filter(domain => domain.length > 0);
         
-        console.log('[ReplyX Widget] Локальная проверка - токен:', payload);
-        console.log('[ReplyX Widget] Локальная проверка - домены:', allowedDomains);
         
         const currentDomainClean = currentDomain.replace(/^www\./, '');
         const isLocallyAllowed = allowedDomains.some(allowedDomain => 
@@ -354,11 +332,9 @@
         );
         
         if (!isLocallyAllowed) {
-          console.error('[ReplyX Widget] Локальная проверка не прошла');
           return false;
         }
         
-        console.log('[ReplyX Widget] ✅ Локальная проверка пройдена');
         
         // Дополнительная проверка актуальности на сервере (асинхронно)
         this.validateTokenOnServer(currentDomainClean);
@@ -366,7 +342,6 @@
         return true;
         
       } catch (error) {
-        console.error('[ReplyX Widget] Ошибка валидации домена:', error);
         return false;
       }
     },
@@ -386,17 +361,12 @@
       .then(response => response.json())
       .then(data => {
         if (!data.valid) {
-          console.warn('[ReplyX Widget] Серверная проверка: токен не актуален -', data.reason);
           if (data.reason === 'domains changed' || data.reason === 'No domains configured') {
-            console.warn('[ReplyX Widget] Виджет отключен из-за изменения настроек доменов');
             this.disableWidget('Настройки виджета изменились. Обновите embed-код.');
           }
-        } else {
-          console.log('[ReplyX Widget] ✅ Серверная проверка пройдена');
         }
       })
       .catch(error => {
-        console.warn('[ReplyX Widget] Ошибка серверной проверки:', error);
         // Не блокируем виджет при ошибке сети
       });
     },
@@ -405,7 +375,6 @@
     disableWidget: function(message) {
       if (this.container) {
         this.container.innerHTML = '';
-        console.warn('[ReplyX Widget] Виджет отключен:', message);
       }
     },
     
@@ -535,17 +504,75 @@
           }
         }
         
-        /* Fallback for mobile browsers that don't support dvh */
-        @supports not (height: 100dvh) {
+        /* Fallback for browsers that don't support env() or calc() with env() */
+        @supports not (padding: max(0px, env(safe-area-inset-top))) {
           .replyx-mobile-fullscreen-container {
             height: 100vh;
-            height: calc(100vh - env(safe-area-inset-bottom));
+            padding-top: 20px;
+            padding-bottom: 20px;
           }
-          
-          @media (max-width: 480px) {
-            .replyx-chat-container {
-              height: calc(79vh - env(safe-area-inset-bottom) - 20px);
-            }
+
+          .replyx-mobile-fullscreen-container .replyx-widget-button {
+            top: 20px;
+          }
+
+          .replyx-mobile-fullscreen-container iframe {
+            height: calc(100% - 80px) !important;
+          }
+        }
+
+        /* Fallback for browsers that don't support svh (Small Viewport Height) */
+        @supports not (height: 100svh) {
+          .replyx-mobile-fullscreen-container {
+            /* Используем обычный vh если svh не поддерживается */
+            height: 100vh !important;
+            height: calc(100vh - 40px) !important;
+          }
+        }
+
+        /* iOS Safari specific adjustments */
+        @supports (-webkit-touch-callout: none) {
+          .replyx-mobile-fullscreen-container {
+            /* iOS Safari: учитываем динамическую адресную строку */
+            height: -webkit-fill-available;
+            min-height: calc(100vh - 100px);
+          }
+        }
+
+        /* Дополнительные медиа-запросы для лучшей совместимости */
+        @media (max-width: 480px) {
+          .replyx-chat-container {
+            height: calc(79vh - env(safe-area-inset-bottom) - 20px);
+          }
+        }
+
+        /* Landscape ориентация на мобильных */
+        @media (max-height: 500px) and (orientation: landscape) {
+          .replyx-mobile-fullscreen-container {
+            padding-top: max(10px, env(safe-area-inset-top));
+            padding-bottom: max(10px, env(safe-area-inset-bottom));
+          }
+
+          .replyx-mobile-fullscreen-container .replyx-widget-button {
+            top: max(10px, env(safe-area-inset-top, 10px));
+            width: 32px;
+            height: 32px;
+          }
+
+          .replyx-mobile-fullscreen-container iframe {
+            height: calc(100% - 60px) !important;
+          }
+        }
+
+        /* Очень маленькие экраны (старые мобильные) */
+        @media (max-width: 320px) {
+          .replyx-mobile-fullscreen-container {
+            padding-left: 10px;
+            padding-right: 10px;
+          }
+
+          .replyx-mobile-fullscreen-container .replyx-widget-button {
+            right: 10px;
           }
         }
         
@@ -554,31 +581,44 @@
           top: 0;
           left: 0;
           width: 100vw;
-          height: 100dvh;
+          /* Используем безопасную высоту с учетом всех системных областей */
+          height: 100vh;
+          height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+          /* Для браузеров поддерживающих svh (Small Viewport Height) */
+          height: calc(100svh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
           background: #ffffff;
           z-index: 2147483646;
           pointer-events: auto;
           display: flex;
           flex-direction: column;
-          padding-bottom: env(safe-area-inset-bottom);
+          /* Отступы для системных областей */
+          padding-top: max(20px, env(safe-area-inset-top));
+          padding-bottom: max(20px, env(safe-area-inset-bottom));
+          /* Предотвращаем переполнение */
+          overflow: hidden;
+          box-sizing: border-box;
         }
         
         .replyx-mobile-fullscreen-container .replyx-widget-button {
           position: absolute;
-          top: 20px;
+          top: max(20px, env(safe-area-inset-top, 20px));
           right: 20px;
           width: 40px;
           height: 40px;
           background: rgba(0, 0, 0, 0.1);
           color: #333;
           z-index: 2147483647;
+          flex-shrink: 0;
         }
-        
+
         .replyx-mobile-fullscreen-container iframe {
           width: 100% !important;
-          height: 100% !important;
+          /* Вычитаем высоту кнопки закрытия и отступы */
+          height: calc(100% - 80px) !important;
           border: none !important;
           border-radius: 0 !important;
+          flex: 1;
+          min-height: 0;
         }
         
         .replyx-notification-badge {
@@ -824,19 +864,18 @@
         
         // Safari-совместимая загрузка iframe
         iframe.addEventListener('load', () => {
-          console.log('[ReplyX Widget] iframe loaded successfully');
           iframe.setAttribute('data-loaded', 'true'); // Флаг успешной загрузки
           setTimeout(() => {
             try {
               iframe.focus();
             } catch (e) {
-              console.log('[ReplyX Widget] Focus failed (normal in some browsers)');
+              // Focus failed (normal in some browsers)
             }
           }, 100);
         });
         
         iframe.addEventListener('error', (e) => {
-          console.error('[ReplyX Widget] iframe failed to load:', e);
+          // iframe failed to load
         });
         
         // Safari fallback: Force iframe to reload if not loaded after timeout
@@ -844,11 +883,10 @@
           try {
             // Безопасная проверка загрузки iframe без доступа к contentWindow.document
             if (iframe.src && !iframe.getAttribute('data-loaded')) {
-              console.log('[ReplyX Widget] iframe reload check skipped to avoid CORS errors');
+              // iframe reload check skipped to avoid CORS errors
             }
           } catch (e) {
             // Игнорируем CORS ошибки
-            console.log('[ReplyX Widget] iframe check skipped due to CORS');
           }
         }, 3000);
         
@@ -865,10 +903,8 @@
             }
             
             if (event.data && event.data.type === 'replyX_minimize') {
-              console.log('[DEBUG] Widget received replyX_minimize message');
               this.minimize();
             } else if (event.data && event.data.type === 'CLOSE_CHAT') {
-              console.log('[DEBUG] Widget received CLOSE_CHAT message');
               this.minimize();
             }
           } catch (error) {
@@ -888,7 +924,6 @@
     
     // Сворачиваем чат
     minimize: function() {
-      console.log('[DEBUG] Widget minimize() called');
       
       // Восстанавливаем скролл страницы если был заблокирован
       if (this.isMobileDevice()) {

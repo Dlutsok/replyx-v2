@@ -1,12 +1,31 @@
-# Robots.txt for ReplyX - Temporarily disabled indexing
-# This file prevents search engines from crawling the site during development
-
+# Robots.txt for ReplyX
 User-agent: *
-Disallow: /
 
-# Allow access to specific paths if needed (uncomment when ready)
-# Allow: /api/
-# Allow: /_next/static/
+# Allow public pages
+Allow: /
+Allow: /login
+Allow: /register
+Allow: /legal/
 
-# Sitemap (uncomment when ready for production)
-# Sitemap: https://replyx.ru/sitemap.xml
+# Disallow private areas
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /dialogs/
+Disallow: /balance/
+Disallow: /usage/
+Disallow: /database-explorer/
+Disallow: /ai-assistant/
+Disallow: /verify-email
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /payment/
+Disallow: /assistant/
+Disallow: /start
+Disallow: /help-center
+Disallow: /blog
+
+# Allow static assets
+Allow: /_next/static/
+
+# Sitemap
+Sitemap: https://replyx.ru/sitemap.xml

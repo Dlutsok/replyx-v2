@@ -49,7 +49,6 @@ function parseAllowedDomains(domainsStr) {
 async function validateWidgetToken(token, request) {
   try {
     if (!token) {
-      console.warn("CSP Middleware: Токен не предоставлен")
       return null
     }
 
@@ -57,7 +56,6 @@ async function validateWidgetToken(token, request) {
     const apiParam = request?.nextUrl?.searchParams?.get('api')
     const backendUrl = apiParam || process.env.NEXT_PUBLIC_API_URL || 'https://replyx.ru'
     
-    console.log(`CSP Middleware: Валидация токена через ${backendUrl}/api/validate-widget-token`)
     
     // Вызываем backend API для валидации токена
     const response = await fetch(`${backendUrl}/api/validate-widget-token`, {
@@ -71,18 +69,15 @@ async function validateWidgetToken(token, request) {
     })
 
     if (!response.ok) {
-      console.warn(`CSP Middleware: Backend вернул ошибку: ${response.status}`)
       return null
     }
 
     const result = await response.json()
     
     if (!result.valid) {
-      console.warn(`CSP Middleware: Токен невалидный: ${result.reason}`)
       return null
     }
 
-    console.log(`CSP Middleware: Токен валидный для assistant_id=${result.assistant_id}`)
     
     return {
       valid: true,
@@ -92,7 +87,6 @@ async function validateWidgetToken(token, request) {
     }
     
   } catch (e) {
-    console.error(`CSP Middleware: Ошибка валидации токена: ${e.message}`)
     return null
   }
 }
@@ -185,13 +179,11 @@ export async function middleware(request) {
     return NextResponse.next()
   }
   
-  console.log(`🛡️ CSP Middleware: Обрабатываю iframe запрос: ${pathname}`)
   
   // Получаем токен из query параметров
   const siteToken = searchParams.get('site_token')
   
   if (!siteToken) {
-    console.warn("CSP Middleware: site_token отсутствует в query параметрах")
     // Применяем ограничительный CSP
     const response = NextResponse.next()
     response.headers.set('Content-Security-Policy', generateRestrictiveCSP())
@@ -202,7 +194,6 @@ export async function middleware(request) {
   const tokenInfo = await validateWidgetToken(siteToken, request)
   
   if (!tokenInfo || !tokenInfo.valid) {
-    console.warn("CSP Middleware: Токен невалидный, применяю ограничительный CSP")
     const response = NextResponse.next()
     response.headers.set('Content-Security-Policy', generateRestrictiveCSP())
     return response
@@ -212,7 +203,6 @@ export async function middleware(request) {
   const allowedDomains = parseAllowedDomains(tokenInfo.allowed_domains)
   
   if (allowedDomains.length === 0) {
-    console.warn("CSP Middleware: Нет разрешенных доменов, применяю ограничительный CSP")
     const response = NextResponse.next()
     response.headers.set('Content-Security-Policy', generateRestrictiveCSP())
     return response
@@ -231,8 +221,6 @@ export async function middleware(request) {
 
   const dynamicCSP = generateCSPHeader(allowedDomains, backendOriginOverride)
   
-  console.log(`✅ CSP Middleware: Разрешенные домены для assistant_id=${tokenInfo.assistant_id}: ${allowedDomains.join(', ')}`)
-  console.log(`CSP заголовок: ${dynamicCSP}`)
   
   // Продолжаем с динамическим CSP заголовком
   const response = NextResponse.next()

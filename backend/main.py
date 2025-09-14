@@ -425,15 +425,21 @@ def get_csrf_token(request: Request):
 
 
 @app.get("/health")
-def health_check():
+async def health_check():
     """Health check endpoint для мониторинга состояния приложения"""
     health_status = {"status": "healthy", "timestamp": time.time(), "components": {}}
     
-    # Проверка базы данных
+    # Проверка базы данных (async чтобы не блокировать event loop)
     try:
-        db = SessionLocal()
-        db.execute(text("SELECT 1"))
-        db.close()
+        def check_db():
+            db = SessionLocal()
+            try:
+                db.execute(text("SELECT 1"))
+                return True
+            finally:
+                db.close()
+
+        await asyncio.to_thread(check_db)
         health_status["components"]["database"] = {"status": "healthy"}
     except Exception as e:
         health_status["status"] = "unhealthy"

@@ -134,50 +134,6 @@ export default function SettingsTab({
           </div>
         </div>
 
-        {/* Дополнительные настройки */}
-        <div>
-          <h4 className="text-md font-semibold text-gray-900 mb-4">Дополнительные настройки</h4>
-
-          <div className="space-y-4">
-            <div className="p-3 sm:p-4 rounded-2xl bg-gray-50/50 border border-solid border-gray-200/40 hover:bg-gray-50 hover:border-gray-200/60 transition-all duration-150">
-              <label className="flex items-center justify-between">
-                <div className="flex-1 mr-3">
-                  <span className="text-sm font-medium text-gray-700">Интеграция с сайтом</span>
-                  <p className="text-xs sm:text-sm text-gray-500">Разрешить использование в веб-виджете</p>
-                </div>
-                <div
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                    assistantSettings.website_integration_enabled ? 'bg-[#6334E5]' : 'bg-gray-200'
-                  }`}
-                  onClick={() => handleChange('website_integration_enabled', !assistantSettings.website_integration_enabled)}
-                >
-                  <span className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${
-                    assistantSettings.website_integration_enabled ? 'translate-x-6' : 'translate-x-1'
-                  }`} />
-                </div>
-              </label>
-            </div>
-
-            <div className="p-3 sm:p-4 rounded-2xl bg-gray-50/50 border border-solid border-gray-200/40 hover:bg-gray-50 hover:border-gray-200/60 transition-all duration-150">
-              <label className="flex items-center justify-between">
-                <div className="flex-1 mr-3">
-                  <span className="text-sm font-medium text-gray-700">Логирование диалогов</span>
-                  <p className="text-xs sm:text-sm text-gray-500">Сохранять историю разговоров для аналитики</p>
-                </div>
-                <div
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                    assistantSettings.enable_logging !== false ? 'bg-[#6334E5]' : 'bg-gray-200'
-                  }`}
-                  onClick={() => handleChange('enable_logging', !(assistantSettings.enable_logging !== false))}
-                >
-                  <span className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${
-                    assistantSettings.enable_logging !== false ? 'translate-x-6' : 'translate-x-1'
-                  }`} />
-                </div>
-              </label>
-            </div>
-          </div>
-        </div>
 
         {/* Информация */}
         <div className="bg-gray-50/50 p-3 sm:p-4 rounded-2xl border border-solid border-gray-200/60">

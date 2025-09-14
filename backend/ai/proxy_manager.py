@@ -233,6 +233,7 @@ class ProxyManager:
         # Тайминги из environment
         self.connect_timeout = int(os.getenv('OPENAI_PROXY_CONNECT_TIMEOUT', '5'))
         self.read_timeout = int(os.getenv('OPENAI_PROXY_READ_TIMEOUT', '30'))
+        self.widget_timeout = int(os.getenv('OPENAI_PROXY_WIDGET_TIMEOUT', '15'))  # Более быстрый timeout для виджета
         self.stream_timeout = int(os.getenv('OPENAI_PROXY_STREAM_TIMEOUT', '300'))
         
         logger.info(f"🔗 Инициализирован ProxyManager с {len(self.proxies)} прокси")
@@ -315,21 +316,27 @@ class ProxyManager:
         """Определяет, нужно ли переключиться на другой прокси"""
         return ProxyErrorClassifier.should_switch_proxy(error_type)
     
-    def get_proxy_for_request(self, is_stream: bool = False, is_async: bool = True) -> Tuple[Optional[str], Dict[str, Any]]:
+    def get_proxy_for_request(self, is_stream: bool = False, is_async: bool = True, is_widget: bool = False) -> Tuple[Optional[str], Dict[str, Any]]:
         """
         Возвращает URL прокси и httpx client kwargs для запроса
-        
+
         Args:
             is_stream: Нужен ли длительный timeout для streaming
             is_async: Используется ли AsyncClient (True) или синхронный Client (False)
-        
+            is_widget: Используется ли для widget (более быстрый timeout)
+
         Returns:
             Tuple[proxy_url, client_kwargs]
         """
         proxy = self.get_available_proxy()
         if not proxy:
             # Возвращаем конфигурацию без прокси с оптимизированными таймаутами
-            timeout = self.stream_timeout if is_stream else self.read_timeout
+            if is_stream:
+                timeout = self.stream_timeout
+            elif is_widget:
+                timeout = self.widget_timeout
+            else:
+                timeout = self.read_timeout
             client_kwargs = {
                 "timeout": httpx.Timeout(
                     connect=min(self.connect_timeout, 10),  # Быстрее подключение без прокси
@@ -344,7 +351,12 @@ class ProxyManager:
             return None, client_kwargs
         
         # Выбираем правильный timeout для прокси
-        timeout = self.stream_timeout if is_stream else self.read_timeout
+        if is_stream:
+            timeout = self.stream_timeout
+        elif is_widget:
+            timeout = self.widget_timeout
+        else:
+            timeout = self.read_timeout
         
         # Выбираем правильный transport в зависимости от типа клиента
         transport = httpx.AsyncHTTPTransport(retries=0) if is_async else httpx.HTTPTransport(retries=0)

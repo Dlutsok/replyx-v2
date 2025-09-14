@@ -18,8 +18,7 @@ export default function Document() {
         <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
         <meta httpEquiv="Referrer-Policy" content="origin-when-cross-origin" />
 
-        {/* SEO: Temporarily disable indexing for development */}
-        <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex, nocache" />
+        {/* SEO: Robots tag handled by next.config.js per page basis */}
         
         {/* Yandex.Metrika counter */}
         <script

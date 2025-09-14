@@ -75,8 +75,12 @@ export default function Register() {
     <>
       <Head>
         <title>Регистрация аккаунта - ReplyX</title>
-        <meta name="description" content="Создайте аккаунт ReplyX для доступа к AI-ассистентам и управления диалогами." />
-        <meta name="robots" content="noindex, nofollow" />
+        <meta name="description" content="Создайте аккаунт ReplyX для доступа к AI-ассистентам и управления диалогами с клиентами. Начните автоматизацию поддержки за 15 минут." />
+        <meta name="robots" content="index, follow" />
+        <meta property="og:title" content="Регистрация аккаунта - ReplyX" />
+        <meta property="og:description" content="Создайте аккаунт ReplyX для доступа к AI-ассистентам и управления диалогами с клиентами. Начните автоматизацию поддержки за 15 минут." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://replyx.ru/register" />
       </Head>
       <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white">
       {/* Левая панель с градиентным фоном в стиле дашборда */}
