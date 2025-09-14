@@ -4,10 +4,23 @@ export default function Document() {
   return (
     <Html lang="ru">
       <Head>
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="icon" type="image/svg+xml" href="/Favicon.svg" />
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-        <meta name="theme-color" content="#7C3AED" />
-        
+        <link rel="shortcut icon" href="/favicon.ico" />
+
+        {/* Apple Touch Icons */}
+        <link rel="apple-touch-icon" href="/Favicon.svg" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/Favicon.svg" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/Favicon.svg" />
+        <link rel="apple-touch-icon" sizes="144x144" href="/Favicon.svg" />
+        <link rel="apple-touch-icon" sizes="120x120" href="/Favicon.svg" />
+        <link rel="apple-touch-icon" sizes="114x114" href="/Favicon.svg" />
+        <link rel="apple-touch-icon" sizes="76x76" href="/Favicon.svg" />
+        <link rel="apple-touch-icon" sizes="72x72" href="/Favicon.svg" />
+        <link rel="apple-touch-icon" sizes="57x57" href="/Favicon.svg" />
+
+        <meta name="theme-color" content="#6334E5" />
+
         {/* Safari-specific meta tags */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
