@@ -23,12 +23,8 @@ const RevenueAnalyticsPanel = ({ revenueData, formatters, isLoading }) => {
   // Генерируем данные по дням (заглушка с реальной структурой)
   const dailyRevenue = revenueData?.daily_revenue || [];
   
-  // Генерируем данные методов оплаты (заглушка)
-  const paymentMethods = revenueData?.payment_methods || [
-    { method: 'Банковская карта', count: stats.paying_users * 0.7, amount: stats.total_revenue * 0.7 },
-    { method: 'ЮMoney', count: stats.paying_users * 0.2, amount: stats.total_revenue * 0.2 },
-    { method: 'QIWI', count: stats.paying_users * 0.1, amount: stats.total_revenue * 0.1 }
-  ];
+  // Данные методов оплаты из API (без заглушек)
+  const paymentMethods = revenueData?.payment_methods || [];
   
   const topSpenders = revenueData?.top_paying_users || [];
 

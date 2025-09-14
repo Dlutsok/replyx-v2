@@ -277,6 +277,46 @@ class EmailService:
             text_content=template_data["text"]
         )
 
+    def send_new_user_admin_notification(
+        self,
+        admin_email: str,
+        user_email: str,
+        user_name: str,
+        user_id: int,
+        registration_time: Optional[str] = None
+    ) -> bool:
+        """Отправляет уведомление админу о новом пользователе"""
+
+        # Если время регистрации не передано, используем текущее время в московском поясе
+        if registration_time is None:
+            moscow_tz = pytz.timezone('Europe/Moscow')
+            local_time = datetime.now(moscow_tz)
+            registration_time = local_time.strftime("%d.%m.%Y %H:%M")
+
+        # Получаем шаблон
+        template_data = EmailTemplates.new_user_admin_notification(
+            user_email=user_email,
+            user_name=user_name,
+            registration_time=registration_time,
+            user_id=user_id,
+            base_url=BASE_URL
+        )
+
+        # Отправляем письмо
+        success = self._send_email(
+            to_email=admin_email,
+            subject=template_data["subject"],
+            html_content=template_data["html"],
+            text_content=template_data["text"]
+        )
+
+        if success:
+            logger.info(
+                f"New user admin notification sent to {admin_email} for user {user_email} (ID: {user_id})"
+            )
+
+        return success
+
 
 # Глобальный экземпляр сервиса
 email_service = EmailService()

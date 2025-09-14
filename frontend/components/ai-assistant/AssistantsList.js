@@ -1,26 +1,85 @@
 import { useRouter } from 'next/router';
+import { useState, useRef, useEffect } from 'react';
 import {
   FiCpu,
-  FiPlus
+  FiPlus,
+  FiMoreVertical,
+  FiTrash2
 } from 'react-icons/fi';
 import styles from '../../styles/pages/AISettings.module.css';
+import dropdownStyles from '../../styles/components/AssistantDropdown.module.css';
 
 
 
 
 const AssistantCard = ({ assistant, onSelect, onEdit, onDelete }) => {
   const router = useRouter();
-  
+  const [showDropdown, setShowDropdown] = useState(false);
+  const menuRef = useRef(null);
+
   const handleCardClick = () => {
     router.push(`/assistant/${assistant.id}`);
   };
 
+  const handleMenuClick = (e) => {
+    e.stopPropagation();
+    setShowDropdown(!showDropdown);
+  };
+
+  const handleDeleteClick = (e) => {
+    e.stopPropagation();
+    onDelete(assistant);
+    setShowDropdown(false);
+  };
+
+  // Глобальный обработчик для закрытия dropdown при клике в любом месте
+  useEffect(() => {
+    const handleGlobalClick = (event) => {
+      // Если клик был не по меню - закрываем dropdown
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    if (showDropdown) {
+      document.addEventListener('click', handleGlobalClick);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleGlobalClick);
+    };
+  }, [showDropdown]);
+
   return (
     <div
       onClick={handleCardClick}
-      className="bg-white rounded-xl border border-gray-200/50 p-3 sm:p-4 cursor-pointer hover:border-gray-300/70 transition-all duration-150 active:scale-95"
+      className={`bg-white rounded-xl border border-gray-200/50 p-3 sm:p-4 cursor-pointer hover:border-gray-300/70 transition-all duration-150 active:scale-95 ${dropdownStyles.cardContainer} relative`}
     >
-    {/* Заголовок с иконкой и меню */}
+    {/* Кнопка меню с тремя точками */}
+    <div className={dropdownStyles.menuContainer} ref={menuRef}>
+      <button
+        className={dropdownStyles.menuButton}
+        onClick={handleMenuClick}
+        title="Действия"
+      >
+        <FiMoreVertical size={14} />
+      </button>
+
+      {/* Dropdown меню */}
+      {showDropdown && (
+        <div className={dropdownStyles.dropdown}>
+          <button
+            className={dropdownStyles.deleteButton}
+            onClick={handleDeleteClick}
+          >
+            <FiTrash2 className={dropdownStyles.deleteIcon} />
+            Удалить
+          </button>
+        </div>
+      )}
+    </div>
+
+    {/* Заголовок с иконкой */}
     <div className="flex items-start justify-between mb-2 sm:mb-3">
       <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
         <div className="w-6 h-6 sm:w-7 sm:h-7 bg-[#6334E5]/20 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -35,7 +94,6 @@ const AssistantCard = ({ assistant, onSelect, onEdit, onDelete }) => {
           </p>
         </div>
       </div>
-
     </div>
 
     {/* Статус */}

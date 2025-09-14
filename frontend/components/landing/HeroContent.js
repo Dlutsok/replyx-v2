@@ -149,7 +149,9 @@ const HeroContent = () => {
       {/* Новый профессиональный заголовок */}
       <motion.h1
         className={`${DESIGN_TOKENS.typography.h1} text-left text-3xl sm:text-4xl md:text-5xl`}
-        {...DESIGN_TOKENS.animation.withDelay(0.1)}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0, ease: "easeOut" }}
       >
         Автоматизируйте общение <br/>с клиентами через <span style={{
           background: 'linear-gradient(269deg, rgb(99, 52, 229) 28.67%, rgb(117, 197, 237) 100%)',
@@ -163,15 +165,19 @@ const HeroContent = () => {
       <motion.p
         className={DESIGN_TOKENS.typography.sectionSubtitle + ' max-w-3xl text-left'}
         style={{marginTop: '0.75rem'}}
-        {...DESIGN_TOKENS.animation.withDelay(0.2)}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
       >
       Виджет на сайт за 15 минут без программистов
       </motion.p>
 
       {/* Бейджи с ключевыми метриками */}
-      <motion.div 
+      <motion.div
         className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2"
-        {...DESIGN_TOKENS.animation.withDelay(0.25)}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.05, ease: "easeOut" }}
       >
         {[
           { icon: LightningIcon, label: '2,7 секунды', sub: 'время ответа' },
@@ -190,9 +196,11 @@ const HeroContent = () => {
       </motion.div>
 
       {/* CTA и доверие */}
-      <motion.div 
+      <motion.div
         className="pt-4"
-        {...DESIGN_TOKENS.animation.withDelay(0.3)}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1, ease: "easeOut" }}
       >
         <Button className="w-full sm:w-auto" onClick={handleStartCTA} variant="primary" size="default">
           Создать AI-ассистента

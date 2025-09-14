@@ -377,8 +377,8 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
           await createBotInstance();
           updateWizardData({ botUrl: `https://t.me/${botInfo.username}` });
         } else if (wizardData.integrationChannel === 'website') {
-          const embedCode = await getEmbedCode();
-          updateWizardData({ embedCode });
+          // Веб-виджет настраивается позже в настройках ассистента
+          // Не генерируем embed-код на этом этапе
         }
       } catch (error) {
         showError('Ошибка настройки интеграции: ' + error.message);
@@ -613,6 +613,12 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
                   </div>
                 </div>
 
+                {wizardData.integrationChannel === 'website' && (
+                  <div className={styles.inlineNoticeInfo}>
+                    Для настройки веб-виджета перейдите в настройки ассистента после его создания
+                  </div>
+                )}
+
                 {wizardData.integrationChannel === 'telegram' && (
                   <div className={styles.formGroup}>
                     <label className={styles.label}>Токен Telegram бота *</label>
@@ -794,25 +800,22 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
                     </div>
                   )}
 
-                  {wizardData.integrationChannel === 'website' && wizardData.embedCode && (
+                  {wizardData.integrationChannel === 'website' && (
                     <div className={styles.resultCard}>
-                      <h4>Код для сайта</h4>
-                      <div className={styles.codeContainer}>
-                        <div className={styles.codeHeader}>
-                          <span className={styles.codeLang}>HTML</span>
-                          <button
-                            onClick={() => navigator.clipboard.writeText(wizardData.embedCode)}
-                            className={styles.copyButton}
-                            title="Скопировать код"
-                            aria-label="Скопировать код для вставки на сайт"
-                          >
-                            <FiCopy size={12} />
-                            Скопировать
-                          </button>
-                        </div>
-                        <pre className={styles.codeBlock}><code>{wizardData.embedCode}</code></pre>
+                      <h4>Веб-виджет</h4>
+                      <p>Для настройки и получения кода веб-виджета перейдите в настройки ассистента. Там вы сможете настроить внешний вид, домены и другие параметры виджета.</p>
+                      <div style={{ marginTop: '16px' }}>
+                        <button
+                          className={styles.settingsButton}
+                          onClick={() => {
+                            window.location.href = `/assistant/${wizardData.assistantId}`;
+                          }}
+                          style={{ fontSize: '14px', padding: '8px 12px' }}
+                        >
+                          <FiSettings size={16} />
+                          Перейти к настройкам
+                        </button>
                       </div>
-                      <p className={styles.embedHint}>Разместите этот код перед тегом &lt;/body&gt; на вашем сайте.</p>
                     </div>
                   )}
 

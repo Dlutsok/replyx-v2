@@ -135,7 +135,14 @@ export default function Register() {
       </div>
 
       {/* Правая панель — форма регистрации в стиле дашборда */}
-      <div className="flex items-center justify-center px-4 sm:px-6 xl:px-8 py-6 bg-white">
+      <div className="flex items-center justify-center px-4 sm:px-6 xl:px-8 py-6 bg-white relative">
+        {/* Мобильный логотип */}
+        <div className="absolute top-4 left-4 lg:hidden z-10">
+          <Link href="/" className="inline-flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-xl">
+            <Image src="/favicon.svg" alt="ReplyX" width={32} height={32} />
+          </Link>
+        </div>
+
         <div className="w-full max-w-md">
           <div className="bg-white rounded-xl border border-gray-200 shadow-lg hover:shadow-xl transition-shadow duration-300 p-6 sm:p-8">
             {/* Welcome Section в стиле дашборда */}
@@ -260,8 +267,7 @@ export default function Register() {
                 </div>
               )}
 
-              {/* Dev режим: регистрация временно отключена */}
-              {/* <button
+              <button
                 type="submit"
                 disabled={isLoading}
                 className={`w-full rounded-xl px-6 py-3 text-white font-semibold transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-primary-200 ${
@@ -271,12 +277,7 @@ export default function Register() {
                 }`}
               >
                 {isLoading ? 'Регистрируем...' : 'Зарегистрироваться'}
-              </button> */}
-              
-              {/* Временная заглушка */}
-              <div className="w-full rounded-xl px-6 py-3 text-center bg-gray-100 text-gray-600 font-semibold">
-                Регистрация временно недоступна
-              </div>
+              </button>
 
             </form>
 

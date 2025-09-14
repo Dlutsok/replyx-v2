@@ -1262,13 +1262,15 @@ async def get_revenue_analytics(
             "growth_absolute": revenue_current_period - revenue_prev_period
         }
         
-        # Ежедневная выручка за последние 30 дней
+        # Ежедневная выручка за последние дни (в хронологическом порядке)
         daily_revenue = []
-        for i in range(min(30, period_days)):
+        days_to_show = min(30, period_days)
+
+        for i in range(days_to_show - 1, -1, -1):  # От старого к новому
             day = now - timedelta(days=i)
             day_start = day.replace(hour=0, minute=0, second=0, microsecond=0)
             day_end = day_start + timedelta(days=1)
-            
+
             daily_revenue_amount = db.query(
                 func.sum(models.BalanceTransaction.amount)
             ).filter(
@@ -1276,18 +1278,44 @@ async def get_revenue_analytics(
                 models.BalanceTransaction.created_at < day_end,
                 models.BalanceTransaction.transaction_type == 'topup'
             ).scalar()
-            
+
             daily_revenue.append({
                 "date": day_start.strftime('%Y-%m-%d'),
                 "revenue": float(daily_revenue_amount or 0)
             })
         
-        # Данные методов оплаты (заглушка)
-        payment_methods = [
-            {"method": "Банковская карта", "count": int(topup_transactions * 0.7), "amount": revenue_current_period * 0.7},
-            {"method": "ЮMoney", "count": int(topup_transactions * 0.2), "amount": revenue_current_period * 0.2},
-            {"method": "QIWI", "count": int(topup_transactions * 0.1), "amount": revenue_current_period * 0.1}
-        ]
+        # Данные методов оплаты (из реальных платежей)
+        payment_methods_query = db.query(
+            models.Payment.payment_method,
+            func.count(models.Payment.id).label('count'),
+            func.sum(models.Payment.amount).label('amount')
+        ).filter(
+            models.Payment.status == 'completed',
+            models.Payment.created_at >= period_start
+        ).group_by(models.Payment.payment_method).all()
+
+        # Маппинг названий методов оплаты
+        method_names = {
+            'yookassa': 'ЮKassa',
+            'tinkoff': 'T-Bank',
+            'bank_card': 'Банковская карта',
+            'qiwi': 'QIWI',
+            'webmoney': 'WebMoney',
+            'sberbank': 'Сбербанк Онлайн'
+        }
+
+        payment_methods = []
+        for method_data in payment_methods_query:
+            method_name = method_names.get(method_data.payment_method, method_data.payment_method)
+            payment_methods.append({
+                "method": method_name,
+                "count": method_data.count,
+                "amount": float(method_data.amount or 0)
+            })
+
+        # Если нет данных, показываем пустой список вместо заглушки
+        if not payment_methods:
+            payment_methods = []
         
         return schemas.AdminRevenueAnalytics(
             total_revenue=total_revenue,

@@ -170,8 +170,8 @@ def get_openai_api_key() -> Optional[str]:
     return get_secret('OPENAI_API_KEY', 'OPENAI_API_KEY_FILE')
 
 
-def get_yandex_smtp_credentials() -> tuple[Optional[str], Optional[str]]:
-    """Получает учетные данные для Yandex SMTP"""
-    user = get_secret('YANDEX_SMTP_USER', 'YANDEX_SMTP_USER_FILE')
-    password = get_secret('YANDEX_SMTP_PASS', 'YANDEX_SMTP_PASS_FILE')
+def get_smtp_credentials() -> tuple[Optional[str], Optional[str]]:
+    """Получает учетные данные для SMTP"""
+    user = get_secret('SMTP_USER', 'SMTP_USER_FILE')
+    password = get_secret('SMTP_PASSWORD', 'SMTP_PASSWORD_FILE')
     return user, password

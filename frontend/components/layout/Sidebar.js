@@ -90,7 +90,7 @@ const CompanyPopup = ({ isOpen, onClose }) => {
 
         <div className={styles.popupFooter}>
           <p className={styles.popupContact}>
-            Есть вопросы? <a href="/help-center">Свяжитесь с нами</a>
+            Есть вопросы? <a href="mailto:info@replyx.ru">Свяжитесь с нами</a>
           </p>
         </div>
       </div>

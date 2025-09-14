@@ -15,6 +15,7 @@ import requests
 import json
 import base64
 from typing import List, Optional
+from integrations.email_service import email_service
 
 
 logger = logging.getLogger(__name__)
@@ -62,7 +63,7 @@ log_yookassa_mode()
 @rate_limit_api(limit=10, window=60)  # 10 запросов в минуту
 async def create_payment(
     request: Request,
-    amount: float = Form(..., gt=0, description="Сумма платежа в рублях"),
+    amount: float = Form(..., ge=500, description="Сумма платежа в рублях (минимум 500₽)"),
     email: str = Form(None, description="Email покупателя для чека"),
     phone: str = Form(None, description="Телефон покупателя"),
     name: str = Form(None, description="Имя покупателя"),
@@ -90,6 +91,10 @@ async def create_payment(
         user = current_user  # current_user уже является объектом User
         if not user:
             raise HTTPException(status_code=404, detail="Пользователь не найден")
+
+        # Дополнительная проверка минимальной суммы
+        if amount < 500:
+            raise HTTPException(status_code=400, detail="Минимальная сумма пополнения составляет 500 рублей")
             
         logger.info(f"   👤 Email пользователя из БД: '{user.email}' (тип: {type(user.email)})")
         
@@ -351,6 +356,28 @@ async def yookassa_webhook(
                 db.add(transaction)
                 
                 logger.info(f"💰 Пополнен баланс пользователя {user.id}: {old_balance} + {payment.amount} = {new_balance} руб.")
+
+                # Отправляем email подтверждения пополнения
+                try:
+                    messages_count = int(float(payment.amount) / 5)
+
+                    logger.info(f"📧 Отправляем email подтверждение пополнения на {user.email}")
+                    success = email_service.send_payment_confirmation_email(
+                        to_email=user.email,
+                        amount=float(payment.amount),
+                        messages_count=messages_count,
+                        current_balance=int(new_balance / 5),
+                        bonus_amount=None
+                    )
+
+                    if success:
+                        logger.info(f"✅ Email подтверждение пополнения отправлено на {user.email} на сумму {payment.amount} руб.")
+                    else:
+                        logger.warning(f"⚠️ Не удалось отправить email подтверждение на {user.email}")
+
+                except Exception as e:
+                    logger.error(f"❌ Ошибка отправки email подтверждения на {user.email}: {e}")
+                    # Не прерываем процесс - письмо не критично для пополнения баланса
             else:
                 logger.error(f"Пользователь {payment.user_id} не найден для пополнения баланса")
         

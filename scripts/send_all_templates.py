@@ -109,7 +109,7 @@ def send_all_templates_to_email(target_email: str):
         print("💡 Некоторые письма могут попасть в папку 'Спам'")
 
 def main():
-    target_email = "dlutsok13@yandex.ru"
+    target_email = "dlutsok13@ya.ru"
     
     print("🔧 ReplyX Email Templates Sender")
     print(f"📧 Целевая почта: {target_email}")

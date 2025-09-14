@@ -92,8 +92,8 @@ export default function Balance() {
       return;
     }
 
-    if (parseFloat(rechargeAmount) < 1) {
-      setMessage('Минимальная сумма пополнения составляет 1 рубль');
+    if (parseFloat(rechargeAmount) < 500) {
+      setMessage('Минимальная сумма пополнения составляет 500 рублей');
       setMessageType('error');
       return;
     }
@@ -315,15 +315,15 @@ export default function Balance() {
                       type="number"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
-                      placeholder="1000"
-                      min="1"
+                      placeholder="500"
+                      min="500"
                       max="50000"
                       className="w-full px-4 py-3 text-2xl font-bold border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-3 focus:ring-[#6334E5]/20 focus:border-[#6334E5] transition-all text-center bg-gray-50"
                     />
                     <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl font-bold">₽</div>
                   </div>
                   
-                  {amount && parseFloat(amount) >= 1 && (
+                  {amount && parseFloat(amount) >= 500 && (
                     <div className="mt-2 text-center">
                       <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#6334E5]/10 text-[#6334E5] rounded-lg text-xs font-medium">
                         <FiZap size={12} />
@@ -358,7 +358,7 @@ export default function Balance() {
                   <LoadingButton
                     onClick={() => handleRecharge(amount)}
                     loading={loading}
-                    disabled={!amount || parseFloat(amount) < 1}
+                    disabled={!amount || parseFloat(amount) < 500}
                     className="w-full py-3 text-base font-semibold bg-gradient-to-r from-[#6334E5] to-[#7C3AED] disabled:from-gray-300 disabled:to-gray-400 text-white rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
                   >
                     <FiCreditCard size={16} />
@@ -366,7 +366,7 @@ export default function Balance() {
                   </LoadingButton>
                   
                   <div className="text-xs text-gray-500 mt-2 text-center">
-                    Минимум 1₽ • Максимум 50,000₽ • Без комиссий
+                    Минимум 500₽ • Максимум 50,000₽ • Без комиссий
                   </div>
                 </div>
                 

@@ -170,7 +170,13 @@ export default function ResetPassword() {
                     </div>
 
                     {/* Правая панель — ошибка в стиле дашборда */}
-                    <div className="flex items-center justify-center px-4 sm:px-6 xl:px-8 py-6 bg-white">
+                    <div className="flex items-center justify-center px-4 sm:px-6 xl:px-8 py-6 bg-white relative">
+                        {/* Мобильный логотип */}
+                        <div className="absolute top-4 left-4 lg:hidden z-10">
+                            <Link href="/" className="inline-flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-xl">
+                                <Image src="/favicon.svg" alt="ReplyX" width={32} height={32} />
+                            </Link>
+                        </div>
                         <div className="w-full max-w-md">
                             <div className="bg-white rounded-xl border border-gray-200 shadow-lg hover:shadow-xl transition-shadow duration-300 p-6 sm:p-8">
                                 <div className="text-center mb-6">
@@ -271,7 +277,13 @@ export default function ResetPassword() {
                     </div>
 
                     {/* Правая панель — ошибка в стиле дашборда */}
-                    <div className="flex items-center justify-center px-4 sm:px-6 xl:px-8 py-6 bg-white">
+                    <div className="flex items-center justify-center px-4 sm:px-6 xl:px-8 py-6 bg-white relative">
+                        {/* Мобильный логотип */}
+                        <div className="absolute top-4 left-4 lg:hidden z-10">
+                            <Link href="/" className="inline-flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-xl">
+                                <Image src="/favicon.svg" alt="ReplyX" width={32} height={32} />
+                            </Link>
+                        </div>
                         <div className="w-full max-w-md">
                             <div className="bg-white rounded-xl border border-gray-200 shadow-lg hover:shadow-xl transition-shadow duration-300 p-6 sm:p-8">
                                 <div className="text-center mb-6">
@@ -372,7 +384,13 @@ export default function ResetPassword() {
                     </div>
 
                     {/* Правая панель — загрузка в стиле дашборда */}
-                    <div className="flex items-center justify-center px-4 sm:px-6 xl:px-8 py-6 bg-white">
+                    <div className="flex items-center justify-center px-4 sm:px-6 xl:px-8 py-6 bg-white relative">
+                        {/* Мобильный логотип */}
+                        <div className="absolute top-4 left-4 lg:hidden z-10">
+                            <Link href="/" className="inline-flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-xl">
+                                <Image src="/favicon.svg" alt="ReplyX" width={32} height={32} />
+                            </Link>
+                        </div>
                         <div className="w-full max-w-md">
                             <div className="bg-white rounded-xl border border-gray-200 shadow-lg hover:shadow-xl transition-shadow duration-300 p-6 sm:p-8">
                                 <div className="text-center mb-6">
@@ -460,7 +478,14 @@ export default function ResetPassword() {
                 </div>
 
                 {/* Правая панель — форма сброса пароля в стиле дашборда */}
-                <div className="flex items-center justify-center px-4 sm:px-6 xl:px-8 py-6 bg-white">
+                <div className="flex items-center justify-center px-4 sm:px-6 xl:px-8 py-6 bg-white relative">
+                    {/* Мобильный логотип */}
+                    <div className="absolute top-4 left-4 lg:hidden z-10">
+                        <Link href="/" className="inline-flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-xl">
+                            <Image src="/favicon.svg" alt="ReplyX" width={32} height={32} />
+                        </Link>
+                    </div>
+
                     <div className="w-full max-w-md">
                         <div className="bg-white rounded-xl border border-gray-200 shadow-lg hover:shadow-xl transition-shadow duration-300 p-6 sm:p-8">
                                                             {/* Welcome Section в стиле дашборда */}

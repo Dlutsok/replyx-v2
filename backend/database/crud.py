@@ -75,7 +75,10 @@ def delete_user(db: Session, user_id: int):
         
         # ЭТАП 1: Удаляем записи без FK зависимостей от других таблиц
         print("[CRUD] Этап 1: Очистка записей без FK зависимостей...")
-        
+
+        # Start page events
+        db.execute(text("DELETE FROM start_page_events WHERE user_id = :user_id"), {"user_id": user_id})
+
         # Handoff audit (может ссылаться на dialog_id)
         db.execute(text("DELETE FROM handoff_audit WHERE user_id = :user_id"), {"user_id": user_id})
         
@@ -139,9 +142,12 @@ def delete_user(db: Session, user_id: int):
         db.execute(text("DELETE FROM organization_features WHERE owner_id = :user_id"), {"user_id": user_id})
         
         print("[CRUD] Этап 4: Удаление финансовых записей...")
-        
+
         # ЭТАП 4: Финансовые записи (КРИТИЧНО! Тут была ошибка)
-        
+
+        # Payments (должны быть удалены перед balance_transactions, так как могут быть связаны)
+        db.execute(text("DELETE FROM payments WHERE user_id = :user_id"), {"user_id": user_id})
+
         # Balance transactions (зависят от user_balances)
         db.execute(text("DELETE FROM balance_transactions WHERE user_id = :user_id"), {"user_id": user_id})
         

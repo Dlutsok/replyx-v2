@@ -37,7 +37,8 @@ def test_timezone_fix():
     # Вычисляем разницу
     time_diff = (local_time - utc_time.replace(tzinfo=None)).total_seconds() / 3600
     print(f"   Разница с UTC: {time_diff:.1f} часов")
-    print("✅ Timezone исправлен!"    return True
+    print("✅ Timezone исправлен!")
+    return True
 
 def test_handoff_notification(target_email: str = "dlutsok13@yandex.ru"):
     """Тестирует отправку handoff уведомления"""

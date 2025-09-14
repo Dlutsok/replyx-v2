@@ -263,25 +263,29 @@ class EmailTemplates:
         """Приветственное письмо после подтверждения email"""
         
         content = f"""
-        <h1 class="title">{SVGIcons.sparkles(color="#fbbf24", size="20")}Привет! Ваш аккаунт готов к работе</h1>
-        
+        <h1 class="title">{SVGIcons.sparkles(color="#fbbf24", size="20")}Добро пожаловать в ReplyX!</h1>
+
         <p class="text">
-            {SVGIcons.check_circle(color="#10b981", size="16")}Отлично! Ваш email подтвержден, и теперь вы можете пользоваться нашим AI-помощником.
+            Вы сделали первый шаг к автоматизации поддержки клиентов.
         </p>
-        
+
+        <p class="text">
+            <strong>Сейчас доступно:</strong>
+        </p>
+
         <div class="guide">
-            <div class="guide-item">{SVGIcons.arrow_right(color="#6366f1", size="14")}1. Задайте первый вопрос</div>
-            <div class="guide-item">{SVGIcons.arrow_right(color="#6366f1", size="14")}2. Пополните баланс для безлимитного общения</div>
-            <div class="guide-item">{SVGIcons.arrow_right(color="#6366f1", size="14")}3. Сохраняйте диалоги и документы</div>
+            <div class="guide-item">• Быстрый запуск — настройка за 15 минут</div>
+            <div class="guide-item">• AI, который знает всё о вашей компании</div>
+            <div class="guide-item">• Экономия до 70% на поддержке</div>
         </div>
-        
+
         <p class="text">
-            ReplyX работает просто: задавайте вопросы — получайте умные ответы. 
-            Оплата только за отправленные сообщения, никаких скрытых платежей.
+            <strong>Ваш бонус:</strong> первые 50 сообщений бесплатно.<br>
+            Подключите виджет и протестируйте прямо сегодня.
         </p>
-        
+
         <div class="cta-center">
-            <a href="{base_url}/dashboard" class="cta-button">Начать пользоваться</a>
+            <a href="{base_url}/ai-assistant" class="cta-button">Создать ассистента</a>
         </div>
         """
         
@@ -294,7 +298,7 @@ class EmailTemplates:
         return {
             "subject": "Добро пожаловать в ReplyX! 🚀",
             "html": html,
-            "text": f"Привет! Ваш аккаунт в ReplyX готов к работе. Перейдите по ссылке: {base_url}/dashboard"
+            "text": f"Добро пожаловать в ReplyX! Вы сделали первый шаг к автоматизации поддержки клиентов. Ваш бонус: первые 50 сообщений бесплатно. Создать ассистента: {base_url}/ai-assistant"
         }
     
     @staticmethod
@@ -540,4 +544,59 @@ class EmailTemplates:
             "subject": subject,
             "html": html,
             "text": f"Требуется оператор для диалога #{dialog_id}. Причина: {reason_text}. Последнее сообщение: \"{user_preview}\". Ссылка: {dialog_link}"
+        }
+
+    @staticmethod
+    def new_user_admin_notification(
+        user_email: str,
+        user_name: str,
+        registration_time: str,
+        user_id: int,
+        base_url: str = "https://replyx.ru"
+    ) -> Dict[str, str]:
+        """Email уведомления админу о новом пользователе"""
+
+        content = f"""
+        <h1 class="title">{SVGIcons.sparkles(color="#10b981", size="20")}Новый пользователь зарегистрировался</h1>
+
+        <p class="text">
+            {SVGIcons.user(color="#7c3aed", size="16")}В системе ReplyX появился новый пользователь.
+        </p>
+
+        <div class="guide">
+            <div class="guide-item">{SVGIcons.arrow_right(color="#6366f1", size="14")}<strong>Email:</strong> {user_email}</div>
+            <div class="guide-item">{SVGIcons.arrow_right(color="#6366f1", size="14")}<strong>Имя:</strong> {user_name}</div>
+            <div class="guide-item">{SVGIcons.arrow_right(color="#6366f1", size="14")}<strong>ID:</strong> #{user_id}</div>
+            <div class="guide-item">{SVGIcons.clock(color="#f59e0b", size="14")}<strong>Время регистрации:</strong> {registration_time}</div>
+        </div>
+
+        <div class="highlight">
+            Пользователь прошёл подтверждение email и получил доступ к личному кабинету ReplyX.
+        </div>
+
+        <p class="text">
+            {SVGIcons.chat_alt(color="#3b82f6", size="16")}Рекомендуем проследить первые шаги нового пользователя в системе.
+        </p>
+
+        <div class="cta-center">
+            <a href="{base_url}/admin/users?filter={user_email}" class="cta-button">Открыть профиль в админке</a>
+        </div>
+
+        <p class="text" style="font-size: 14px; color: {EmailTemplateConfig.MEDIUM_GRAY};">
+            Это автоматическое уведомление о новой регистрации в ReplyX.
+        </p>
+        """
+
+        subject = f"ReplyX: Новый пользователь {user_name} ({user_email})"
+
+        template = Template(EmailTemplates._get_base_template())
+        html = template.render(
+            subject=subject,
+            content=content
+        )
+
+        return {
+            "subject": subject,
+            "html": html,
+            "text": f"Новый пользователь зарегистрировался в ReplyX. Email: {user_email}, Имя: {user_name}, ID: #{user_id}, Время: {registration_time}"
         }

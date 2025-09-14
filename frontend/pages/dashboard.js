@@ -379,6 +379,9 @@ const Dashboard = React.memo(function Dashboard() {
               </span>
             </div>
           </div>
+          <div className={dashStyles.metricSubtitle}>
+            {loading ? '...' : `≈ ${Math.floor((balance?.current || 0) / 5)} сообщений`}
+          </div>
         </div>
         </div>
       )}

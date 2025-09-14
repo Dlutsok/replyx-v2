@@ -51,24 +51,30 @@ def send_confirmation_email(to_email, code):
       <body style='background:#fafbfc;padding:24px;'>
         <div style='max-width:420px;margin:auto;background:#fff;border-radius:8px;padding:32px 24px 24px 24px;font-family:sans-serif;color:#222;'>
           <p style='margin-top:0;'>Здравствуйте!</p>
-          <p>Ваш код подтверждения почты в <b>AI-ассистенте</b>:</p>
+          <p>Ваш код подтверждения почты в <b>ReplyX</b>:</p>
           <div style='background:#f4f5f7;border-radius:6px;padding:18px 0;text-align:center;font-size:2rem;font-weight:bold;letter-spacing:2px;margin:16px 0 20px 0;'>
             {code}
           </div>
           <p style='margin:0 0 12px 0;color:#555;'>Код действителен в течение 15 минут.</p>
-          <p style='margin:0 0 18px 0;color:#888;font-size:0.97em;'>Если вы не запрашивали подтверждение почты для аккаунта в AI-ассистенте, просто проигнорируйте это письмо.</p>
-          <div style='margin-top:32px;color:#888;font-size:0.95em;'>— Команда AI-ассистента</div>
+          <p style='margin:0 0 18px 0;color:#888;font-size:0.97em;'>Если вы не запрашивали подтверждение почты для аккаунта в ReplyX, просто проигнорируйте это письмо.</p>
+          <div style='margin-top:32px;color:#888;font-size:0.95em;'>— Команда ReplyX</div>
         </div>
       </body>
     </html>
     """
     msg = MIMEText(html, "html")
     msg['Subject'] = 'Код подтверждения регистрации'
-    msg['From'] = YANDEX_SMTP_USER
+    msg['From'] = os.getenv('FROM_EMAIL', 'info@replyx.ru')
     msg['To'] = to_email
     try:
-        with smtplib.SMTP_SSL('smtp.yandex.ru', 465) as server:
-            server.login(YANDEX_SMTP_USER, YANDEX_SMTP_PASS)
+        smtp_server = os.getenv('SMTP_SERVER', 'smtp.timeweb.ru')
+        smtp_port = int(os.getenv('SMTP_PORT', '2525'))
+        smtp_user = os.getenv('SMTP_USER', 'info@replyx.ru')
+        smtp_password = os.getenv('SMTP_PASSWORD')
+
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_user, smtp_password)
             server.send_message(msg)
     except Exception as e:
         print(f"[EMAIL ERROR] Не удалось отправить письмо с кодом на {to_email}: {e}")

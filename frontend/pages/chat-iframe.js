@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import Head from 'next/head';
 
 // Динамическое определение API URL
 const getApiUrl = () => {
@@ -1461,6 +1462,9 @@ export default function ChatIframe() {
   // Основной интерфейс чата
   return (
     <>
+      <Head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+      </Head>
       <style>{styles}</style>
       <div style={{
         width: '100%',

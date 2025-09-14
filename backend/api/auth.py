@@ -104,7 +104,21 @@ def register(user: schemas.UserCreate, request: Request, db: Session = Depends(g
         ip_address=ip_address,
         user_agent=user_agent
     )
-    
+
+    # Отправляем уведомление админу о новом пользователе
+    try:
+        admin_email = "dlutsok13@ya.ru"
+        email_service.send_new_user_admin_notification(
+            admin_email=admin_email,
+            user_email=db_user.email,
+            user_name=db_user.first_name or "Пользователь",
+            user_id=db_user.id
+        )
+        logger.info(f"Admin notification sent for new user {db_user.email}")
+    except Exception as e:
+        logger.error(f"Failed to send admin notification for new user {db_user.email}: {e}")
+        # Не прерываем регистрацию, если уведомление не отправилось
+
     return db_user
 
 @router.post("/login")

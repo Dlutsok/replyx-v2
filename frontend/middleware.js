@@ -129,7 +129,9 @@ function generateCSPHeader(allowedDomains, backendOriginOverride) {
     "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:",
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:",
     "style-src 'self' 'unsafe-inline' https:",
-    "img-src 'self' data: blob: https:",
+    process.env.NODE_ENV === 'development'
+      ? "img-src 'self' data: blob: https: http://localhost:8000"
+      : "img-src 'self' data: blob: https:",
     `connect-src 'self' https: wss: ws: ${backendOrigin}`,
     "font-src 'self' https: data:"
   ].join('; ')
@@ -162,7 +164,9 @@ function generateRestrictiveCSP() {
     `default-src ${defaultSrc}`,
     `script-src ${scriptSrc}`,
     `style-src ${styleSrc}`,
-    "img-src 'self' data: blob: https:",
+    process.env.NODE_ENV === 'development'
+      ? "img-src 'self' data: blob: https: http://localhost:8000"
+      : "img-src 'self' data: blob: https:",
     `connect-src ${connectSrc}`,
     "font-src 'self' https: data:"
   ].join('; ')

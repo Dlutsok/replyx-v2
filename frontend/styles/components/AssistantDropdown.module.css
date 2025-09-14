@@ -1,0 +1,123 @@
+/* Кнопка три точки */
+.menuButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  z-index: 10;
+  color: #6b7280;
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.menuButton:hover {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  color: #475569;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Показываем кнопку при наведении на карточку */
+.cardContainer:hover .menuButton {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Dropdown меню */
+.dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  width: 160px;
+  background: #ffffff;
+  border: 1px solid #f3f4f6;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  animation: dropdownFadeIn 0.15s ease-out;
+  z-index: 50;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Кнопка удаления в dropdown */
+.deleteButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 13px;
+  color: #dc2626;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-weight: 500;
+}
+
+.deleteButton:hover {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.deleteIcon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* Контейнер для позиционирования */
+.menuContainer {
+  position: relative;
+}
+
+/* Overlay для закрытия dropdown */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  background: transparent;
+  cursor: default;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .menuButton {
+    opacity: 1;
+    transform: scale(1);
+    background: #ffffff;
+  }
+
+  .dropdown {
+    width: 140px;
+  }
+
+  .deleteButton {
+    padding: 12px;
+    font-size: 14px;
+  }
+}

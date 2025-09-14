@@ -10,19 +10,28 @@ from .secrets import (
     get_openai_api_key, get_secret, validate_secrets
 )
 
-# Определяем пути к .env файлам (приоритет: backend/.env, затем корень проекта)
+# Определяем пути к .env файлам
 BACKEND_ROOT = Path(__file__).parent.parent
 PROJECT_ROOT = BACKEND_ROOT.parent
 BACKEND_ENV_PATH = BACKEND_ROOT / '.env'
 PROJECT_ENV_PATH = PROJECT_ROOT / '.env'
+PRODUCTION_ENV_PATH = PROJECT_ROOT / '.env.production'
 
-# Автоопределение среды по наличию .env файла (аналогично database/connection.py)
-is_development = PROJECT_ENV_PATH.exists()
-environment_name = "development" if is_development else "production"
-
-# Загружаем переменные окружения только из корня проекта (если файл существует)
-if is_development:
+# Автоопределение среды и загрузка соответствующего .env файла
+if PROJECT_ENV_PATH.exists():
+    # Development - используем .env
+    is_development = True
+    environment_name = "development"
     load_dotenv(dotenv_path=PROJECT_ENV_PATH)
+elif PRODUCTION_ENV_PATH.exists():
+    # Production - используем .env.production
+    is_development = False
+    environment_name = "production"
+    load_dotenv(dotenv_path=PRODUCTION_ENV_PATH)
+else:
+    # Fallback - переменные окружения системы
+    is_development = False
+    environment_name = "production"
 
 # Основные настройки приложения (БЕЗОПАСНОЕ ЧТЕНИЕ СЕКРЕТОВ)
 SECRET_KEY = get_secret_key()  # Читает из SECRET_KEY или SECRET_KEY_FILE
@@ -61,12 +70,12 @@ CORS_ORIGINS = [
     if origin.strip() != "*"
 ]
 
-# Настройки email (единая система info@replyx.ru)
-SMTP_SERVER = os.getenv('SMTP_SERVER', 'smtp.timeweb.ru')
-SMTP_PORT = int(os.getenv('SMTP_PORT', '2525'))
-SMTP_USERNAME = os.getenv('SMTP_USERNAME', 'info@replyx.ru')
-SMTP_PASSWORD = os.getenv('SMTP_PASSWORD', '')
-FROM_EMAIL = os.getenv('FROM_EMAIL', 'info@replyx.ru')
+# Настройки email
+SMTP_SERVER = os.getenv('SMTP_SERVER')
+SMTP_PORT = int(os.getenv('SMTP_PORT', '25'))
+SMTP_USERNAME = os.getenv('SMTP_USER')
+SMTP_PASSWORD = os.getenv('SMTP_PASSWORD')
+FROM_EMAIL = os.getenv('FROM_EMAIL')
 FROM_NAME = os.getenv('FROM_NAME', 'ReplyX')
 
 # URL для фронтенда (используется в email ссылках)

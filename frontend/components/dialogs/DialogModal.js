@@ -657,11 +657,6 @@ const DialogModal = ({
                           <div className={styles.clientTag}>Новый</div>
                         </div>
                       </div>
-                      <div className={styles.clientDesc}>Описание</div>
-                      <div className={styles.inlineActions}>
-                        <button className={styles.ghostButton}>Создать сделку</button>
-                        <button className={styles.ghostButton}>Создать задачу</button>
-                      </div>
                     </div>
                   </div>
 
@@ -693,47 +688,6 @@ const DialogModal = ({
                       <div className={styles.metaItem}>
                         <span className={styles.metaLabel}>Тема обращения</span>
                         <span className={styles.metaMuted}>Не указана</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className={styles.infoSection}>
-                    <div className={styles.infoHeader}>Контакты</div>
-                    <div className={styles.infoCard}>
-                      <div className={styles.metaItem}>
-                        <span className={styles.metaLabel}>Email</span>
-                        <span className={styles.metaValue}>{dialog?.email || '—'}</span>
-                      </div>
-                      <div className={styles.metaItem}>
-                        <span className={styles.metaLabel}>Телефон</span>
-                        <span className={styles.metaValue}>{dialog?.phone || '—'}</span>
-                      </div>
-                      <button className={styles.linkButton}>Добавить телефон/почту</button>
-                    </div>
-                  </div>
-
-                  <div className={styles.infoSection}>
-                    <div className={styles.infoHeader}>Атрибуты</div>
-                    <div className={styles.infoCard}>
-                      <div className={styles.metaMuted}>Атрибутов нет</div>
-                      <button className={styles.linkButton}>Добавить для сбора данных</button>
-                    </div>
-                  </div>
-
-                  <div className={styles.infoSection}>
-                    <div className={styles.infoHeader}>Подробнее о визите</div>
-                    <div className={styles.infoCard}>
-                      <div className={styles.metaItem}>
-                        <span className={styles.metaLabel}>Источники</span>
-                        <span className={styles.metaValue}>Прямой вход</span>
-                      </div>
-                      <div className={styles.metaItem}>
-                        <span className={styles.metaLabel}>Заходы</span>
-                        <span className={styles.metaValue}>2-й заход</span>
-                      </div>
-                      <div className={styles.metaItem}>
-                        <span className={styles.metaLabel}>Город</span>
-                        <span className={styles.metaValue}>—</span>
                       </div>
                     </div>
                   </div>
