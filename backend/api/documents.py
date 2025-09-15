@@ -299,6 +299,8 @@ def reload_assistant_bots(assistant_id: int, db: Session):
     except ImportError:
         pass
 
+
+
 def extract_document_text(doc_id: int, current_user: models.User, filename: str, file_content: bytes = None) -> str:
     """Извлекает текст из документа в зависимости от его типа"""
     file_extension = os.path.splitext(filename)[1].lower()
@@ -309,8 +311,11 @@ def extract_document_text(doc_id: int, current_user: models.User, filename: str,
         if file_content is None:
             s3_service = get_s3_service()
             if s3_service:
-                # Загружаем из S3 (документы хранятся в папке documents)
-                object_key = s3_service.get_user_object_key(current_user.id, filename, "documents")
+                # Все файлы (включая импорт сайтов) теперь хранятся в папке documents
+                file_type = "documents"
+
+                # Загружаем из S3
+                object_key = s3_service.get_user_object_key(current_user.id, filename, file_type)
                 file_content = s3_service.download_file(object_key)
                 if file_content is None:
                     logger.error(f"Failed to download file from S3: {object_key}")
@@ -721,21 +726,56 @@ def import_website(
     try:
         from urllib.parse import urlparse
         parsed = urlparse(url)
-        host = (parsed.netloc or 'site').replace(':', '_')
+        host = (parsed.netloc or 'site').replace(':', '_').replace('.', '_')
     except Exception:
         host = 'site'
-    ts = int(time.time())
-    safe_name = f"website_{host}_{ts}.txt"
 
-    # Путь сохранения
-    upload_dir = os.path.join("uploads", str(current_user.id))
-    os.makedirs(upload_dir, exist_ok=True)
-    file_path = os.path.join(upload_dir, safe_name)
+    # Генерируем красивое имя файла как у обычных документов
+    from datetime import datetime
+    timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    import hashlib
+    content_hash = hashlib.sha256(text.encode('utf-8')).hexdigest()[:6]
+    safe_name = f"информация с сайта — {host} {timestamp}_{content_hash}.md"
+
+    # Получаем S3 сервис
+    s3_service = get_s3_service()
+    content_bytes = text.encode('utf-8')
+    size = len(content_bytes)
 
     try:
-        with open(file_path, "w", encoding="utf-8") as f:
-            f.write(text)
-        size = len(text.encode("utf-8"))
+        if s3_service:
+            # Загружаем в S3 (как обычные документы)
+            object_key = f"users/{current_user.id}/documents/{safe_name}"
+
+            # Добавляем метаданные
+            metadata = {
+                'user-id': str(current_user.id),
+                'original-url': url,
+                'upload-time': datetime.now().isoformat(),
+                'source': 'website-import'
+            }
+
+            upload_result = s3_service.upload_file(
+                file_content=content_bytes,
+                object_key=object_key,
+                content_type='text/markdown',
+                metadata=metadata
+            )
+
+            if not upload_result.get('success'):
+                raise Exception(f"S3 upload failed: {upload_result.get('error')}")
+
+            logger.info(f"Website content uploaded to S3: {object_key} by user {current_user.id}")
+
+        else:
+            # Fallback: сохраняем локально
+            upload_dir = os.path.join("uploads", str(current_user.id))
+            os.makedirs(upload_dir, exist_ok=True)
+            file_path = os.path.join(upload_dir, safe_name)
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(text)
+            logger.info(f"Website content uploaded locally: {file_path} by user {current_user.id}")
+
         doc = crud.create_document(db, current_user.id, safe_name, size)
 
         # Индексация для ассистента, если указан

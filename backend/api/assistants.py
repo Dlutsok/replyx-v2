@@ -1032,13 +1032,22 @@ def _bg_crawl_and_index(user_id: int, assistant_id: int, opts: dict):
         # Очищаем/структурируем через GPT
         cleaned_text = _clean_website_text_via_gpt(dirty_text, user_id=user_id)
 
-        # Сохраняем как файл "информация с сайта*.txt" в uploads/<user_id>/
+        # Сохраняем как файл "информация с сайта*.txt" в S3 или локально
         filename = _make_site_filename()
-        file_path = FileValidator.get_safe_upload_path(user_id, filename)
-        file_path.write_text(cleaned_text, encoding='utf-8')
+        
+        # Сохраняем в S3 вместо локального файла
+        success = _save_site_content_to_s3(user_id, filename, cleaned_text)
+        if not success:
+            # Fallback на локальное сохранение если S3 недоступен
+            try:
+                file_path = FileValidator.get_safe_upload_path(user_id, filename)
+                file_path.write_text(cleaned_text, encoding='utf-8')
+            except Exception as e:
+                _log.error(f"Failed to save locally: {e}")
+                # Если и локальное сохранение не удалось, все равно продолжаем с индексацией
 
         # Создаём запись документа
-        doc = crud.create_document(db, user_id=user_id, filename=file_path.name, size=len(cleaned_text.encode('utf-8')))
+        doc = crud.create_document(db, user_id=user_id, filename=filename, size=len(cleaned_text.encode('utf-8')))
 
         # Индексация по чанкам как документ типа 'website'
         embeddings_service.index_document(
@@ -1077,10 +1086,19 @@ def _crawl_and_index_sync(*, db: Session, user_id: int, assistant_id: int, opts:
     cleaned_text = _clean_website_text_via_gpt(dirty_text, user_id=user_id)
 
     filename = _make_site_filename()
-    file_path = FileValidator.get_safe_upload_path(user_id, filename)
-    file_path.write_text(cleaned_text, encoding='utf-8')
+    
+    # Сохраняем в S3 вместо локального файла
+    success = _save_site_content_to_s3(user_id, filename, cleaned_text)
+    if not success:
+        # Fallback на локальное сохранение если S3 недоступен
+        try:
+            file_path = FileValidator.get_safe_upload_path(user_id, filename)
+            file_path.write_text(cleaned_text, encoding='utf-8')
+        except Exception as e:
+            logger.error(f"Failed to save locally: {e}")
+            # Если и локальное сохранение не удалось, все равно продолжаем с индексацией
 
-    doc = crud.create_document(db, user_id=user_id, filename=file_path.name, size=len(cleaned_text.encode('utf-8')))
+    doc = crud.create_document(db, user_id=user_id, filename=filename, size=len(cleaned_text.encode('utf-8')))
 
     embeddings_service.index_document(
         doc_id=doc.id,
@@ -1125,6 +1143,56 @@ def _make_single_page_filename(host: str, path: str, url: str = None) -> str:
         return f"информация с сайта — {host}{clean_path} {ts}_{url_hash}.md"
     else:
         return f"информация с сайта — {host}{clean_path} {ts}.md"
+
+
+def _save_site_content_to_s3(user_id: int, filename: str, content: str) -> bool:
+    """
+    Сохраняет содержимое парсинга сайта в S3 в папку site
+    
+    Args:
+        user_id: ID пользователя
+        filename: Имя файла
+        content: Содержимое для сохранения
+        
+    Returns:
+        True если сохранение успешно, False если нужен fallback
+    """
+    try:
+        from services.s3_storage_service import get_s3_service
+        
+        s3_service = get_s3_service()
+        if not s3_service:
+            logger.warning("S3 service not available, using local storage fallback")
+            return False
+            
+        # Создаем ключ объекта в папке site
+        object_key = s3_service.get_user_object_key(user_id, filename, "site")
+        
+        # Конвертируем содержимое в байты
+        content_bytes = content.encode('utf-8')
+        
+        # Загружаем в S3
+        result = s3_service.upload_file(
+            file_content=content_bytes,
+            object_key=object_key,
+            content_type="text/plain; charset=utf-8",
+            metadata={
+                'source': 'website_parsing',
+                'user_id': str(user_id),
+                'file_type': 'site'
+            }
+        )
+        
+        if result.get('success'):
+            logger.info(f"Site content saved to S3: {object_key}")
+            return True
+        else:
+            logger.error(f"Failed to save to S3: {result.get('error')}")
+            return False
+            
+    except Exception as e:
+        logger.error(f"Error saving site content to S3: {e}")
+        return False
 
 
 def _clean_single_page_via_gpt(dirty_text: str, source_url: str, user_id: int) -> str:
