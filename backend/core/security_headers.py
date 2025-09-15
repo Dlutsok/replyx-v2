@@ -26,7 +26,7 @@ class SecurityHeadersMiddleware:
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://yookassa.ru https://*.yoomoney.ru; "
                 "font-src 'self' https://fonts.gstatic.com data:; "
                 "img-src 'self' data: blob: https: https://yookassa.ru https://*.yoomoney.ru https://mc.yandex.ru https://mc.yandex.com https://yastatic.net; "
-                "connect-src 'self' https://replyx.ru https://www.replyx.ru wss://replyx.ru wss://www.replyx.ru http://localhost:* https: wss: ws: https://yookassa.ru https://*.yoomoney.ru https://mc.yandex.ru https://mc.yandex.com; "
+                "connect-src 'self' http://replyx.ru https://replyx.ru https://www.replyx.ru wss://replyx.ru wss://www.replyx.ru http://localhost:* https: wss: ws: https://yookassa.ru https://*.yoomoney.ru https://mc.yandex.ru https://mc.yandex.com; "
                 "frame-src 'self' https://yookassa.ru https://*.yoomoney.ru https://mc.yandex.com; "
                 "frame-ancestors 'self'; "
                 "base-uri 'self'; "

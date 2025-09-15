@@ -164,7 +164,7 @@ class DynamicCSPMiddleware(BaseHTTPMiddleware):
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://yookassa.ru https://*.yoomoney.ru https://mc.yandex.ru; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://yookassa.ru https://*.yoomoney.ru; "
             "img-src 'self' data: blob: https: https://mc.yandex.ru; "
-            "connect-src 'self' https: wss: ws: https://mc.yandex.ru; "
+            "connect-src 'self' http: https: wss: ws: https://mc.yandex.ru; "
             "font-src 'self' https: data:; "
         )
         

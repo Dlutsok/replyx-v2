@@ -152,7 +152,7 @@ async def lifespan(app: FastAPI):
     
     print("✅ Application shutdown completed")
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, redirect_slashes=False)
 app.include_router(ai_assistant_router)
 app.include_router(training_router)
 app.include_router(rating_router)
