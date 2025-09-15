@@ -399,7 +399,6 @@ export default function AssistantDetails({
   const renderIntegrations = () => {
     const activeChannels = Array.isArray(channels) ? channels.filter(ch => (ch.count ?? 0) > 0 || ch.active) : [];
     const assistantBots = Array.isArray(bots) ? bots.filter(b => b.assistant_id === assistant.id && b.is_active) : [];
-    const siteEnabled = !!assistant.website_integration_enabled;
     return (
       <div className="space-y-4">
         <div className="flex justify-between items-center">

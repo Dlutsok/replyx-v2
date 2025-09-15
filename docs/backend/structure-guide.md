@@ -69,8 +69,7 @@ backend/
 │   ├── promo_service.py    # Promotional logic
 │   ├── referral_service.py # Referral logic
 │   ├── trial_service.py    # Trial management
-│   ├── webhook_server.js   # Node.js webhook server
-│   └── website_crawler.py  # Website content extraction
+│   └── webhook_server.js   # Node.js webhook server
 │
 ├── database/               # 🗄️ Database Layer - Data Access
 │   ├── __init__.py

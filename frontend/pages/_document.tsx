@@ -7,7 +7,7 @@ export default function Document() {
         <link rel="icon" href="/favicon.ico" />
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="shortcut icon" href="/favicon.ico" />
-        <link rel="icon" type="image/svg+xml" href="/Favicon.svg" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
         {/* Apple Touch Icons */}
         <link rel="apple-touch-icon" href="/favicon.ico" />

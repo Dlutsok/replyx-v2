@@ -1,10 +1,10 @@
 # API Endpoints Reference
 
 **Last Updated:** 2025-09-04  
-**📊 Total Endpoints:** 133+ endpoints across 20 API modules  
+**📊 Total Endpoints:** 131+ endpoints across 20 API modules
 **🔄 Auto-verified:** Endpoints checked against MVP 13 codebase
 
-> 📋 **[Complete API Reference](endpoints_complete.md)** - Full auto-generated documentation of all 123 endpoints
+> 📋 **[Complete API Reference](endpoints_complete.md)** - Full auto-generated documentation of all 131 endpoints
 
 Comprehensive reference for all ReplyX backend API endpoints. The FastAPI backend exposes RESTful APIs with JWT authentication, CSRF protection, and comprehensive rate limiting.
 

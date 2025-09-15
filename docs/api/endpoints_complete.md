@@ -1,7 +1,7 @@
 # Complete API Endpoints Reference
 
 **Last Updated:** 2025-01-23  
-**📊 Total Endpoints:** 133 endpoints across 14 API modules  
+**📊 Total Endpoints:** 131 endpoints across 14 API modules  
 **🔄 Auto-generated:** From codebase analysis
 
 Comprehensive reference for all ReplyX backend API endpoints.
@@ -252,12 +252,6 @@ Admin endpoints additionally require admin role privileges.
 
 ---
 
-#### POST /api/assistants/{assistant_id}/ingest-website
-
-**Description:** Ingest Website For Assistant
-**Authentication:** Yes
-
----
 
 #### GET /api/assistants/{assistant_id}/knowledge
 
@@ -385,13 +379,6 @@ Admin endpoints additionally require admin role privileges.
 
 ---
 
-#### POST /api/documents/import-website
-
-**Description:** Import Website
-**Authentication:** Yes
-**Response Model:** schemas.DocumentRead
-
----
 
 #### DELETE /api/documents/{doc_id}
 
@@ -1091,4 +1078,4 @@ Admin endpoints additionally require admin role privileges.
 | email | 3 | 0 | 0 |
 | dialogs | 7 | 5 | 0 |
 
-**Total:** 133 endpoints
+**Total:** 131 endpoints

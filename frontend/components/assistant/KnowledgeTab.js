@@ -107,16 +107,8 @@ export default function KnowledgeTab({
   const [qaLoading, setQaLoading] = useState(false);
   const [qaModal, setQaModal] = useState({ isOpen: false, mode: 'create', item: null });
 
-  // Фильтруем документы по типу
-  const regularDocs = Array.isArray(documents) ? documents.filter(doc => 
-    !doc.filename.includes('информация с сайта') && 
-    !doc.filename.startsWith('website_')
-  ) : [];
-  
-  const websiteDocs = Array.isArray(documents) ? documents.filter(doc => 
-    doc.filename.includes('информация с сайта') || 
-    doc.filename.startsWith('website_')
-  ) : [];
+  // Все документы теперь являются обычными документами
+  const regularDocs = Array.isArray(documents) ? documents : [];
 
   // Категории знаний
   const knowledgeCategories = [

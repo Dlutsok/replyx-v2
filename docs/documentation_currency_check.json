@@ -3,8 +3,8 @@
   "project_root": "/Users/dan/Documents/chatAI/MVP 10",
   "checks": {
     "api_endpoints": {
-      "code_endpoints": 161,
-      "doc_endpoints": 135,
+      "code_endpoints": 159,
+      "doc_endpoints": 131,
       "missing_in_docs": [
         "PATCH /admin/users/{user_id}",
         "POST /assistants/{assistant_id}/documents",
@@ -68,7 +68,6 @@
         "GET /telegram-token",
         "POST /reset-password",
         "GET /bot-instances/{bot_id}/assistant",
-        "POST /assistants/{assistant_id}/ingest-website",
         "POST /analyze-document/{doc_id}",
         "GET /dialogs/{dialog_id}",
         "DELETE /bot-instances/{bot_id}",
@@ -150,7 +149,6 @@
         "POST /telegram-token",
         "GET /assistants/{assistant_id}/dialogs",
         "GET /site-token",
-        "POST /documents/import-website",
         "GET /knowledge/stats",
         "POST /users/onboarding/start",
         "GET /transactions/detailed",
