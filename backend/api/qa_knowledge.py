@@ -9,10 +9,10 @@ from database.models import QAKnowledge, User
 from database.schemas import QAKnowledgeCreate, QAKnowledgeUpdate, QAKnowledgeResponse
 from core.auth import get_current_user
 
-router = APIRouter(prefix="/qa-knowledge", tags=["qa-knowledge"])
+router = APIRouter(tags=["qa-knowledge"])
 
 
-@router.get("/", response_model=List[QAKnowledgeResponse])
+@router.get("/qa-knowledge", response_model=List[QAKnowledgeResponse])
 async def get_qa_knowledge(
     assistant_id: Optional[int] = Query(None, description="ID ассистента для фильтрации"),
     category: Optional[str] = Query(None, description="Категория для фильтрации"),
@@ -47,7 +47,7 @@ async def get_qa_knowledge(
     return query.offset(skip).limit(limit).all()
 
 
-@router.post("/", response_model=QAKnowledgeResponse)
+@router.post("/qa-knowledge", response_model=QAKnowledgeResponse)
 async def create_qa_knowledge(
     qa_data: QAKnowledgeCreate,
     db: Session = Depends(get_db),
@@ -109,7 +109,7 @@ async def create_qa_knowledge(
     return qa_knowledge
 
 
-@router.get("/{qa_id}", response_model=QAKnowledgeResponse)
+@router.get("/qa-knowledge/{qa_id}", response_model=QAKnowledgeResponse)
 async def get_qa_knowledge_item(
     qa_id: int,
     db: Session = Depends(get_db),
@@ -129,7 +129,7 @@ async def get_qa_knowledge_item(
     return qa_knowledge
 
 
-@router.put("/{qa_id}", response_model=QAKnowledgeResponse)
+@router.put("/qa-knowledge/{qa_id}", response_model=QAKnowledgeResponse)
 async def update_qa_knowledge(
     qa_id: int,
     qa_data: QAKnowledgeUpdate,
@@ -206,7 +206,7 @@ async def update_qa_knowledge(
     return qa_knowledge
 
 
-@router.delete("/{qa_id}")
+@router.delete("/qa-knowledge/{qa_id}")
 async def delete_qa_knowledge(
     qa_id: int,
     db: Session = Depends(get_db),
@@ -249,7 +249,7 @@ async def delete_qa_knowledge(
     return {"message": "Q&A запись успешно удалена"}
 
 
-@router.get("/categories/list")
+@router.get("/qa-knowledge/categories/list")
 async def get_qa_categories(
     assistant_id: Optional[int] = Query(None, description="ID ассистента для фильтрации"),
     db: Session = Depends(get_db),
@@ -271,7 +271,7 @@ async def get_qa_categories(
     return [cat[0] for cat in categories if cat[0]]
 
 
-@router.post("/{qa_id}/increment-usage")
+@router.post("/qa-knowledge/{qa_id}/increment-usage")
 async def increment_usage(
     qa_id: int,
     db: Session = Depends(get_db),
