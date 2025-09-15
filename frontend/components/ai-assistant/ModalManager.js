@@ -2,7 +2,6 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiX, FiTrash2, FiAlertTriangle, FiSend, FiMessageSquare, FiMonitor } from 'react-icons/fi';
-import WebsiteSetupWizard from '../wizards/WebsiteSetupWizard';
 import WidgetSettingsModal from '../ui/WidgetSettingsModal';
 import QuickAssistantWizard from '../wizards/QuickAssistantWizard';
 import styles from '../../styles/pages/AISettings.module.css';
@@ -251,13 +250,6 @@ export default function ModalManager({
       />
 
 
-      {/* Website Setup Wizard */}
-      <WebsiteSetupWizard
-        isOpen={modals.showWebsiteSetupWizard}
-        onClose={() => onCloseModal('showWebsiteSetupWizard')}
-        onComplete={onCreateAssistant}
-        selectedAssistant={selectedAssistant}
-      />
 
       {/* Quick Assistant Wizard */}
       <QuickAssistantWizard

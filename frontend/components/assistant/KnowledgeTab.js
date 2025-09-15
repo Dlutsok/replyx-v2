@@ -101,9 +101,6 @@ export default function KnowledgeTab({
   const [summaryStatuses, setSummaryStatuses] = useState({}); // {docId: {status: 'processing'|'completed', loading: boolean}}
   const [expandedCategories, setExpandedCategories] = useState({ documents: true }); // {categoryId: boolean} - документы открыты по умолчанию
   const [uploadModal, setUploadModal] = useState(false);
-  const [urlModal, setUrlModal] = useState(false);
-  const [websiteUrl, setWebsiteUrl] = useState('');
-  const [urlLoading, setUrlLoading] = useState(false);
 
   // Q&A состояния
   const [qaKnowledge, setQaKnowledge] = useState([]);
@@ -131,15 +128,6 @@ export default function KnowledgeTab({
       count: regularDocs.length,
       color: 'blue',
       documents: regularDocs
-    },
-    {
-      id: 'website-urls',
-      title: 'URL веб-сайта',
-      description: 'Контент, импортированный с URL-адресов, например из баз знаний или с веб-сайтов',
-      icon: FiGlobe,
-      count: websiteDocs.length,
-      color: 'green',
-      documents: websiteDocs
     },
     {
       id: 'qa',
@@ -379,34 +367,6 @@ export default function KnowledgeTab({
     }
   };
 
-  const handleWebsiteUpload = async (url) => {
-    try {
-      setUrlLoading(true);
-      const resp = await fetch(`${API_URL}/api/assistants/${assistant.id}/ingest-website`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ url })
-      });
-      
-      if (resp.ok) {
-        const result = await resp.json();
-        showSuccess(`Страница успешно проиндексирована!\n\nДокумент: ${result.doc_id}\nСимволов: ${result.chars_indexed}\nURL: ${result.url}`, { title: 'Успех' });
-        onRefreshData();
-        setUrlModal(false);
-        setWebsiteUrl('');
-      } else {
-        const err = await resp.json().catch(() => ({}));
-        showError(err?.detail || 'Не удалось проиндексировать страницу', { title: 'Ошибка' });
-      }
-    } catch (e) {
-      showError('Ошибка запуска индексации', { title: 'Ошибка' });
-    } finally {
-      setUrlLoading(false);
-    }
-  };
 
   const MarkdownRenderer = ({ content }) => {
     const renderMarkdown = (text) => {
@@ -490,58 +450,6 @@ export default function KnowledgeTab({
           </div>
         )}
 
-        {/* URL Modal */}
-        {urlModal && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[102] p-4">
-            <div className="bg-white rounded-xl max-w-md w-full">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900">Добавить веб-страницу</h3>
-              </div>
-              <div className="p-6">
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      URL страницы
-                    </label>
-                    <input
-                      type="url"
-                      value={websiteUrl}
-                      onChange={(e) => setWebsiteUrl(e.target.value)}
-                      placeholder="https://example.com/page"
-                      className="w-full px-2 sm:px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6334E5] focus:border-transparent text-sm sm:text-base"
-                    />
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    <p>Мы проиндексируем эту страницу и добавим её содержимое в базу знаний ассистента.</p>
-                  </div>
-                </div>
-              </div>
-              <div className="px-4 py-3 sm:px-6 sm:py-4 border-t border-gray-200 flex flex-col sm:flex-row justify-end gap-3">
-                <button
-                  onClick={() => {
-                    setUrlModal(false);
-                    setWebsiteUrl('');
-                  }}
-                  className="w-full sm:w-auto px-3 sm:px-4 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-200 rounded-lg transition-colors"
-                  disabled={urlLoading}
-                >
-                  Отмена
-                </button>
-                <button
-                  onClick={() => {
-                    if (websiteUrl.trim()) {
-                      handleWebsiteUpload(websiteUrl.trim());
-                    }
-                  }}
-                  className="w-full sm:w-auto px-3 sm:px-4 py-2 text-sm bg-[#6334E5] hover:bg-[#5028c2] text-white rounded-lg transition-colors disabled:opacity-50"
-                  disabled={!websiteUrl.trim() || urlLoading}
-                >
-                  {urlLoading ? 'Индексирую...' : 'Добавить страницу'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Q&A Modal */}
         {qaModal.isOpen && (
@@ -654,8 +562,6 @@ export default function KnowledgeTab({
                             e.stopPropagation();
                             if (category.id === 'documents') {
                               setUploadModal(true);
-                            } else if (category.id === 'website-urls') {
-                              setUrlModal(true);
                             } else if (category.id === 'qa') {
                               handleQACreate();
                             }

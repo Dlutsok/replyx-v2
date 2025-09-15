@@ -4,7 +4,6 @@ export function useModalState() {
   const [modals, setModals] = useState({
     showBotModal: false,
     showIntegrationsModal: false,
-    showWebsiteSetupWizard: false,
     showWidgetSettings: false,
     showDeleteAssistantModal: false,
     showDeleteBotModal: false,
@@ -43,7 +42,6 @@ export function useModalState() {
     setModals({
       showBotModal: false,
       showIntegrationsModal: false,
-      showWebsiteSetupWizard: false,
       showWidgetSettings: false,
       showDeleteAssistantModal: false,
       showDeleteBotModal: false,

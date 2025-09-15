@@ -24,7 +24,6 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [autoSaving, setAutoSaving] = useState(false);
-  const [ingestingWebsite, setIngestingWebsite] = useState(false);
   const autoSaveTimeoutRef = useRef(null);
   const telegramValidateTimeoutRef = useRef(null);
   const [telegramValidation, setTelegramValidation] = useState({ status: 'idle', botUsername: '' });
@@ -43,7 +42,6 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
     assistantId: null,
     embedCode: '',
     botUrl: '',
-    websiteUrl: '',
     isComplete: false
   });
 
@@ -223,69 +221,6 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
     return results.every(result => result);
   };
 
-  const importWebsite = async () => {
-    const url = (wizardData.websiteUrl || '').trim();
-    if (!url) return true;
-    try {
-      const response = await fetch(`/api/assistants/${wizardData.assistantId}/ingest-website`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          url
-        })
-      });
-      if (response.status === 402) {
-        setShowBalanceInline(true);
-        return false;
-      }
-      if (response.ok) {
-        const result = await response.json();
-        return result; // Возвращаем полный результат
-      }
-      return false;
-    } catch (e) {
-      return false;
-    }
-  };
-
-  const handleWebsiteIngest = async () => {
-    if (!wizardData.assistantId) {
-      showWarning('Сначала создайте ассистента на предыдущих шагах');
-      return;
-    }
-    const url = (wizardData.websiteUrl || '').trim();
-    if (!url) {
-      showWarning('Укажите URL страницы');
-      return;
-    }
-    try {
-      // Быстрая проверка URL
-      const u = new URL(url);
-      if (!['http:', 'https:'].includes(u.protocol)) throw new Error('Некорректный URL');
-    } catch {
-      showError('Некорректный URL');
-      return;
-    }
-    setIngestingWebsite(true);
-    try {
-      const result = await importWebsite();
-      if (result && result.ok) {
-        showSuccess(`Страница проиндексирована!\n\nДокумент: ${result.doc_id}\nСимволов: ${result.chars_indexed}`, {
-          title: 'Готово ✓'
-        });
-      } else if (result === true) {
-        // Случай когда URL пустой
-        return;
-      } else {
-        showError('Не удалось проиндексировать страницу');
-      }
-    } finally {
-      setIngestingWebsite(false);
-    }
-  };
 
   const createBotInstance = async () => {
     if (wizardData.integrationChannel !== 'telegram' || !wizardData.telegramToken) return;
@@ -389,12 +324,9 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
     }
 
     if (currentStep === 3) {
-      // Импорт сайта (если указан) и загрузка документов
+      // Загрузка документов
       setIsLoading(true);
       try {
-        if (wizardData.assistantId) {
-          await importWebsite();
-        }
         if (wizardData.documents.length > 0) {
           await uploadDocuments();
         }
@@ -684,40 +616,6 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
                   </div>
                 )}
 
-                <div className={styles.formGroup}>
-                  <label className={styles.label}>URL страницы для добавления в знания (по желанию)</label>
-                  <input
-                    type="url"
-                    className={styles.input}
-                    placeholder="https://example.com/page"
-                    value={wizardData.websiteUrl}
-                    onChange={(e) => updateWizardData({ websiteUrl: e.target.value })}
-                  />
-                  <p style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>
-                    Мы проиндексируем только эту страницу и добавим её в базу знаний ассистента
-                  </p>
-                  <div style={{ marginTop: 12 }}>
-                    <button
-                      type="button"
-                      className={styles.nextButton}
-                      onClick={handleWebsiteIngest}
-                      disabled={ingestingWebsite || !wizardData.websiteUrl || !wizardData.assistantId}
-                      title={!wizardData.assistantId ? 'Сначала создайте ассистента' : ''}
-                    >
-                      {ingestingWebsite ? (
-                        <>
-                          <FiRefreshCw size={16} className={styles.spinning} />
-                          Индексируем страницу...
-                        </>
-                      ) : (
-                        <>
-                          <FiLink size={16} />
-                          Индексировать страницу
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
                 <div className={styles.uploadZone}>
                   <input
                     type="file"
