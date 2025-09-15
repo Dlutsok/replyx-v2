@@ -641,11 +641,18 @@ async def upload_avatar(
     current_user: models.User = Depends(auth.get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Загрузка аватара для виджета"""
-    from validators.file_validator import file_validator
+    """Загрузка аватара для виджета в S3"""
+    from services.s3_storage_service import get_s3_service
     import os
-    import uuid
     from pathlib import Path
+    
+    # Получаем S3 сервис
+    s3_service = get_s3_service()
+    if not s3_service:
+        raise HTTPException(
+            status_code=503,
+            detail="Файловое хранилище временно недоступно"
+        )
     
     try:
         # Читаем содержимое файла
@@ -665,32 +672,49 @@ async def upload_avatar(
         if file.content_type not in allowed_types:
             raise HTTPException(status_code=400, detail="Поддерживаются только JPEG, PNG и WebP изображения")
         
-        # Генерируем уникальное имя файла
-        file_extension = Path(file.filename).suffix.lower()
-        if not file_extension:
-            file_extension = '.jpg'  # дефолтное расширение
+        # Генерируем безопасное имя файла для аватара
+        secure_filename = s3_service.generate_widget_icon_filename(
+            user_id=current_user.id,
+            original_filename=file.filename,
+            content=content
+        )
         
-        unique_filename = f"{uuid.uuid4().hex}{file_extension}"
+        # Загружаем в S3 в папку avatars
+        object_key = s3_service.get_user_object_key(
+            current_user.id,
+            secure_filename,
+            "avatars"
+        )
         
-        # Создаем папку avatars если её нет
-        avatars_dir = Path("uploads/avatars")
-        avatars_dir.mkdir(parents=True, exist_ok=True)
+        # Добавляем метаданные (используем дефисы вместо подчеркиваний для Timeweb Cloud)
+        metadata = {
+            'user-id': str(current_user.id),
+            'original-filename': file.filename,
+            'file-type': 'avatar'
+        }
         
-        file_path = avatars_dir / unique_filename
+        upload_result = s3_service.upload_file(
+            file_content=content,
+            object_key=object_key,
+            content_type=file.content_type,
+            metadata=metadata
+        )
         
-        # Сохраняем файл
-        with open(file_path, "wb") as f:
-            f.write(content)
+        if not upload_result.get('success'):
+            raise Exception(f"S3 upload failed: {upload_result.get('error')}")
         
-        # Генерируем URL для доступа к файлу
-        avatar_url = f"/uploads/avatars/{unique_filename}"
+        logger.info(f"Avatar uploaded successfully: {object_key} by user {current_user.id}")
         
-        logger.info(f"Avatar uploaded successfully: {file_path} by user {current_user.id}")
+        # Возвращаем URL через наш proxy endpoint вместо прямой ссылки на S3
+        proxy_url = f"/api/files/avatars/{current_user.id}/{secure_filename}"
         
         return {
             "success": True,
-            "url": avatar_url,
-            "message": "Аватар успешно загружен"
+            "url": proxy_url,
+            "s3_url": upload_result.get('url'),  # Оригинальный S3 URL для отладки
+            "message": "Аватар успешно загружен",
+            "filename": secure_filename,
+            "object_key": object_key
         }
         
     except HTTPException:

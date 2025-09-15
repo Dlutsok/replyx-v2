@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from database import models, schemas, crud, auth
 from database.connection import get_db
 from validators.rate_limiter import rate_limit_api
+from services.s3_storage_service import get_s3_service
 
 logger = logging.getLogger(__name__)
 
@@ -298,38 +299,60 @@ def reload_assistant_bots(assistant_id: int, db: Session):
     except ImportError:
         pass
 
-def extract_document_text(doc_id: int, current_user: models.User, file_path: str) -> str:
+def extract_document_text(doc_id: int, current_user: models.User, filename: str, file_content: bytes = None) -> str:
     """Извлекает текст из документа в зависимости от его типа"""
-    file_extension = os.path.splitext(file_path)[1].lower()
+    file_extension = os.path.splitext(filename)[1].lower()
     text = ""
-    
+
     try:
+        # Если контент не передан, загружаем из хранилища
+        if file_content is None:
+            s3_service = get_s3_service()
+            if s3_service:
+                # Загружаем из S3 (документы хранятся в папке documents)
+                object_key = s3_service.get_user_object_key(current_user.id, filename, "documents")
+                file_content = s3_service.download_file(object_key)
+                if file_content is None:
+                    logger.error(f"Failed to download file from S3: {object_key}")
+                    return ""
+            else:
+                # Загружаем из локального хранилища (fallback)
+                from validators.file_validator import file_validator
+                file_path = file_validator.get_safe_upload_path(current_user.id, filename)
+                if not os.path.exists(file_path):
+                    logger.error(f"File not found: {file_path}")
+                    return ""
+                with open(file_path, 'rb') as f:
+                    file_content = f.read()
+
+        # Обрабатываем содержимое в зависимости от типа файла
         if file_extension == '.pdf':
             import PyPDF2
-            with open(file_path, 'rb') as pdf_file:
-                pdf_reader = PyPDF2.PdfReader(pdf_file)
-                for page_num in range(len(pdf_reader.pages)):
-                    text += pdf_reader.pages[page_num].extract_text() + "\n"
-        
+            from io import BytesIO
+            pdf_file = BytesIO(file_content)
+            pdf_reader = PyPDF2.PdfReader(pdf_file)
+            for page_num in range(len(pdf_reader.pages)):
+                text += pdf_reader.pages[page_num].extract_text() + "\n"
+
         elif file_extension == '.docx':
             from docx import Document as DocxDoc
-            docx = DocxDoc(file_path)
+            from io import BytesIO
+            docx_file = BytesIO(file_content)
+            docx = DocxDoc(docx_file)
             text = '\n'.join([p.text for p in docx.paragraphs])
-        
+
         elif file_extension == '.doc':
             # Для .doc файлов простое чтение как текстового файла
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                text = f.read()
-        
+            text = file_content.decode("utf-8", errors="ignore")
+
         else:
             # Для .txt и других текстовых файлов
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                text = f.read()
-        
+            text = file_content.decode("utf-8", errors="ignore")
+
         return text.strip()
-        
+
     except Exception as e:
-        logger.error(f"Error extracting text from {file_path}: {e}")
+        logger.error(f"Error extracting text from {filename}: {e}")
         return ""
 
 def determine_document_type(filename: str) -> str:
@@ -498,22 +521,56 @@ async def upload_document(
         logger.warning(f"File upload rejected for user {current_user.id}: {e.detail}")
         raise e
     
+    # Получаем S3 сервис
+    s3_service = get_s3_service()
+
     # Генерируем безопасное уникальное имя файла
-    secure_filename = file_validator.generate_secure_filename(
-        user_id=current_user.id,
-        original_filename=safe_filename,
-        content=content
-    )
-    
-    # Получаем безопасный путь для сохранения
-    file_path = file_validator.get_safe_upload_path(current_user.id, secure_filename)
-    
+    if s3_service:
+        # Для S3 используем простое имя файла с timestamp
+        import hashlib
+        from datetime import datetime
+        content_hash = hashlib.sha256(content).hexdigest()[:16]
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        secure_filename = f"{current_user.id}_{timestamp}_{content_hash}.docx"
+    else:
+        secure_filename = file_validator.generate_secure_filename(
+            user_id=current_user.id,
+            original_filename=safe_filename,
+            content=content
+        )
+
     # Сохраняем файл
+    file_path = None
     try:
-        with open(file_path, "wb") as f:
-            f.write(content)
-        
-        logger.info(f"File uploaded successfully: {file_path} by user {current_user.id}")
+        if s3_service:
+            # Загружаем в S3 (документы в папку documents)
+            object_key = f"users/{current_user.id}/documents/{secure_filename}"
+
+            # Добавляем метаданные (используем дефисы вместо подчеркиваний для Timeweb Cloud)
+            metadata = {
+                'user-id': str(current_user.id),
+                'original-filename': safe_filename,
+                'upload-time': datetime.now().isoformat()
+            }
+
+            upload_result = s3_service.upload_file(
+                file_content=content,
+                object_key=object_key,
+                content_type=mime_type,
+                metadata=metadata
+            )
+
+            if not upload_result.get('success'):
+                raise Exception(f"S3 upload failed: {upload_result.get('error')}")
+
+            logger.info(f"File uploaded to S3: {object_key} by user {current_user.id}")
+
+        else:
+            # Fallback: сохраняем локально
+            file_path = file_validator.get_safe_upload_path(current_user.id, secure_filename)
+            with open(file_path, "wb") as f:
+                f.write(content)
+            logger.info(f"File uploaded locally: {file_path} by user {current_user.id}")
         
         # Создаем запись в БД с безопасным именем файла
         doc = crud.create_document(db, current_user.id, secure_filename, len(content))
@@ -535,8 +592,8 @@ async def upload_document(
         try:
             logger.info(f"Starting automatic embedding indexing for doc_id={doc.id}, user_id={current_user.id}")
 
-            # Извлекаем текст из документа
-            text = extract_document_text(doc.id, current_user, file_path)
+            # Извлекаем текст из документа (передаем уже загруженный контент)
+            text = extract_document_text(doc.id, current_user, secure_filename, content)
             # Считаем doc_hash для грубой проверки изменений
             try:
                 import hashlib
@@ -605,9 +662,9 @@ async def upload_document(
         return doc
         
     except Exception as e:
-        logger.error(f"Error saving file {file_path}: {e}")
+        logger.error(f"Error saving file: {e}")
         # Удаляем файл если создание записи в БД не удалось
-        if os.path.exists(file_path):
+        if file_path and os.path.exists(file_path):
             os.remove(file_path)
         raise HTTPException(status_code=500, detail="Ошибка сохранения файла")
 
@@ -746,44 +803,16 @@ def get_document_text(doc_id: int, current_user: models.User = Depends(auth.get_
     doc = db.query(models.Document).filter(models.Document.id == doc_id, models.Document.user_id == current_user.id).first()
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
-    
-    # Используем тот же метод получения пути, что и при сохранении
-    from validators.file_validator import file_validator
-    file_path = file_validator.get_safe_upload_path(current_user.id, doc.filename)
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="File not found")
-    
-    # Извлечение текста из файла
-    text = ""
-    file_extension = os.path.splitext(file_path)[1].lower()
-    
-    if file_extension == '.pdf':
-        try:
-            import PyPDF2
-            with open(file_path, 'rb') as pdf_file:
-                pdf_reader = PyPDF2.PdfReader(pdf_file)
-                for page_num in range(len(pdf_reader.pages)):
-                    text += pdf_reader.pages[page_num].extract_text() + "\n"
-        except Exception as e:
-            print(f"Ошибка чтения PDF: {e}")
-            raise HTTPException(status_code=500, detail=f"Ошибка чтения PDF: {e}")
-    elif file_extension == '.docx':
-        try:
-            from docx import Document as DocxDoc
-            docx = DocxDoc(file_path)
-            text = '\n'.join([p.text for p in docx.paragraphs])
-        except Exception as e:
-            print(f"Ошибка чтения .docx: {e}")
-            raise HTTPException(status_code=500, detail=f"Ошибка чтения .docx: {e}")
-    else:
-        try:
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                text = f.read()
-        except Exception as e:
-            print(f"Ошибка чтения файла: {e}")
-            raise HTTPException(status_code=500, detail=f"Ошибка чтения файла: {e}")
-    
-    return {"text": text}
+
+    try:
+        # Извлекаем текст из документа (функция автоматически выберет S3 или локальное хранилище)
+        text = extract_document_text(doc.id, current_user, doc.filename)
+        if not text:
+            raise HTTPException(status_code=404, detail="File not found or empty")
+        return {"text": text}
+    except Exception as e:
+        logger.error(f"Error getting document text for doc_id={doc_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Ошибка чтения файла: {e}")
 
 
 @router.get("/documents/{doc_id}/summary")
@@ -843,55 +872,17 @@ def analyze_document_internal(doc_id: int, current_user: models.User, db: Sessio
         print(f"[analyze_document_internal] Document not found in DB for user_id={current_user.id}, doc_id={doc_id}")
         raise Exception("Document not found")
     
-    # Используем тот же метод получения пути, что и при сохранении
-    from validators.file_validator import file_validator
-    file_path = file_validator.get_safe_upload_path(current_user.id, doc.filename)
-    if not os.path.exists(file_path):
-        print(f"[analyze_document_internal] File not found: {file_path}")
-        raise Exception("File not found")
-    
     # Используем новый пул токенов вместо персональных токенов
     from ai.ai_token_manager import ai_token_manager
     
     # --- Извлечение текста ---
-    text = ""
-    file_extension = os.path.splitext(file_path)[1].lower()
-    
-    if file_extension == '.pdf':
-        try:
-            import PyPDF2
-            with open(file_path, 'rb') as pdf_file:
-                pdf_reader = PyPDF2.PdfReader(pdf_file)
-                for page_num in range(len(pdf_reader.pages)):
-                    text += pdf_reader.pages[page_num].extract_text() + "\n"
-        except Exception as e:
-            print(f"[analyze_document_internal] Ошибка чтения PDF: {e}")
-            raise Exception(f"Ошибка чтения PDF: {e}")
-    elif file_extension == '.docx':
-        try:
-            from docx import Document as DocxDoc
-            docx = DocxDoc(file_path)
-            text = '\n'.join([p.text for p in docx.paragraphs])
-        except Exception as e:
-            print(f"[analyze_document_internal] Ошибка чтения .docx: {e}")
-            raise Exception(f"Ошибка чтения .docx: {e}")
-    elif file_extension == '.doc':
-        try:
-            # Для .doc файлов можно использовать textract или другие библиотеки
-            # Здесь простое чтение как текстового файла
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                text = f.read()
-        except Exception as e:
-            print(f"[analyze_document_internal] Ошибка чтения .doc: {e}")
-            raise Exception(f"Ошибка чтения .doc: {e}")
-    else:
-        # Для .txt и других текстовых файлов
-        try:
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                text = f.read()
-        except Exception as e:
-            print(f"[analyze_document_internal] Ошибка чтения файла: {e}")
-            raise Exception(f"Ошибка чтения файла: {e}")
+    try:
+        text = extract_document_text(doc_id, current_user, doc.filename)
+        if not text:
+            raise Exception("Failed to extract text from document")
+    except Exception as e:
+        print(f"[analyze_document_internal] Ошибка извлечения текста: {e}")
+        raise Exception(f"Ошибка извлечения текста: {e}")
     
     # Определяем оптимальный размер чанка для gpt-4o (16384 токена)
     # Приблизительно 1 токен = 4 символа, оставляем место для промпта и ответа
@@ -1095,55 +1086,18 @@ async def analyze_document(
         print(f"[analyze_document] Document not found in DB for user_id={current_user.id}, doc_id={doc_id}")
         raise HTTPException(status_code=404, detail="Document not found")
     
-    # Используем тот же метод получения пути, что и при сохранении
-    from validators.file_validator import file_validator
-    file_path = file_validator.get_safe_upload_path(current_user.id, doc.filename)
-    if not os.path.exists(file_path):
-        print(f"[analyze_document] File not found: {file_path}")
-        print(f"[analyze_document] Critical error in initialization: 404: File not found")
-        raise HTTPException(status_code=404, detail="File not found")
+# Файл будет загружен из S3 или локального хранилища в функции extract_document_text
     # Используем новый пул токенов вместо персональных токенов
     from ai.ai_token_manager import ai_token_manager
     
     # --- Извлечение текста ---
-    text = ""
-    file_extension = os.path.splitext(file_path)[1].lower()
-    
-    if file_extension == '.pdf':
-        try:
-            import PyPDF2
-            with open(file_path, 'rb') as pdf_file:
-                pdf_reader = PyPDF2.PdfReader(pdf_file)
-                for page_num in range(len(pdf_reader.pages)):
-                    text += pdf_reader.pages[page_num].extract_text() + "\n"
-        except Exception as e:
-            print(f"[analyze_document] Ошибка чтения PDF: {e}")
-            raise HTTPException(status_code=500, detail=f"Ошибка чтения PDF: {e}")
-    elif file_extension == '.docx':
-        try:
-            from docx import Document as DocxDoc
-            docx = DocxDoc(file_path)
-            text = '\n'.join([p.text for p in docx.paragraphs])
-        except Exception as e:
-            print(f"[analyze_document] Ошибка чтения .docx: {e}")
-            raise HTTPException(status_code=500, detail=f"Ошибка чтения .docx: {e}")
-    elif file_extension == '.doc':
-        try:
-            # Для .doc файлов можно использовать textract или другие библиотеки
-            # Здесь простое чтение как текстового файла
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                text = f.read()
-        except Exception as e:
-            print(f"[analyze_document] Ошибка чтения .doc: {e}")
-            raise HTTPException(status_code=500, detail=f"Ошибка чтения .doc: {e}")
-    else:
-        # Для .txt и других текстовых файлов
-        try:
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                text = f.read()
-        except Exception as e:
-            print(f"[analyze_document] Ошибка чтения файла: {e}")
-            raise HTTPException(status_code=500, detail=f"Ошибка чтения файла: {e}")
+    try:
+        text = extract_document_text(doc_id, current_user, doc.filename)
+        if not text:
+            raise HTTPException(status_code=404, detail="Failed to extract text from document")
+    except Exception as e:
+        print(f"[analyze_document] Ошибка извлечения текста: {e}")
+        raise HTTPException(status_code=500, detail=f"Ошибка извлечения текста: {e}")
     
     # Определяем оптимальный размер чанка для gpt-4o (16384 токена)
     # Приблизительно 1 токен = 4 символа, оставляем место для промпта и ответа

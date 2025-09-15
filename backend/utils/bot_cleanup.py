@@ -136,19 +136,46 @@ def enhanced_document_deletion(doc_id: int, user_id: int, db: Session):
         deleted_embeddings = embeddings_service.delete_document_embeddings(doc_id, db)
         logger.info(f"Удалено embeddings: {deleted_embeddings}")
         
-        # 4. Удаляем сам документ
+        # 4. Удаляем физический файл
+        filename = doc.filename
+        try:
+            # Пытаемся удалить из S3
+            from services.s3_storage_service import get_s3_service
+            s3_service = get_s3_service()
+            if s3_service:
+                # Удаляем документ из папки documents
+                object_key = s3_service.get_user_object_key(user_id, filename, "documents")
+                s3_deleted = s3_service.delete_file(object_key)
+                if s3_deleted:
+                    logger.info(f"Файл удален из S3: {object_key}")
+                else:
+                    logger.warning(f"Не удалось удалить файл из S3: {object_key}")
+            else:
+                # Fallback: удаляем из локального хранилища
+                from validators.file_validator import file_validator
+                import os
+                local_path = file_validator.get_safe_upload_path(user_id, filename)
+                if os.path.exists(local_path):
+                    os.remove(local_path)
+                    logger.info(f"Файл удален локально: {local_path}")
+                else:
+                    logger.warning(f"Локальный файл не найден: {local_path}")
+        except Exception as e:
+            logger.error(f"Ошибка удаления файла {filename}: {e}")
+
+        # 5. Удаляем сам документ из БД
         db.delete(doc)
         
-        # 5. Получаем всех затронутых ассистентов
+        # 6. Получаем всех затронутых ассистентов
         assistants = db.query(models.Assistant).filter(
             models.Assistant.user_id == user_id
         ).all()
         
-        # 6. Обновляем версии знаний всех ассистентов
+        # 7. Обновляем версии знаний всех ассистентов
         for assistant in assistants:
             embeddings_service.increment_knowledge_version(assistant.id, db)
         
-        # 7. АГРЕССИВНАЯ очистка всех связанных кэшей
+        # 8. АГРЕССИВНАЯ очистка всех связанных кэшей
         chatai_cache.invalidate_user_cache(user_id)
         for assistant in assistants:
             chatai_cache.invalidate_assistant_cache(assistant.id)
@@ -177,7 +204,7 @@ def enhanced_document_deletion(doc_id: int, user_id: int, db: Session):
         except Exception as e:
             logger.warning(f"Очистка глобальных кэшей пользователя {user_id} не удалась: {e}")
         
-        # 8. Принудительно перезагружаем всех ботов пользователя
+        # 9. Принудительно перезагружаем всех ботов пользователя
         bot_instances = db.query(models.BotInstance).filter(
             models.BotInstance.user_id == user_id,
             models.BotInstance.is_active == True

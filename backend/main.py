@@ -66,13 +66,21 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"❌ Failed to initialize SSE Manager: {e}")
     
+    # Инициализация S3 Storage Service
+    try:
+        from services.s3_storage_service import init_s3_service
+        init_s3_service()
+        logger.info("✅ S3 Storage Service initialization completed")
+    except Exception as e:
+        logger.error(f"❌ Error initializing S3 service: {e}")
+
     # Инициализация данных по умолчанию
     db = SessionLocal()
     try:
         from services.balance_service import init_default_prices
         # Инициализируем цены на услуги
         init_default_prices(db)
-        
+
         print("✅ Default data initialization completed")
     except Exception as e:
         logger.error(f"Error initializing default data: {e}")
@@ -154,6 +162,7 @@ from api.system import router as system_router
 from api.auth import router as auth_router
 from api.users import router as users_router
 from api.documents import router as documents_router
+from api.widget_icons import router as widget_icons_router
 from api.assistants import router as assistants_router
 from api.dialogs import router as dialogs_router
 from api.bots import router as bots_router
@@ -174,10 +183,12 @@ from api.yookassa_payments import router as yookassa_payments_router
 from api.debug_sse import router as debug_sse_router  # Renamed from debug_websocket
 from api.sse import router as sse_router
 from api.proxy_monitoring import router as proxy_monitoring_router
+from api.files import router as files_router
 app.include_router(system_router, prefix="/api")
 app.include_router(auth_router, prefix="/api")
 app.include_router(users_router, prefix="/api")
 app.include_router(documents_router, prefix="/api")
+app.include_router(widget_icons_router, prefix="/api")
 app.include_router(assistants_router, prefix="/api")
 app.include_router(dialogs_router, prefix="/api")
 app.include_router(bots_router, prefix="/api")
@@ -199,6 +210,7 @@ app.include_router(yookassa_payments_router)
 app.include_router(debug_sse_router, prefix="/api")
 app.include_router(proxy_monitoring_router, prefix="/api")
 app.include_router(sse_router)
+app.include_router(files_router, prefix="/api")
 
 # Static files для загруженных файлов (аватары, документы)
 from fastapi.staticfiles import StaticFiles
