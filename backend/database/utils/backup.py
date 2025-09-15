@@ -21,30 +21,36 @@ class DatabaseBackup:
     """Система бэкапов PostgreSQL с поддержкой локального и облачного хранения"""
     
     def __init__(self):
-        # Конфигурация из переменных окружения
-        self.db_host = os.getenv('DB_HOST', 'localhost')
-        self.db_port = os.getenv('DB_PORT', '5432')
-        self.db_name = os.getenv('DB_NAME', 'chat_ai')
-        self.db_user = os.getenv('DB_USER', 'dan')
-        self.db_password = os.getenv('DB_PASSWORD', '')
+        # ОТКЛЮЧЕНО: Система бэкапов временно отключена для исправления проблем с регистрацией
+        # Проблема: Permission denied при попытке создания бэкапов в /var/backups/replyx
+        self.enabled = False
+        logger.info("🚫 Система автоматических бэкапов ОТКЛЮЧЕНА")
         
-        # Настройки бэкапов
-        self.backup_dir = Path(os.getenv('BACKUP_DIR', './data/backups'))
-        self.max_local_backups = int(os.getenv('MAX_LOCAL_BACKUPS', '7'))  # 7 дней
-        self.max_weekly_backups = int(os.getenv('MAX_WEEKLY_BACKUPS', '4'))  # 4 недели
-        self.max_monthly_backups = int(os.getenv('MAX_MONTHLY_BACKUPS', '12'))  # 12 месяцев
-        
-        # S3 конфигурация (опционально)
-        self.s3_enabled = os.getenv('S3_BACKUP_ENABLED', 'false').lower() == 'true'
-        self.s3_bucket = os.getenv('S3_BACKUP_BUCKET')
-        self.s3_region = os.getenv('S3_BACKUP_REGION', 'us-east-1')
-        self.aws_access_key = os.getenv('AWS_ACCESS_KEY_ID')
-        self.aws_secret_key = os.getenv('AWS_SECRET_ACCESS_KEY')
-        
-        # Создаем директории
-        self.backup_dir.mkdir(parents=True, exist_ok=True)
-        (self.backup_dir / 'daily').mkdir(exist_ok=True)
-        (self.backup_dir / 'weekly').mkdir(exist_ok=True)
+        if self.enabled:
+            # Конфигурация из переменных окружения
+            self.db_host = os.getenv('DB_HOST', 'localhost')
+            self.db_port = os.getenv('DB_PORT', '5432')
+            self.db_name = os.getenv('DB_NAME', 'chat_ai')
+            self.db_user = os.getenv('DB_USER', 'dan')
+            self.db_password = os.getenv('DB_PASSWORD', '')
+            
+            # Настройки бэкапов
+            self.backup_dir = Path(os.getenv('BACKUP_DIR', './data/backups'))
+            self.max_local_backups = int(os.getenv('MAX_LOCAL_BACKUPS', '7'))  # 7 дней
+            self.max_weekly_backups = int(os.getenv('MAX_WEEKLY_BACKUPS', '4'))  # 4 недели
+            self.max_monthly_backups = int(os.getenv('MAX_MONTHLY_BACKUPS', '12'))  # 12 месяцев
+            
+            # S3 конфигурация (опционально)
+            self.s3_enabled = os.getenv('S3_BACKUP_ENABLED', 'false').lower() == 'true'
+            self.s3_bucket = os.getenv('S3_BACKUP_BUCKET')
+            self.s3_region = os.getenv('S3_BACKUP_REGION', 'us-east-1')
+            self.aws_access_key = os.getenv('AWS_ACCESS_KEY_ID')
+            self.aws_secret_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+            
+            # Создаем директории
+            self.backup_dir.mkdir(parents=True, exist_ok=True)
+            (self.backup_dir / 'daily').mkdir(exist_ok=True)
+            (self.backup_dir / 'weekly').mkdir(exist_ok=True)
         (self.backup_dir / 'monthly').mkdir(exist_ok=True)
         
         # S3 клиент
@@ -64,6 +70,10 @@ class DatabaseBackup:
     
     def create_backup(self, backup_type: str = 'daily') -> Optional[Dict]:
         """Создание бэкапа БД"""
+        if not self.enabled:
+            logger.info("🚫 Создание бэкапа пропущено - система бэкапов отключена")
+            return None
+            
         try:
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             backup_filename = f"chatai_backup_{backup_type}_{timestamp}.sql"
@@ -329,6 +339,10 @@ class DatabaseBackup:
     
     def create_scheduled_backups(self):
         """Создание запланированных бэкапов (вызывается по cron)"""
+        if not self.enabled:
+            logger.info("🚫 Запланированные бэкапы пропущены - система бэкапов отключена")
+            return True
+            
         now = datetime.now()
         
         # Ежедневный бэкап

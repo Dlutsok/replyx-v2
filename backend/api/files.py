@@ -12,6 +12,22 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+@router.get("/files/test")
+async def test_files_endpoint():
+    """Простой тест endpoint для проверки работы"""
+    return {"status": "OK", "message": "Files endpoint работает"}
+
+@router.get("/files/health")
+async def files_health():
+    """Проверка здоровья файлового сервиса"""
+    from services.s3_storage_service import get_s3_service
+    s3_service = get_s3_service()
+    return {
+        "status": "OK",
+        "s3_available": s3_service is not None,
+        "bucket": s3_service.bucket_name if s3_service else None
+    }
+
 @router.get("/files/avatars/{user_id}/{filename}")
 async def get_avatar_file(user_id: int, filename: str):
     """Проксирует файл аватара из S3"""
