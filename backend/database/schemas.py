@@ -109,7 +109,7 @@ class ConfirmEmailResponse(BaseModel):
 class AssistantBase(BaseModel):
     name: str
     ai_model: str = 'gpt-4o-mini'
-    system_prompt: str = 'Привет! Я ваш AI-помощник. Готов ответить на вопросы и помочь с любыми задачами. Чем могу быть полезен?'
+    system_prompt: str = 'Добро пожаловать! Я Ваш AI-ассистент. Готов предоставить информацию и помочь с любыми вопросами на основе загруженных в мою базу знаний материалов. ВАЖНО: Я отвечаю исключительно на основе предоставленной Вами информации и всегда обращаюсь на «Вы». Чем могу быть полезен?'
     is_active: bool = True
     website_integration_enabled: bool = False
     allowed_domains: Optional[str] = None

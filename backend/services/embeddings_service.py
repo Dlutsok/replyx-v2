@@ -577,77 +577,8 @@ class EmbeddingsService:
             
             logger.info(f"🔍 [EMBEDDINGS_SEARCH] ✅ Found {len(final_chunks)} relevant chunks (total tokens: {total_tokens})")
 
-            # Дополнительный fallback: если не нашли chunks с assistant_id, попробуем еще раз без фильтрации
-            if not final_chunks and assistant_id:
-                logger.info(f"🔍 [EMBEDDINGS_SEARCH] 🔄 No chunks found with assistant_id={assistant_id}, trying global fallback...")
-
-                try:
-                    # Попробуем найти хоть что-то у пользователя без фильтрации по assistant_id
-                    if Vector:
-                        import psycopg2
-                        from core.app_config import DATABASE_URL
-
-                        psycopg2_url = DATABASE_URL.replace('postgresql+psycopg2://', 'postgresql://')
-                        conn = psycopg2.connect(psycopg2_url)
-                        cursor = conn.cursor()
-
-                        embedding_str = "[" + ",".join(map(str, query_embedding)) + "]"
-
-                        sql_fallback = """
-                            SELECT id, doc_id, chunk_text, doc_type, importance, token_count,
-                                   1 - (embedding <=> %s::vector) AS similarity
-                            FROM knowledge_embeddings
-                            WHERE user_id = %s
-                            AND qa_id IS NULL
-                            ORDER BY embedding <=> %s::vector
-                            LIMIT %s
-                        """
-
-                        params_fallback = [embedding_str, user_id, embedding_str, top_k * 3]
-                        cursor.execute(sql_fallback, params_fallback)
-                        fallback_rows = cursor.fetchall()
-
-                        cursor.close()
-                        conn.close()
-
-                        logger.info(f"🔍 [EMBEDDINGS_SEARCH] Global fallback found {len(fallback_rows)} chunks")
-
-                        # Обрабатываем результаты fallback
-                        fallback_chunks = []
-                        for row in fallback_rows:
-                            if row[6] is not None and row[6] >= min_similarity:
-                                chunk_tokens = row[5] or self.estimate_tokens(row[2])
-                                fallback_chunks.append({
-                                    'id': row[0],
-                                    'doc_id': row[1],
-                                    'text': row[2],
-                                    'doc_type': row[3],
-                                    'importance': row[4],
-                                    'similarity': float(row[6]),
-                                    'token_count': chunk_tokens,
-                                })
-
-                        # Применяем диверсификацию и ограничения
-                        if fallback_chunks:
-                            diversified_fallback = self._select_diverse_chunks(
-                                sorted(fallback_chunks, key=lambda x: x['similarity'], reverse=True),
-                                k=top_k,
-                                max_jaccard=0.7,
-                            )
-
-                            final_chunks = []
-                            total_tokens = 0
-
-                            for chunk in diversified_fallback[:top_k]:
-                                if total_tokens + chunk['token_count'] > self.max_total_context_tokens:
-                                    break
-                                final_chunks.append(chunk)
-                                total_tokens += chunk['token_count']
-
-                            logger.info(f"🔍 [EMBEDDINGS_SEARCH] ✅ Global fallback returned {len(final_chunks)} chunks (total tokens: {total_tokens})")
-
-                except Exception as e:
-                    logger.warning(f"🔍 [EMBEDDINGS_SEARCH] Global fallback failed: {e}")
+            # Убрали глобальный fallback для обеспечения изоляции между ассистентами
+            logger.info(f"🔍 [EMBEDDINGS_SEARCH] Strict isolation mode: no cross-assistant fallback")
 
             # Обновляем usage_count/last_used для задействованных знаний (если есть UserKnowledge по doc_id)
             try:
