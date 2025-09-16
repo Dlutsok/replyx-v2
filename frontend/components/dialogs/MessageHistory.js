@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiRefreshCw, FiCheckCircle, FiXCircle, FiInfo, FiAlertCircle } from 'react-icons/fi';
+import MessageLinks from '../chat/MessageLinks';
 import styles from './MessageHistory.module.css';
 
 const MessageHistory = ({ messages, loading, error }) => {
@@ -83,7 +84,9 @@ const MessageHistory = ({ messages, loading, error }) => {
     if (!text || typeof text !== 'string') {
       return '';
     }
-    
+
+    // Links [text](url) - обрабатываем ПЕРЕД остальными элементами
+    text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: #3b82f6; text-decoration: underline;">$1</a>');
     // Bold
     text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     // Italic
@@ -100,7 +103,7 @@ const MessageHistory = ({ messages, loading, error }) => {
     // Wrap consecutive list items
     text = text.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
     text = text.replace(/<\/ul>\s*<ul>/g, '');
-    
+
     return text;
   };
 
@@ -182,6 +185,14 @@ const MessageHistory = ({ messages, loading, error }) => {
                       )}
                     </div>
                     <div className={styles.msgText} dangerouslySetInnerHTML={{ __html: parseMarkdown(message.text) }} />
+                    {/* Отображаем кнопки ссылок для сообщений ассистента и менеджера */}
+                    {(message.sender === 'assistant' || message.sender === 'manager') && (
+                      <MessageLinks 
+                        messageText={message.text} 
+                        sender={message.sender}
+                        compact={false}
+                      />
+                    )}
                   </div>
                 </>
               ) : (

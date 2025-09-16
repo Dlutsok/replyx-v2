@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
+import MessageLinks from '../chat/MessageLinks';
 
 const HeroWidget = () => {
   const [messages, setMessages] = useState([]);
@@ -454,10 +455,22 @@ const HeroWidget = () => {
                 transition={{ duration: 0.4, type: "spring", stiffness: 200, damping: 20 }}
                 className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <div
-                  className={`hero-message-bubble ${message.sender === 'user' ? 'hero-user-message' : 'hero-assistant-message'}`}
-                  dangerouslySetInnerHTML={{ __html: parseMarkdown(message.text) }}
-                />
+                <div>
+                  <div
+                    className={`hero-message-bubble ${message.sender === 'user' ? 'hero-user-message' : 'hero-assistant-message'}`}
+                    dangerouslySetInnerHTML={{ __html: parseMarkdown(message.text) }}
+                  />
+                  {/* Отображаем кнопки ссылок для сообщений ассистента */}
+                  {message.sender === 'assistant' && (
+                    <div style={{ marginTop: '8px' }}>
+                      <MessageLinks 
+                        messageText={message.text} 
+                        sender={message.sender}
+                        compact={true}
+                      />
+                    </div>
+                  )}
+                </div>
               </motion.div>
             ))}
 

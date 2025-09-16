@@ -1,0 +1,215 @@
+/* Контейнер для ссылок */
+.linksContainer {
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+/* Обертка для кнопок ссылок */
+.linksWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 100%;
+}
+
+.linksWrapper.compact {
+  gap: 4px;
+}
+
+/* Стили для ссылок ассистента */
+.assistantLinks {
+  align-items: flex-start;
+}
+
+/* Стили для ссылок пользователя */
+.userLinks {
+  align-items: flex-end;
+}
+
+/* Основная кнопка ссылки */
+.linkButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  max-width: 280px;
+  min-width: 120px;
+  position: relative;
+  overflow: hidden;
+}
+
+.linkButton:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.linkButton:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Компактная версия кнопки */
+.compactButton {
+  padding: 8px 12px;
+  font-size: 13px;
+  border-radius: 10px;
+  max-width: 220px;
+  min-width: 100px;
+  gap: 6px;
+}
+
+/* Иконка ссылки */
+.linkIcon {
+  font-size: 16px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.compactButton .linkIcon {
+  font-size: 14px;
+}
+
+/* Текст ссылки */
+.linkText {
+  flex: 1;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+/* Иконка внешней ссылки */
+.externalIcon {
+  opacity: 0.6;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
+}
+
+.linkButton:hover .externalIcon {
+  opacity: 1;
+}
+
+/* Состояние нажатой ссылки */
+.clicked {
+  background: #e0f2fe !important;
+  border-color: #0ea5e9 !important;
+  color: #0c4a6e !important;
+}
+
+.clicked .externalIcon {
+  opacity: 0.8;
+  color: #0ea5e9;
+}
+
+/* Анимация при нажатии */
+.linkButton::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+  pointer-events: none;
+}
+
+.linkButton:active::before {
+  width: 100%;
+  height: 100%;
+}
+
+/* Адаптация для пользовательских сообщений */
+.userLinks .linkButton {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.2);
+  color: #1e40af;
+}
+
+.userLinks .linkButton:hover {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+/* Темная тема (если потребуется в будущем) */
+@media (prefers-color-scheme: dark) {
+  .linkButton {
+    background: #1e293b;
+    border-color: #334155;
+    color: #cbd5e1;
+  }
+  
+  .linkButton:hover {
+    background: #334155;
+    border-color: #475569;
+  }
+  
+  .clicked {
+    background: #1e3a8a !important;
+    border-color: #3b82f6 !important;
+    color: #dbeafe !important;
+  }
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+  .linkButton {
+    max-width: 240px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  .compactButton {
+    max-width: 180px;
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  
+  .linksWrapper {
+    gap: 4px;
+  }
+  
+  .linksWrapper.compact {
+    gap: 3px;
+  }
+}
+
+/* Анимация появления */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.linkButton {
+  animation: fadeInUp 0.3s ease forwards;
+}
+
+/* Задержка анимации для множественных ссылок */
+.linkButton:nth-child(1) { animation-delay: 0ms; }
+.linkButton:nth-child(2) { animation-delay: 50ms; }
+.linkButton:nth-child(3) { animation-delay: 100ms; }
+.linkButton:nth-child(4) { animation-delay: 150ms; }
+.linkButton:nth-child(5) { animation-delay: 200ms; }

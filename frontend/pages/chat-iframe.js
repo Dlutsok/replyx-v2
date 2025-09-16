@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
+import MessageLinks from '../components/chat/MessageLinks';
 
 // Динамическое определение API URL
 const getApiUrl = () => {
@@ -51,7 +52,9 @@ function parseMarkdown(text) {
   if (!text || typeof text !== 'string') {
     return '';
   }
-  
+
+  // Links [text](url) - обрабатываем ПЕРЕД остальными элементами
+  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: #3b82f6; text-decoration: underline;">$1</a>');
   // Bold
   text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
   // Italic
@@ -68,7 +71,7 @@ function parseMarkdown(text) {
   // Wrap consecutive list items
   text = text.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
   text = text.replace(/<\/ul>\s*<ul>/g, '');
-  
+
   return text;
 }
 
@@ -1680,6 +1683,14 @@ export default function ChatIframe() {
                       <div className="message-content" dangerouslySetInnerHTML={{ 
                         __html: parseMarkdown(m.text) 
                       }} />
+                      {/* Отображаем кнопки ссылок для сообщений ассистента и менеджера */}
+                      {(m.sender === 'assistant' || m.sender === 'manager') && (
+                        <MessageLinks 
+                          messageText={m.text} 
+                          sender={m.sender}
+                          compact={true}
+                        />
+                      )}
                     </div>
                   </div>
                 )
