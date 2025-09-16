@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiRefreshCw, FiCheckCircle, FiXCircle, FiInfo, FiAlertCircle } from 'react-icons/fi';
-import MessageLinks from '../chat/MessageLinks';
 import styles from './MessageHistory.module.css';
 
 const MessageHistory = ({ messages, loading, error }) => {
@@ -185,14 +184,6 @@ const MessageHistory = ({ messages, loading, error }) => {
                       )}
                     </div>
                     <div className={styles.msgText} dangerouslySetInnerHTML={{ __html: parseMarkdown(message.text) }} />
-                    {/* Отображаем кнопки ссылок для сообщений ассистента и менеджера */}
-                    {(message.sender === 'assistant' || message.sender === 'manager') && (
-                      <MessageLinks 
-                        messageText={message.text} 
-                        sender={message.sender}
-                        compact={false}
-                      />
-                    )}
                   </div>
                 </>
               ) : (

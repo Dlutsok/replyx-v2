@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
-import MessageLinks from '../components/chat/MessageLinks';
 
 // Динамическое определение API URL
 const getApiUrl = () => {
@@ -1683,14 +1682,6 @@ export default function ChatIframe() {
                       <div className="message-content" dangerouslySetInnerHTML={{ 
                         __html: parseMarkdown(m.text) 
                       }} />
-                      {/* Отображаем кнопки ссылок для сообщений ассистента и менеджера */}
-                      {(m.sender === 'assistant' || m.sender === 'manager') && (
-                        <MessageLinks 
-                          messageText={m.text} 
-                          sender={m.sender}
-                          compact={true}
-                        />
-                      )}
                     </div>
                   </div>
                 )
