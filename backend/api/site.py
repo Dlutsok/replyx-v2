@@ -978,7 +978,7 @@ async def generate_ai_response(dialog_id: int, current_user: models.User, db: Se
                     user_id=current_user.id,
                     assistant_id=target_assistant.id if target_assistant else None,
                     top_k=RAG_TOP_K_WIDGET,
-                    min_similarity=0.5,   # Понижен порог для Q&A
+                    min_similarity=0.1,   # Временно понижен для диагностики S3 проблемы
                     include_qa=True,  # Включаем Q&A поиск
                     qa_limit=2,       # Максимум 2 Q&A результата для виджета
                     db=db

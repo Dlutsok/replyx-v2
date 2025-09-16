@@ -277,14 +277,14 @@ class EmbeddingsService:
             logger.error(f"Upsert chunk failed: {e}")
             return False
 
-    def index_document(self, doc_id: int, user_id: int, assistant_id: Optional[int], 
+    def index_document(self, doc_id: int, user_id: int, assistant_id: Optional[int],
                       text: str, doc_type: str, importance: int = 10, db: Session = None) -> int:
         """Индексирует документ, создавая embeddings для всех чанков"""
-        logger.info(f"Starting document indexing: doc_id={doc_id}, user_id={user_id}")
+        logger.info(f"📄 [DOCUMENT_INDEXING] Starting: doc_id={doc_id}, user_id={user_id}, assistant_id={assistant_id}, text_length={len(text)}")
         
         # Разбиваем текст на чанки
         chunks = self.split_text_into_chunks(text, chunk_size=800, overlap=50)
-        logger.info(f"Document split into {len(chunks)} chunks")
+        logger.info(f"📄 [DOCUMENT_INDEXING] Document split into {len(chunks)} chunks")
         
         indexed_count = 0
         
@@ -317,11 +317,14 @@ class EmbeddingsService:
                 db=db,
             ):
                 indexed_count += 1
+                logger.debug(f"📄 [DOCUMENT_INDEXING] Successfully indexed chunk {i}/{len(chunks)}: {chunk[:50]}... (assistant_id={assistant_id})")
+            else:
+                logger.warning(f"📄 [DOCUMENT_INDEXING] Failed to index chunk {i}/{len(chunks)}")
         
         # Коммитим все изменения
         try:
             db.commit()
-            logger.info(f"Successfully indexed {indexed_count} chunks for document {doc_id}")
+            logger.info(f"📄 [DOCUMENT_INDEXING] ✅ Successfully indexed {indexed_count} chunks for document {doc_id} (assistant_id={assistant_id})")
             
             # Увеличиваем версию знаний для ассистента
             if assistant_id:
@@ -356,12 +359,37 @@ class EmbeddingsService:
             logger.error(f"Error incrementing knowledge version: {e}")
             db.rollback()
     
-    def search_relevant_chunks(self, query: str, user_id: int, assistant_id: Optional[int], 
-                              top_k: int = 5, min_similarity: float = 0.7, db: Session = None, 
+    def search_relevant_chunks(self, query: str, user_id: int, assistant_id: Optional[int],
+                              top_k: int = 5, min_similarity: float = 0.7, db: Session = None,
                               include_qa: bool = False, qa_limit: int = 2) -> List[Dict]:
         """Ищет наиболее релевантные чанки знаний для запроса"""
-        
+
         try:
+            logger.info(f"🔍 [EMBEDDINGS_SEARCH] Starting search for user_id={user_id}, assistant_id={assistant_id}, query='{query[:50]}...'")
+
+            # Проверяем количество embeddings в базе для диагностики
+            total_embeddings = db.query(models.KnowledgeEmbedding).filter(
+                models.KnowledgeEmbedding.user_id == user_id,
+                models.KnowledgeEmbedding.qa_id.is_(None)
+            ).count()
+
+            if assistant_id:
+                assistant_embeddings = db.query(models.KnowledgeEmbedding).filter(
+                    models.KnowledgeEmbedding.user_id == user_id,
+                    models.KnowledgeEmbedding.assistant_id == assistant_id,
+                    models.KnowledgeEmbedding.qa_id.is_(None)
+                ).count()
+                logger.info(f"📊 [EMBEDDINGS_SEARCH] Total embeddings for user: {total_embeddings}, for assistant {assistant_id}: {assistant_embeddings}")
+            else:
+                logger.info(f"📊 [EMBEDDINGS_SEARCH] Total embeddings for user: {total_embeddings}")
+
+            # Проверяем, есть ли Q&A embeddings если включен поиск по Q&A
+            if include_qa:
+                qa_embeddings = db.query(models.KnowledgeEmbedding).filter(
+                    models.KnowledgeEmbedding.user_id == user_id,
+                    models.KnowledgeEmbedding.qa_id.isnot(None)
+                ).count()
+                logger.info(f"📊 [EMBEDDINGS_SEARCH] Q&A embeddings for user: {qa_embeddings}")
             # Попытка получить из кэша топ-K чанков по (query_hash, assistant, knowledge_version)
             from cache.redis_cache import chatai_cache
             query_hash = hashlib.md5(query.encode()).hexdigest()
@@ -393,38 +421,79 @@ class EmbeddingsService:
                 # Используем прямой SQL через psycopg2 для работы с pgvector (документы)
                 import psycopg2
                 from core.app_config import DATABASE_URL
-                
+
                 try:
                     # Убираем префикс postgresql+psycopg2:// для psycopg2
                     psycopg2_url = DATABASE_URL.replace('postgresql+psycopg2://', 'postgresql://')
                     conn = psycopg2.connect(psycopg2_url)
                     cursor = conn.cursor()
-                    
+
                     # Конвертируем embedding в строку pgvector формата
                     embedding_str = "[" + ",".join(map(str, query_embedding)) + "]"
-                    
-                    # SQL запрос с правильными плейсхолдерами для psycopg2
-                    where_assistant = "AND (assistant_id = %s OR assistant_id IS NULL)" if assistant_id else ""
-                    sql = f"""
-                        SELECT id, doc_id, chunk_text, doc_type, importance, token_count,
-                               1 - (embedding <=> %s::vector) AS similarity
-                        FROM knowledge_embeddings
-                        WHERE user_id = %s
-                        AND qa_id IS NULL
-                        {where_assistant}
-                        ORDER BY embedding <=> %s::vector
-                        LIMIT %s
-                    """
-                    
-                    # Параметры в правильном порядке
-                    params = [embedding_str, user_id]
+
+                    # Сначала попробуем найти с assistant_id, затем без него (fallback)
+                    rows = []
+
                     if assistant_id:
-                        params.append(assistant_id)
-                    params.extend([embedding_str, top_k * 5])  # embedding дважды: для similarity и ORDER BY
-                    
-                    cursor.execute(sql, params)
-                    rows = cursor.fetchall()
-                    
+                        # Первый запрос: строгая фильтрация по assistant_id
+                        sql1 = """
+                            SELECT id, doc_id, chunk_text, doc_type, importance, token_count,
+                                   1 - (embedding <=> %s::vector) AS similarity
+                            FROM knowledge_embeddings
+                            WHERE user_id = %s
+                            AND qa_id IS NULL
+                            AND assistant_id = %s
+                            ORDER BY embedding <=> %s::vector
+                            LIMIT %s
+                        """
+
+                        params1 = [embedding_str, user_id, assistant_id, embedding_str, top_k * 5]
+                        cursor.execute(sql1, params1)
+                        rows = cursor.fetchall()
+
+                        logger.info(f"Found {len(rows)} chunks with assistant_id={assistant_id}")
+
+                        # Логируем similarity всех найденных chunks для диагностики
+                        for i, row in enumerate(rows[:3]):  # Показываем только первые 3
+                            similarity = float(row[6]) if row[6] is not None else 0.0
+                            logger.info(f"  Chunk {i+1}: similarity={similarity:.4f}, text='{row[2][:50]}...'")
+
+                        # Если не нашли с конкретным assistant_id, попробуем общие (assistant_id IS NULL)
+                        if not rows:
+                            sql2 = """
+                                SELECT id, doc_id, chunk_text, doc_type, importance, token_count,
+                                       1 - (embedding <=> %s::vector) AS similarity
+                                FROM knowledge_embeddings
+                                WHERE user_id = %s
+                                AND qa_id IS NULL
+                                AND assistant_id IS NULL
+                                ORDER BY embedding <=> %s::vector
+                                LIMIT %s
+                            """
+
+                            params2 = [embedding_str, user_id, embedding_str, top_k * 5]
+                            cursor.execute(sql2, params2)
+                            rows = cursor.fetchall()
+
+                            logger.info(f"Fallback: Found {len(rows)} chunks with assistant_id IS NULL")
+                    else:
+                        # Без assistant_id - ищем все документы пользователя
+                        sql = """
+                            SELECT id, doc_id, chunk_text, doc_type, importance, token_count,
+                                   1 - (embedding <=> %s::vector) AS similarity
+                            FROM knowledge_embeddings
+                            WHERE user_id = %s
+                            AND qa_id IS NULL
+                            ORDER BY embedding <=> %s::vector
+                            LIMIT %s
+                        """
+
+                        params = [embedding_str, user_id, embedding_str, top_k * 5]
+                        cursor.execute(sql, params)
+                        rows = cursor.fetchall()
+
+                        logger.info(f"Found {len(rows)} chunks for user {user_id} (no assistant filter)")
+
                     cursor.close()
                     conn.close()
                     
@@ -433,8 +502,15 @@ class EmbeddingsService:
                     rows = []
                 relevant_chunks = []
                 for row in rows:
+                    similarity = float(row[6]) if row[6] is not None else 0.0
+
+                    # Отладочная информация о similarity
+                    logger.debug(f"🔍 [EMBEDDINGS_SEARCH] Chunk similarity: {similarity:.4f}, min_required: {min_similarity}, text: {row[2][:50]}...")
+
                     if row[6] is not None and row[6] < min_similarity:
+                        logger.debug(f"🔍 [EMBEDDINGS_SEARCH] ❌ Chunk filtered out by min_similarity: {similarity:.4f} < {min_similarity}")
                         continue
+
                     chunk_tokens = row[5] or self.estimate_tokens(row[2])
                     relevant_chunks.append({
                         'id': row[0],
@@ -442,9 +518,10 @@ class EmbeddingsService:
                         'text': row[2],
                         'doc_type': row[3],
                         'importance': row[4],
-                        'similarity': float(row[6]) if row[6] is not None else 0.0,
+                        'similarity': similarity,
                         'token_count': chunk_tokens,
                     })
+                    logger.debug(f"🔍 [EMBEDDINGS_SEARCH] ✅ Chunk accepted: {similarity:.4f}")
             else:
                 # Fallback: приложение вычисляет схожесть (медленно)
                 query_filter = db.query(models.KnowledgeEmbedding).filter(
@@ -498,7 +575,79 @@ class EmbeddingsService:
                 final_chunks.append(chunk)
                 total_tokens += chunk['token_count']
             
-            logger.info(f"Found {len(final_chunks)} relevant chunks (total tokens: {total_tokens})")
+            logger.info(f"🔍 [EMBEDDINGS_SEARCH] ✅ Found {len(final_chunks)} relevant chunks (total tokens: {total_tokens})")
+
+            # Дополнительный fallback: если не нашли chunks с assistant_id, попробуем еще раз без фильтрации
+            if not final_chunks and assistant_id:
+                logger.info(f"🔍 [EMBEDDINGS_SEARCH] 🔄 No chunks found with assistant_id={assistant_id}, trying global fallback...")
+
+                try:
+                    # Попробуем найти хоть что-то у пользователя без фильтрации по assistant_id
+                    if Vector:
+                        import psycopg2
+                        from core.app_config import DATABASE_URL
+
+                        psycopg2_url = DATABASE_URL.replace('postgresql+psycopg2://', 'postgresql://')
+                        conn = psycopg2.connect(psycopg2_url)
+                        cursor = conn.cursor()
+
+                        embedding_str = "[" + ",".join(map(str, query_embedding)) + "]"
+
+                        sql_fallback = """
+                            SELECT id, doc_id, chunk_text, doc_type, importance, token_count,
+                                   1 - (embedding <=> %s::vector) AS similarity
+                            FROM knowledge_embeddings
+                            WHERE user_id = %s
+                            AND qa_id IS NULL
+                            ORDER BY embedding <=> %s::vector
+                            LIMIT %s
+                        """
+
+                        params_fallback = [embedding_str, user_id, embedding_str, top_k * 3]
+                        cursor.execute(sql_fallback, params_fallback)
+                        fallback_rows = cursor.fetchall()
+
+                        cursor.close()
+                        conn.close()
+
+                        logger.info(f"🔍 [EMBEDDINGS_SEARCH] Global fallback found {len(fallback_rows)} chunks")
+
+                        # Обрабатываем результаты fallback
+                        fallback_chunks = []
+                        for row in fallback_rows:
+                            if row[6] is not None and row[6] >= min_similarity:
+                                chunk_tokens = row[5] or self.estimate_tokens(row[2])
+                                fallback_chunks.append({
+                                    'id': row[0],
+                                    'doc_id': row[1],
+                                    'text': row[2],
+                                    'doc_type': row[3],
+                                    'importance': row[4],
+                                    'similarity': float(row[6]),
+                                    'token_count': chunk_tokens,
+                                })
+
+                        # Применяем диверсификацию и ограничения
+                        if fallback_chunks:
+                            diversified_fallback = self._select_diverse_chunks(
+                                sorted(fallback_chunks, key=lambda x: x['similarity'], reverse=True),
+                                k=top_k,
+                                max_jaccard=0.7,
+                            )
+
+                            final_chunks = []
+                            total_tokens = 0
+
+                            for chunk in diversified_fallback[:top_k]:
+                                if total_tokens + chunk['token_count'] > self.max_total_context_tokens:
+                                    break
+                                final_chunks.append(chunk)
+                                total_tokens += chunk['token_count']
+
+                            logger.info(f"🔍 [EMBEDDINGS_SEARCH] ✅ Global fallback returned {len(final_chunks)} chunks (total tokens: {total_tokens})")
+
+                except Exception as e:
+                    logger.warning(f"🔍 [EMBEDDINGS_SEARCH] Global fallback failed: {e}")
 
             # Обновляем usage_count/last_used для задействованных знаний (если есть UserKnowledge по doc_id)
             try:
@@ -716,29 +865,69 @@ class EmbeddingsService:
                     # Конвертируем embedding в строку pgvector формата
                     embedding_str = "[" + ",".join(map(str, query_embedding)) + "]"
                     
-                    # SQL запрос с правильными плейсхолдерами для psycopg2
-                    where_assistant = "AND (ke.assistant_id = %s OR ke.assistant_id IS NULL)" if assistant_id else ""
-                    sql = f"""
-                        SELECT DISTINCT qa.id, qa.question, qa.answer, qa.category, qa.importance,
-                               MAX(1 - (ke.embedding <=> %s::vector)) AS max_similarity
-                        FROM qa_knowledge qa
-                        JOIN knowledge_embeddings ke ON qa.id = ke.qa_id
-                        WHERE qa.user_id = %s 
-                        AND qa.is_active = true
-                        {where_assistant}
-                        GROUP BY qa.id, qa.question, qa.answer, qa.category, qa.importance
-                        ORDER BY max_similarity DESC
-                        LIMIT %s
-                    """
-                    
-                    # Параметры в правильном порядке
-                    params = [embedding_str, user_id]
+                    # Используем ту же улучшенную логику как для документов
+                    rows = []
+
                     if assistant_id:
-                        params.append(assistant_id)
-                    params.append(top_k * 2)  # Get more to filter by similarity
-                    
-                    cursor.execute(sql, params)
-                    rows = cursor.fetchall()
+                        # Первый запрос: строгая фильтрация по assistant_id
+                        sql1 = """
+                            SELECT DISTINCT qa.id, qa.question, qa.answer, qa.category, qa.importance,
+                                   MAX(1 - (ke.embedding <=> %s::vector)) AS max_similarity
+                            FROM qa_knowledge qa
+                            JOIN knowledge_embeddings ke ON qa.id = ke.qa_id
+                            WHERE qa.user_id = %s
+                            AND qa.is_active = true
+                            AND ke.assistant_id = %s
+                            GROUP BY qa.id, qa.question, qa.answer, qa.category, qa.importance
+                            ORDER BY max_similarity DESC
+                            LIMIT %s
+                        """
+
+                        params1 = [embedding_str, user_id, assistant_id, top_k * 2]
+                        cursor.execute(sql1, params1)
+                        rows = cursor.fetchall()
+
+                        logger.info(f"Found {len(rows)} Q&A with assistant_id={assistant_id}")
+
+                        # Если не нашли с конкретным assistant_id, попробуем общие (assistant_id IS NULL)
+                        if not rows:
+                            sql2 = """
+                                SELECT DISTINCT qa.id, qa.question, qa.answer, qa.category, qa.importance,
+                                       MAX(1 - (ke.embedding <=> %s::vector)) AS max_similarity
+                                FROM qa_knowledge qa
+                                JOIN knowledge_embeddings ke ON qa.id = ke.qa_id
+                                WHERE qa.user_id = %s
+                                AND qa.is_active = true
+                                AND ke.assistant_id IS NULL
+                                GROUP BY qa.id, qa.question, qa.answer, qa.category, qa.importance
+                                ORDER BY max_similarity DESC
+                                LIMIT %s
+                            """
+
+                            params2 = [embedding_str, user_id, top_k * 2]
+                            cursor.execute(sql2, params2)
+                            rows = cursor.fetchall()
+
+                            logger.info(f"Q&A Fallback: Found {len(rows)} Q&A with assistant_id IS NULL")
+                    else:
+                        # Без assistant_id - ищем все Q&A пользователя
+                        sql = """
+                            SELECT DISTINCT qa.id, qa.question, qa.answer, qa.category, qa.importance,
+                                   MAX(1 - (ke.embedding <=> %s::vector)) AS max_similarity
+                            FROM qa_knowledge qa
+                            JOIN knowledge_embeddings ke ON qa.id = ke.qa_id
+                            WHERE qa.user_id = %s
+                            AND qa.is_active = true
+                            GROUP BY qa.id, qa.question, qa.answer, qa.category, qa.importance
+                            ORDER BY max_similarity DESC
+                            LIMIT %s
+                        """
+
+                        params = [embedding_str, user_id, top_k * 2]
+                        cursor.execute(sql, params)
+                        rows = cursor.fetchall()
+
+                        logger.info(f"Found {len(rows)} Q&A for user {user_id} (no assistant filter)")
                     
                     cursor.close()
                     conn.close()

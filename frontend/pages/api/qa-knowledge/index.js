@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        let url = `${API_URL}/api/qa-knowledge/`;
+        let url = `${API_URL}/api/qa-knowledge`;
         
         // Добавляем query параметры для GET запросов
         if (method === 'GET' && Object.keys(query).length > 0) {
