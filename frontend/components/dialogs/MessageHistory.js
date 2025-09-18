@@ -77,7 +77,7 @@ const MessageHistory = ({ messages, loading, error }) => {
   // Обрабатываем текст (оставляем эмодзи, но убираем лишние пробелы)
   const sanitizeText = (text = '') => text.replace(/\s{2,}/g, ' ').trim();
 
-  // Markdown utility function (copied from chat-iframe.js)
+  // Markdown utility function (синхронизирован с chat-iframe.js)
   const parseMarkdown = (text) => {
     // Guard clause: handle null, undefined, or non-string values
     if (!text || typeof text !== 'string') {
@@ -86,22 +86,33 @@ const MessageHistory = ({ messages, loading, error }) => {
 
     // Links [text](url) - обрабатываем ПЕРЕД остальными элементами
     text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: #3b82f6; text-decoration: underline;">$1</a>');
+
+    // Headers - компактные заголовки для админского поп-апа (все 16px)
+    text = text.replace(/^### (.+)$/gm, '<h3 style="font-weight: 600; font-size: 16px; margin: 8px 0 4px 0; color: #1f2937;">$1</h3>');
+    text = text.replace(/^## (.+)$/gm, '<h2 style="font-weight: 700; font-size: 16px; margin: 8px 0 4px 0; color: #1f2937;">$1</h2>');
+    text = text.replace(/^# (.+)$/gm, '<h1 style="font-weight: 700; font-size: 16px; margin: 8px 0 4px 0; color: #111827;">$1</h1>');
+
     // Bold
-    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    text = text.replace(/\*\*(.*?)\*\*/g, '<strong style="font-weight: 600;">$1</strong>');
     // Italic
     text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
     // Code blocks
-    text = text.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+    text = text.replace(/```([\s\S]*?)```/g, '<pre style="background: #f3f4f6; padding: 12px; border-radius: 6px; margin: 8px 0; overflow-x: auto;"><code style="font-family: monospace; font-size: 13px;">$1</code></pre>');
     // Inline code
-    text = text.replace(/`(.*?)`/g, '<code>$1</code>');
-    // Line breaks
+    text = text.replace(/`(.*?)`/g, '<code style="background: rgba(0, 0, 0, 0.1); padding: 2px 4px; border-radius: 4px; font-family: monospace; font-size: 13px;">$1</code>');
+
+    // Line breaks - обрабатываем ПОСЛЕ заголовков
     text = text.replace(/\n/g, '<br>');
-    // Lists
-    text = text.replace(/^- (.+)$/gm, '<li>$1</li>');
-    text = text.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+
+    // Lists - улучшенная обработка списков
+    text = text.replace(/^- (.+)$/gm, '<li style="margin: 4px 0;">$1</li>');
+    text = text.replace(/^\d+\. (.+)$/gm, '<li style="margin: 4px 0; list-style-type: decimal;">$1</li>');
     // Wrap consecutive list items
-    text = text.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
-    text = text.replace(/<\/ul>\s*<ul>/g, '');
+    text = text.replace(/(<li.*?>.*?<\/li>(?:\s*<br>\s*<li.*?>.*?<\/li>)*)/gs, '<ul style="margin: 8px 0; padding-left: 20px;">$1</ul>');
+    text = text.replace(/<\/ul>\s*<br>\s*<ul[^>]*>/g, '');
+    // Убираем лишние <br> внутри списков
+    text = text.replace(/(<ul[^>]*>[\s\S]*?)<br>(?=\s*<li)/g, '$1');
+    text = text.replace(/(<\/li>)\s*<br>\s*(?=<li)/g, '$1');
 
     return text;
   };

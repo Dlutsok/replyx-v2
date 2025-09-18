@@ -45,45 +45,7 @@ const ONBOARDING_STEPS = [
   }
 ];
 
-const ASSISTANT_TEMPLATES = [
-  {
-    id: 'customer_support',
-    name: 'Служба поддержки',
-    description: 'Отвечает на вопросы клиентов, решает проблемы',
-    icon: '🎧',
-    popular: true,
-    prompt: 'Ты — дружелюбный специалист службы поддержки. Помогаешь клиентам решать их вопросы быстро и эффективно.'
-  },
-  {
-    id: 'sales_assistant',
-    name: 'Продажи',
-    description: 'Помогает с выбором товаров, консультирует',
-    icon: '💼',
-    popular: true,
-    prompt: 'Ты — опытный консультант по продажам. Помогаешь клиентам выбрать подходящий товар или услугу.'
-  },
-  {
-    id: 'info_assistant',
-    name: 'Информационный',
-    description: 'Предоставляет информацию о компании',
-    icon: 'ℹ️',
-    prompt: 'Ты — информационный ассистент. Предоставляешь актуальную информацию о компании и услугах.'
-  },
-  {
-    id: 'booking_assistant',
-    name: 'Бронирование',
-    description: 'Помогает записаться на услуги',
-    icon: '📅',
-    prompt: 'Ты — ассистент для записи на услуги. Помогаешь клиентам выбрать удобное время и забронировать услугу.'
-  },
-  {
-    id: 'custom',
-    name: 'Свой вариант',
-    description: 'Создать с нуля',
-    icon: '⚡',
-    prompt: 'Ты — полезный AI-ассистент. Отвечаешь на вопросы пользователей дружелюбно и профессионально.'
-  }
-];
+// Шаблоны ассистентов будут загружены с сервера
 
 export default function OnboardingWizard({ user, onComplete, onSkip }) {
   const { showSuccess, showError, showWarning, showInfo } = useNotifications();
@@ -96,6 +58,7 @@ export default function OnboardingWizard({ user, onComplete, onSkip }) {
     personality: 'friendly'
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [assistantTemplates, setAssistantTemplates] = useState([]);
   const router = useRouter();
 
   // Анимация перехода между шагами
@@ -123,6 +86,44 @@ export default function OnboardingWizard({ user, onComplete, onSkip }) {
 
   const handleTemplateSelect = (template) => {
     setFormData({ ...formData, selectedTemplate: template });
+  };
+
+  const fetchPromptTemplates = async () => {
+    try {
+      const response = await fetch('/api/prompt-templates');
+      if (response.ok) {
+        const templates = await response.json();
+        // Маппинг шаблонов с сервера на UI
+        const mappedTemplates = templates.map(template => ({
+          id: template.id,
+          name: template.name,
+          description: template.description,
+          icon: getTemplateIcon(template.id),
+          popular: ['support', 'sales'].includes(template.id),
+          prompt: template.prompt
+        }));
+        setAssistantTemplates(mappedTemplates);
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки шаблонов промптов:', error);
+      // Fallback на базовые шаблоны
+      setAssistantTemplates([
+        { id: 'support', name: 'Служба поддержки', description: 'Помогает клиентам решать вопросы и проблемы', icon: '🎧', popular: true, prompt: '' },
+        { id: 'sales', name: 'Продажи', description: 'Консультирует по товарам и услугам', icon: '💼', popular: true, prompt: '' },
+        { id: 'faq', name: 'FAQ‑ассистент', description: 'Отвечает на часто задаваемые вопросы', icon: 'ℹ️', popular: false, prompt: '' },
+        { id: 'universal', name: 'Универсальный', description: 'Подходит для любых задач', icon: '⚡', popular: false, prompt: '' }
+      ]);
+    }
+  };
+
+  const getTemplateIcon = (templateId) => {
+    const iconMap = {
+      'support': '🎧',
+      'sales': '💼',
+      'faq': 'ℹ️',
+      'universal': '⚡'
+    };
+    return iconMap[templateId] || '⚡';
   };
 
   const createAssistant = async () => {
@@ -245,7 +246,7 @@ export default function OnboardingWizard({ user, onComplete, onSkip }) {
             <p>Готовые настройки для быстрого старта</p>
             
             <div className={styles.templatesGrid}>
-              {ASSISTANT_TEMPLATES.map((template) => (
+              {assistantTemplates.map((template) => (
                 <div
                   key={template.id}
                   className={`${styles.templateCard} ${
@@ -344,6 +345,11 @@ export default function OnboardingWizard({ user, onComplete, onSkip }) {
         return null;
     }
   };
+
+  // Загружаем шаблоны промптов при монтировании компонента
+  useEffect(() => {
+    fetchPromptTemplates();
+  }, []);
 
   return (
     <div className={styles.onboardingOverlay}>

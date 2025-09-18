@@ -273,7 +273,14 @@ def get_assistant(db: Session, assistant_id: int):
     return db.query(models.Assistant).filter(models.Assistant.id == assistant_id).first()
 
 def create_assistant(db: Session, user_id: int, assistant: schemas.AssistantCreate):
-    db_assistant = models.Assistant(user_id=user_id, **assistant.dict())
+    from constants.prompts import get_default_prompt
+
+    # Преобразуем в словарь и применяем централизованный промпт если не задан
+    assistant_data = assistant.dict()
+    if not assistant_data.get('system_prompt'):
+        assistant_data['system_prompt'] = get_default_prompt()
+
+    db_assistant = models.Assistant(user_id=user_id, **assistant_data)
     db.add(db_assistant)
     db.commit()
     db.refresh(db_assistant)

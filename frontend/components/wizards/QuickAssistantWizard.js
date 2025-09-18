@@ -73,33 +73,8 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
     }
   ];
 
-  // Шаблоны системных инструкций
-  const promptTemplates = [
-    {
-      id: 'support',
-      name: 'Служба поддержки',
-      description: 'Помогает клиентам решать вопросы и проблемы',
-      prompt: 'Вы — специалист службы поддержки. Предоставляете точную информацию по вопросам клиентов в вежливом и профессиональном стиле. Отвечаете кратко, информативно, стараетесь решить проблему клиента. ВАЖНО: Опирайтесь ТОЛЬКО на данные из базы знаний компании. Если информации нет — сообщите об этом прямо.'
-    },
-    {
-      id: 'sales',
-      name: 'Продажи',
-      description: 'Консультирует по товарам и услугам',
-      prompt: 'Вы — консультант по продажам. Помогаете клиентам выбрать подходящие товары и услуги, предоставляете информацию о ценах, характеристиках и преимуществах. Отвечаете в дружелюбном, но профессиональном тоне. ВАЖНО: Используйте ТОЛЬКО информацию из базы знаний компании.'
-    },
-    {
-      id: 'faq',
-      name: 'FAQ‑ассистент',
-      description: 'Отвечает на часто задаваемые вопросы',
-      prompt: 'Вы — FAQ-помощник. Отвечаете на часто задаваемые вопросы клиентов на основе базы знаний. Предоставляете четкие, структурированные ответы. При отсутствии информации в базе знаний честно сообщаете об этом.'
-    },
-    {
-      id: 'universal',
-      name: 'Универсальный',
-      description: 'Подходит для любых задач',
-      prompt: 'Вы — корпоративный AI-ассистент. Предоставляете точную информацию по вопросам компании в деловом стиле. Отвечаете кратко, информативно, без использования смайликов и чрезмерной эмоциональности. ВАЖНО: Опирайтесь ТОЛЬКО на данные из базы знаний компании. Если информации нет — сообщите об этом прямо.'
-    }
-  ];
+  // Шаблоны системных инструкций (загружаются с сервера)
+  const [promptTemplates, setPromptTemplates] = useState([]);
 
   // Автосохранение
   const triggerAutoSave = () => {
@@ -149,7 +124,7 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
       body: JSON.stringify({
         name: wizardData.name,
         ai_model: wizardData.aiModel,
-        system_prompt: wizardData.customPrompt || template?.prompt || promptTemplates[3].prompt,
+        system_prompt: wizardData.customPrompt || template?.prompt,
         is_active: true
       })
     });
@@ -272,6 +247,25 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
     }
   };
 
+  const fetchPromptTemplates = async () => {
+    try {
+      const response = await fetch('/api/prompt-templates');
+      if (response.ok) {
+        const templates = await response.json();
+        setPromptTemplates(templates);
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки шаблонов промптов:', error);
+      // Fallback на базовые шаблоны при ошибке
+      setPromptTemplates([
+        { id: 'support', name: 'Служба поддержки', description: 'Помогает клиентам решать вопросы и проблемы', prompt: '' },
+        { id: 'sales', name: 'Продажи', description: 'Консультирует по товарам и услугам', prompt: '' },
+        { id: 'faq', name: 'FAQ‑ассистент', description: 'Отвечает на часто задаваемые вопросы', prompt: '' },
+        { id: 'universal', name: 'Универсальный', description: 'Подходит для любых задач', prompt: '' }
+      ]);
+    }
+  };
+
   // Навигация по шагам
   const nextStep = async () => {
     if (currentStep === 1) {
@@ -359,6 +353,13 @@ const QuickAssistantWizard = ({ isOpen, onClose, onComplete, onOpenSettings }) =
       setCurrentStep(stepId);
     }
   };
+
+  // Загрузка шаблонов промптов при монтировании
+  useEffect(() => {
+    if (isOpen) {
+      fetchPromptTemplates();
+    }
+  }, [isOpen]);
 
   // Очистка при закрытии
   useEffect(() => {

@@ -1,0 +1,15 @@
+No secret found for OPENAI_API_KEY
+2025-09-18 22:21:23,799 - cache.redis_cache - INFO - ✅ Redis подключен успешно
+2025-09-18 22:21:24,331 - ai.proxy_manager - INFO - ✅ Загружено 2 прокси из OPENAI_PROXY_CONFIG
+2025-09-18 22:21:24,331 - ai.proxy_manager - INFO - 🔗 Инициализирован ProxyManager с 2 прокси
+2025-09-18 22:21:24,331 - ai.ai_providers - INFO - 🔗 OpenAI инициализирован с 2 прокси, 2 доступны
+2025-09-18 22:21:24,331 - ai.ai_providers - INFO - ✅ OpenAI провайдер инициализирован (токены из БД через AI Token Pool)
+2025-09-18 22:21:24,446 - api.yookassa_payments - INFO - 🚀 Режим ЮKassa: TEST
+2025-09-18 22:21:24,446 - api.yookassa_payments - INFO -    Shop ID: 116***807
+2025-09-18 22:21:24,446 - api.yookassa_payments - INFO -    API URL: https://api.yookassa.ru/v3/
+2025-09-18 22:21:24,511 - core.error_handler - INFO - Error handlers configured successfully
+🌐 Основные CORS домены: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002', 'http://localhost:8000', 'https://replyx.ru', 'https://www.replyx.ru']
+🔧 Виджет эндпоинты: ['/api/validate-widget-token', '/api/widget-config']
+🛡️ DynamicCSPMiddleware добавлен для iframe страниц
+⚠️ CSRF Protection отключена (разработка)
+🛡️ Security Headers включены

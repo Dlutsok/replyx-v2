@@ -216,7 +216,7 @@ class Assistant(Base):
     user_id = Column(Integer, ForeignKey('users.id'))
     name = Column(String, nullable=False, default='AI-ассистент')
     ai_model = Column(String, default='gpt-4o-mini')
-    system_prompt = Column(Text, default='Привет! Я ваш AI-помощник. Готов ответить на вопросы и помочь с любыми задачами. Чем могу быть полезен?')
+    system_prompt = Column(Text, nullable=True)  # Дефолтное значение устанавливается в crud.create_assistant()
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow)
     is_active = Column(Boolean, default=True)

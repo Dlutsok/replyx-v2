@@ -4,6 +4,7 @@ from sqlalchemy import and_
 from database import get_db, schemas
 from core import auth
 from database.models import User, Assistant
+from constants.prompts import get_default_prompt, migrate_legacy_prompt, get_prompt_templates
 
 router = APIRouter()
 
@@ -16,11 +17,12 @@ def get_ai_settings(current_user: User, db: Session):
     ).first()
     
     ai_model = 'gpt-4o-mini'
-    system_prompt = 'Добро пожаловать! Я Ваш AI-ассистент. Готов предоставить информацию и помочь с любыми вопросами на основе загруженных в мою базу знаний материалов. Отвечаю вежливо, обращаясь к Вам на «Вы». ВАЖНО: Я использую только предоставленную Вами информацию, не выдумываю ответы.'
+    system_prompt = get_default_prompt()
     
     if active_assistant:
         ai_model = active_assistant.ai_model or ai_model
-        system_prompt = active_assistant.system_prompt or system_prompt
+        # Мигрируем старые промпты на новые
+        system_prompt = migrate_legacy_prompt(active_assistant.system_prompt) if active_assistant.system_prompt else system_prompt
     
     return {
         "ai_model": ai_model,
@@ -41,7 +43,7 @@ def update_ai_settings(current_user: User, data: dict, db: Session):
             user_id=current_user.id,
             name="Мой ассистент",
             ai_model='gpt-4o-mini',
-            system_prompt='Добро пожаловать! Я Ваш AI-ассистент. Отвечаю на основе загруженных материалов, всегда обращаясь на «Вы».',
+            system_prompt=get_default_prompt(),
             is_active=True
         )
         db.add(active_assistant)
@@ -101,3 +103,8 @@ def update_ai_settings_endpoint(data: dict, current_user: User = Depends(auth.ge
 def get_user_profile_endpoint(current_user: User = Depends(auth.get_current_user)):
     """Получить профиль пользователя"""
     return get_user_profile(current_user)
+
+@router.get("/api/prompt-templates")
+def get_prompt_templates_endpoint():
+    """Получить доступные шаблоны промптов"""
+    return get_prompt_templates()
