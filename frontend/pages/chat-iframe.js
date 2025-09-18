@@ -113,7 +113,15 @@ const playNotificationSound = () => {
 const styles = `
   /* Intel Font - подключение */
   @import url('https://fonts.googleapis.com/css2?family=Intel+One+Mono:wght@400;500;600;700&display=swap');
-  
+
+  /* Предотвращение автоматического зума на мобильных устройствах */
+  * {
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
   #replyx-chat-widget {
     z-index: 999999999 !important;
     position: fixed;
@@ -1245,6 +1253,10 @@ export default function ChatIframe() {
       if (textarea) {
         textarea.style.height = 'auto';
         textarea.style.overflowY = 'hidden';
+        // Убираем фокус с textarea после отправки на мобильных
+        if (isMobile) {
+          textarea.blur();
+        }
       }
     }
     setLoading(false); // Разблокируем кнопку сразу после добавления сообщения
@@ -1465,7 +1477,7 @@ export default function ChatIframe() {
   return (
     <>
       <Head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
       </Head>
       <style>{styles}</style>
       <div style={{
@@ -1725,13 +1737,33 @@ export default function ChatIframe() {
                       const scrollHeight = target.scrollHeight;
                       const lineHeight = 20; // примерная высота строки
                       const maxHeight = lineHeight * 4; // максимум 4 строки
-                      
+
                       if (scrollHeight <= maxHeight) {
                         target.style.height = scrollHeight + 'px';
                         target.style.overflowY = 'hidden';
                       } else {
                         target.style.height = maxHeight + 'px';
                         target.style.overflowY = 'scroll';
+                      }
+                    }}
+                    onFocus={(e) => {
+                      // Поднимаем поле ввода на мобильных устройствах
+                      if (isMobile) {
+                        const chatContainer = document.querySelector('.chat-window');
+                        if (chatContainer) {
+                          chatContainer.style.transform = 'translateY(-100px)';
+                          chatContainer.style.transition = 'transform 0.3s ease-in-out';
+                        }
+                      }
+                    }}
+                    onBlur={(e) => {
+                      // Возвращаем поле ввода в исходное положение
+                      if (isMobile) {
+                        const chatContainer = document.querySelector('.chat-window');
+                        if (chatContainer) {
+                          chatContainer.style.transform = 'translateY(0)';
+                          chatContainer.style.transition = 'transform 0.3s ease-in-out';
+                        }
                       }
                     }}
                     onKeyDown={(e) => {
@@ -1749,7 +1781,7 @@ export default function ChatIframe() {
                       outline: 'none',
                       resize: 'none',
                       fontFamily: 'inherit',
-                      fontSize: '14px',
+                      fontSize: isMobile ? '16px' : '14px', // 16px на мобильных для предотвращения зума
                       background: 'transparent',
                       padding: '16px 0',
                       lineHeight: '20px',
