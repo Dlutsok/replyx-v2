@@ -184,6 +184,7 @@ from api.debug_sse import router as debug_sse_router  # Renamed from debug_webso
 from api.sse import router as sse_router
 from api.proxy_monitoring import router as proxy_monitoring_router
 from api.files import router as files_router
+from api.admin_chats import router as admin_chats_router
 app.include_router(system_router, prefix="/api")
 app.include_router(auth_router, prefix="/api")
 app.include_router(users_router, prefix="/api")
@@ -211,6 +212,7 @@ app.include_router(debug_sse_router, prefix="/api")
 app.include_router(proxy_monitoring_router, prefix="/api")
 app.include_router(sse_router)
 app.include_router(files_router, prefix="/api")
+app.include_router(admin_chats_router, prefix="/api")
 
 # Static files для загруженных файлов (аватары, документы)
 from fastapi.staticfiles import StaticFiles

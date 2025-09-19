@@ -45,6 +45,7 @@ const ADMIN_ROUTES = [
   '/admin',
   '/admin-users',
   '/admin-analytics',
+  '/admin-chats',
   '/admin-payments',
   '/admin-bots-monitoring',
   '/admin-ai-tokens',
