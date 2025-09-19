@@ -36,7 +36,17 @@ const nextConfig = {
   async headers() {
     return [
       {
-        // SEO заголовки для публичных страниц
+        // Явно для главной страницы - приоритет
+        source: '/',
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'index, follow',
+          },
+        ],
+      },
+      {
+        // SEO заголовки для остальных публичных страниц
         source: '/((?!dashboard|admin|dialogs|balance|usage|database-explorer|ai-assistant|ai-tokens|login|register|forgot-password|reset-password|verify-email|logout|chat-iframe|test-admin-tokens|payment-success|payment-error|assistant).*)',
         headers: [
           {
