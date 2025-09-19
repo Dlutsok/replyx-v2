@@ -133,6 +133,37 @@ const styles = `
     text-size-adjust: 100%;
   }
 
+  /* Safari-специфичные исправления */
+  @supports (-webkit-touch-callout: none) {
+    /* iOS Safari фиксы */
+    body {
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Предотвращение bounce эффекта на iOS */
+    .chat-window {
+      -webkit-overflow-scrolling: touch;
+      overflow-x: hidden;
+      overflow-y: hidden;
+    }
+
+    /* Фикс для клавиатуры iOS */
+    input, textarea {
+      -webkit-user-select: text;
+      -webkit-appearance: none;
+      border-radius: 0;
+    }
+  }
+
+  /* Фиксы для macOS Safari */
+  @media screen and (min-width: 1024px) {
+    /* Убираем transform на десктопе Safari */
+    .chat-window {
+      transform: none !important;
+      transition: none !important;
+    }
+  }
+
   #replyx-chat-widget {
     z-index: 999999999 !important;
     position: fixed;
@@ -493,6 +524,8 @@ export default function ChatIframe() {
   const [messageCache, setMessageCache] = useState({});
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [initialViewportHeight, setInitialViewportHeight] = useState(0);
   const messagesEndRef = useRef(null);
 
   // Функция для надёжной прокрутки к последнему сообщению
@@ -511,16 +544,116 @@ export default function ChatIframe() {
   // Определяем мобильное устройство
   useEffect(() => {
     const checkMobile = () => {
-      // Используем только безопасные методы без cross-origin доступа
       const userAgent = navigator.userAgent;
+
+      // Более точное определение мобильных устройств
       const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
-      const screenWidth = window.screen ? window.screen.width : 1024; // fallback для desktop
-      setIsMobile(screenWidth <= 768 || isMobileDevice);
+      const isIOS = /iPad|iPhone|iPod/.test(userAgent);
+      const isAndroid = /Android/.test(userAgent);
+
+      // Проверяем размер экрана (используем window.innerWidth для лучшей точности)
+      const screenWidth = window.innerWidth;
+      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+      // Safari на десктопе macOS не должен считаться мобильным
+      const isSafariDesktop = /Safari/.test(userAgent) && !/Mobile/.test(userAgent) && !isIOS;
+
+      // Устройство считается мобильным если:
+      // 1. Это реально мобильное устройство (iOS/Android) ИЛИ
+      // 2. Ширина экрана <= 768px И есть поддержка тача И это не Safari на десктопе
+      const shouldBeMobile = (isMobileDevice || isIOS || isAndroid) ||
+                            (screenWidth <= 768 && isTouchDevice && !isSafariDesktop);
+
+      setIsMobile(shouldBeMobile);
     };
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Новая логика обработки клавиатуры с Visual Viewport API
+  useEffect(() => {
+    if (!isMobile) return;
+
+    // Дополнительная проверка для Safari на десктопе
+    const userAgent = navigator.userAgent;
+    const isDesktopSafari = /Safari/.test(userAgent) && !/Mobile/.test(userAgent) &&
+                           !(/iPad|iPhone|iPod/.test(userAgent)) && window.innerWidth > 1024;
+
+    if (isDesktopSafari) return;
+
+    // Сохраняем начальную высоту viewport
+    const initialHeight = window.visualViewport?.height || window.innerHeight;
+    setInitialViewportHeight(initialHeight);
+
+    const handleViewportChange = () => {
+      if (!window.visualViewport) return;
+
+      const currentHeight = window.visualViewport.height;
+      const heightDifference = initialHeight - currentHeight;
+
+      // Клавиатура появилась если высота уменьшилась более чем на 150px
+      if (heightDifference > 150) {
+        setKeyboardHeight(heightDifference);
+
+        // Поднимаем чат пропорционально высоте клавиатуры
+        const chatContainer = document.querySelector('.chat-window');
+        if (chatContainer) {
+          // Поднимаем на 60% от высоты клавиатуры для лучшего позиционирования
+          const offset = Math.min(heightDifference * 0.6, 200);
+          chatContainer.style.transform = `translateY(-${offset}px)`;
+          chatContainer.style.transition = 'transform 0.3s ease-in-out';
+        }
+      } else {
+        // Клавиатура исчезла
+        setKeyboardHeight(0);
+
+        const chatContainer = document.querySelector('.chat-window');
+        if (chatContainer) {
+          chatContainer.style.transform = 'translateY(0)';
+          chatContainer.style.transition = 'transform 0.3s ease-in-out';
+        }
+      }
+    };
+
+    // Используем Visual Viewport API если доступен
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleViewportChange);
+
+      return () => {
+        if (window.visualViewport) {
+          window.visualViewport.removeEventListener('resize', handleViewportChange);
+        }
+      };
+    } else {
+      // Fallback для старых браузеров
+      const handleWindowResize = () => {
+        const currentHeight = window.innerHeight;
+        const heightDifference = initialHeight - currentHeight;
+
+        if (heightDifference > 150) {
+          setKeyboardHeight(heightDifference);
+          const chatContainer = document.querySelector('.chat-window');
+          if (chatContainer) {
+            const offset = Math.min(heightDifference * 0.6, 200);
+            chatContainer.style.transform = `translateY(-${offset}px)`;
+            chatContainer.style.transition = 'transform 0.3s ease-in-out';
+          }
+        } else {
+          setKeyboardHeight(0);
+          const chatContainer = document.querySelector('.chat-window');
+          if (chatContainer) {
+            chatContainer.style.transform = 'translateY(0)';
+            chatContainer.style.transition = 'transform 0.3s ease-in-out';
+          }
+        }
+      };
+
+      window.addEventListener('resize', handleWindowResize);
+      return () => window.removeEventListener('resize', handleWindowResize);
+    }
+  }, [isMobile, initialViewportHeight]);
 
   // Message caching for performance
   useEffect(() => {
@@ -1488,7 +1621,7 @@ export default function ChatIframe() {
   return (
     <>
       <Head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
       </Head>
       <style>{styles}</style>
       <div style={{
@@ -1755,26 +1888,6 @@ export default function ChatIframe() {
                       } else {
                         target.style.height = maxHeight + 'px';
                         target.style.overflowY = 'scroll';
-                      }
-                    }}
-                    onFocus={(e) => {
-                      // Поднимаем поле ввода на мобильных устройствах
-                      if (isMobile) {
-                        const chatContainer = document.querySelector('.chat-window');
-                        if (chatContainer) {
-                          chatContainer.style.transform = 'translateY(-100px)';
-                          chatContainer.style.transition = 'transform 0.3s ease-in-out';
-                        }
-                      }
-                    }}
-                    onBlur={(e) => {
-                      // Возвращаем поле ввода в исходное положение
-                      if (isMobile) {
-                        const chatContainer = document.querySelector('.chat-window');
-                        if (chatContainer) {
-                          chatContainer.style.transform = 'translateY(0)';
-                          chatContainer.style.transition = 'transform 0.3s ease-in-out';
-                        }
                       }
                     }}
                     onKeyDown={(e) => {
