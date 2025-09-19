@@ -187,6 +187,10 @@
         if (widgetConfig.widget_theme) {
           iframeSrc += `&widget_theme=${encodeURIComponent(widgetConfig.widget_theme)}`;
         }
+        // Добавляем приветственное сообщение из настроек виджета
+        if (widgetConfig.widget_settings && widgetConfig.widget_settings.welcomeMessage) {
+          iframeSrc += `&welcomeMessage=${encodeURIComponent(widgetConfig.widget_settings.welcomeMessage)}`;
+        }
       }
       
       return iframeSrc;

@@ -837,21 +837,25 @@ export default function ChatIframe() {
       const operatorNameParam = params.get('operator_name');
       const businessNameParam = params.get('business_name');
       const avatarUrlParam = params.get('avatar_url');
-      
+      const welcomeMessageParam = params.get('welcomeMessage');
+
       // Устанавливаем параметры из URL, если они есть
       if (operatorNameParam) setOperatorName(decodeURIComponent(operatorNameParam));
       if (businessNameParam) setBusinessName(decodeURIComponent(businessNameParam));
       if (avatarUrlParam) {
         const decodedAvatarUrl = decodeURIComponent(avatarUrlParam);
         // Конструируем полный URL для аватара из параметров URL
-        const fullAvatarUrl = decodedAvatarUrl.startsWith('http') 
-          ? decodedAvatarUrl 
+        const fullAvatarUrl = decodedAvatarUrl.startsWith('http')
+          ? decodedAvatarUrl
           : `${API_URL}${decodedAvatarUrl}`;
         setAvatarUrl(fullAvatarUrl);
       }
+      if (welcomeMessageParam) {
+        setWelcomeMessage(decodeURIComponent(welcomeMessageParam));
+      }
       
       // Если нет URL параметров персонализации, но есть токен - запрашиваем через API
-      if (token && !operatorNameParam && !businessNameParam && !avatarUrlParam) {
+      if (token && !operatorNameParam && !businessNameParam && !avatarUrlParam && !welcomeMessageParam) {
         await fetchWidgetSettings(token);
       }
       
@@ -1770,7 +1774,12 @@ export default function ChatIframe() {
                       }}>
                         <div className="message-bubble assistant-message">
                           <div className="message-content">
-                            {welcomeMessage}
+                            {welcomeMessage.split('\n').map((line, index) => (
+                              <span key={index}>
+                                {line}
+                                {index < welcomeMessage.split('\n').length - 1 && <br />}
+                              </span>
+                            ))}
                           </div>
                         </div>
                       </div>
