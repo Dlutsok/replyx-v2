@@ -4,7 +4,7 @@ import AdminDashboard from '@/components/layout/AdminDashboard';
 import {
   FiMessageSquare, FiUsers, FiCalendar, FiTrendingUp,
   FiEye, FiChevronDown, FiChevronRight, FiClock, FiHash,
-  FiExternalLink, FiRefreshCw, FiX, FiUser, FiCpu
+  FiExternalLink, FiRefreshCw, FiX, FiUser, FiCpu, FiActivity
 } from 'react-icons/fi';
 import Head from 'next/head';
 
@@ -212,6 +212,41 @@ const AdminChats = () => {
               </button>
             </div>
           </div>
+
+          {/* Real-time Activity */}
+          {analytics && (
+            <div className="realtime-activity">
+              <div className="realtime-header">
+                <h2>Активность в реальном времени</h2>
+              </div>
+              <div className="realtime-stats">
+                <div className="realtime-card">
+                  <div className="realtime-icon">
+                    <FiActivity />
+                  </div>
+                  <div className="realtime-content">
+                    <div className="realtime-value">{analytics.messages_last_hour}</div>
+                    <div className="realtime-label">Сообщений за час</div>
+                  </div>
+                </div>
+
+                <div className="realtime-card">
+                  <div className="realtime-icon">
+                    <FiClock />
+                  </div>
+                  <div className="realtime-content">
+                    <div className="realtime-value">
+                      {analytics.last_message_time ?
+                        formatDate(analytics.last_message_time) :
+                        'Нет сообщений'
+                      }
+                    </div>
+                    <div className="realtime-label">Последнее сообщение</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Analytics Overview */}
           {analytics && (
@@ -579,6 +614,63 @@ const AdminChats = () => {
             background: #e9ecef;
           }
 
+          .realtime-activity {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+            color: white;
+          }
+
+          .realtime-header h2 {
+            margin: 0 0 1.5rem 0;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: white;
+          }
+
+          .realtime-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+          }
+
+          .realtime-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+          }
+
+          .realtime-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+          }
+
+          .realtime-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.25rem;
+          }
+
+          .realtime-label {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.9);
+          }
+
           .analytics-overview {
             background: white;
             border-radius: 12px;
@@ -919,6 +1011,18 @@ const AdminChats = () => {
               flex-direction: column;
               gap: 1rem;
               align-items: flex-start;
+            }
+
+            .realtime-stats {
+              grid-template-columns: 1fr;
+            }
+
+            .realtime-card {
+              padding: 1rem;
+            }
+
+            .realtime-value {
+              font-size: 1.4rem;
             }
 
             .stats-grid {

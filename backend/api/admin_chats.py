@@ -73,6 +73,8 @@ class ChatAnalyticsOverview(BaseModel):
     active_users_today: int
     active_users_week: int
     avg_messages_per_dialog: float
+    messages_last_hour: int
+    last_message_time: Optional[datetime]
     top_channels: List[Dict[str, Any]]
     daily_stats: List[Dict[str, Any]]
 
@@ -126,6 +128,23 @@ async def get_chats_analytics_overview(
         for channel, count in channels_stats
     ]
 
+    # Сообщения за последний час
+    hour_ago = datetime.utcnow() - timedelta(hours=1)
+    messages_last_hour = db.query(func.count(models.DialogMessage.id)).filter(
+        models.DialogMessage.timestamp >= hour_ago
+    ).scalar()
+
+    # Время последнего сообщения
+    last_message = db.query(models.DialogMessage.timestamp)\
+        .order_by(desc(models.DialogMessage.timestamp))\
+        .first()
+
+    # Корректируем время для московского часового пояса (UTC+3)
+    if last_message:
+        last_message_time = last_message[0] + timedelta(hours=3)
+    else:
+        last_message_time = None
+
     # Статистика по дням (последние 7 дней)
     daily_stats = []
     for i in range(7):
@@ -145,6 +164,8 @@ async def get_chats_analytics_overview(
         active_users_today=active_users_today,
         active_users_week=active_users_week,
         avg_messages_per_dialog=round(avg_messages, 1),
+        messages_last_hour=messages_last_hour,
+        last_message_time=last_message_time,
         top_channels=top_channels,
         daily_stats=list(reversed(daily_stats))
     )
