@@ -50,7 +50,10 @@ const ADMIN_ROUTES = [
   '/admin-bots-monitoring',
   '/admin-ai-tokens',
   '/admin-system',
-  '/admin-settings'
+  '/admin-settings',
+  '/admin-blog',
+  '/admin-blog-new',
+  '/admin-blog-edit'
 ];
 
 // Страницы платежей (доступны только авторизованным пользователям)
@@ -64,7 +67,7 @@ function AppContent({ Component, pageProps }: AppProps) {
   const { isAuthenticated, isLoading } = useAuth();
   
   const isPublicRoute = PUBLIC_ROUTES.includes(router.pathname);
-  const isLegalRoute = LEGAL_ROUTES.includes(router.pathname);
+  const isLegalRoute = LEGAL_ROUTES.includes(router.pathname) || router.pathname.startsWith('/blog/');
   const isAdminRoute = ADMIN_ROUTES.includes(router.pathname);
   const isPaymentRoute = PAYMENT_ROUTES.includes(router.pathname);
   const isChatIframe = router.pathname === '/chat-iframe';

@@ -176,3 +176,54 @@ async def get_document_file(user_id: int, filename: str):
     except Exception as e:
         logger.error(f"Error serving document file {object_key}: {e}")
         raise HTTPException(status_code=500, detail="Ошибка получения файла")
+
+@router.get("/files/blog-images/{user_id}/{filename}")
+async def get_blog_image_file(user_id: int, filename: str):
+    """Проксирует файл изображения блога из S3"""
+    s3_service = get_s3_service()
+    if not s3_service:
+        raise HTTPException(status_code=503, detail="Файловое хранилище недоступно")
+
+    try:
+        # Формируем ключ объекта (аналогично widget-icons)
+        object_key = f"users/{user_id}/blog-images/{filename}"
+
+        # Проверяем существование файла
+        if not s3_service.file_exists(object_key):
+            raise HTTPException(status_code=404, detail="Файл не найден")
+
+        # Скачиваем файл из S3
+        file_content = s3_service.download_file(object_key)
+        if not file_content:
+            raise HTTPException(status_code=404, detail="Не удалось загрузить файл")
+
+        # Определяем MIME тип по расширению
+        import mimetypes
+        content_type, _ = mimetypes.guess_type(filename)
+        if not content_type:
+            if filename.lower().endswith('.png'):
+                content_type = 'image/png'
+            elif filename.lower().endswith(('.jpg', '.jpeg')):
+                content_type = 'image/jpeg'
+            elif filename.lower().endswith('.webp'):
+                content_type = 'image/webp'
+            elif filename.lower().endswith('.gif'):
+                content_type = 'image/gif'
+            else:
+                content_type = 'application/octet-stream'
+
+        # Возвращаем файл как поток
+        return StreamingResponse(
+            io.BytesIO(file_content),
+            media_type=content_type,
+            headers={
+                "Cache-Control": "public, max-age=86400",  # Кеш на 24 часа для изображений блога
+                "Access-Control-Allow-Origin": "*",  # Разрешаем CORS для блога
+            }
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error serving blog image file {object_key}: {e}")
+        raise HTTPException(status_code=500, detail="Ошибка получения файла")

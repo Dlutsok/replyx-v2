@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Head from 'next/head';
 import { motion } from 'framer-motion';
 import { FiSearch, FiDatabase, FiTable, FiInfo, FiEye, FiGrid, FiList, FiUser, FiUsers, FiGlobe, FiFilter, FiExternalLink, FiLink, FiRefreshCw } from 'react-icons/fi';
 import { useRouter } from 'next/router';
@@ -300,6 +301,34 @@ const DATABASE_SCHEMA = {
       created_at: { type: 'DateTime', description: 'Дата создания', example: '2024-01-15 10:00:00' },
       updated_at: { type: 'DateTime', description: 'Дата обновления', example: '2024-08-31 20:46:00' }
     }
+  },
+
+  blog_posts: {
+    title: 'Статьи блога',
+    description: 'Статьи блога с поддержкой планирования публикации и SEO',
+    fields: {
+      id: { type: 'Integer', description: 'Уникальный ID статьи', example: 1 },
+      title: { type: 'String', description: 'Заголовок статьи', example: 'Как использовать AI в бизнесе' },
+      excerpt: { type: 'Text', description: 'Краткое описание статьи', example: 'Разбираем основные способы применения...' },
+      content: { type: 'Text', description: 'Полное содержимое статьи', example: 'Искусственный интеллект сегодня...' },
+      author: { type: 'String', description: 'Автор статьи', example: 'Даниил Логинов' },
+      date: { type: 'DateTime', description: 'Дата создания', example: '2025-09-20 16:47:00' },
+      read_time: { type: 'String', description: 'Время чтения', example: '5 мин' },
+      category: { type: 'String', description: 'Категория статьи', example: 'Технологии' },
+      tags: { type: 'JSON', description: 'Теги статьи', example: '["AI", "бизнес", "автоматизация"]' },
+      image: { type: 'String', description: 'URL изображения', example: '/uploads/blog/ai-business.jpg' },
+      featured: { type: 'Boolean', description: 'Рекомендуемая статья', example: false },
+      views: { type: 'Integer', description: 'Количество просмотров', example: 0 },
+      likes: { type: 'Integer', description: 'Количество лайков', example: 0 },
+      is_published: { type: 'Boolean', description: 'Опубликована ли статья', example: false },
+      slug: { type: 'String', description: 'SEO URL статьи', example: 'kak-ispolzovat-ai-v-biznese' },
+      meta_title: { type: 'String', description: 'SEO заголовок', example: 'Как использовать AI в бизнесе | ReplyX' },
+      meta_description: { type: 'String', description: 'SEO описание', example: 'Полное руководство по применению ИИ...' },
+      keywords: { type: 'Text', description: 'SEO ключевые слова', example: 'AI, искусственный интеллект, бизнес' },
+      scheduled_for: { type: 'DateTime', description: 'Время запланированной публикации (UTC)', example: '2025-09-20 13:49:00' },
+      published_at: { type: 'DateTime', description: 'Время фактической публикации (UTC)', example: null },
+      status: { type: 'String', description: 'Статус статьи', example: 'scheduled', values: ['draft', 'scheduled', 'published'] }
+    }
   }
 };
 
@@ -453,7 +482,34 @@ const VALUE_TRANSLATIONS = {
   document_processing: 'Обработка документа',
   widget_message: 'Сообщение виджета',
   bot_message: 'Сообщение бота',
-  document_upload: 'Загрузка документа'
+  document_upload: 'Загрузка документа',
+
+  // blog_posts
+  title: 'Заголовок',
+  excerpt: 'Краткое описание',
+  content: 'Содержимое',
+  author: 'Автор',
+  date: 'Дата создания',
+  read_time: 'Время чтения',
+  category: 'Категория',
+  tags: 'Теги',
+  image: 'Изображение',
+  featured: 'Рекомендуемая',
+  views: 'Просмотры',
+  likes: 'Лайки',
+  is_published: 'Опубликована',
+  slug: 'SEO URL',
+  meta_title: 'SEO заголовок',
+  meta_description: 'SEO описание',
+  keywords: 'Ключевые слова',
+  scheduled_for: 'Запланировано на',
+  published_at: 'Опубликована',
+  status: 'Статус',
+
+  // blog post statuses
+  draft: 'Черновик',
+  scheduled: 'Запланирована',
+  published: 'Опубликована'
 };
 
 // Связи между таблицами для навигации

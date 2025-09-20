@@ -578,3 +578,44 @@ class QAKnowledge(Base):
     # Relationships
     user = relationship('User', backref='qa_knowledge')
     assistant = relationship('Assistant', backref='qa_knowledge')
+
+
+class BlogPost(Base):
+    """Модель для статей блога"""
+    __tablename__ = 'blog_posts'
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    excerpt = Column(Text, nullable=False)
+    content = Column(Text, nullable=False)
+    author = Column(String, nullable=False)
+    date = Column(DateTime, default=datetime.utcnow)
+    read_time = Column(String, nullable=False)
+    category = Column(String, nullable=False)
+    tags = Column(postgresql.JSON, nullable=False)  # JSON массив тегов
+    image = Column(String, nullable=False)
+    featured = Column(Boolean, default=False)
+    views = Column(Integer, default=0)
+    likes = Column(Integer, default=0)
+    is_published = Column(Boolean, default=True)
+    slug = Column(String, unique=True, nullable=True)  # SEO URL
+    meta_title = Column(String, nullable=True)
+    meta_description = Column(String, nullable=True)
+    keywords = Column(Text, nullable=True)  # SEO ключевые слова
+
+    # Планирование публикации
+    scheduled_for = Column(DateTime, nullable=True)  # Время планируемой публикации
+    initial_views = Column(Integer, default=0)  # Начальное количество просмотров
+    initial_likes = Column(Integer, default=0)  # Начальное количество лайков
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Индексы для производительности
+    __table_args__ = (
+        Index('idx_blog_posts_published_date', 'is_published', 'date'),
+        Index('idx_blog_posts_category', 'category'),
+        Index('idx_blog_posts_featured', 'featured'),
+        Index('idx_blog_posts_slug', 'slug'),
+        Index('idx_blog_posts_scheduled', 'scheduled_for'),
+    )

@@ -6,6 +6,7 @@ Allow: /
 Allow: /login
 Allow: /register
 Allow: /legal/
+Allow: /blog/
 
 # Disallow private areas
 Disallow: /dashboard/
@@ -22,7 +23,6 @@ Disallow: /payment/
 Disallow: /assistant/
 Disallow: /start
 Disallow: /help-center
-Disallow: /blog
 
 # Allow static assets
 Allow: /_next/static/

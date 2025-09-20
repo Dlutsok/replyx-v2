@@ -399,6 +399,50 @@ class S3StorageService:
         """
         return f"users/{user_id}/{file_type}/{filename}"
 
+    def generate_blog_image_filename(
+        self,
+        post_id,  # Может быть int или str
+        original_filename: str,
+        content: bytes
+    ) -> str:
+        """
+        Генерирует безопасное уникальное имя файла для изображения блога
+
+        Args:
+            post_id: ID поста блога (int или str для temp)
+            original_filename: Оригинальное имя файла
+            content: Содержимое файла для хэширования
+
+        Returns:
+            Безопасное имя файла
+        """
+        # Получаем расширение
+        extension = Path(original_filename).suffix.lower()
+
+        # Генерируем хэш содержимого
+        content_hash = hashlib.sha256(content).hexdigest()[:16]
+
+        # Генерируем временную метку
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+
+        # Создаем уникальное имя файла для блога
+        filename = f"blog_{post_id}_{timestamp}_{content_hash}{extension}"
+
+        return filename
+
+    def get_blog_object_key(self, post_id, filename: str) -> str:
+        """
+        Генерирует ключ объекта для изображений блога с организованной структурой папок
+
+        Args:
+            post_id: ID поста блога (int или str для temp)
+            filename: Имя файла
+
+        Returns:
+            Ключ объекта в формате blog/{post_id}/images/{filename}
+        """
+        return f"blog/{post_id}/images/{filename}"
+
     def list_user_files(self, user_id: int, file_type: str = None) -> list:
         """
         Получает список файлов пользователя

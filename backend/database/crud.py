@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import text, func
 from . import models, schemas
 from passlib.context import CryptContext
+from typing import Optional
 import logging
 
 logger = logging.getLogger(__name__)
@@ -416,3 +417,353 @@ def get_users_with_stats_optimized(db: Session, skip: int = 0, limit: int = 100)
     .offset(skip)\
     .limit(limit)\
     .all()
+
+
+# ==========================================
+# BLOG POSTS CRUD OPERATIONS
+# ==========================================
+
+def create_blog_post(db: Session, blog_post: schemas.BlogPostCreate):
+    """Создать новую статью блога"""
+    from slugify import slugify
+    from transliterate import translit
+
+    # Генерируем slug из заголовка, если не указан
+    if not blog_post.slug:
+        # Сначала транслитерируем русский текст в латиницу, потом делаем slug
+        try:
+            # reversed=True означает транслитерацию С русского НА латиницу
+            transliterated = translit(blog_post.title, 'ru', reversed=True)
+            slug = slugify(transliterated, allow_unicode=False)
+        except:
+            # Fallback к обычной slugify если транслитерация не работает
+            slug = slugify(blog_post.title, allow_unicode=False)
+
+        # Ограничиваем длину slug до 80 символов
+        if len(slug) > 80:
+            words = slug.split('-')
+            truncated_slug = ''
+            for word in words:
+                if len(truncated_slug + '-' + word) <= 80:
+                    if truncated_slug:
+                        truncated_slug += '-' + word
+                    else:
+                        truncated_slug = word
+                else:
+                    break
+            slug = truncated_slug
+
+        # Проверяем уникальность slug
+        counter = 1
+        original_slug = slug
+        while db.query(models.BlogPost).filter(models.BlogPost.slug == slug).first():
+            slug = f"{original_slug}-{counter}"
+            counter += 1
+        blog_post.slug = slug
+
+    # Создаем данные для модели
+    post_data = blog_post.model_dump()
+
+    # Логика планирования публикации
+    from datetime import datetime
+    import logging
+    logger = logging.getLogger(__name__)
+
+    if blog_post.scheduled_for:
+        from datetime import timezone, timedelta
+
+        # Получаем текущее время в UTC и MSK
+        now_utc = datetime.utcnow()
+        moscow_tz = timezone(timedelta(hours=3))  # MSK = UTC+3
+        now_msk = now_utc.replace(tzinfo=timezone.utc).astimezone(moscow_tz).replace(tzinfo=None)
+
+        # scheduled_for приходит из frontend в MSK времени (без timezone info)
+        scheduled_for_msk = blog_post.scheduled_for.replace(tzinfo=None) if blog_post.scheduled_for.tzinfo else blog_post.scheduled_for
+
+        # Конвертируем MSK время в UTC для сохранения в БД (PostgreSQL хранит в UTC)
+        scheduled_for_utc = scheduled_for_msk.replace(tzinfo=moscow_tz).astimezone(timezone.utc).replace(tzinfo=None)
+
+        logger.info(f"BLOG SCHEDULING DEBUG:")
+        logger.info(f"  Frontend scheduled_for (MSK): {scheduled_for_msk}")
+        logger.info(f"  Converted to UTC for DB: {scheduled_for_utc}")
+        logger.info(f"  Current UTC time: {now_utc}")
+        logger.info(f"  Current MSK time: {now_msk}")
+        logger.info(f"  Is backdate? {scheduled_for_msk <= now_msk}")
+
+        # Добавляем информацию о разнице времени
+        time_diff = scheduled_for_msk - now_msk
+        logger.info(f"  Time difference: {time_diff} (positive = future, negative = past)")
+        logger.info(f"  Scheduled time in seconds from now: {time_diff.total_seconds()}")
+
+        # Сравниваем MSK время с MSK временем
+        if scheduled_for_msk <= now_msk:
+            # Публикация задним числом - публикуем сразу с установленной датой
+            post_data['is_published'] = True
+            # ВАЖНО: Устанавливаем дату ЯВНО для публикации задним числом в UTC (как требует БД)
+            publication_date = scheduled_for_utc
+            # Устанавливаем начальные просмотры и лайки для "старых" статей
+            post_data['views'] = blog_post.initial_views
+            post_data['likes'] = blog_post.initial_likes
+        else:
+            # Запланированная публикация в будущем - сохраняем UTC время для БД
+            post_data['is_published'] = False
+            post_data['scheduled_for'] = scheduled_for_utc  # Сохраняем в UTC для БД
+            post_data['views'] = 0  # Начальные значения при создании
+            post_data['likes'] = 0
+            publication_date = None  # Будет установлено по умолчанию при создании
+    else:
+        # Обычная публикация сейчас
+        publication_date = None  # Будет установлено по умолчанию при создании
+        post_data['views'] = blog_post.initial_views if blog_post.initial_views else 0
+        post_data['likes'] = blog_post.initial_likes if blog_post.initial_likes else 0
+
+    # Создаем объект БД
+    db_blog_post = models.BlogPost(**post_data)
+
+    # ВАЖНО: Устанавливаем дату ПОСЛЕ создания объекта, чтобы переопределить default
+    if publication_date is not None:
+        logger.info(f"Setting publication_date to: {publication_date}")
+        db_blog_post.date = publication_date
+        logger.info(f"Date set to: {db_blog_post.date}")
+
+    db.add(db_blog_post)
+    db.commit()
+    db.refresh(db_blog_post)
+
+    logger.info(f"Final blog post date after save: {db_blog_post.date}")
+    return db_blog_post
+
+def get_blog_post(db: Session, post_id: int):
+    """Получить статью блога по ID"""
+    return db.query(models.BlogPost).filter(models.BlogPost.id == post_id).first()
+
+def get_blog_post_by_slug(db: Session, slug: str):
+    """Получить статью блога по slug"""
+    return db.query(models.BlogPost).filter(models.BlogPost.slug == slug).first()
+
+def get_blog_posts(
+    db: Session,
+    skip: int = 0,
+    limit: int = 10,
+    published_only: bool = True,
+    category: Optional[str] = None,
+    featured_only: bool = False
+):
+    """Получить список статей блога с фильтрами"""
+    query = db.query(models.BlogPost)
+
+    if published_only:
+        query = query.filter(models.BlogPost.is_published == True)
+
+    if category:
+        query = query.filter(models.BlogPost.category == category)
+
+    if featured_only:
+        query = query.filter(models.BlogPost.featured == True)
+
+    return query.order_by(models.BlogPost.date.desc()).offset(skip).limit(limit).all()
+
+def get_blog_posts_count(
+    db: Session,
+    published_only: bool = True,
+    category: Optional[str] = None,
+    featured_only: bool = False
+):
+    """Получить количество статей блога"""
+    query = db.query(models.BlogPost)
+
+    if published_only:
+        query = query.filter(models.BlogPost.is_published == True)
+
+    if category:
+        query = query.filter(models.BlogPost.category == category)
+
+    if featured_only:
+        query = query.filter(models.BlogPost.featured == True)
+
+    return query.count()
+
+def update_blog_post(db: Session, post_id: int, blog_post: schemas.BlogPostUpdate):
+    """Обновить статью блога"""
+    db_blog_post = db.query(models.BlogPost).filter(models.BlogPost.id == post_id).first()
+    if not db_blog_post:
+        return None
+
+    update_data = blog_post.model_dump(exclude_unset=True)
+
+    # Обновляем slug если изменился заголовок и slug не передан явно
+    if 'title' in update_data and 'slug' not in update_data:
+        from slugify import slugify
+        slug = slugify(update_data['title'])
+        # Проверяем уникальность slug (исключая текущую статью)
+        counter = 1
+        original_slug = slug
+        while db.query(models.BlogPost).filter(
+            models.BlogPost.slug == slug,
+            models.BlogPost.id != post_id
+        ).first():
+            slug = f"{original_slug}-{counter}"
+            counter += 1
+        update_data['slug'] = slug
+
+    # Если slug передан явно, проверяем его уникальность
+    if 'slug' in update_data and update_data['slug']:
+        from slugify import slugify
+        slug = slugify(update_data['slug'])
+        counter = 1
+        original_slug = slug
+        while db.query(models.BlogPost).filter(
+            models.BlogPost.slug == slug,
+            models.BlogPost.id != post_id
+        ).first():
+            slug = f"{original_slug}-{counter}"
+            counter += 1
+        update_data['slug'] = slug
+
+    for field, value in update_data.items():
+        setattr(db_blog_post, field, value)
+
+    db.commit()
+    db.refresh(db_blog_post)
+    return db_blog_post
+
+def delete_blog_post(db: Session, post_id: int):
+    """Удалить статью блога"""
+    db_blog_post = db.query(models.BlogPost).filter(models.BlogPost.id == post_id).first()
+    if not db_blog_post:
+        return False
+
+    db.delete(db_blog_post)
+    db.commit()
+    return True
+
+def increment_blog_post_views(db: Session, post_id: int):
+    """Увеличить счетчик просмотров статьи"""
+    db_blog_post = db.query(models.BlogPost).filter(models.BlogPost.id == post_id).first()
+    if db_blog_post:
+        db_blog_post.views += 1
+        db.commit()
+        db.refresh(db_blog_post)
+    return db_blog_post
+
+def increment_blog_post_likes(db: Session, post_id: int):
+    """Увеличить счетчик лайков статьи"""
+    db_blog_post = db.query(models.BlogPost).filter(models.BlogPost.id == post_id).first()
+    if db_blog_post:
+        db_blog_post.likes += 1
+        db.commit()
+        db.refresh(db_blog_post)
+    return db_blog_post
+
+def get_blog_categories(db: Session):
+    """Получить список всех категорий блога с количеством постов"""
+    return db.query(
+        models.BlogPost.category,
+        func.count(models.BlogPost.id).label('count')
+    ).filter(
+        models.BlogPost.is_published == True
+    ).group_by(models.BlogPost.category).all()
+
+def get_featured_blog_posts(db: Session, limit: int = 3):
+    """Получить рекомендуемые статьи"""
+    return db.query(models.BlogPost).filter(
+        models.BlogPost.is_published == True,
+        models.BlogPost.featured == True
+    ).order_by(models.BlogPost.date.desc()).limit(limit).all()
+
+def get_random_blog_posts(db: Session, limit: int = 3, exclude_id: Optional[int] = None):
+    """Получить случайные статьи"""
+    from sqlalchemy import func
+
+    query = db.query(models.BlogPost).filter(
+        models.BlogPost.is_published == True
+    )
+
+    # Исключаем текущую статью, если указана
+    if exclude_id:
+        query = query.filter(models.BlogPost.id != exclude_id)
+
+    # Используем RANDOM() для случайного порядка
+    return query.order_by(func.random()).limit(limit).all()
+
+def publish_scheduled_posts(db: Session):
+    """Автоматическая публикация запланированных статей"""
+    from datetime import datetime, timezone, timedelta
+    import logging
+    logger = logging.getLogger(__name__)
+
+    # Получаем текущее время в UTC (БД хранит в UTC)
+    now_utc = datetime.utcnow()
+    moscow_tz = timezone(timedelta(hours=3))  # MSK = UTC+3
+    now_msk = now_utc.replace(tzinfo=timezone.utc).astimezone(moscow_tz).replace(tzinfo=None)
+
+    # Найти все статьи, которые должны быть опубликованы
+    scheduled_posts = db.query(models.BlogPost).filter(
+        models.BlogPost.scheduled_for.isnot(None),
+        models.BlogPost.is_published == False
+    ).all()
+
+    logger.info(f"BLOG SCHEDULER CHECK:")
+    logger.info(f"  Current UTC time: {now_utc}")
+    logger.info(f"  Current MSK time: {now_msk}")
+    logger.info(f"  Found {len(scheduled_posts)} scheduled posts to check")
+
+    published_count = 0
+    for post in scheduled_posts:
+        # scheduled_for теперь хранится в UTC в БД
+        scheduled_for_utc = post.scheduled_for.replace(tzinfo=None) if post.scheduled_for.tzinfo else post.scheduled_for
+        # Конвертируем в MSK для отображения в логах
+        scheduled_for_msk = scheduled_for_utc.replace(tzinfo=timezone.utc).astimezone(moscow_tz).replace(tzinfo=None)
+
+        logger.info(f"  Checking post '{post.title[:50]}...':")
+        logger.info(f"    Scheduled for (UTC in DB): {scheduled_for_utc}")
+        logger.info(f"    Scheduled for (MSK display): {scheduled_for_msk}")
+        logger.info(f"    Current time (UTC): {now_utc}")
+        logger.info(f"    Ready to publish? {scheduled_for_utc <= now_utc}")
+
+        # Сравниваем UTC время с UTC временем (как хранится в БД)
+        if scheduled_for_utc <= now_utc:
+            # Публикуем статью
+            post.is_published = True
+            post.date = scheduled_for_utc  # Устанавливаем дату в UTC как и хранится в БД
+            post.views = post.initial_views if post.initial_views else 0
+            post.likes = post.initial_likes if post.initial_likes else 0
+
+            # Очищаем scheduled_for после публикации
+            post.scheduled_for = None
+
+            published_count += 1
+            logger.info(f"    ✅ Published post: {post.title}")
+        else:
+            time_diff = scheduled_for_utc - now_utc
+            logger.info(f"    ⏰ Post will be published in {time_diff}")
+
+    if published_count > 0:
+        db.commit()
+        logger.info(f"  📝 Total published: {published_count} posts")
+
+    return published_count
+
+def get_scheduled_posts(db: Session):
+    """Получить список запланированных к публикации статей"""
+    from datetime import datetime
+
+    now = datetime.utcnow()
+
+    # Получаем все запланированные статьи и фильтруем в Python для обработки timezone
+    scheduled_posts = db.query(models.BlogPost).filter(
+        models.BlogPost.scheduled_for.isnot(None),
+        models.BlogPost.is_published == False
+    ).all()
+
+    # Фильтруем только те, что в будущем
+    future_posts = []
+    for post in scheduled_posts:
+        scheduled_for_naive = post.scheduled_for.replace(tzinfo=None) if post.scheduled_for.tzinfo else post.scheduled_for
+        if scheduled_for_naive > now:
+            future_posts.append(post)
+
+    # Сортируем по дате
+    future_posts.sort(key=lambda p: p.scheduled_for.replace(tzinfo=None) if p.scheduled_for.tzinfo else p.scheduled_for)
+
+    return future_posts

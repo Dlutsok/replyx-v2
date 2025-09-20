@@ -63,8 +63,8 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const handleRouteChange = (url) => {
       const currentPath = url.split('?')[0]; // Убираем query parameters
-      const isPublicRoute = PUBLIC_ROUTES.includes(currentPath);
-      
+      const isPublicRoute = PUBLIC_ROUTES.includes(currentPath) || currentPath.startsWith('/blog/');
+
       if (!isPublicRoute && !isAuthenticated && !isLoading) {
             window.location.replace('/');
           }
@@ -72,8 +72,8 @@ export const AuthProvider = ({ children }) => {
 
     const handleRouteChangeStart = (url) => {
       const currentPath = url.split('?')[0];
-      const isPublicRoute = PUBLIC_ROUTES.includes(currentPath);
-      
+      const isPublicRoute = PUBLIC_ROUTES.includes(currentPath) || currentPath.startsWith('/blog/');
+
       // Предварительная проверка при начале перехода
       if (!isPublicRoute && !isAuthenticated && !isLoading) {
             window.location.replace('/');
@@ -94,14 +94,14 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (!isLoading) {
       const currentPath = router.pathname;
-      const isPublicRoute = PUBLIC_ROUTES.includes(currentPath);
-      
+      const isPublicRoute = PUBLIC_ROUTES.includes(currentPath) || currentPath.startsWith('/blog/');
+
       // Если нет токена и мы на защищенной странице - мгновенный редирект
       if (!hasToken && !isPublicRoute) {
         window.location.replace('/');
         return;
       }
-      
+
       // Если нет авторизации в состоянии, но есть на защищенной странице
       if (!isAuthenticated && !isPublicRoute && hasToken) {
         window.location.replace('/');
@@ -164,14 +164,14 @@ export const AuthProvider = ({ children }) => {
 
   const redirectIfNeeded = () => {
     const currentPath = router.pathname;
-    const isPublicRoute = PUBLIC_ROUTES.includes(currentPath);
-    
+    const isPublicRoute = PUBLIC_ROUTES.includes(currentPath) || currentPath.startsWith('/blog/');
+
     // Для публичных маршрутов - проверяем токен немедленно
     if (isPublicRoute && isAuthenticated) {
       router.replace('/dashboard');
       return;
     }
-    
+
     // Для приватных маршрутов - немедленно перенаправляем на landing
     if (!isPublicRoute && !isAuthenticated) {
       router.replace('/');

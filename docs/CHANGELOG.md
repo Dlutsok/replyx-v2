@@ -6,6 +6,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+- **Blog Scheduling System** (2025-09-20)
+  - Added scheduled post publication functionality with MSK timezone support
+  - Automatic background scheduler running every 30 seconds
+  - Frontend time picker with MSK timezone display and validation
+  - Comprehensive timezone handling (MSK ↔ UTC conversion)
+  - Debug endpoints for scheduler monitoring
+  - Added `scheduled_for` field to blog posts database model
+  - Added `services/blog_scheduler.py` background service
+
+### Fixed
+- **Blog Timezone Issues** (2025-09-20)
+  - Fixed JavaScript Date object automatic UTC conversion causing immediate publication
+  - Fixed timezone display showing incorrect time (+3 hours off)
+  - Fixed scheduled posts publishing immediately instead of at scheduled time
+  - Implemented proper MSK timezone handling throughout the blog system
+  - Updated all blog-related frontend components for consistent timezone handling
+
+### Updated
+- **Blog Documentation** (2025-09-20)
+  - Added comprehensive scheduling system documentation
+  - Updated README.md to include scheduling functionality
+  - Created detailed technical documentation for timezone handling
+  - Added troubleshooting guide for common timezone issues
+
 ### Removed
 - **Website Parsing Functionality** (2025-09-15)
   - Removed `POST /api/documents/import-website` endpoint

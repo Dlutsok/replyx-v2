@@ -126,7 +126,17 @@ async def lifespan(app: FastAPI):
             logger.error(f"❌ Failed to start WS-BRIDGE subscriber: {e}", exc_info=True)
     else:
         logger.info("WS-BRIDGE disabled (ENABLE_WS_BRIDGE != true)")
-    
+
+    # Запуск планировщика блога для автоматической публикации
+    blog_scheduler_task = None
+    try:
+        from services.blog_scheduler import start_blog_scheduler
+        import asyncio
+        blog_scheduler_task = asyncio.create_task(start_blog_scheduler())
+        logger.info("✅ Blog scheduler started successfully")
+    except Exception as e:
+        logger.error(f"❌ Failed to start blog scheduler: {e}", exc_info=True)
+
     print("✅ Application startup completed")
     
     yield
@@ -149,7 +159,18 @@ async def lifespan(app: FastAPI):
             logger.info("✅ WS-BRIDGE subscriber stopped")
         except Exception as e:
             logger.error(f"❌ Error stopping WS-BRIDGE: {e}")
-    
+
+    # Остановка планировщика блога
+    if 'blog_scheduler_task' in locals() and blog_scheduler_task and not blog_scheduler_task.done():
+        logger.info("🛑 Stopping blog scheduler...")
+        try:
+            from services.blog_scheduler import stop_blog_scheduler
+            await stop_blog_scheduler()
+            blog_scheduler_task.cancel()
+            logger.info("✅ Blog scheduler stopped successfully")
+        except Exception as e:
+            logger.error(f"❌ Error stopping blog scheduler: {e}")
+
     print("✅ Application shutdown completed")
 
 app = FastAPI(lifespan=lifespan, redirect_slashes=False)
@@ -185,6 +206,7 @@ from api.sse import router as sse_router
 from api.proxy_monitoring import router as proxy_monitoring_router
 from api.files import router as files_router
 from api.admin_chats import router as admin_chats_router
+from api.blog import router as blog_router
 app.include_router(system_router, prefix="/api")
 app.include_router(auth_router, prefix="/api")
 app.include_router(users_router, prefix="/api")
@@ -213,6 +235,7 @@ app.include_router(proxy_monitoring_router, prefix="/api")
 app.include_router(sse_router)
 app.include_router(files_router, prefix="/api")
 app.include_router(admin_chats_router, prefix="/api")
+app.include_router(blog_router, prefix="/api")
 
 # Static files для загруженных файлов (аватары, документы)
 from fastapi.staticfiles import StaticFiles

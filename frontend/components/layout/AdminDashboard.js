@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks';
 import {
   FiHome, FiUsers, FiBarChart, FiSettings, FiShield, FiCpu,
   FiLogOut, FiMenu, FiX, FiMonitor, FiDollarSign, FiActivity,
-  FiDatabase, FiZap, FiTrendingUp, FiUser, FiMessageSquare
+  FiDatabase, FiZap, FiTrendingUp, FiUser, FiMessageSquare, FiEdit3
 } from 'react-icons/fi';
 import styles from '@/styles/layout/AdminDashboard.module.css';
 
@@ -39,6 +39,12 @@ const AdminDashboard = ({ children, activeSection = 'overview' }) => {
       label: 'Аналитика чатов',
       icon: FiMessageSquare,
       href: '/admin-chats'
+    },
+    {
+      id: 'blog',
+      label: 'Блог',
+      icon: FiEdit3,
+      href: '/admin-blog'
     },
     {
       id: 'payments',
@@ -114,7 +120,7 @@ const AdminDashboard = ({ children, activeSection = 'overview' }) => {
             <div className={styles.sectionTitle}>
               {!sidebarCollapsed && 'Управление'}
             </div>
-            {menuItems.slice(0, 6).map(item => (
+            {menuItems.slice(0, 7).map(item => (
               <Link key={item.id} href={item.href} onClick={handleMenuItemClick}>
                 <div className={`${styles.navItem} ${activeSection === item.id ? styles.active : ''}`}>
                   <item.icon size={16} />
@@ -128,7 +134,7 @@ const AdminDashboard = ({ children, activeSection = 'overview' }) => {
             <div className={styles.sectionTitle}>
               {!sidebarCollapsed && 'Мониторинг'}
             </div>
-            {menuItems.slice(6, 8).map(item => (
+            {menuItems.slice(7, 9).map(item => (
               <Link key={item.id} href={item.href} onClick={handleMenuItemClick}>
                 <div className={`${styles.navItem} ${activeSection === item.id ? styles.active : ''}`}>
                   <item.icon size={16} />
@@ -142,7 +148,7 @@ const AdminDashboard = ({ children, activeSection = 'overview' }) => {
             <div className={styles.sectionTitle}>
               {!sidebarCollapsed && 'Конфигурация'}
             </div>
-            {menuItems.slice(8).map(item => (
+            {menuItems.slice(9).map(item => (
               <Link key={item.id} href={item.href} onClick={handleMenuItemClick}>
                 <div className={`${styles.navItem} ${activeSection === item.id ? styles.active : ''}`}>
                   <item.icon size={16} />

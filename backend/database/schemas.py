@@ -650,3 +650,125 @@ class ContactFormCreate(ContactFormBase):
 class ContactFormResponse(BaseModel):
     message: str
     success: bool
+
+
+# Blog Schemas
+class BlogPostBase(BaseModel):
+    title: str
+    excerpt: str
+    content: str
+    author: str
+    read_time: str
+    category: str
+    tags: List[str]
+    image: str
+    featured: bool = False
+    is_published: bool = True
+    slug: Optional[str] = None
+    meta_title: Optional[str] = None
+    meta_description: Optional[str] = None
+    keywords: Optional[str] = None
+
+    # Планирование публикации
+    scheduled_for: Optional[datetime] = None
+    initial_views: Optional[int] = 0
+    initial_likes: Optional[int] = 0
+
+class BlogPostCreate(BlogPostBase):
+    pass
+
+class BlogPostUpdate(BaseModel):
+    title: Optional[str] = None
+    excerpt: Optional[str] = None
+    content: Optional[str] = None
+    author: Optional[str] = None
+    read_time: Optional[str] = None
+    category: Optional[str] = None
+    tags: Optional[List[str]] = None
+    image: Optional[str] = None
+    featured: Optional[bool] = None
+    is_published: Optional[bool] = None
+    slug: Optional[str] = None
+    meta_title: Optional[str] = None
+    meta_description: Optional[str] = None
+    keywords: Optional[str] = None
+
+    # Планирование публикации
+    scheduled_for: Optional[datetime] = None
+    initial_views: Optional[int] = None
+    initial_likes: Optional[int] = None
+
+class BlogPostRead(BlogPostBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    date: datetime
+    views: int
+    likes: int
+    created_at: datetime
+    updated_at: datetime
+
+class BlogPostList(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    title: str
+    excerpt: str
+    author: str
+    date: datetime
+    read_time: str
+    category: str
+    tags: List[str]
+    image: str
+    featured: bool
+    views: int
+    likes: int
+    is_published: bool
+    slug: Optional[str] = None
+    scheduled_for: Optional[datetime] = None
+    initial_views: Optional[int] = 0
+    initial_likes: Optional[int] = 0
+    created_at: datetime
+    updated_at: datetime
+
+# ==========================================
+# AI ASSISTANT SCHEMAS
+# ==========================================
+
+class ArticleSettings(BaseModel):
+    """Настройки генерации статьи"""
+    type: str = "informational"  # informational, tutorial, analysis, news, opinion, case_study
+    style: str = "professional"  # professional, casual, technical, conversational, academic
+    tone: str = "expert"  # expert, friendly, authoritative, educational, inspiring
+    audience: str = "business"  # business, developers, general, professionals, beginners
+    length: str = "medium"  # short, medium, long
+    focus: str = "ai_technologies"  # ai_technologies, automation, digital_transformation, etc.
+    language: str = "ru"  # ru, en
+    seo_optimized: bool = True
+    include_examples: bool = True
+    include_statistics: bool = False
+    include_case_studies: bool = False
+
+class AIAssistantRequest(BaseModel):
+    """Запрос к ИИ помощнику для создания статей"""
+    action: str  # "generate_title", "generate_content", "improve_text", "generate_excerpt", "generate_full_article"
+    context: Optional[str] = None  # Контекст для генерации
+    text: Optional[str] = None  # Текст для улучшения
+    topic: Optional[str] = None  # Тема статьи
+    style: Optional[str] = "professional"  # Стиль написания
+    length: Optional[str] = "medium"  # Длина контента
+
+    # Новые поля для полной генерации статей
+    example_text: Optional[str] = None  # Примерная статья для анализа
+    include_project_mentions: Optional[bool] = False  # Включать упоминания ReplyX
+    project_features: Optional[List[str]] = None  # Функции проекта для упоминания
+    mention_frequency: Optional[str] = "low"  # Частота упоминаний: "low", "medium", "high"
+    # Настройки статьи
+    article_settings: Optional[ArticleSettings] = None
+
+class AIAssistantResponse(BaseModel):
+    """Ответ от ИИ помощника"""
+    success: bool
+    result: str
+    suggestions: Optional[List[str]] = None
+    error: Optional[str] = None
